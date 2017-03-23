@@ -1,0 +1,16 @@
+{ {{/* count query */}}
+  {{- if .Term}}
+  	 {{- template "coreQuery.tmpl" .}}
+  {{- else}}
+     {{- template "matchAll.tmpl" .}}
+  {{- end}},
+  "size": 0,
+  "aggregations": {
+  		"docCounts": {
+  				"terms": {
+  					"size": 30,
+  					"field":"_type"
+			}
+  		}
+	}
+}

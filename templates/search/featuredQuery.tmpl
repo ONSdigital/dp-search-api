@@ -1,0 +1,8 @@
+{ {{/* featured query */}}
+    "size": 1,
+	{{- if .Term}}
+		{{- template "coreQuery.tmpl" .}}
+	{{- else}}
+		{{- template "matchAll.tmpl" .}}
+	{{- end}}
+ }

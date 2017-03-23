@@ -1,0 +1,96 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "8r2GSHzQ11neZGMY7d4Rz+O6sUs=",
+			"path": "github.com/ONSdigital/dp-search-query",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "nVbb+x6nwEFqcpNDF+aw8WHy+k4=",
+			"path": "github.com/ONSdigital/go-ns/log",
+			"revision": "bc66177e78ff92143848188c78ac5f112ce8ef4c",
+			"revisionTime": "2017-01-23T15:55:35Z"
+		},
+		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
+			"checksumSHA1": "zmCk+lgIeiOf0Ng9aFP9aFy8ksE=",
+			"path": "github.com/gorilla/mux",
+			"revision": "599cba5e7b6137d46ddf58fb1765f5d928e69604",
+			"revisionTime": "2017-02-28T22:43:54Z"
+		},
+		{
+			"checksumSHA1": "41syjEeyv9W/6j89XArd1yyWNBU=",
+			"path": "github.com/gorilla/pat",
+			"revision": "cf955c3d1f2c27ee96f93e9738085c762ff5f49d",
+			"revisionTime": "2016-04-13T04:16:32Z"
+		},
+		{
+			"checksumSHA1": "L6/CjN/3IdKLxfaBGRPTJ7e62bg=",
+			"path": "github.com/jtolds/gls",
+			"revision": "bb0351aa7eb6f322f32667d51375f26a2bca6628",
+			"revisionTime": "2016-12-28T00:43:38Z"
+		},
+		{
+			"checksumSHA1": "OBvAHqWjdI4NQVAqTkcQAdTuCFY=",
+			"path": "github.com/justinas/alice",
+			"revision": "1051eaf52fcafdd87ead59d28b065f1fcb8274ec",
+			"revisionTime": "2016-09-10T10:38:22Z"
+		},
+		{
+			"checksumSHA1": "BOFetxMdGQVex14gI977F2aI9sM=",
+			"path": "github.com/mattn/go-colorable",
+			"revision": "a392f450ea64cee2b268dfaacdc2502b50a22b18",
+			"revisionTime": "2017-03-12T23:57:56Z"
+		},
+		{
+			"checksumSHA1": "CIK3BBNX3nuUQCmNqTQydNfMNKI=",
+			"path": "github.com/mgutz/ansi",
+			"revision": "9520e82c474b0a04dd04f8a40959027271bab992",
+			"revisionTime": "2017-02-06T15:57:36Z"
+		},
+		{
+			"checksumSHA1": "SOB3whm8gc2xsL6j7exUFghj94s=",
+			"path": "github.com/tdewolff/buffer",
+			"revision": "df6253e2a2cda5aba1b5d0c59fc5bdf0a98ae192",
+			"revisionTime": "2017-01-15T11:41:28Z"
+		},
+		{
+			"checksumSHA1": "YfGLCeirIdIp0moJTkR+gHzY4hg=",
+			"path": "github.com/tdewolff/minify",
+			"revision": "6206d455c1d422a3aea430e73d7375e7a0d9cbf0",
+			"revisionTime": "2017-03-18T18:04:14Z"
+		},
+		{
+			"checksumSHA1": "8Vj9VTxgIn/BaZuGuwi1u/ckWZ8=",
+			"path": "github.com/tdewolff/minify/js",
+			"revision": "6206d455c1d422a3aea430e73d7375e7a0d9cbf0",
+			"revisionTime": "2017-03-18T18:04:14Z"
+		},
+		{
+			"checksumSHA1": "EiTbuOQ08YQ0Foy0R8y4WlbVcvA=",
+			"path": "github.com/tdewolff/parse",
+			"revision": "eaf18f3585c614752aa17737e10095d49e38c9fa",
+			"revisionTime": "2017-03-18T18:03:28Z"
+		},
+		{
+			"checksumSHA1": "tZNYHHm8NPAA/MKMzH9ThJgRdZs=",
+			"path": "github.com/tdewolff/parse/js",
+			"revision": "eaf18f3585c614752aa17737e10095d49e38c9fa",
+			"revisionTime": "2017-03-18T18:03:28Z"
+		},
+		{
+			"checksumSHA1": "hR7GEsOkEtR/doq2kiCmOF8spEg=",
+			"path": "github.com/tdewolff/strconv",
+			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
+			"revisionTime": "2016-04-27T18:05:39Z"
+		}
+	],
+	"rootPath": "github.com/ONSdigital/dp-search-query"
+}

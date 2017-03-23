@@ -1,0 +1,26 @@
+{
+  "from" : 0,
+  "size" : 1,
+  "query" : {
+    "bool" : {
+      "filter" : {
+        "term" : {
+          "description.cdid" : "{{.Cdid}}"
+        }
+      }
+    }
+  },
+  "_source" : {
+    "includes" : [ "uri" ],
+    "excludes" : [ "downloads.content", "downloads*", "pageData" ]
+  },
+  "sort" : [ {
+    "description.releaseDate" : {
+      "order" : "desc"
+    }
+  }, {
+    "_score" : {
+      "order" : "desc"
+    }
+  } ]
+}
