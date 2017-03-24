@@ -15,6 +15,9 @@ URL Parameters
 6. `sort` _[0..1]_ _default_: `relevance`, _options_: `relevance`,
 `release_date`,`release_date_asc`,`first_letter`,`title`
 7. `queries` _[0..4]_ _default_: `search` , _options_: `search`,`counts`,`departments`,`featured`
+8. `aggField`: _[0..1]_ _default_ : `_type` ; the field that will be used to group on by the `count` query
+9. `latest` _[0..1]_ filters both search and counts to include only the latest version where `description.latestRelease: true`
+10. `withFirstLetter` _[0..1]_, _options_:  a..Z and is restricted to `search` queries will only return results where the title starts with the letter `?`
 
 * timeseries/{cdid}
 
