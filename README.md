@@ -3,7 +3,7 @@ dp-search-query
 
 A Go application microservice to provide query functionality on to the ONSWebsite ElasticSearch :
 
-* /search?
+## /search?
 
 URL Parameters
 
@@ -12,23 +12,14 @@ URL Parameters
 3. `from` _[0..1]_ _default_:0
 4. `index` _[0..1]_
 5. `type` _[0..*]_
-6. `sort` _[0..1]_ _default_: `relevance`, _options_: `relevance`,
-`release_date`,`release_date_asc`,`first_letter`,`title`
+6. `sort` _[0..1]_ _default_: `relevance`, _options_: `relevance`,`release_date`,`release_date_asc`,`first_letter`,`title`
 7. `queries` _[0..4]_ _default_: `search` , _options_: `search`,`counts`,`departments`,`featured`
 8. `aggField`: _[0..1]_ _default_ : `_type` ; the field that will be used to group on by the `count` query
-9. `latest` _[0..1]_ filters both search and counts to include only the latest version where `description.latestRelease: true`
+9. `latest` _[0..1]_, _options_: [true|false], _defaults_: false filters both search and counts to include only the latest version where `description.latestRelease: true`
 10. `withFirstLetter` _[0..1]_, _options_:  a..Z and is restricted to `search` queries will only return results where the title starts with the letter `?`
 
-* timeseries/{cdid}
+## timeseries/{cdid}
 
-### Getting started
-
-After creating a new repository on GitHub, use these commands to initialise
-it using this repository as a template:
-
-* `git clone git@github.com:ONSdigital/dp-repo-template dp-new-repo-name`
-* `cd dp-new-repo-name`
-* `git remote set-url origin git@github.com:ONSdigital/dp-new-repo-name`
 
 Remember to update the [README](README.md) and [CHANGELOG](CHANGELOG.md) files.
 

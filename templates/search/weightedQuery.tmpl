@@ -1,6 +1,5 @@
-"query": {
-  "function_score": {
-  {{template "coreQuery.tmpl" .}},
+"function_score": {
+"query": {  {{template "coreQuery.tmpl" .}} },
     "functions": [
       {
         "filter": {
@@ -60,4 +59,3 @@
       }
     ]
   }
-}
