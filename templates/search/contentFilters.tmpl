@@ -1,0 +1,20 @@
+{{ if or .FilterOnLatest .FilterOnFirstLetter  }}
+,
+"filter" : [
+{{ if .FilterOnLatest }}
+   {
+        "term" : {
+            "description.latestRelease" : true
+        }
+    }
+    {{if .FilterOnFirstLetter  }},{{end}}
+{{end}}
+ {{if .FilterOnFirstLetter  }}
+   {
+        "term": {
+           "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
+           }
+   }
+ {{end}}
+]
+{{end}}

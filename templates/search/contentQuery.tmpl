@@ -5,11 +5,18 @@
  {{- end}}
  {{if .Size}} 
  	 "size" : {{.Size}},{{end}}
- {{if .Term}}
- 		{{template "coreQuery.tmpl" .}} 
- {{else}} 
- 	{{template "matchAll.tmpl" .}}
- {{end}},
+ "query" : {
+     "bool" : {
+       "must" : {
+                  {{- if .Term}}
+                      {{- template "weightedQuery.tmpl" .}}
+                   {{- else}}
+                      {{- template "matchAll.tmpl" .}}
+                   {{- end}}
+              }
+         {{template "contentFilters.tmpl" .}}
+         }
+    },
  "suggest":{
  	"search_suggest":{
  		"text":"{{.Term}}",
@@ -40,7 +47,7 @@
  {{ else if eq .SortBy "title" }}
     {{ template "sortByTitle.tmpl" }}
  {{ else if eq .SortBy "first_letter" }}
-    {{ template "sortFirstLetter.tmpl" }}
+    {{ template "sortByFirstLetter.tmpl" }}
  {{ else }}
     {{template "sortByRelevance.tmpl" }}
  {{ end }}

@@ -1,15 +1,22 @@
 { {{/* count query */}}
-  {{- if .Term}}
-  	 {{- template "coreQuery.tmpl" .}}
-  {{- else}}
-     {{- template "matchAll.tmpl" .}}
-  {{- end}},
+"query" : {
+    "bool" : {
+      "must" : {
+                 {{- if .Term}}
+                     {{- template "coreQuery.tmpl" .}}
+                  {{- else}}
+                     {{- template "matchAll.tmpl" .}}
+                  {{- end}}
+             }
+        {{template "countFilterLatest.tmpl" .}}
+        }
+   },
   "size": 0,
   "aggregations": {
   		"docCounts": {
   				"terms": {
-  					"size": 30,
-  					"field":"_type"
+  					"size": 1000,
+  					"field":"{{.AggregationField}}"
 			}
   		}
 	}
