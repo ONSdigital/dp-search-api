@@ -1,4 +1,4 @@
-{{ if or .FilterOnLatest .FilterOnFirstLetter  }}
+{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix }}
 ,
 "filter" : [
 {{ if .FilterOnLatest }}
@@ -7,7 +7,7 @@
             "description.latestRelease" : true
         }
     }
-    {{if .FilterOnFirstLetter  }},{{end}}
+    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix}},{{end}}
 {{end}}
  {{if .FilterOnFirstLetter  }}
    {
@@ -15,6 +15,25 @@
            "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
            }
    }
+    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix}},{{end}}
  {{end}}
+  {{if or .ReleasedBefore .ReleasedAfter }}
+     {"range" : {
+             "description.releaseDate" : {
+                 {{if .ReleasedAfter}}
+                     "gte" : "{{.ReleasedAfter}}"
+                 {{end}}
+                 {{ if and .ReleasedBefore .ReleasedAfter }},{{end}}
+                 {{if .ReleasedBefore}}
+                     "lte" : "{{.ReleasedBefore}}"
+                 {{end}}
+             }
+         }
+      }
+       {{if .UriPrefix}},{{end}}
+  {{end}}
+  {{if .UriPrefix}}
+  { "prefix" : { "uri" : "{{.UriPrefix}}" } }
+  {{end}}
 ]
 {{end}}

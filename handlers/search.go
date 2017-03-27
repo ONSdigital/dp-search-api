@@ -24,6 +24,9 @@ type SearchRequest struct {
 	AggregationField    string
 	FilterOnLatest      bool
 	FilterOnFirstLetter string
+	ReleasedAfter       string
+	ReleasedBefore      string
+	UriPrefix           string
 }
 
 //Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes the SearchRequest struct and
@@ -64,7 +67,6 @@ func formatMultiQuery(rawQuery []byte) []byte {
 
 	linearQuery, err := m.Bytes("application/js", rawQuery)
 
-
 	if err != nil {
 		panic(err)
 	}
@@ -103,7 +105,6 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		queries = params["query"]
 	}
 
-
 	reqParams := SearchRequest{Term: params.Get("term"),
 		From: from,
 		Size: size,
@@ -114,8 +115,12 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		AggregationField: paramGet(params, "aggField", "_type"),
 		FilterOnLatest: paramGetBool(params, "latest", false),
 		FilterOnFirstLetter: params.Get("withFirstLetter"),
+		ReleasedAfter: params.Get("releasedAfter"),
+		ReleasedBefore: params.Get("releasedBefore"),
+		UriPrefix: params.Get("uriPrefix"),
+
 	}
-	log.Debug("SearchHandler", log.Data{"queries":queries,"request":reqParams})
+	log.Debug("SearchHandler", log.Data{"queries":queries, "request":reqParams})
 	var doc bytes.Buffer
 	err = searchTemplates.Execute(&doc, reqParams)
 
