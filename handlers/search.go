@@ -27,6 +27,8 @@ type SearchRequest struct {
 	ReleasedAfter       string
 	ReleasedBefore      string
 	UriPrefix           string
+	Topic		    []string
+	TopicWildcard	    []string
 }
 
 //Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes the SearchRequest struct and
@@ -118,7 +120,8 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		ReleasedAfter: params.Get("releasedAfter"),
 		ReleasedBefore: params.Get("releasedBefore"),
 		UriPrefix: params.Get("uriPrefix"),
-
+		Topic: params["topic"],
+		TopicWildcard: params["topicWildcard"],
 	}
 	log.Debug("SearchHandler", log.Data{"queries":queries, "request":reqParams})
 	var doc bytes.Buffer

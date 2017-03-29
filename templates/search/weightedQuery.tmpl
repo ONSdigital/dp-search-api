@@ -1,61 +1,48 @@
 "function_score": {
 "query": {  {{template "coreQuery.tmpl" .}} },
-    "functions": [
-      {
-        "filter": {
-          "term": {
-            "_type": "bulletin"
-          }
+
+      "functions": [
+        {
+          "filter": {
+            "term": {
+              "_type": "bulletin"
+            }
+          },
+          "weight": 100
         },
-        "weight": 1.55
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "article"
-          }
+        {
+          "filter": {
+            "term": {
+              "_type": "dataset_landing_page"
+            }
+          },
+          "weight": 70
         },
-        "weight": 1.3
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "article_download"
-          }
+        {
+          "filter": {
+            "terms": {
+              "_type": ["article",
+                            "compendium_landing_page",
+                            "article_download"]
+            }
+          },
+          "weight": 50
         },
-        "weight": 1.3
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "timeseries"
-          }
+        {
+          "filter": {
+            "term": {
+              "_type": "static_adhoc"
+            }
+          },
+          "weight": 30
         },
-        "weight": 1.2
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "compendium_landing_page"
-          }
-        },
-        "weight": 1.3
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "static_adhoc"
-          }
-        },
-        "weight": 1.25
-      },
-      {
-        "filter": {
-          "term": {
-            "_type": "dataset_landing_page"
-          }
-        },
-        "weight": 1.35
-      }
-    ]
+        {
+          "filter": {
+            "term": {
+              "_type": "timeseries"
+            }
+          },
+          "weight": 10
+        }
+      ]
   }

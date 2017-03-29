@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+var server *http.Server
 
 func main() {
 	bindAddr := os.Getenv("BIND_ADDR")
@@ -20,9 +21,10 @@ func main() {
 
 	router := pat.New()
 
+	log.Debug("main", log.Data{"StartingServer":"Start"})
 	router.Get("/search", handlers.SearchHandler)
 	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
-	server := &http.Server{
+	server = &http.Server{
 		Addr:         bindAddr,
 		Handler:      router,
 		ReadTimeout:  5 * time.Second,
@@ -35,3 +37,8 @@ func main() {
 	}
 
 }
+
+func stop(){
+	server.Close()
+}
+

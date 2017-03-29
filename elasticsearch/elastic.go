@@ -8,7 +8,7 @@ import (
 
 )
 
-var elasticURL = getEnv("ELASTIC_URL", "http://localhost:9200/")
+var ElasticURL = getEnv("ELASTIC_URL", "http://localhost:9200/")
 
 func getEnv(key string, defaultValue string) string {
 	envValue := os.Getenv(key)
@@ -31,7 +31,7 @@ func buildContext(index string, docType string) string {
 
 func post(index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("POST", elasticURL + buildContext(index, docType) + action, reader)
+	req, err := http.NewRequest("POST", ElasticURL + buildContext(index, docType) + action, reader)
 	if err != nil {
 		return nil, err
 	}

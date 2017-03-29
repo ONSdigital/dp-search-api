@@ -1,4 +1,4 @@
-{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix }}
+{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}}
 ,
 "filter" : [
 {{ if .FilterOnLatest }}
@@ -7,7 +7,7 @@
             "description.latestRelease" : true
         }
     }
-    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix}},{{end}}
+    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}},{{end}}
 {{end}}
  {{if .FilterOnFirstLetter  }}
    {
@@ -15,7 +15,7 @@
            "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
            }
    }
-    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix}},{{end}}
+    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}},{{end}}
  {{end}}
   {{if or .ReleasedBefore .ReleasedAfter }}
      {"range" : {
@@ -30,10 +30,18 @@
              }
          }
       }
-       {{if .UriPrefix}},{{end}}
+       {{if or .UriPrefix .Topic .TopicWildcard}},{{end}}
   {{end}}
   {{if .UriPrefix}}
   { "prefix" : { "uri" : "{{.UriPrefix}}" } }
+  {{if or .Topic .TopicWildcard}},{{end}}
+  {{end}}
+  {{if .Topic}}
+    { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
+  {{if .TopicWildcard}},{{end}}
+  {{end}}
+  {{if .TopicWildcard}}
+    { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
   {{end}}
 ]
 {{end}}
