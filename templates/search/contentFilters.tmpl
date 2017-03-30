@@ -1,4 +1,4 @@
-{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}}
+{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}}
 ,
 "filter" : [
 {{ if .FilterOnLatest }}
@@ -7,7 +7,7 @@
             "description.latestRelease" : true
         }
     }
-    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}},{{end}}
+    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}},{{end}}
 {{end}}
  {{if .FilterOnFirstLetter  }}
    {
@@ -15,7 +15,7 @@
            "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
            }
    }
-    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard}},{{end}}
+    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard  .Upcoming .Published}},{{end}}
  {{end}}
   {{if or .ReleasedBefore .ReleasedAfter }}
      {"range" : {
@@ -30,18 +30,35 @@
              }
          }
       }
-       {{if or .UriPrefix .Topic .TopicWildcard}},{{end}}
+       {{if or .UriPrefix .Topic .TopicWildcard}}, { "bool": {
+                                                            "should": [ {{end}}
   {{end}}
-  {{if .UriPrefix}}
-  { "prefix" : { "uri" : "{{.UriPrefix}}" } }
-  {{if or .Topic .TopicWildcard}},{{end}}
-  {{end}}
+      {{if .UriPrefix}}
+          { "prefix" :
+                { "uri" : "{{.UriPrefix}}" }
+          }
+        {{if or .Topic .TopicWildcard}},{{end}}
+      {{end}}
+
   {{if .Topic}}
-    { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
-  {{if .TopicWildcard}},{{end}}
+     { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
+     {{if .TopicWildcard}},{{end}}
   {{end}}
+
   {{if .TopicWildcard}}
-    { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
+    {{range $i,$e := .TopicWildcard}}
+    {{if $i}},{{end}}
+        { "wildcard" :
+                { "topic" : "{{.}}"  }
+        }
+    {{end}}
+   {{end}}
+  {{if or .UriPrefix .Topic .TopicWildcard}} ]}
+  } {{if or .Upcoming .Published}}, {{end}}{{end}}
+  {{if .Upcoming}}
+    {{- template "contentFilterUpcoming.tmpl" . }}
+  {{else if .Published}}
+    {{- template "contentFilterPublished.tmpl" . }}
   {{end}}
 ]
 {{end}}

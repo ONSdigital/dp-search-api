@@ -19,8 +19,10 @@ URL Parameters
 10. `withFirstLetter` _[0..1]_, _options_:  a..Z and is restricted to `search` queries will only return results where the title starts with the letter `?`
 11. `uriPrefix` _[0..1]_, prefix filter on the URI.
 12. `topic` _[0..1]_ topic filter , matches exact Topic
-13. `topicWildcard` _[0..1]_
-
+13. `topicWildcard` _[0..1]_ topic filter , matches Topics using Wildcard pattern matching
+14. `highlight`  _[0..1]_, _options_: [true|false], _defaults_: true, determines whether to include highlighting on the `SEARCH` results
+15. `upcoming`  _[0..1]_, _options_: [true|false], _defaults_: true, determines whether items in the `SEARCH` that are not published and not cancelled __OR__ are published and are due
+16. `published`  _[0..1]_, _options_: [true|false], _defaults_: true, determines whether items in the `SEARCH` that are published and not cancelled __OR__ are cancelled and are due
 
 ## timeseries/{cdid}
 

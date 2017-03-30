@@ -25,6 +25,7 @@
  "_source":{
  			"includes":[],
  			"excludes":["downloads.content","downloads*","pageData"]},
+ 	{{if .Highlight}}
  		"highlight":{
  			"pre_tags":["<strong>"],
  			"post_tags":["</strong>"],
@@ -38,8 +39,9 @@
  			"description.datasetId":{"fragment_size":0,"number_of_fragments":0},
 			"downloads.content":{"fragment_size": 45,"number_of_fragments": 5},
 			"pageData":{"fragment_size": 45,"number_of_fragments": 5}
-		}
- },
+		    }
+        },
+        {{end}}
  {{ if eq .SortBy "release_date" }}
     {{ template "sortByReleaseDate.tmpl" }}
  {{ else if eq .SortBy "release_date_asc" }}

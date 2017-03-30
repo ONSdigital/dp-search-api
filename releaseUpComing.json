@@ -1,0 +1,307 @@
+{
+  "from": 0,
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": {
+        "function_score": {
+          "query": {
+            "dis_max": {
+              "queries": [
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "match": {
+                          "description.title.title_no_dates": {
+                            "query": "deaths",
+                            "type": "boolean",
+                            "boost": 10,
+                            "minimum_should_match": "1<-2 3<80% 5<60%"
+                          }
+                        }
+                      },
+                      {
+                        "match": {
+                          "description.title.title_no_stem": {
+                            "query": "deaths",
+                            "type": "boolean",
+                            "boost": 10,
+                            "minimum_should_match": "1<-2 3<80% 5<60%"
+                          }
+                        }
+                      },
+                      {
+                        "multi_match": {
+                          "query": "deaths",
+                          "fields": [
+                            "description.title^10",
+                            "description.edition",
+                            "downloads.content^1"
+                          ],
+                          "type": "cross_fields",
+                          "minimum_should_match": "3<80% 5<60%"
+                        }
+                      },
+                      {
+                        "multi_match": {
+                          "query": "deaths",
+                          "fields": [
+                            "description.title^10",
+                            "description.summary",
+                            "description.metaDescription",
+                            "description.edition",
+                            "downloads.content^1",
+                            "pageData^1",
+                            "description.keywords"
+                          ],
+                          "type": "phrase",
+                          "boost": 10,
+                          "slop": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "multi_match": {
+                    "query": "deaths",
+                    "fields": [
+                      "description.summary",
+                      "description.metaDescription",
+                      "downloads.content^1",
+                      "pageData^1",
+                      "description.keywords"
+                    ],
+                    "type": "best_fields",
+                    "minimum_should_match": "75%"
+                  }
+                },
+                {
+                  "match": {
+                    "description.keywords": {
+                      "query": "deaths",
+                      "type": "boolean",
+                      "operator": "AND",
+                      "boost": 10
+                    }
+                  }
+                },
+                {
+                  "multi_match": {
+                    "query": "deaths",
+                    "fields": [
+                      "description.cdid",
+                      "description.datasetId"
+                    ]
+                  }
+                },
+                {
+                  "match": {
+                    "searchBoost": {
+                      "query": "deaths",
+                      "type": "boolean",
+                      "operator": "AND",
+                      "boost": 100
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "functions": [
+            {
+              "filter": {
+                "term": {
+                  "_type": "bulletin"
+                }
+              },
+              "weight": 1.55
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "article"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "article_download"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "timeseries"
+                }
+              },
+              "weight": 1.2
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "compendium_landing_page"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "static_adhoc"
+                }
+              },
+              "weight": 1.25
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "dataset_landing_page"
+                }
+              },
+              "weight": 1.35
+            }
+          ]
+        }
+      },
+      "filter": [
+        {
+          "range": {
+            "description.releaseDate": {
+              "from": "2016-01-06T00:00:00.000Z",
+              "to": "2017-03-10T00:00:00.000Z",
+              "include_lower": true,
+              "include_upper": true
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "bool": {
+                        "must_not": {
+                          "term": {
+                            "description.published": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "bool": {
+                        "must_not": {
+                          "term": {
+                            "description.cancelled": true
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "description.cancelled": true
+                      }
+                    },
+                    {
+                      "bool": {
+                        "must_not": {
+                          "range": {
+                            "description.releaseDate": {
+                              "from": null,
+                              "to": "2017-03-30T13:23:39.915Z",
+                              "include_lower": true,
+                              "include_upper": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "_source": {
+    "includes": [],
+    "excludes": [
+      "downloads.content",
+      "downloads*",
+      "pageData"
+    ]
+  },
+  "sort": [
+    {
+      "_score": {
+        "order": "desc"
+      }
+    },
+    {
+      "description.releaseDate": {
+        "order": "desc"
+      }
+    }
+  ],
+  "highlight": {
+    "pre_tags": [
+      "<strong>"
+    ],
+    "post_tags": [
+      "</strong>"
+    ],
+    "fields": {
+      "description.title": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.edition": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.summary": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.metaDescription": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.keywords": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.cdid": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "description.datasetId": {
+        "fragment_size": 0,
+        "number_of_fragments": 0
+      },
+      "downloads.content": {
+        "fragment_size": 45,
+        "number_of_fragments": 5
+      },
+      "pageData": {
+        "fragment_size": 45,
+        "number_of_fragments": 5
+      }
+    }
+  }
+}

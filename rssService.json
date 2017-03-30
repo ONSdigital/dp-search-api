@@ -1,0 +1,222 @@
+{
+  "from": 0,
+  "size": 10000,
+  "query": {
+    "bool": {
+      "must": {
+        "function_score": {
+          "query": {
+            "dis_max": {
+              "queries": [
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "match": {
+                          "description.title.title_no_dates": {
+                            "query": "{{.Term}}",
+                            "type": "boolean",
+                            "boost": 10,
+                            "minimum_should_match": "1<-2 3<80% 5<60%"
+                          }
+                        }
+                      },
+                      {
+                        "match": {
+                          "description.title.title_no_stem": {
+                            "query": "{{.Term}}",
+                            "type": "boolean",
+                            "boost": 10,
+                            "minimum_should_match": "1<-2 3<80% 5<60%"
+                          }
+                        }
+                      },
+                      {
+                        "multi_match": {
+                          "query": "{{.Term}}",
+                          "fields": [
+                            "description.title^10",
+                            "description.edition",
+                            "downloads.content^1"
+                          ],
+                          "type": "cross_fields",
+                          "minimum_should_match": "3<80% 5<60%"
+                        }
+                      },
+                      {
+                        "multi_match": {
+                          "query": "{{.Term}}",
+                          "fields": [
+                            "description.title^10",
+                            "description.summary",
+                            "description.metaDescription",
+                            "description.edition",
+                            "downloads.content^1",
+                            "pageData^1",
+                            "description.keywords"
+                          ],
+                          "type": "phrase",
+                          "boost": 10,
+                          "slop": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "multi_match": {
+                    "query": "{{.Term}}",
+                    "fields": [
+                      "description.summary",
+                      "description.metaDescription",
+                      "downloads.content^1",
+                      "pageData^1",
+                      "description.keywords"
+                    ],
+                    "type": "best_fields",
+                    "minimum_should_match": "75%"
+                  }
+                },
+                {
+                  "match": {
+                    "description.keywords": {
+                      "query": "{{.Term}}",
+                      "type": "boolean",
+                      "operator": "AND",
+                      "boost": 10
+                    }
+                  }
+                },
+                {
+                  "multi_match": {
+                    "query": "{{.Term}}",
+                    "fields": [
+                      "description.cdid",
+                      "description.datasetId"
+                    ]
+                  }
+                },
+                {
+                  "match": {
+                    "searchBoost": {
+                      "query": "{{.Term}}",
+                      "type": "boolean",
+                      "operator": "AND",
+                      "boost": 100
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "functions": [
+            {
+              "filter": {
+                "term": {
+                  "_type": "bulletin"
+                }
+              },
+              "weight": 1.55
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "article"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "article_download"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "timeseries"
+                }
+              },
+              "weight": 1.2
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "compendium_landing_page"
+                }
+              },
+              "weight": 1.3
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "static_adhoc"
+                }
+              },
+              "weight": 1.25
+            },
+            {
+              "filter": {
+                "term": {
+                  "_type": "dataset_landing_page"
+                }
+              },
+              "weight": 1.35
+            }
+          ]
+        }
+      },
+      "filter": [
+        {
+          "bool": {
+            "should": [
+              {
+                "wildcard": {
+                  "topics": "/economy/economicoutputandproductivity/productivitymeasures*"
+                }
+              },
+              {
+                "prefix": {
+                  "uri": "/economy/economicoutputandproductivity/productivitymeasures/"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "range": {
+            "description.releaseDate": {
+              "from": "now-2d/d",
+              "to": null,
+              "include_lower": true,
+              "include_upper": true
+            }
+          }
+        }
+      ]
+    }
+  },
+  "_source": {
+    "includes": [],
+    "excludes": [
+      "downloads.content",
+      "downloads*",
+      "pageData"
+    ]
+  },
+  "sort": [
+    {
+      "description.releaseDate": {
+        "order": "desc"
+      }
+    },
+    {
+      "_score": {
+        "order": "desc"
+      }
+    }
+  ]
+}

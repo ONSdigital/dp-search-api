@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"net/url"
 	elasticsearch "github.com/ONSdigital/dp-search-query/elasticsearch"
+	"time"
 )
 
 type SearchRequest struct {
@@ -22,13 +23,17 @@ type SearchRequest struct {
 	Queries             []string
 	SortBy              string
 	AggregationField    string
+	Highlight           bool
 	FilterOnLatest      bool
 	FilterOnFirstLetter string
 	ReleasedAfter       string
 	ReleasedBefore      string
 	UriPrefix           string
-	Topic		    []string
-	TopicWildcard	    []string
+	Topic               []string
+	TopicWildcard       []string
+	Upcoming            bool
+	Published           bool
+	Now                 string
 }
 
 //Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes the SearchRequest struct and
@@ -47,9 +52,12 @@ var searchTemplates, _ = template.ParseFiles("templates/search/search.tmpl",
 	"templates/search/weightedQuery.tmpl",
 	"templates/search/countFilterLatest.tmpl",
 	"templates/search/contentFilters.tmpl",
+	"templates/search/contentFilterUpcoming.tmpl",
+	"templates/search/contentFilterPublished.tmpl",
 	"templates/search/sortByTitle.tmpl",
 	"templates/search/sortByRelevance.tmpl",
 	"templates/search/sortByReleaseDate.tmpl",
+	"templates/search/sortByReleaseDateAsc.tmpl",
 	"templates/search/sortByReleaseDateAsc.tmpl",
 	"templates/search/sortByFirstLetter.tmpl")
 
@@ -115,6 +123,7 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		SortBy: paramGet(params, "sort", "relevance"),
 		Queries: queries,
 		AggregationField: paramGet(params, "aggField", "_type"),
+		Highlight: paramGetBool(params, "highlight", true),
 		FilterOnLatest: paramGetBool(params, "latest", false),
 		FilterOnFirstLetter: params.Get("withFirstLetter"),
 		ReleasedAfter: params.Get("releasedAfter"),
@@ -122,9 +131,14 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		UriPrefix: params.Get("uriPrefix"),
 		Topic: params["topic"],
 		TopicWildcard: params["topicWildcard"],
+		Upcoming: paramGetBool(params, "upcoming", false),
+		Published: paramGetBool(params, "published", false),
+		Now: time.Now().UTC().Format(time.RFC3339),
 	}
 	log.Debug("SearchHandler", log.Data{"queries":queries, "request":reqParams})
 	var doc bytes.Buffer
+
+
 	err = searchTemplates.Execute(&doc, reqParams)
 
 	if err != nil {
