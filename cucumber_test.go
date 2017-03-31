@@ -118,12 +118,13 @@ func search(params map[string]string) error {
 		return err
 	}
 	ioutil.WriteFile("/tmp/testResponse.json", response, 0644)
-
 	err = json.Unmarshal(response, &httpResponse)
 	if err != nil {
 		panic(err)
 		return err
 	}
+	httpResponse = HttpResponse{}
+
 
 	f,_  := ioutil.TempFile("/tmp","responseParsed")
 	str,err := json.Marshal(httpResponse)
