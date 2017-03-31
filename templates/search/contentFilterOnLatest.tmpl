@@ -1,0 +1,8 @@
+{{ if .FilterOnLatest }}
+   {
+        "term" : {
+            "description.latestRelease" : true
+        }
+    }
+    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}},{{end}}
+{{end}}

@@ -13,6 +13,7 @@ var server *http.Server
 
 func main() {
 	bindAddr := os.Getenv("BIND_ADDR")
+	log.Debug(bindAddr,nil)
 	if len(bindAddr) == 0 {
 		bindAddr = ":10001"
 	}
@@ -32,6 +33,7 @@ func main() {
 	}
 	var err error
 	if err = server.ListenAndServe(); err != nil {
+		log.Debug("main bindevent", log.Data{"failed to bind to":bindAddr})
 		log.Error(err, nil)
 		os.Exit(1)
 	}

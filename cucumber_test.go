@@ -3,33 +3,46 @@ package main
 
 import (
 	"github.com/DATA-DOG/godog"
-	"github.com/ONSdigital/go-ns/log"
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
 	"testing"
 	"os"
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"time"
 	"strings"
 	"fmt"
 	"net/url"
 )
 
+func resolveBindAddr() string {
+	bindAddr := os.Getenv("BIND_ADDR")
+	if len(bindAddr) == 0 {
+		bindAddr = ":10001"
+	}
+	return bindAddr
+}
+
+var bindAddr string = resolveBindAddr()
+type Description struct {
+	NextRelease string
+	ReleaseDate time.Time
+	DatasetUri  string
+	Published   *bool `json:published,omitempty`
+	Cancelled   *bool `json:cancelled,omitempty`
+	Title string
+}
+
 type Source struct {
 	Uri         string
-	Description struct {
-			    NextRelease string
-			    ReleaseDate time.Time
-			    DatasetUri  string
-		    }
+	Description Description
 }
 
 type RecordHits struct {
 	Id     string  `json:"_id"`
 	Score  float64 `json:"_score"`
 	Source Source  `json:"_source"`
-
+	Type   string `json:"_type"`
+	Index  string `json:"_index"`
 	Sort   [] float64
 }
 
@@ -49,7 +62,7 @@ type HttpResponse struct {
 var httpResponse HttpResponse
 
 func TestMain(m *testing.M) {
-	config.ElasticURL = "http://localhost:9999/"
+
 	go main()
 
 	status := godog.RunWithOptions("search", func(s *godog.Suite) {
@@ -66,9 +79,17 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-func searchForTerm(term string) error {
-	i := "http://localhost:10001/search?term=" + url.PathEscape(term)
-	log.Debug("searchForTerm", log.Data{"url":i})
+func buildURL(params map[string]string) string {
+	query := "http://localhost" + bindAddr + "/search?"
+	for key, value := range params {
+		fmt.Println("Key:", key, "Value:", value)
+		query = query + "&" + url.PathEscape(key) + "=" + url.PathEscape(value)
+	}
+	return query
+}
+func search(params map[string]string) error {
+
+	i := buildURL(params)
 	req, err := http.NewRequest("GET", i, nil)
 	if err != nil {
 		panic(err)
@@ -103,9 +124,28 @@ func searchForTerm(term string) error {
 		panic(err)
 		return err
 	}
-	log.Debug("indexeddata", log.Data{"structure":httpResponse})
 
+	f,_  := ioutil.TempFile("/tmp","responseParsed")
+	str,err := json.Marshal(httpResponse)
+	if err != nil {
+		panic(err)
+		return err
+	}
+	f.Write(str)
+
+
+	o,err  := ioutil.TempFile("/tmp","responseOrigin")
+	o.Write(response)
+	if err != nil {
+		panic(err)
+		return err
+	}
 	return nil
+}
+
+func searchForTerm(term string) error {
+	return search(map[string]string{"term": term})
+
 }
 
 func onlyReceiveFromDatasetURI(uri string) error {
@@ -136,10 +176,52 @@ func theResultsAreInDateDescendingOrder() error {
 	return nil
 }
 
+func filterReleaseCalendar(pubOrUpComing string) error {
+	params := map[string]string{pubOrUpComing:"true", "size":"1000"}
+	return search(params)
+}
+/**
+Upcoming means that the documents are not release
+not published and not cancelled OR are published and are due
+ */
+func checkUpComing() error {
+	for _, r := range httpResponse.Responses {
+		for _, hit := range r.Hits.Hits {
+			description := hit.Source.Description
+			if !((!*description.Cancelled && !*description.Published) ||
+				!(*description.Published && description.ReleaseDate.Before(time.Now()))) {
+				str,_ := json.Marshal(hit)
+				return fmt.Errorf("Document is not Upcoming", string(str))
+			}
+		}
+	}
+	//Upcomm
+	return nil
+}
+/**
+Published means that the documents are published and not cancelled OR are cancelled and are due
+ */
+func checkPublished() error {
+	for _, r := range httpResponse.Responses {
+		for _, hit := range r.Hits.Hits {
+			description := hit.Source.Description
+			if !((!*description.Cancelled && *description.Published) ||
+				(*description.Cancelled && description.ReleaseDate.Before(time.Now()))) {
+				str,_ := json.Marshal(hit)
+				return fmt.Errorf("Document is not Published", string(str))
+			}
+		}
+	}
+
+	return nil
+}
+
 func FeatureContext(s *godog.Suite) {
 	s.Step(`^a user searches for the term\(s\) "([a-zA-Z\s]*)"$`, searchForTerm)
 	s.Step(`^the user will receive the first page with documents only from this uri prefix (.*)$`, onlyReceiveFromDatasetURI)
 	s.Step(`^the results with the same score are in date descending order$`, theResultsAreInDateDescendingOrder)
-
+	s.Step(`^a user filters the release calendar for "([^"]*)" documents$`, filterReleaseCalendar)
+	s.Step(`^user will receive a list of the documents are upcoming$`, checkUpComing)
+	s.Step(`^user will receive a list of the documents are published$`, checkPublished)
 
 }

@@ -1,60 +1,25 @@
 {{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}}
 ,
 "filter" : [
-{{ if .FilterOnLatest }}
-   {
-        "term" : {
-            "description.latestRelease" : true
-        }
-    }
-    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}},{{end}}
-{{end}}
- {{if .FilterOnFirstLetter  }}
-   {
-        "term": {
-           "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
-           }
-   }
-    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard  .Upcoming .Published}},{{end}}
- {{end}}
-  {{if or .ReleasedBefore .ReleasedAfter }}
-     {"range" : {
-             "description.releaseDate" : {
-                 {{if .ReleasedAfter}}
-                     "gte" : "{{.ReleasedAfter}}"
-                 {{end}}
-                 {{ if and .ReleasedBefore .ReleasedAfter }},{{end}}
-                 {{if .ReleasedBefore}}
-                     "lte" : "{{.ReleasedBefore}}"
-                 {{end}}
-             }
-         }
-      }
-       {{if or .UriPrefix .Topic .TopicWildcard}}, { "bool": {
-                                                            "should": [ {{end}}
-  {{end}}
-      {{if .UriPrefix}}
-          { "prefix" :
-                { "uri" : "{{.UriPrefix}}" }
-          }
-        {{if or .Topic .TopicWildcard}},{{end}}
-      {{end}}
+{{ template "contentFilterOnLatest.tmpl" . }}
+{{ template "contentFilterOnFirstLetter.tmpl" . }}
+{{ template "contentFilterOnReleaseDate.tmpl" . }}
 
-  {{if .Topic}}
-     { "terms" : { "topic" : [ {{range $i,$e := .Topic}}{{if $i}},{{end}} "{{.}}" {{end}} ] } }
-     {{if .TopicWildcard}},{{end}}
-  {{end}}
+{{if or .UriPrefix .Topic .TopicWildcard}}
+  { "bool": { "should": [
 
-  {{if .TopicWildcard}}
-    {{range $i,$e := .TopicWildcard}}
-    {{if $i}},{{end}}
-        { "wildcard" :
-                { "topic" : "{{.}}"  }
-        }
+  {{ template "contentFilterOnUriPrefix.tmpl" . }}
+  {{ template "contentFilterOnTopic.tmpl" . }}
+  {{ template "contentFilterOnTopicWildcard.tmpl" . }}
+
+    ]}
+  }
+    {{if or .Upcoming .Published}}
+        ,
     {{end}}
-   {{end}}
-  {{if or .UriPrefix .Topic .TopicWildcard}} ]}
-  } {{if or .Upcoming .Published}}, {{end}}{{end}}
+
+ {{end}}
+
   {{if .Upcoming}}
     {{- template "contentFilterUpcoming.tmpl" . }}
   {{else if .Published}}
