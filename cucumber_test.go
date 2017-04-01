@@ -27,8 +27,8 @@ type Description struct {
 	NextRelease string
 	ReleaseDate time.Time
 	DatasetUri  string
-	Published   *bool `json:published,omitempty`
-	Cancelled   *bool `json:cancelled,omitempty`
+	Published   bool `json:published,omitempty`
+	Cancelled   bool `json:cancelled,omitempty`
 	Title string
 }
 
@@ -117,13 +117,14 @@ func search(params map[string]string) error {
 		panic(err)
 		return err
 	}
+	var localHttpResponse HttpResponse
 	ioutil.WriteFile("/tmp/testResponse.json", response, 0644)
-	err = json.Unmarshal(response, &httpResponse)
+	err = json.Unmarshal(response, &localHttpResponse)
 	if err != nil {
 		panic(err)
 		return err
 	}
-	httpResponse = HttpResponse{}
+	httpResponse = localHttpResponse
 
 
 	f,_  := ioutil.TempFile("/tmp","responseParsed")
@@ -189,8 +190,8 @@ func checkUpComing() error {
 	for _, r := range httpResponse.Responses {
 		for _, hit := range r.Hits.Hits {
 			description := hit.Source.Description
-			if !((!*description.Cancelled && !*description.Published) ||
-				!(*description.Published && description.ReleaseDate.Before(time.Now()))) {
+			if !((!description.Cancelled && !description.Published) ||
+				!(description.Published && description.ReleaseDate.Before(time.Now()))) {
 				str,_ := json.Marshal(hit)
 				return fmt.Errorf("Document is not Upcoming", string(str))
 			}
@@ -206,8 +207,9 @@ func checkPublished() error {
 	for _, r := range httpResponse.Responses {
 		for _, hit := range r.Hits.Hits {
 			description := hit.Source.Description
-			if !((!*description.Cancelled && *description.Published) ||
-				(*description.Cancelled && description.ReleaseDate.Before(time.Now()))) {
+
+			if !((!description.Cancelled && description.Published) ||
+				(description.Cancelled && description.ReleaseDate.Before(time.Now()))) {
 				str,_ := json.Marshal(hit)
 				return fmt.Errorf("Document is not Published", string(str))
 			}
