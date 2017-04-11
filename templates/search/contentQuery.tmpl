@@ -3,7 +3,7 @@
  {{- if .From -}}
  	"from" : {{- .From}},
  {{- end}}
- {{if .Size}} 
+ {{if .Size}}
  	 "size" : {{.Size}},{{end}}
  "query" : {
      "bool" : {
@@ -31,7 +31,7 @@
  			"post_tags":["</strong>"],
  			"fields":{"terms":{"fragment_size":0,"number_of_fragments":0},
  			"description.title":{"fragment_size":0,"number_of_fragments":0},
- 			"description.edition":{"fragment_size":0,"number_of_fragments":0},	
+ 			"description.edition":{"fragment_size":0,"number_of_fragments":0},
  			"description.summary":{"fragment_size":0,"number_of_fragments":0},
  			"description.metaDescription":{"fragment_size":0,"number_of_fragments":0},
  			"description.keywords":{"fragment_size":0,"number_of_fragments":0},

@@ -1,17 +1,18 @@
 package handlers
 
 import (
-	"net/http"
-	"github.com/ONSdigital/go-ns/log"
-	"text/template"
 	"bytes"
-	"strconv"
-	"github.com/tdewolff/minify/js"
-	"github.com/tdewolff/minify"
-	"regexp"
+	"net/http"
 	"net/url"
-	elasticsearch "github.com/ONSdigital/dp-search-query/elasticsearch"
+	"regexp"
+	"strconv"
+	"text/template"
 	"time"
+
+	elasticsearch "github.com/ONSdigital/dp-search-query/elasticsearch"
+	"github.com/ONSdigital/go-ns/log"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/js"
 )
 
 type SearchRequest struct {
@@ -56,7 +57,7 @@ var searchTemplates, _ = template.ParseFiles("templates/search/search.tmpl",
 	"templates/search/contentFilterPublished.tmpl",
 	"templates/search/contentFilterOnLatest.tmpl",
 	"templates/search/contentFilterOnFirstLetter.tmpl",
-	"templates/search/contentFilterOnReleaseDate.tmpl",
+	"templates/search/queryReleaseDate.tmpl",
 	"templates/search/contentFilterOnUriPrefix.tmpl",
 	"templates/search/contentFilterOnTopic.tmpl",
 	"templates/search/contentFilterOnTopicWildcard.tmpl",
@@ -95,7 +96,7 @@ func formatMultiQuery(rawQuery []byte) []byte {
 func paramGet(params url.Values, key string, defaultValue string) string {
 	value := params.Get(key)
 	if len(value) < 1 {
-		value = defaultValue;
+		value = defaultValue
 	}
 	return value
 }
@@ -103,7 +104,7 @@ func paramGet(params url.Values, key string, defaultValue string) string {
 func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 	value := params.Get(key)
 	if len(value) < 1 {
-		return defaultValue;
+		return defaultValue
 	}
 	return value == "true"
 }
@@ -122,28 +123,27 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	reqParams := SearchRequest{Term: params.Get("term"),
-		From: from,
-		Size: size,
-		Types: params["type"],
-		Index: params.Get("index"),
-		SortBy: paramGet(params, "sort", "relevance"),
-		Queries: queries,
-		AggregationField: paramGet(params, "aggField", "_type"),
-		Highlight: paramGetBool(params, "highlight", true),
-		FilterOnLatest: paramGetBool(params, "latest", false),
+		From:                from,
+		Size:                size,
+		Types:               params["type"],
+		Index:               params.Get("index"),
+		SortBy:              paramGet(params, "sort", "relevance"),
+		Queries:             queries,
+		AggregationField:    paramGet(params, "aggField", "_type"),
+		Highlight:           paramGetBool(params, "highlight", true),
+		FilterOnLatest:      paramGetBool(params, "latest", false),
 		FilterOnFirstLetter: params.Get("withFirstLetter"),
-		ReleasedAfter: params.Get("releasedAfter"),
-		ReleasedBefore: params.Get("releasedBefore"),
-		UriPrefix: params.Get("uriPrefix"),
-		Topic: params["topic"],
-		TopicWildcard: params["topicWildcard"],
-		Upcoming: paramGetBool(params, "upcoming", false),
-		Published: paramGetBool(params, "published", false),
-		Now: time.Now().UTC().Format(time.RFC3339),
+		ReleasedAfter:       params.Get("releasedAfter"),
+		ReleasedBefore:      params.Get("releasedBefore"),
+		UriPrefix:           params.Get("uriPrefix"),
+		Topic:               params["topic"],
+		TopicWildcard:       params["topicWildcard"],
+		Upcoming:            paramGetBool(params, "upcoming", false),
+		Published:           paramGetBool(params, "published", false),
+		Now:                 time.Now().UTC().Format(time.RFC3339),
 	}
-	log.Debug("SearchHandler", log.Data{"queries":queries, "request":reqParams})
+	log.Debug("SearchHandler", log.Data{"queries": queries, "request": reqParams})
 	var doc bytes.Buffer
-
 
 	err = searchTemplates.Execute(&doc, reqParams)
 
@@ -158,5 +158,6 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=utf-8")
+	//fmt.Printf("%s", string(responseData))
 	w.Write(responseData)
 }

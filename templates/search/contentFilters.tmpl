@@ -3,8 +3,6 @@
 "filter" : [
 {{ template "contentFilterOnLatest.tmpl" . }}
 {{ template "contentFilterOnFirstLetter.tmpl" . }}
-{{ template "contentFilterOnReleaseDate.tmpl" . }}
-
 {{if or .UriPrefix .Topic .TopicWildcard}}
   { "bool": { "should": [
 
@@ -12,6 +10,9 @@
   {{ template "contentFilterOnTopic.tmpl" . }}
   {{ template "contentFilterOnTopicWildcard.tmpl" . }}
 
+    ],
+    "must":[
+      {{ template "contentFilterOnReleaseDate.tmpl" .}}
     ]}
   }
     {{if or .Upcoming .Published}}

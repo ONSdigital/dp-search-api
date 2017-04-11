@@ -8,8 +8,17 @@
                      {{- template "matchAll.tmpl" .}}
                   {{- end}}
              }
-        {{template "countFilterLatest.tmpl" .}}
-        }
+        {{- template "countFilterLatest.tmpl" .}}
+        {{-  if .UriPrefix }}
+          ,"filter": [{
+	        "prefix": {
+                    "uri": "{{.UriPrefix}}"
+                }}
+                {{- if or .ReleasedBefore .ReleasedAfter}}, {{- end}}
+                {{ template "contentFilterOnReleaseDate.tmpl" .}}
+                ]
+	      {{end}}
+      }
    },
   "size": 0,
   "aggregations": {

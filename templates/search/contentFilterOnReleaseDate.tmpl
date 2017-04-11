@@ -1,8 +1,15 @@
-{{if .FilterOnFirstLetter  }}
-   {
-        "term": {
-           "description.title.title_first_letter": "{{.FilterOnFirstLetter}}"
-           }
+{{- if or .ReleasedBefore .ReleasedAfter }}
+    {
+    "range": {
+         "description.releaseDate": {
+             {{- if .ReleasedAfter}}
+             "from": "{{.ReleasedAfter}}"
+             {{- end}}
+             {{- if and .ReleasedBefore .ReleasedAfter }},{{- end}}
+             {{- if .ReleasedBefore}}
+             "to": "{{.ReleasedBefore}}"
+             {{- end}}
+         }
+     }
    }
-    {{if or .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard  .Upcoming .Published}},{{end}}
- {{end}}
+ {{- end}}
