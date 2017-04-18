@@ -1,19 +1,20 @@
 package main
 
 import (
-	"os"
-	"github.com/ONSdigital/go-ns/log"
-	"github.com/ONSdigital/dp-search-query/handlers"
-	"github.com/gorilla/pat"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/ONSdigital/dp-search-query/handlers"
+	"github.com/ONSdigital/go-ns/log"
+	"github.com/gorilla/pat"
 )
 
 var server *http.Server
 
 func main() {
 	bindAddr := os.Getenv("BIND_ADDR")
-	log.Debug(bindAddr,nil)
+	log.Debug(bindAddr, nil)
 	if len(bindAddr) == 0 {
 		bindAddr = ":10001"
 	}
@@ -22,9 +23,10 @@ func main() {
 
 	router := pat.New()
 
-	log.Debug("main", log.Data{"StartingServer":"Start"})
+	log.Debug("main", log.Data{"StartingServer": "Start"})
 	router.Get("/search", handlers.SearchHandler)
 	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
+	router.Get("/data", handlers.DataLookupHandler)
 	server = &http.Server{
 		Addr:         bindAddr,
 		Handler:      router,
@@ -33,14 +35,13 @@ func main() {
 	}
 	var err error
 	if err = server.ListenAndServe(); err != nil {
-		log.Debug("main bindevent", log.Data{"failed to bind to":bindAddr})
+		log.Debug("main bindevent", log.Data{"failed to bind to": bindAddr})
 		log.Error(err, nil)
 		os.Exit(1)
 	}
 
 }
 
-func stop(){
+func stop() {
 	server.Close()
 }
-
