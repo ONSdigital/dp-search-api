@@ -1,15 +1,25 @@
 package handlers
 
 import (
-	"net/http"
-	"text/template"
 	"bytes"
+	"net/http"
 	"strings"
-	elasticsearch "github.com/ONSdigital/dp-search-query/elasticsearch"
+	"text/template"
+
+	"github.com/ONSdigital/dp-search-query/elasticsearch"
+	"github.com/ONSdigital/go-ns/log"
 )
 
 type TimeseriesLookupRequest struct {
 	Cdid string
+}
+
+var timeseriesTemplate *template.Template
+
+func SetupTimeseries() error {
+	templates, err := template.ParseFiles("templates/timeseries/lookup.tmpl")
+	timeseriesTemplate = templates
+	return err
 }
 
 func TimeseriesLookupHandler(w http.ResponseWriter, req *http.Request) {
@@ -17,22 +27,19 @@ func TimeseriesLookupHandler(w http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	reqParams := TimeseriesLookupRequest{Cdid: strings.ToLower(params.Get(":cdid"))}
 
-	tmpl, err := template.ParseFiles("templates/timeseries/lookup.tmpl")
-
-	if err != nil {
-		panic(err)
-	}
 	var doc bytes.Buffer
-	err = tmpl.Execute(&doc, reqParams)
-
+	err := timeseriesTemplate.Execute(&doc, reqParams)
 	if err != nil {
-		panic(err)
+		log.Debug("Failed to create timeseries query from template", log.Data{"Error": err.Error(), "Params": reqParams})
+		http.Error(w, "Failed to create query", http.StatusInternalServerError)
+		return
 	}
 
-	responseData,err := elasticsearch.Search("ons", "timeseries", doc.Bytes())
-
+	responseData, err := elasticsearch.Search("ons", "timeseries", doc.Bytes())
 	if err != nil {
-		panic(err)
+		log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
+		http.Error(w, "Failed to run timeseries query", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json;charset=utf-8")

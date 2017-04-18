@@ -1,21 +1,27 @@
-package config
+package elasticsearch
 
 import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
-	"os"
 )
 
-var ElasticURL = getEnv("ELASTIC_URL", "http://localhost:9200/")
+var elasticURL string
 
-func getEnv(key string, defaultValue string) string {
-	envValue := os.Getenv(key)
-	if len(envValue) == 0 {
-		envValue = defaultValue
-	}
-	return envValue
+func Setup(url string) {
+	elasticURL = url
 }
+
+func MultiSearch(index string, docType string, request []byte) ([]byte, error) {
+	action := "_msearch"
+	return post(index, docType, action, request)
+}
+
+func Search(index string, docType string, request []byte) ([]byte, error) {
+	action := "_search"
+	return post(index, docType, action, request)
+}
+
 func buildContext(index string, docType string) string {
 	context := ""
 	if len(index) > 0 {
@@ -25,12 +31,11 @@ func buildContext(index string, docType string) string {
 		}
 	}
 	return context
-
 }
 
 func post(index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("POST", ElasticURL+buildContext(index, docType)+action, reader)
+	req, err := http.NewRequest("POST", elasticURL+buildContext(index, docType)+action, reader)
 	if err != nil {
 		return nil, err
 	}
@@ -47,18 +52,6 @@ func post(index string, docType string, action string, request []byte) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
-	ioutil.WriteFile("/tmp/request.json", request, 0644)
 	response, err := ioutil.ReadAll(resp.Body)
-	ioutil.WriteFile("/tmp/response.json", response, 0644)
-	return response, nil
-}
-
-func MultiSearch(index string, docType string, request []byte) ([]byte, error) {
-	action := "_msearch"
-	return post(index, docType, action, request)
-}
-
-func Search(index string, docType string, request []byte) ([]byte, error) {
-	action := "_search"
-	return post(index, docType, action, request)
+	return response, err
 }

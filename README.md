@@ -1,7 +1,11 @@
 dp-search-query
 ================
 
-A Go application microservice to provide query functionality on to the ONSWebsite ElasticSearch :
+A Go application microservice to provide query functionality on to the ONS Website
+
+## Environment variables
+* `PORT` defaults to ":10001"
+* `ELASTIC_SEARCH_URL` defaults to "http://localhost:9200/"
 
 ## /search?
 
