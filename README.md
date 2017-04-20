@@ -3,10 +3,6 @@ dp-search-query
 
 A Go application microservice to provide query functionality on to the ONS Website
 
-## Environment variables
-* `PORT` defaults to ":10001"
-* `ELASTIC_SEARCH_URL` defaults to "http://localhost:9200/"
-
 ## /search?
 
 URL Parameters
@@ -40,12 +36,20 @@ environment variables, or with a link to a configuration guide.
 
 | Environment variable | Default | Description
 | -------------------- | ------- | -----------
-| BIND_ADDR            | :10001  | The host and port to bind to
+| BIND_ADDR            | 10001  | The host and port to bind to
 | ELASTIC_URL	       | "http://localhost:9200/" | Http url of the ElasticSearch server
 
+## Releasing
+To package up the API uses `make package`
 
-`sudo sysctl -w vm.max_map_count=262144`
+## Deploying
+Export the following variables;
+* export `DATA_CENTER` to the nomad datacenter to use.
+* export `S3_TAR_FILE` to a S3 location on where a release file can be found.
+* export `ELASTIC_SEARCH_URL` to elastic search url.
 
+Then run `make nomad` this shall create a nomad plan within the root directory
+called `dp-search-query.nomad`
 
 ### Contributing
 

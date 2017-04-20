@@ -13,7 +13,7 @@ import (
 
 var server *http.Server
 var elasticURL = getEnv("ELASTIC_URL", "http://localhost:9200/")
-var bindAddr = getEnv("PORT", ":10001")
+var bindAddr = getEnv("PORT", "10001")
 
 func getEnv(key string, defaultValue string) string {
 	envValue := os.Getenv(key)
@@ -48,7 +48,7 @@ func main() {
 	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
 	router.Get("/data", handlers.DataLookupHandler)
 	server = &http.Server{
-		Addr:         bindAddr,
+		Addr:         ":" + bindAddr,
 		Handler:      router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,

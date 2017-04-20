@@ -1,4 +1,6 @@
-# Created by .ignore support plugin (hsz.mobi)
+dp-search-query.nomad
+dp-search-query.nomad.bak
+*.tar.gz
 .idea
 /vendor/github.com/
 /build/
