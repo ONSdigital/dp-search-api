@@ -42,7 +42,8 @@ var searchTemplates *template.Template
 func SetupSearch() error {
 	//Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	//the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
-	templates, err := template.ParseFiles("templates/search/search.tmpl",
+	templates, err := template.ParseFiles(
+		"templates/search/search.tmpl",
 		"templates/search/contentQuery.tmpl",
 		"templates/search/matchAll.tmpl",
 		"templates/search/contentHeader.tmpl",
@@ -141,7 +142,8 @@ func SearchHandler(w http.ResponseWriter, req *http.Request) {
 		queries = params["query"]
 	}
 
-	reqParams := searchRequest{Term: params.Get("term"),
+	reqParams := searchRequest{
+		Term:                params.Get("term"),
 		From:                from,
 		Size:                size,
 		Types:               params["type"],
