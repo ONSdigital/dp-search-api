@@ -3,20 +3,18 @@
     "should":[
           {
             "bool": {
-              "must": [
-                {
-                  "term": {
-                    "description.cancelled": true
-                  }
-                },
-                {
-                  "range": {
-                    "description.releaseDate": {
-                      "lte": "{{.Now}}"
-                    }
+              "must_not": {
+                "term": {
+                  "description.cancelled": true
+                }
+              },
+              "must": {
+                "range": {
+                  "description.releaseDate": {
+                    "lte": "{{.Now}}"
                   }
                 }
-              ]
+              }
             }
           },
           {
