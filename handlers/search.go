@@ -70,7 +70,8 @@ func SetupSearch() error {
 		"templates/search/sortByReleaseDate.tmpl",
 		"templates/search/sortByReleaseDateAsc.tmpl",
 		"templates/search/sortByReleaseDateAsc.tmpl",
-		"templates/search/sortByFirstLetter.tmpl")
+		"templates/search/sortByFirstLetter.tmpl",
+	)
 
 	searchTemplates = templates
 	return err
