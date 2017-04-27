@@ -1,5 +1,4 @@
 dp-search-query.nomad
-dp-search-query.nomad.bak
 *.tar.gz
 .idea
 /vendor/github.com/
