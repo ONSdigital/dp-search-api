@@ -4,4 +4,5 @@
     {{else}}
         "index":"ons"
     {{end}}
+    {{if .Types}},"index":"ons", "type" : [{{range $i,$e := .Types}}{{if $i}},{{end}}"{{.}}"{{end}}]{{end}}
 }
