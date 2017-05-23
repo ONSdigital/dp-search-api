@@ -3,6 +3,7 @@ package elasticsearch
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -33,6 +34,10 @@ func buildContext(index string, docType string) string {
 	return context
 }
 
+func GetStatus() ([]byte, error) {
+	return get("_cat", "health", "", nil)
+}
+
 func post(index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
 	req, err := http.NewRequest("POST", elasticURL+buildContext(index, docType)+action, reader)
@@ -53,5 +58,23 @@ func post(index string, docType string, action string, request []byte) ([]byte, 
 		return nil, err
 	}
 	response, err := ioutil.ReadAll(resp.Body)
+
+	return response, err
+}
+
+func get(index string, docType string, action string, request []byte) ([]byte, error) {
+	reader := bytes.NewReader(request)
+	req, err := http.NewRequest("GET", elasticURL+buildContext(index, docType)+action, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	response, err := ioutil.ReadAll(resp.Body)
+
 	return response, err
 }

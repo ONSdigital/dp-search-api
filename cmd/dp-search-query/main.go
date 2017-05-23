@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ONSdigital/dp-content-api/utils"
 	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/dp-search-query/handlers"
 	"github.com/ONSdigital/go-ns/log"
@@ -25,6 +26,7 @@ func getEnv(key string, defaultValue string) string {
 
 func main() {
 	log.Namespace = "dp-search-query"
+	healthCheckEndpoint := utils.GetEnvironmentVariable("HEALTHCHECK_ENDPOINT", "/healthcheck")
 	log.Debug("Starting server", log.Data{"Port": bindAddr, "ElasticSearchUrl": elasticURL})
 
 	// Setup libraries and handlers
@@ -47,6 +49,7 @@ func main() {
 	router.Get("/search", handlers.SearchHandler)
 	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
 	router.Get("/data", handlers.DataLookupHandler)
+	router.Get(healthCheckEndpoint, handlers.HealthCheckHandlerCreator())
 	server = &http.Server{
 		Addr:         ":" + bindAddr,
 		Handler:      router,
