@@ -15,9 +15,12 @@ package: build
 	tar -zcf $(TGZ_FILE) -C $(BUILD_ARCH) .
 
 nomad:
-	@sed	-e 's,DATA_CENTER,$(DATA_CENTER),g' \
+	@healthcheck_port=$${HEALTHCHECK_ADDR#*:};  \
+	sed	-e 's,DATA_CENTER,$(DATA_CENTER),g' \
 		-e 's,S3_TAR_FILE,$(S3_TAR_FILE),g' \
 		-e 's,ELASTIC_SEARCH_URL,$(ELASTIC_URL),g' \
+		-e 's,HEALTHCHECK_PORT,'$$healthcheck_port',g' \
+		-e 's,HEALTHCHECK_ENDPOINT,$(HEALTHCHECK_ENDPOINT),g' \
 		< dp-search-query-template.nomad > dp-search-query.nomad
 hash:
 	@git rev-parse --short HEAD
