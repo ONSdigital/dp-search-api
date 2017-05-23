@@ -38,6 +38,7 @@ environment variables, or with a link to a configuration guide.
 | -------------------- | ------- | -----------
 | BIND_ADDR            | 10001  | The host and port to bind to
 | ELASTIC_URL	       | "http://localhost:9200/" | Http url of the ElasticSearch server
+| HEALTHCHECK_ENDPOINT | /healthcheck             | endpoint that reports health status
 
 ## Releasing
 To package up the API uses `make package`
