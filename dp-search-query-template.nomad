@@ -19,7 +19,8 @@ job "dp-search-query" {
       }
       env {
         ELASTIC_URL = "ELASTIC_SEARCH_URL"
-        PORT = "$NOMAD_PORT_http"
+        PORT = "${NOMAD_PORT_http}"
+        HUMAN_LOG = "HUMAN_LOG_FLAG"
       }
       driver = "exec" // To run on OSX change this to raw_exec
       config {
@@ -34,7 +35,7 @@ job "dp-search-query" {
         }
         }
       service {
-          port = "HEALTHCHECK_PORT"
+          port = "http"
           check {
               type     = "http"
               path     = "HEALTHCHECK_ENDPOINT"
