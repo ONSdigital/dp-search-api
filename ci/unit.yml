@@ -1,0 +1,16 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.8.3
+
+inputs:
+  - name: dp-search-query
+    path: go/src/github.com/ONSdigital/dp-search-query
+
+run:
+  path: go/src/github.com/ONSdigital/dp-search-query/ci/scripts/unit.sh
