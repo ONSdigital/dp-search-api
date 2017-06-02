@@ -1,11 +1,12 @@
+MAIN=dp-search-query
+SHELL=bash
+
 export GOOS?=$(shell go env GOOS)
 export GOARCH?=$(shell go env GOARCH)
 thisOS:=$(shell uname -s)
 
-MAIN=dp-search-query
-
 HEALTHCHECK_ENDPOINT?=/healthcheck
-DATA_CENTER?=dc1
+S3_REGION?=eu-west-1
 DEV?=
 
 CMD_DIR?=cmd
@@ -15,15 +16,18 @@ HASH?=$(shell make hash)
 DATE:=$(shell date '+%Y%m%d-%H%M%S')
 TGZ_FILE=$(MAIN)-$(GOOS)-$(GOARCH)-$(DATE)-$(HASH).tar.gz
 
-NOMAD?=
 NOMAD_SRC_DIR?=nomad
 NOMAD_PLAN_TARGET?=$(BUILD)
 NOMAD_PLAN=$(NOMAD_PLAN_TARGET)/$(MAIN).nomad
 
 ifdef DEV
+DATA_CENTER?=dc1
 HUMAN_LOG?=1
+NOMAD?=
 else
+DATA_CENTER?=$(S3_REGION)
 HUMAN_LOG?=
+NOMAD?=1
 endif
 
 ifeq ($(thisOS),Darwin)
@@ -69,9 +73,11 @@ waitOnElastic:
 	pause.sh
 
 
-test: 	export BIND_ADDR = :10002
-test:   export ELASTIC_URL = http://localhost:9999/
+test test-integration: export BIND_ADDR = :10002
+test test-integration: export ELASTIC_URL = http://localhost:9999/
 test:
+	@echo Please run: make test-integration
+test-integration:
 	./waitForElastic.sh
 	go test
 
