@@ -40,7 +40,7 @@ endif
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
 	go build -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) $(CMD_DIR)/$(MAIN)/main.go
-	cp -r templates $(BUILD_ARCH)/templates
+	cp -r templates $(BUILD_ARCH)/
 
 package: build
 	tar -zcf $(TGZ_FILE) -C $(BUILD_ARCH) .
