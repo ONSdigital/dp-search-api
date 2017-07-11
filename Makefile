@@ -12,7 +12,7 @@ DEV?=
 CMD_DIR?=cmd
 BUILD?=build
 BUILD_ARCH=$(BUILD)/$(GOOS)-$(GOARCH)
-BIN_DIR?=.
+BIN_DIR?=bin
 HASH?=$(shell make hash)
 DATE:=$(shell date '+%Y%m%d-%H%M%S')
 TGZ_FILE=$(MAIN)-$(GOOS)-$(GOARCH)-$(DATE)-$(HASH).tar.gz
@@ -67,7 +67,7 @@ hash:
 	@git rev-parse --short HEAD
 
 debug: build
-	HUMAN_LOG=$(HUMAN_LOG) ./$(BUILD_ARCH)/$(MAIN)
+	HUMAN_LOG=$(HUMAN_LOG) ./$(BUILD_ARCH)/$(BIN_DIR)/$(MAIN)
 
 waitOnElastic:   export ELASTIC_URL = http://localhost:9999/
 waitOnElastic:
