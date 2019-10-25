@@ -32,10 +32,10 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "nVbb+x6nwEFqcpNDF+aw8WHy+k4=",
+			"checksumSHA1": "g9flYl+PBs6cYflFY3EpG6IcJGM=",
 			"path": "github.com/ONSdigital/go-ns/log",
-			"revision": "bc66177e78ff92143848188c78ac5f112ce8ef4c",
-			"revisionTime": "2017-01-23T15:55:35Z"
+			"revision": "30bf55ba5a05f1d425fba4607f1af7d0e8a89cae",
+			"revisionTime": "2019-09-19T16:09:22Z"
 		},
 		{
 			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
@@ -66,6 +66,12 @@
 			"path": "github.com/justinas/alice",
 			"revision": "1051eaf52fcafdd87ead59d28b065f1fcb8274ec",
 			"revisionTime": "2016-09-10T10:38:22Z"
+		},
+		{
+			"checksumSHA1": "i1+Ef2OakJK8UC7zk9N7a0w+9J4=",
+			"path": "github.com/kelseyhightower/envconfig",
+			"revision": "0b417c4ec4a8a82eecc22a1459a504aa55163d61",
+			"revisionTime": "2019-05-24T18:54:01Z"
 		},
 		{
 			"checksumSHA1": "BOFetxMdGQVex14gI977F2aI9sM=",

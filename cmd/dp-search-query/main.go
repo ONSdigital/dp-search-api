@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ONSdigital/dp-content-api/utils"
+	"github.com/ONSdigital/dp-search-query/config"
 	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/dp-search-query/handlers"
 	"github.com/ONSdigital/go-ns/log"
@@ -13,8 +13,6 @@ import (
 )
 
 var server *http.Server
-var elasticURL = getEnv("ELASTIC_URL", "http://localhost:9200/")
-var bindAddr = getEnv("PORT", "10001")
 
 func getEnv(key string, defaultValue string) string {
 	envValue := os.Getenv(key)
@@ -26,11 +24,20 @@ func getEnv(key string, defaultValue string) string {
 
 func main() {
 	log.Namespace = "dp-search-query"
-	healthCheckEndpoint := utils.GetEnvironmentVariable("HEALTHCHECK_ENDPOINT", "/healthcheck")
-	log.Debug("Starting server", log.Data{"Port": bindAddr, "ElasticSearchUrl": elasticURL})
+
+	cfg, err := config.Get()
+	if err != nil {
+		log.Error(err, nil)
+		os.Exit(1)
+	}
+
+	// sensitive fields are omitted from config.String().
+	log.Info("config on startup", log.Data{"config": cfg})
+
+	log.Debug("Starting server", log.Data{"Port": cfg.BindAddr, "ElasticSearchUrl": cfg.ElasticSearchAPIURL})
 
 	// Setup libraries and handlers
-	elasticsearch.Setup(elasticURL)
+	elasticsearch.Setup(cfg.ElasticSearchAPIURL)
 	errSearch := handlers.SetupSearch()
 	if errSearch != nil {
 		log.ErrorC("Failed to setup search templates", errSearch, log.Data{})
@@ -49,15 +56,15 @@ func main() {
 	router.Get("/search", handlers.SearchHandler)
 	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
 	router.Get("/data", handlers.DataLookupHandler)
-	router.Get(healthCheckEndpoint, handlers.HealthCheckHandlerCreator())
+	router.Get("/healthcheck", handlers.HealthCheckHandlerCreator()) // TODO Replace with healthcheck middleware
 	server = &http.Server{
-		Addr:         ":" + bindAddr,
+		Addr:         cfg.BindAddr,
 		Handler:      router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	if err := server.ListenAndServe(); err != nil {
-		log.ErrorC("Failed to bind to port address", err, log.Data{"Port": bindAddr})
+		log.ErrorC("Failed to bind to port address", err, log.Data{"Port": cfg.BindAddr})
 	}
 }
