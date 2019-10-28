@@ -21,12 +21,6 @@
 			"revisionTime": "2017-05-24T13:04:43Z"
 		},
 		{
-			"checksumSHA1": "gTUAiX6rWM7SIeaqx7Q1Qcw3twI=",
-			"path": "github.com/ONSdigital/dp-content-api/utils",
-			"revision": "d2c376721131a37c3f84ef740b5c3c089664d063",
-			"revisionTime": "2017-06-01T15:46:23Z"
-		},
-		{
 			"checksumSHA1": "8r2GSHzQ11neZGMY7d4Rz+O6sUs=",
 			"path": "github.com/ONSdigital/dp-search-query",
 			"revision": ""
