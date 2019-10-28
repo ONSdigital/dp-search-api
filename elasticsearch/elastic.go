@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 var elasticURL string
 
+//Setup initialises the elasticsearch module with a url
 func Setup(url string) {
-	elasticURL = url
+	elasticURL = strings.TrimRight(url, "/")
 }
 
 func MultiSearch(index string, docType string, request []byte) ([]byte, error) {
@@ -39,7 +41,7 @@ func GetStatus() ([]byte, error) {
 
 func post(index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("POST", elasticURL+buildContext(index, docType)+action, reader)
+	req, err := http.NewRequest("POST", elasticURL+"/"+buildContext(index, docType)+action, reader)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func post(index string, docType string, action string, request []byte) ([]byte, 
 
 func get(index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("GET", elasticURL+buildContext(index, docType)+action, reader)
+	req, err := http.NewRequest("GET", elasticURL+"/"+buildContext(index, docType)+action, reader)
 	if err != nil {
 		return nil, err
 	}
