@@ -24,7 +24,7 @@ func TestSpec(t *testing.T) {
 			})
 		})
 
-		Convey("When we get the cofig as a string", func() {
+		Convey("When we get the config as a string", func() {
 			cfgString := cfg.String()
 
 			Convey("The string should be valid JSON", func() {

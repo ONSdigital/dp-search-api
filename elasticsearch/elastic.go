@@ -9,7 +9,7 @@ import (
 
 var elasticURL string
 
-//Setup initialises the elasticsearch module with a url
+//Setup initialises the elasticsearch ,module with a url, stripping any trailing slashes
 func Setup(url string) {
 	elasticURL = strings.TrimRight(url, "/")
 }
