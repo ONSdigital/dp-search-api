@@ -2,14 +2,16 @@ package config
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
 // Config is the search query handler config
 type Config struct {
-	BindAddr            string `envconfig:"BIND_ADDR"`
-	ElasticSearchAPIURL string `envconfig:"ELASTIC_SEARCH_URL"`
+	BindAddr                string        `envconfig:"BIND_ADDR"`
+	ElasticSearchAPIURL     string        `envconfig:"ELASTIC_SEARCH_URL"`
+	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 }
 
 var cfg *Config
@@ -21,8 +23,9 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
-		BindAddr:            ":23900",
-		ElasticSearchAPIURL: "http://localhost:9200",
+		BindAddr:                ":23900",
+		ElasticSearchAPIURL:     "http://localhost:9200",
+		GracefulShutdownTimeout: 5 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

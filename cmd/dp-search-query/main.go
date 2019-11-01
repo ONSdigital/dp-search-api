@@ -1,26 +1,16 @@
 package main
 
 import (
-	"net/http"
+	"context"
+	"fmt"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
+	"github.com/ONSdigital/dp-search-query/api"
 	"github.com/ONSdigital/dp-search-query/config"
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
-	"github.com/ONSdigital/dp-search-query/handlers"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/gorilla/pat"
 )
-
-var server *http.Server
-
-func getEnv(key string, defaultValue string) string {
-	envValue := os.Getenv(key)
-	if len(envValue) == 0 {
-		envValue = defaultValue
-	}
-	return envValue
-}
 
 func main() {
 	log.Namespace = "dp-search-query"
@@ -34,37 +24,30 @@ func main() {
 	// sensitive fields are omitted from config.String().
 	log.Info("config on startup", log.Data{"config": cfg})
 
-	log.Debug("Starting server", log.Data{"Port": cfg.BindAddr, "ElasticSearchUrl": cfg.ElasticSearchAPIURL})
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	// Setup libraries and handlers
-	elasticsearch.Setup(cfg.ElasticSearchAPIURL)
-	errSearch := handlers.SetupSearch()
-	if errSearch != nil {
-		log.ErrorC("Failed to setup search templates", errSearch, log.Data{})
-	}
-	errData := handlers.SetupData()
-	if errData != nil {
-		log.ErrorC("Failed to setup data templates", errData, log.Data{})
-	}
-	errTimeseries := handlers.SetupTimeseries()
-	if errTimeseries != nil {
-		log.ErrorC("Failed to setup timeseries templates", errTimeseries, log.Data{})
+	apiErrors := make(chan error, 1)
+
+	api.CreateAndInitialise(cfg.BindAddr, cfg.ElasticSearchAPIURL, apiErrors)
+
+	// blocks until a fatal error occurs
+	select {
+	case err := <-apiErrors:
+		log.ErrorC("api error received", err, nil)
+	case <-signals:
+		log.Debug("os signal received", nil)
 	}
 
-	// Setup web handlers for the search query services
-	router := pat.New()
-	router.Get("/search", handlers.SearchHandler)
-	router.Get("/timeseries/{cdid}", handlers.TimeseriesLookupHandler)
-	router.Get("/data", handlers.DataLookupHandler)
-	router.Get("/healthcheck", handlers.HealthCheckHandlerCreator()) // TODO Replace with healthcheck middleware
-	server = &http.Server{
-		Addr:         cfg.BindAddr,
-		Handler:      router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
+	// Gracefully shutdown the application closing any open resources.
+	log.Info(fmt.Sprintf("shutdown with timeout: %s", cfg.GracefulShutdownTimeout), nil)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
-	if err := server.ListenAndServe(); err != nil {
-		log.ErrorC("Failed to bind to port address", err, log.Data{"Port": cfg.BindAddr})
-	}
+	// stop any incoming requests before closing any outbound connections
+	api.Close(ctx)
+
+	log.Info("shutdown complete", nil)
+
+	cancel()
+	os.Exit(1)
 }
