@@ -2,6 +2,7 @@ FROM onsdigital/dp-concourse-tools-ubuntu
 
 WORKDIR /app/
 
-ADD dp-search-query .
+COPY templates templates
+COPY dp-search-query .
 
 CMD ./dp-search-query
