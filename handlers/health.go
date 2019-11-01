@@ -30,7 +30,7 @@ func HealthCheckHandlerCreator() func(http.ResponseWriter, *http.Request) {
 		res, err := elasticsearch.GetStatus()
 		if err != nil {
 			healthIssue = err.Error()
-		} else if !strings.Contains(string(res), " green ") {
+		} else if !(strings.Contains(string(res), " green ") || strings.Contains(string(res), " yellow ")) {
 			healthIssue = string(res)
 		}
 
