@@ -30,7 +30,7 @@ func HealthCheckHandlerCreator() func(http.ResponseWriter, *http.Request) {
 		res, err := elasticsearch.GetStatus()
 		if err != nil {
 			healthIssue = err.Error()
-		} else if !(strings.Contains(string(res), " green ") || strings.Contains(string(res), " yellow ")) {
+		} else if !isElasticSearchHealthy(string(res)) {
 			healthIssue = string(res)
 		}
 
@@ -49,4 +49,16 @@ func HealthCheckHandlerCreator() func(http.ResponseWriter, *http.Request) {
 		// return json
 		fmt.Fprintf(w, string(body))
 	}
+}
+
+func isElasticSearchHealthy(res string) bool {
+	if strings.Contains(res, " green ") {
+		return true
+	}
+
+	if strings.Contains(res, " yellow ") {
+		return true
+	}
+
+	return false
 }
