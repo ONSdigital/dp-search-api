@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,18 +28,21 @@ func main() {
 
 	apiErrors := make(chan error, 1)
 
-	api.CreateAndInitialise(cfg.BindAddr, cfg.ElasticSearchAPIURL, apiErrors)
+	if err := api.CreateAndInitialise(cfg.BindAddr, cfg.ElasticSearchAPIURL, apiErrors); err != nil {
+		log.ErrorC("Error initialising API", err, nil)
+		os.Exit(1)
+	}
 
 	// blocks until a fatal error occurs
 	select {
 	case err := <-apiErrors:
-		log.ErrorC("api error received", err, nil)
+		log.ErrorC("search-query api error received", err, nil)
 	case <-signals:
 		log.Debug("os signal received", nil)
 	}
 
 	// Gracefully shutdown the application closing any open resources.
-	log.Info(fmt.Sprintf("shutdown with timeout: %s", cfg.GracefulShutdownTimeout), nil)
+	log.Info("Commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout})
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
 	// stop any incoming requests before closing any outbound connections

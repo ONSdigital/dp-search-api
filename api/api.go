@@ -7,6 +7,7 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 var httpServer *server.Server
@@ -17,21 +18,24 @@ type SearchQueryAPI struct {
 }
 
 // CreateAndInitialise initiates a new Search Query API
-func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan error) {
+func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan error) error {
 	router := mux.NewRouter()
-	// Setup libraries and handlers
+
 	elasticsearch.Setup(elasticSearchAPIURL)
+
 	errSearch := SetupSearch()
 	if errSearch != nil {
-		log.ErrorC("Failed to setup search templates", errSearch, log.Data{})
+		return errors.Wrap(errSearch, "Failed to setup search templates")
 	}
+
 	errData := SetupData()
 	if errData != nil {
-		log.ErrorC("Failed to setup data templates", errData, log.Data{})
+		return errors.Wrap(errData, "Failed to setup data templates")
 	}
+
 	errTimeseries := SetupTimeseries()
 	if errTimeseries != nil {
-		log.ErrorC("Failed to setup timeseries templates", errTimeseries, log.Data{})
+		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
 	api := NewSearchQueryAPI(router)
@@ -42,12 +46,14 @@ func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan er
 	httpServer.HandleOSSignals = false
 
 	go func() {
-		log.Debug("Starting api...", nil)
+		log.Debug("Starting search-query api...", nil)
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.ErrorC("api http server returned error", err, nil)
+			log.ErrorC("search-query api http server returned error", err, nil)
 			errorChan <- err
 		}
 	}()
+
+	return nil
 }
 
 // NewSearchQueryAPI returns a new Search Query API struct after registerig the routes
@@ -62,11 +68,10 @@ func NewSearchQueryAPI(router *mux.Router) *SearchQueryAPI {
 }
 
 func (api *SearchQueryAPI) routes() {
-	router := api.Router
-	router.HandleFunc("/search", SearchHandler).Methods("GET")
-	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandler).Methods("GET")
-	router.HandleFunc("/data", DataLookupHandler).Methods("GET")
-	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET") // TODO Replace with healthcheck middleware
+	api.Router.HandleFunc("/search", SearchHandler).Methods("GET")
+	api.Router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandler).Methods("GET")
+	api.Router.HandleFunc("/data", DataLookupHandler).Methods("GET")
+	api.Router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET")
 }
 
 // Close represents the graceful shutting down of the http server
