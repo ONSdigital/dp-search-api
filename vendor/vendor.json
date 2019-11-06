@@ -92,6 +92,12 @@
 			"revisionTime": "2017-02-06T15:57:36Z"
 		},
 		{
+			"checksumSHA1": "I7hloldMJZTqUx6hbVDp5nk9fZQ=",
+			"path": "github.com/pkg/errors",
+			"revision": "27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7",
+			"revisionTime": "2019-02-27T00:00:51Z"
+		},
+		{
 			"checksumSHA1": "AE3KrY+HDFH2rHWhIwV96bJIlHw=",
 			"path": "github.com/smartystreets/assertions",
 			"revision": "8df9578143a50c65c2675d8e3207386ca9375d31",
