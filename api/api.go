@@ -26,6 +26,11 @@ type ElasticSearcher interface {
 
 // CreateAndInitialise initiates a new Search Query API
 func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, errorChan chan error) error {
+
+	if elasticSearchClient == nil {
+		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
+	}
+
 	router := mux.NewRouter()
 
 	errSearch := SetupSearch()
@@ -41,10 +46,6 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 	errTimeseries := SetupTimeseries()
 	if errTimeseries != nil {
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
-	}
-
-	if elasticSearchClient == nil {
-		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
 	}
 
 	api := NewSearchQueryAPI(router, elasticSearchClient)
