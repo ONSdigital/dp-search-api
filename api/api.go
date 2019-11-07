@@ -61,7 +61,7 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 	return nil
 }
 
-// NewSearchQueryAPI returns a new Search Query API struct after registerig the routes
+// NewSearchQueryAPI returns a new Search Query API struct after registering the routes
 func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher) *SearchQueryAPI {
 
 	api := &SearchQueryAPI{

@@ -118,7 +118,7 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 	return value == "true"
 }
 
-// SearchHandlerFunc retruns a http handler function handling search api requests.
+// SearchHandlerFunc returns a http handler function handling search api requests.
 func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		params := req.URL.Query()
