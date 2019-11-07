@@ -43,6 +43,10 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
+	if elasticSearchClient == nil {
+		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
+	}
+
 	api := NewSearchQueryAPI(router, elasticSearchClient)
 
 	httpServer = server.New(bindAddr, api.Router)

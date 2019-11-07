@@ -226,6 +226,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 }
 
 func setupTestTemplates(rawtemplate string) {
-	temp, _ := template.New("search.tmpl").Parse(rawtemplate)
+	temp, err := template.New("search.tmpl").Parse(rawtemplate)
+	So(err, ShouldBeNil)
 	searchTemplates = temp
 }
