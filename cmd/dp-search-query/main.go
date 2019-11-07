@@ -8,6 +8,7 @@ import (
 
 	"github.com/ONSdigital/dp-search-query/api"
 	"github.com/ONSdigital/dp-search-query/config"
+	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/go-ns/log"
 )
 
@@ -28,7 +29,8 @@ func main() {
 
 	apiErrors := make(chan error, 1)
 
-	if err := api.CreateAndInitialise(cfg.BindAddr, cfg.ElasticSearchAPIURL, apiErrors); err != nil {
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL)
+	if err := api.CreateAndInitialise(cfg.BindAddr, elasticSearchClient, apiErrors); err != nil {
 		log.ErrorC("Error initialising API", err, nil)
 		os.Exit(1)
 	}

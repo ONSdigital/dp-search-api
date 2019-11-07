@@ -9,7 +9,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
@@ -39,6 +38,7 @@ type searchRequest struct {
 
 var searchTemplates *template.Template
 
+// SetupSearch loads templates for use by the search handler and should be done only once
 func SetupSearch() error {
 	//Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	//the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
@@ -118,76 +118,80 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 	return value == "true"
 }
 
-func SearchHandler(w http.ResponseWriter, req *http.Request) {
-	params := req.URL.Query()
-	size, err := strconv.Atoi(paramGet(params, "size", "10"))
-	if err != nil {
-		log.Debug("Expected number only characters for paramater 'size'",
-			log.Data{"Size": paramGet(params, "size", "10"), "Error": err.Error()})
-		http.Error(w, "Invalid size paramater", http.StatusBadRequest)
-		return
-	}
-	from, err := strconv.Atoi(paramGet(params, "from", "0"))
-	if err != nil {
-		log.Debug("Expected number only characters for paramater 'from'",
-			log.Data{"From": paramGet(params, "from", "0"), "Error": err.Error()})
-		http.Error(w, "Invalid from paramater", http.StatusBadRequest)
-		return
-	}
+// SearchHandlerFunc retruns a http handler function handling search api requests.
+func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		params := req.URL.Query()
+		size, err := strconv.Atoi(paramGet(params, "size", "10"))
+		if err != nil {
+			log.Debug("Expected number only characters for paramater 'size'",
+				log.Data{"Size": paramGet(params, "size", "10"), "Error": err.Error()})
+			http.Error(w, "Invalid size paramater", http.StatusBadRequest)
+			return
+		}
+		from, err := strconv.Atoi(paramGet(params, "from", "0"))
+		if err != nil {
+			log.Debug("Expected number only characters for paramater 'from'",
+				log.Data{"From": paramGet(params, "from", "0"), "Error": err.Error()})
+			http.Error(w, "Invalid from paramater", http.StatusBadRequest)
+			return
+		}
 
-	var queries []string
+		var queries []string
 
-	if nil == params["query"] {
-		queries = []string{"search"}
-	} else {
-		queries = params["query"]
-	}
+		if nil == params["query"] {
+			queries = []string{"search"}
+		} else {
+			queries = params["query"]
+		}
 
-	reqParams := searchRequest{
-		Term:                params.Get("term"),
-		From:                from,
-		Size:                size,
-		Types:               params["type"],
-		Index:               params.Get("index"),
-		SortBy:              paramGet(params, "sort", "relevance"),
-		Queries:             queries,
-		AggregationField:    paramGet(params, "aggField", "_type"),
-		Highlight:           paramGetBool(params, "highlight", true),
-		FilterOnLatest:      paramGetBool(params, "latest", false),
-		FilterOnFirstLetter: params.Get("withFirstLetter"),
-		ReleasedAfter:       params.Get("releasedAfter"),
-		ReleasedBefore:      params.Get("releasedBefore"),
-		UriPrefix:           params.Get("uriPrefix"),
-		Topic:               params["topic"],
-		TopicWildcard:       params["topicWildcard"],
-		Upcoming:            paramGetBool(params, "upcoming", false),
-		Published:           paramGetBool(params, "published", false),
-		Now:                 time.Now().UTC().Format(time.RFC3339),
-	}
-	log.Debug("SearchHandler", log.Data{"queries": queries, "request": reqParams})
-	var doc bytes.Buffer
+		reqParams := searchRequest{
+			Term:                params.Get("term"),
+			From:                from,
+			Size:                size,
+			Types:               params["type"],
+			Index:               params.Get("index"),
+			SortBy:              paramGet(params, "sort", "relevance"),
+			Queries:             queries,
+			AggregationField:    paramGet(params, "aggField", "_type"),
+			Highlight:           paramGetBool(params, "highlight", true),
+			FilterOnLatest:      paramGetBool(params, "latest", false),
+			FilterOnFirstLetter: params.Get("withFirstLetter"),
+			ReleasedAfter:       params.Get("releasedAfter"),
+			ReleasedBefore:      params.Get("releasedBefore"),
+			UriPrefix:           params.Get("uriPrefix"),
+			Topic:               params["topic"],
+			TopicWildcard:       params["topicWildcard"],
+			Upcoming:            paramGetBool(params, "upcoming", false),
+			Published:           paramGetBool(params, "published", false),
+			Now:                 time.Now().UTC().Format(time.RFC3339),
+		}
+		log.Debug("SearchHandler", log.Data{"queries": queries, "request": reqParams})
+		var doc bytes.Buffer
 
-	err = searchTemplates.Execute(&doc, reqParams)
+		err = searchTemplates.Execute(&doc, reqParams)
 
-	if err != nil {
-		log.Debug("Failed to create search from template", log.Data{"Error": err.Error(), "Params": reqParams})
-		http.Error(w, "Failed to create query", http.StatusInternalServerError)
-		return
-	}
+		if err != nil {
+			log.Debug("Failed to create search from template", log.Data{"Error": err.Error(), "Params": reqParams})
+			http.Error(w, "Failed to create query", http.StatusInternalServerError)
+			return
+		}
 
-	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	formattedQuery, err := formatMultiQuery(doc.Bytes())
-	if err != nil {
-		log.Debug("Failed to format query for elasticsearch", log.Data{"Error": err.Error()})
-		http.Error(w, "Failed to create query", http.StatusInternalServerError)
-		return
+		//Put new lines in for ElasticSearch to determine the headers and the queries are detected
+		formattedQuery, err := formatMultiQuery(doc.Bytes())
+		if err != nil {
+			log.Debug("Failed to format query for elasticsearch", log.Data{"Error": err.Error()})
+			http.Error(w, "Failed to create query", http.StatusInternalServerError)
+			return
+		}
+
+		responseData, err := elasticSearchClient.MultiSearch("ons", "", formattedQuery)
+		if err != nil {
+			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
+			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json;charset=utf-8")
+		w.Write(responseData)
 	}
-	responseData, err := elasticsearch.MultiSearch("ons", "", formattedQuery)
-	if err != nil {
-		log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
-		http.Error(w, "Failed to run search query", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json;charset=utf-8")
-	w.Write(responseData)
 }

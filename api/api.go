@@ -1,9 +1,10 @@
 package api
 
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher
+
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
@@ -14,14 +15,18 @@ var httpServer *server.Server
 
 //SearchQueryAPI provides an API around elasticseach
 type SearchQueryAPI struct {
-	Router *mux.Router
+	Router        *mux.Router
+	ElasticSearch ElasticSearcher
+}
+
+// ElasticSearcher provides client methods for the elasticsearch package
+type ElasticSearcher interface {
+	MultiSearch(index string, docType string, request []byte) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search Query API
-func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan error) error {
+func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, errorChan chan error) error {
 	router := mux.NewRouter()
-
-	elasticsearch.Setup(elasticSearchAPIURL)
 
 	errSearch := SetupSearch()
 	if errSearch != nil {
@@ -38,7 +43,7 @@ func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan er
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	api := NewSearchQueryAPI(router)
+	api := NewSearchQueryAPI(router, elasticSearchClient)
 
 	httpServer = server.New(bindAddr, api.Router)
 
@@ -57,21 +62,18 @@ func CreateAndInitialise(bindAddr, elasticSearchAPIURL string, errorChan chan er
 }
 
 // NewSearchQueryAPI returns a new Search Query API struct after registerig the routes
-func NewSearchQueryAPI(router *mux.Router) *SearchQueryAPI {
+func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher) *SearchQueryAPI {
 
 	api := &SearchQueryAPI{
-		Router: router,
+		Router:        router,
+		ElasticSearch: elasticSearch,
 	}
 
-	api.routes()
+	router.HandleFunc("/search", SearchHandlerFunc(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandler).Methods("GET")
+	router.HandleFunc("/data", DataLookupHandler).Methods("GET")
+	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET")
 	return api
-}
-
-func (api *SearchQueryAPI) routes() {
-	api.Router.HandleFunc("/search", SearchHandler).Methods("GET")
-	api.Router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandler).Methods("GET")
-	api.Router.HandleFunc("/data", DataLookupHandler).Methods("GET")
-	api.Router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET")
 }
 
 // Close represents the graceful shutting down of the http server
