@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 	"net/http"
 
@@ -11,6 +12,10 @@ import (
 type dataLookupRequest struct {
 	Uris  []string
 	Types []string
+}
+
+type dataLookupResponse struct {
+	Responses []interface{} `json:"responses"`
 }
 
 var dataTemplates *template.Template
@@ -38,19 +43,35 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
+
 		formattedQuery, err := formatMultiQuery(doc.Bytes())
 		if err != nil {
 			log.Debug("Failed to format query for elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
-		responseData, err := elasticSearchClient.Search("", "", formattedQuery)
+
+		responseString, err := elasticSearchClient.Search("", "", formattedQuery)
 		if err != nil {
 			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to run data query", http.StatusInternalServerError)
 			return
 		}
-		dataWithResponse := "{\"responses\":[" + string(responseData) + "]}"
+
+		responseData := dataLookupResponse{Responses: make([]interface{}, 1)}
+		if err := json.Unmarshal([]byte(responseString), &responseData.Responses[0]); err != nil {
+			log.Debug("Failed to unmarshal response from elasticsearch", log.Data{"Error": err.Error()})
+			http.Error(w, "Failed to process data query", http.StatusInternalServerError)
+			return
+		}
+
+		dataWithResponse, err := json.Marshal(responseData)
+		if err != nil {
+			log.Debug("Failed to marshal response data", log.Data{"Error": err.Error()})
+			http.Error(w, "Failed to encode data query response", http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
 		w.Write([]byte(dataWithResponse))
 	}
