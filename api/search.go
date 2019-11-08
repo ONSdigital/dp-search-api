@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -191,6 +192,13 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
 			return
 		}
+
+		if json.Valid([]byte(responseData)) != true {
+			log.Debug("Invlid JSON returned by elastic search for search query", nil)
+			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
 		w.Write(responseData)
 	}

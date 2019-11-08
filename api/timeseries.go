@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"strings"
 	"text/template"
@@ -42,6 +43,12 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 		if err != nil {
 			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to run timeseries query", http.StatusInternalServerError)
+			return
+		}
+
+		if json.Valid([]byte(responseData)) != true {
+			log.Debug("Invlid JSON returned by elastic search for timeseries query", nil)
+			http.Error(w, "Failed to process timeseries query", http.StatusInternalServerError)
 			return
 		}
 

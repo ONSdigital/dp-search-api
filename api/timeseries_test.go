@@ -56,6 +56,29 @@ func TestTimeseriesLookupHandlerFunc(t *testing.T) {
 		So(actualRequest, ShouldContainSubstring, "Cdid=a")
 	})
 
+	Convey("Should return InternalError for invalid json from elastic search", t, func() {
+		setupTimeseriesTestTemplates("Cdid={{.Cdid}}")
+		esMock := &ElasticSearcherMock{
+			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+				return []byte(`{"dummy":"response"`), nil
+			},
+		}
+
+		timeSeriesHandler := TimeseriesLookupHandlerFunc(esMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/timeseries/a", nil)
+		req = mux.SetURLVars(req, map[string]string{"cdid": "a"})
+		resp := httptest.NewRecorder()
+
+		timeSeriesHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
+		So(resp.Body.String(), ShouldContainSubstring, "Failed to process timeseries query")
+		So(esMock.SearchCalls(), ShouldHaveLength, 1)
+		actualRequest := string(esMock.SearchCalls()[0].Request)
+		So(actualRequest, ShouldContainSubstring, "Cdid=a")
+	})
+
 	Convey("Should return OK for valid search result", t, func() {
 		setupTimeseriesTestTemplates("Cdid={{.Cdid}}")
 		esMock := &ElasticSearcherMock{

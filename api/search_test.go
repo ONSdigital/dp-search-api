@@ -119,6 +119,28 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(actualRequest, ShouldContainSubstring, "term=a")
 	})
 
+	Convey("Should return InternalError for invalid json from elastic search", t, func() {
+		setupSearchTestTemplates("term={{.Term}};")
+		esMock := &ElasticSearcherMock{
+			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+				return []byte(`{"dummy":"response"`), nil
+			},
+		}
+
+		searchHandler := SearchHandlerFunc(esMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?term=a", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
+		So(resp.Body.String(), ShouldContainSubstring, "Failed to process search query")
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
+		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
+		So(actualRequest, ShouldContainSubstring, "term=a")
+	})
+
 	Convey("Should return OK for valid search result", t, func() {
 		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
