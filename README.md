@@ -3,6 +3,13 @@ dp-search-query
 
 A Go application microservice to provide query functionality on to the ONS Website
 
+## /data?
+
+URL Parameters
+
+1. `uris` _[0..1]_
+2. `types` _[0..1]_
+
 ## /search?
 
 URL Parameters
@@ -36,9 +43,8 @@ environment variables, or with a link to a configuration guide.
 
 | Environment variable | Default | Description
 | -------------------- | ------- | -----------
-| BIND_ADDR            | 10001  | The host and port to bind to
-| ELASTIC_URL	       | "http://localhost:9200/" | Http url of the ElasticSearch server
-| HEALTHCHECK_ENDPOINT | /healthcheck             | endpoint that reports health status
+| BIND_ADDR            | :23900  | The host and port to bind to
+| ELASTIC_URL	       | "http://localhost:9200" | Http url of the ElasticSearch server
 
 ## Releasing
 To package up the API uses `make package`
