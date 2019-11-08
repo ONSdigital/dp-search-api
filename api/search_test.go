@@ -38,7 +38,7 @@ func TestHasQuery(t *testing.T) {
 func TestSearchHandlerFunc(t *testing.T) {
 
 	Convey("Should return BadRequest for invalid size parameter", t, func() {
-		setupTestTemplates("dummy")
+		setupSearchTestTemplates("dummy")
 		esMock := &ElasticSearcherMock{
 			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
@@ -58,7 +58,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return BadRequest for invalid from parameter", t, func() {
-		setupTestTemplates("dummy")
+		setupSearchTestTemplates("dummy")
 		esMock := &ElasticSearcherMock{
 			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
@@ -78,7 +78,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return InternalError for invalid template", t, func() {
-		setupTestTemplates("dummy{{.Moo}}")
+		setupSearchTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{
 			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
@@ -98,7 +98,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return InternalError for errors returned from elastic search", t, func() {
-		setupTestTemplates("term={{.Term}};")
+		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
 			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
 				return nil, errors.New("Something")
@@ -120,7 +120,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return OK for valid search result", t, func() {
-		setupTestTemplates("term={{.Term}};")
+		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
 			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
@@ -142,7 +142,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should pass all search terms on to elastic search", t, func() {
-		setupTestTemplates("Term={{.Term}};" +
+		setupSearchTestTemplates("Term={{.Term}};" +
 			"From={{.From}};" +
 			"Size={{.Size}};" +
 			"Types={{.Types}};" +
@@ -225,7 +225,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 }
 
-func setupTestTemplates(rawtemplate string) {
+func setupSearchTestTemplates(rawtemplate string) {
 	temp, err := template.New("search.tmpl").Parse(rawtemplate)
 	So(err, ShouldBeNil)
 	searchTemplates = temp

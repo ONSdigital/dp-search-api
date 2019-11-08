@@ -15,7 +15,12 @@ func New(URL string) *Client {
 	}
 }
 
-// MultiSearch is a method that wraps the MultiSerch function of the elasticsearch package
+// Search is a method that wraps the Search function of the elasticsearch package
+func (cli *Client) Search(index string, docType string, request []byte) ([]byte, error) {
+	return Search(index, docType, request)
+}
+
+// MultiSearch is a method that wraps the MultiSearch function of the elasticsearch package
 func (cli *Client) MultiSearch(index string, docType string, request []byte) ([]byte, error) {
 	return MultiSearch(index, docType, request)
 }

@@ -21,6 +21,7 @@ type SearchQueryAPI struct {
 
 // ElasticSearcher provides client methods for the elasticsearch package
 type ElasticSearcher interface {
+	Search(index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(index string, docType string, request []byte) ([]byte, error)
 }
 
@@ -75,7 +76,7 @@ func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher) *Searc
 	}
 
 	router.HandleFunc("/search", SearchHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandler).Methods("GET")
+	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandler).Methods("GET")
 	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET")
 	return api
