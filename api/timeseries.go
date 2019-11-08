@@ -10,8 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TimeseriesLookupRequest holds request values for submitting to elastic seach
-type TimeseriesLookupRequest struct {
+type timeseriesLookupRequest struct {
 	Cdid string
 }
 
@@ -29,7 +28,7 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 	return func(w http.ResponseWriter, req *http.Request) {
 
 		vars := mux.Vars(req)
-		reqParams := TimeseriesLookupRequest{Cdid: strings.ToLower(vars["cdid"])}
+		reqParams := timeseriesLookupRequest{Cdid: strings.ToLower(vars["cdid"])}
 
 		var doc bytes.Buffer
 		err := timeseriesTemplate.Execute(&doc, reqParams)
