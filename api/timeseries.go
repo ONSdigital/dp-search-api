@@ -46,7 +46,7 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 			return
 		}
 
-		if json.Valid([]byte(responseData)) != true {
+		if !json.Valid([]byte(responseData)) {
 			log.Debug("Invlid JSON returned by elastic search for timeseries query", nil)
 			http.Error(w, "Failed to process timeseries query", http.StatusInternalServerError)
 			return

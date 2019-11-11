@@ -193,7 +193,7 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 			return
 		}
 
-		if json.Valid([]byte(responseData)) != true {
+		if !json.Valid([]byte(responseData)) {
 			log.Debug("Invlid JSON returned by elastic search for search query", nil)
 			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
 			return

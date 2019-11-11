@@ -73,6 +73,6 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 		}
 
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
-		w.Write([]byte(dataWithResponse))
+		w.Write(dataWithResponse)
 	}
 }
