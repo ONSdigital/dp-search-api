@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +41,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return BadRequest for invalid size parameter", t, func() {
 		setupSearchTestTemplates("dummy")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
 			},
 		}
@@ -60,7 +61,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return BadRequest for invalid from parameter", t, func() {
 		setupSearchTestTemplates("dummy")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
 			},
 		}
@@ -80,7 +81,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid template", t, func() {
 		setupSearchTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
 			},
 		}
@@ -100,7 +101,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for errors returned from elastic search", t, func() {
 		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, errors.New("Something")
 			},
 		}
@@ -122,7 +123,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid json from elastic search", t, func() {
 		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"`), nil
 			},
 		}
@@ -144,7 +145,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return OK for valid search result", t, func() {
 		setupSearchTestTemplates("term={{.Term}};")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
 			},
 		}
@@ -184,7 +185,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			"Published={{.Published}};" +
 			"Now={{.Now}}")
 		esMock := &ElasticSearcherMock{
-			MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
 			},
 		}

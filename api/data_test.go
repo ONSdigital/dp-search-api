@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"html/template"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestDataLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid template", t, func() {
 		setupDataTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
 			},
 		}
@@ -35,7 +36,7 @@ func TestDataLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for errors returned from elastic search", t, func() {
 		setupDataTestTemplates("Uris={{.Uris}};Types={{.Types}};")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, errors.New("Something")
 			},
 		}
@@ -58,7 +59,7 @@ func TestDataLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid json from elastic search", t, func() {
 		setupDataTestTemplates("Uris={{.Uris}};Types={{.Types}};")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"`), nil
 			},
 		}
@@ -81,7 +82,7 @@ func TestDataLookupHandlerFunc(t *testing.T) {
 	Convey("Should return OK for valid search result", t, func() {
 		setupDataTestTemplates("Uris={{.Uris}};Types={{.Types}};")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
 			},
 		}
@@ -104,7 +105,7 @@ func TestDataLookupHandlerFunc(t *testing.T) {
 	Convey("Should pass multiple terms to elastic search", t, func() {
 		setupDataTestTemplates("Uris={{.Uris}};Types={{.Types}};")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
 			},
 		}

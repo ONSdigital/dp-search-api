@@ -122,6 +122,7 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 // SearchHandlerFunc returns a http handler function handling search api requests.
 func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 		params := req.URL.Query()
 		size, err := strconv.Atoi(paramGet(params, "size", "10"))
 		if err != nil {
@@ -186,7 +187,7 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 			return
 		}
 
-		responseData, err := elasticSearchClient.MultiSearch("ons", "", formattedQuery)
+		responseData, err := elasticSearchClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
 			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)

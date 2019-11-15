@@ -4,6 +4,7 @@
 package api
 
 import (
+	"context"
 	"sync"
 )
 
@@ -22,10 +23,10 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 //         // make and configure a mocked ElasticSearcher
 //         mockedElasticSearcher := &ElasticSearcherMock{
-//             MultiSearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+//             MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 // 	               panic("mock out the MultiSearch method")
 //             },
-//             SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+//             SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 // 	               panic("mock out the Search method")
 //             },
 //         }
@@ -36,15 +37,17 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //     }
 type ElasticSearcherMock struct {
 	// MultiSearchFunc mocks the MultiSearch method.
-	MultiSearchFunc func(index string, docType string, request []byte) ([]byte, error)
+	MultiSearchFunc func(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 
 	// SearchFunc mocks the Search method.
-	SearchFunc func(index string, docType string, request []byte) ([]byte, error)
+	SearchFunc func(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// MultiSearch holds details about calls to the MultiSearch method.
 		MultiSearch []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Index is the index argument value.
 			Index string
 			// DocType is the docType argument value.
@@ -54,6 +57,8 @@ type ElasticSearcherMock struct {
 		}
 		// Search holds details about calls to the Search method.
 		Search []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Index is the index argument value.
 			Index string
 			// DocType is the docType argument value.
@@ -65,15 +70,17 @@ type ElasticSearcherMock struct {
 }
 
 // MultiSearch calls MultiSearchFunc.
-func (mock *ElasticSearcherMock) MultiSearch(index string, docType string, request []byte) ([]byte, error) {
+func (mock *ElasticSearcherMock) MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 	if mock.MultiSearchFunc == nil {
 		panic("ElasticSearcherMock.MultiSearchFunc: method is nil but ElasticSearcher.MultiSearch was just called")
 	}
 	callInfo := struct {
+		Ctx     context.Context
 		Index   string
 		DocType string
 		Request []byte
 	}{
+		Ctx:     ctx,
 		Index:   index,
 		DocType: docType,
 		Request: request,
@@ -81,18 +88,20 @@ func (mock *ElasticSearcherMock) MultiSearch(index string, docType string, reque
 	lockElasticSearcherMockMultiSearch.Lock()
 	mock.calls.MultiSearch = append(mock.calls.MultiSearch, callInfo)
 	lockElasticSearcherMockMultiSearch.Unlock()
-	return mock.MultiSearchFunc(index, docType, request)
+	return mock.MultiSearchFunc(ctx, index, docType, request)
 }
 
 // MultiSearchCalls gets all the calls that were made to MultiSearch.
 // Check the length with:
 //     len(mockedElasticSearcher.MultiSearchCalls())
 func (mock *ElasticSearcherMock) MultiSearchCalls() []struct {
+	Ctx     context.Context
 	Index   string
 	DocType string
 	Request []byte
 } {
 	var calls []struct {
+		Ctx     context.Context
 		Index   string
 		DocType string
 		Request []byte
@@ -104,15 +113,17 @@ func (mock *ElasticSearcherMock) MultiSearchCalls() []struct {
 }
 
 // Search calls SearchFunc.
-func (mock *ElasticSearcherMock) Search(index string, docType string, request []byte) ([]byte, error) {
+func (mock *ElasticSearcherMock) Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 	if mock.SearchFunc == nil {
 		panic("ElasticSearcherMock.SearchFunc: method is nil but ElasticSearcher.Search was just called")
 	}
 	callInfo := struct {
+		Ctx     context.Context
 		Index   string
 		DocType string
 		Request []byte
 	}{
+		Ctx:     ctx,
 		Index:   index,
 		DocType: docType,
 		Request: request,
@@ -120,18 +131,20 @@ func (mock *ElasticSearcherMock) Search(index string, docType string, request []
 	lockElasticSearcherMockSearch.Lock()
 	mock.calls.Search = append(mock.calls.Search, callInfo)
 	lockElasticSearcherMockSearch.Unlock()
-	return mock.SearchFunc(index, docType, request)
+	return mock.SearchFunc(ctx, index, docType, request)
 }
 
 // SearchCalls gets all the calls that were made to Search.
 // Check the length with:
 //     len(mockedElasticSearcher.SearchCalls())
 func (mock *ElasticSearcherMock) SearchCalls() []struct {
+	Ctx     context.Context
 	Index   string
 	DocType string
 	Request []byte
 } {
 	var calls []struct {
+		Ctx     context.Context
 		Index   string
 		DocType string
 		Request []byte

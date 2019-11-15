@@ -30,6 +30,7 @@ func SetupData() error {
 // DataLookupHandlerFunc returns a http handler function handling search api requests.
 func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 		params := req.URL.Query()
 		reqParams := dataLookupRequest{
 			Uris:  params["uris"],
@@ -51,7 +52,7 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 			return
 		}
 
-		responseString, err := elasticSearchClient.Search("", "", formattedQuery)
+		responseString, err := elasticSearchClient.Search(ctx, "", "", formattedQuery)
 		if err != nil {
 			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to run data query", http.StatusInternalServerError)

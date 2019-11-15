@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	rchttp "github.com/ONSdigital/dp-rchttp"
 	"github.com/ONSdigital/dp-search-query/api"
 	"github.com/ONSdigital/dp-search-query/config"
 	"github.com/ONSdigital/dp-search-query/elasticsearch"
@@ -29,7 +30,7 @@ func main() {
 
 	apiErrors := make(chan error, 1)
 
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL)
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, rchttp.NewClient())
 	if err := api.CreateAndInitialise(cfg.BindAddr, elasticSearchClient, apiErrors); err != nil {
 		log.ErrorC("Error initialising API", err, nil)
 		os.Exit(1)

@@ -2,26 +2,31 @@ package elasticsearch
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	rchttp "github.com/ONSdigital/dp-rchttp"
 )
 
 var elasticURL string
+var cli rchttp.Clienter
 
 //Setup initialises the elasticsearch ,module with a url, stripping any trailing slashes
-func Setup(url string) {
+func Setup(url string, client rchttp.Clienter) {
 	elasticURL = strings.TrimRight(url, "/")
+	cli = client
 }
 
-func MultiSearch(index string, docType string, request []byte) ([]byte, error) {
+func MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 	action := "_msearch"
-	return post(index, docType, action, request)
+	return post(ctx, index, docType, action, request)
 }
 
-func Search(index string, docType string, request []byte) ([]byte, error) {
+func Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 	action := "_search"
-	return post(index, docType, action, request)
+	return post(ctx, index, docType, action, request)
 }
 
 func buildContext(index string, docType string) string {
@@ -36,45 +41,34 @@ func buildContext(index string, docType string) string {
 }
 
 func GetStatus() ([]byte, error) {
-	return get("_cat", "health", "", nil)
-}
-
-func post(index string, docType string, action string, request []byte) ([]byte, error) {
-	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("POST", elasticURL+"/"+buildContext(index, docType)+action, reader)
+	req, err := http.NewRequest("GET", elasticURL+"/_cat/health", nil)
 	if err != nil {
 		return nil, err
 	}
-	// For control over HTTP client headers,
-	// redirect policy, and other settings,
-	// create a Client
-	// A Client is an HTTP client
-	client := &http.Client{}
-
-	// Send the request via a client
-	// Do sends an HTTP request and
-	// returns an HTTP response
-	resp, err := client.Do(req)
+	resp, err := cli.Do(context.Background(), req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	response, err := ioutil.ReadAll(resp.Body)
 
 	return response, err
 }
 
-func get(index string, docType string, action string, request []byte) ([]byte, error) {
+func post(ctx context.Context, index string, docType string, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
-	req, err := http.NewRequest("GET", elasticURL+"/"+buildContext(index, docType)+action, reader)
+	req, err := http.NewRequest("POST", elasticURL+"/"+buildContext(index, docType)+action, reader)
 	if err != nil {
 		return nil, err
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := cli.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	response, err := ioutil.ReadAll(resp.Body)
 
 	return response, err

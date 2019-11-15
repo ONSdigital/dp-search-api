@@ -21,6 +21,12 @@
 			"revisionTime": "2017-05-24T13:04:43Z"
 		},
 		{
+			"checksumSHA1": "n0XMzNcar1o9UqFgBzeh7E5poIA=",
+			"path": "github.com/ONSdigital/dp-rchttp",
+			"revision": "bb5699e6fd59efc9e8b669936f558fb017c17049",
+			"revisionTime": "2019-09-19T14:30:00Z"
+		},
+		{
 			"checksumSHA1": "8r2GSHzQ11neZGMY7d4Rz+O6sUs=",
 			"path": "github.com/ONSdigital/dp-search-query",
 			"revision": ""
@@ -174,6 +180,18 @@
 			"path": "github.com/tdewolff/strconv",
 			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
 			"revisionTime": "2016-04-27T18:05:39Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "d66e71096ffb9f08f36d9aefcae80ce319de6d68",
+			"revisionTime": "2019-10-08T18:49:27Z"
+		},
+		{
+			"checksumSHA1": "aFpql3G+Nw8zkzfqLWQJNZC8pu0=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "d66e71096ffb9f08f36d9aefcae80ce319de6d68",
+			"revisionTime": "2019-10-08T18:49:27Z"
 		}
 	],
 	"rootPath": "github.com/ONSdigital/dp-search-query"

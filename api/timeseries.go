@@ -27,6 +27,7 @@ func SetupTimeseries() error {
 // TimeseriesLookupHandlerFunc returns a http handler function handling search api requests.
 func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 
 		vars := mux.Vars(req)
 		reqParams := timeseriesLookupRequest{Cdid: strings.ToLower(vars["cdid"])}
@@ -39,7 +40,7 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 			return
 		}
 
-		responseData, err := elasticSearchClient.Search("ons", "timeseries", doc.Bytes())
+		responseData, err := elasticSearchClient.Search(ctx, "ons", "timeseries", doc.Bytes())
 		if err != nil {
 			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
 			http.Error(w, "Failed to run timeseries query", http.StatusInternalServerError)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +17,7 @@ func TestTimeseriesLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid template", t, func() {
 		setupTimeseriesTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, nil
 			},
 		}
@@ -36,7 +37,7 @@ func TestTimeseriesLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for errors returned from elastic search", t, func() {
 		setupTimeseriesTestTemplates("Cdid={{.Cdid}}")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return nil, errors.New("Something")
 			},
 		}
@@ -59,7 +60,7 @@ func TestTimeseriesLookupHandlerFunc(t *testing.T) {
 	Convey("Should return InternalError for invalid json from elastic search", t, func() {
 		setupTimeseriesTestTemplates("Cdid={{.Cdid}}")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"`), nil
 			},
 		}
@@ -82,7 +83,7 @@ func TestTimeseriesLookupHandlerFunc(t *testing.T) {
 	Convey("Should return OK for valid search result", t, func() {
 		setupTimeseriesTestTemplates("Cdid={{.Cdid}}")
 		esMock := &ElasticSearcherMock{
-			SearchFunc: func(index string, docType string, request []byte) ([]byte, error) {
+			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 				return []byte(`{"dummy":"response"}`), nil
 			},
 		}

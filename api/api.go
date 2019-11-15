@@ -21,8 +21,8 @@ type SearchQueryAPI struct {
 
 // ElasticSearcher provides client methods for the elasticsearch package
 type ElasticSearcher interface {
-	Search(index string, docType string, request []byte) ([]byte, error)
-	MultiSearch(index string, docType string, request []byte) ([]byte, error)
+	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
+	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search Query API
