@@ -23,6 +23,7 @@ type SearchQueryAPI struct {
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
+	GetStatus() ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search Query API
@@ -78,7 +79,7 @@ func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher) *Searc
 	router.HandleFunc("/search", SearchHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator()).Methods("GET")
+	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")
 	return api
 }
 

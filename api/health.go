@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
 	"github.com/ONSdigital/go-ns/log"
 )
 
@@ -15,7 +14,7 @@ type healthMessage struct {
 	Error  string `json:"error,omitempty"`
 }
 
-func HealthCheckHandlerCreator() func(http.ResponseWriter, *http.Request) {
+func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		var (
 			healthIssue string
@@ -27,7 +26,7 @@ func HealthCheckHandlerCreator() func(http.ResponseWriter, *http.Request) {
 		body := []byte("{\"status\":\"OK\"}") // quicker than json.Marshal(healthMessage{...})
 
 		// test elastic access
-		res, err := elasticsearch.GetStatus()
+		res, err := elasticSearchClient.GetStatus()
 		if err != nil {
 			healthIssue = err.Error()
 		} else if !isElasticSearchHealthy(string(res)) {

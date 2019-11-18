@@ -32,3 +32,8 @@ func (cli *Client) Search(ctx context.Context, index string, docType string, req
 func (cli *Client) MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 	return MultiSearch(ctx, index, docType, request)
 }
+
+// GetStatus makes status call for healthcheck purposes
+func (cli *Client) GetStatus() ([]byte, error) {
+	return GetStatus()
+}
