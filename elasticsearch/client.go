@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	rchttp "github.com/ONSdigital/dp-rchttp"
+	"github.com/pkg/errors"
 )
 
 // Client represents an instance of the elasticsearch client
@@ -16,7 +17,7 @@ type Client struct {
 	rchttpClient rchttp.Clienter
 }
 
-// New creates a new elasticsearch client
+// New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
 func New(url string, rchttpClient rchttp.Clienter) *Client {
 	return &Client{
 		url:          strings.TrimRight(url, "/"),
@@ -47,6 +48,9 @@ func (cli *Client) GetStatus() ([]byte, error) {
 	defer resp.Body.Close()
 
 	response, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "elaticsearchClient error reading get status response body")
+	}
 
 	return response, err
 }
@@ -65,6 +69,9 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 	defer resp.Body.Close()
 
 	response, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "elaticsearchClient error reading post response body")
+	}
 
 	return response, err
 }
