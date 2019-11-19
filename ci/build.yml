@@ -10,10 +10,9 @@ image_resource:
 
 inputs:
   - name: dp-search-query
-    path: go/src/github.com/ONSdigital/dp-search-query
 
 outputs:
   - name: build
 
 run:
-  path: go/src/github.com/ONSdigital/dp-search-query/ci/scripts/build.sh
+  path: dp-search-query/ci/scripts/build.sh
