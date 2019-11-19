@@ -11,5 +11,8 @@ image_resource:
 inputs:
   - name: dp-search-query
 
+caches:
+  - path: go/
+
 run:
   path: dp-search-query/ci/scripts/unit.sh

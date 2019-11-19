@@ -14,5 +14,8 @@ inputs:
 outputs:
   - name: build
 
+caches:
+  - path: go/
+
 run:
   path: dp-search-query/ci/scripts/build.sh
