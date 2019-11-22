@@ -36,23 +36,27 @@ func main() {
 		os.Exit(1)
 	}
 
+	gracefulShutdown := func() {
+		log.Info("Commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout})
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
+
+		// stop any incoming requests before closing any outbound connections
+		api.Close(ctx)
+
+		log.Info("shutdown complete", nil)
+		cancel()
+	}
+
 	// blocks until a fatal error occurs
 	select {
 	case err := <-apiErrors:
 		log.ErrorC("search-query api error received", err, nil)
 	case <-signals:
 		log.Debug("os signal received", nil)
+		gracefulShutdown()
 	}
 
 	// Gracefully shutdown the application closing any open resources.
-	log.Info("Commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout})
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
-	// stop any incoming requests before closing any outbound connections
-	api.Close(ctx)
-
-	log.Info("shutdown complete", nil)
-
-	cancel()
 	os.Exit(1)
 }
