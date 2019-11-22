@@ -41,7 +41,9 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
 		// stop any incoming requests before closing any outbound connections
-		api.Close(ctx)
+		if err := api.Close(ctx); err != nil {
+			log.ErrorC("Error closing API", err, nil)
+		}
 
 		log.Info("shutdown complete", nil)
 		cancel()
@@ -55,8 +57,6 @@ func main() {
 		log.Debug("os signal received", nil)
 		gracefulShutdown()
 	}
-
-	// Gracefully shutdown the application closing any open resources.
 
 	os.Exit(1)
 }
