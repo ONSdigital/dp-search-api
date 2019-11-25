@@ -128,7 +128,7 @@ func TestGetStatus(t *testing.T) {
 
 			client := New("http://localhost:999", rchttpMock)
 
-			res, err := client.GetStatus()
+			res, err := client.GetStatus(context.Background())
 			So(err, ShouldBeNil)
 			So(res, ShouldNotBeEmpty)
 			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
@@ -146,7 +146,7 @@ func TestGetStatus(t *testing.T) {
 
 			client := New("http://localhost:999", rchttpMock)
 
-			_, err := client.GetStatus()
+			_, err := client.GetStatus(context.Background())
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "http error")
 			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)

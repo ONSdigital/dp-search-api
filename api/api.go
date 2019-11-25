@@ -23,7 +23,7 @@ type SearchQueryAPI struct {
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
-	GetStatus() ([]byte, error)
+	GetStatus(ctx context.Context) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search Query API

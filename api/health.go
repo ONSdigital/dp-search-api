@@ -16,6 +16,7 @@ type healthMessage struct {
 
 func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 		var (
 			healthIssue string
 			err         error
@@ -26,7 +27,7 @@ func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.Re
 		body := []byte("{\"status\":\"OK\"}") // quicker than json.Marshal(healthMessage{...})
 
 		// test elastic access
-		res, err := elasticSearchClient.GetStatus()
+		res, err := elasticSearchClient.GetStatus(ctx)
 		if err != nil {
 			healthIssue = err.Error()
 		} else if !isElasticSearchHealthy(string(res)) {

@@ -36,12 +36,12 @@ func (cli *Client) MultiSearch(ctx context.Context, index string, docType string
 }
 
 // GetStatus makes status call for healthcheck purposes
-func (cli *Client) GetStatus() ([]byte, error) {
+func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
 	req, err := http.NewRequest("GET", cli.url+"/_cat/health", nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cli.rchttpClient.Do(context.Background(), req)
+	resp, err := cli.rchttpClient.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}

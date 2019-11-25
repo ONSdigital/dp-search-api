@@ -24,7 +24,7 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 //         // make and configure a mocked ElasticSearcher
 //         mockedElasticSearcher := &ElasticSearcherMock{
-//             GetStatusFunc: func() ([]byte, error) {
+//             GetStatusFunc: func(ctx context.Context) ([]byte, error) {
 // 	               panic("mock out the GetStatus method")
 //             },
 //             MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
@@ -41,7 +41,7 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //     }
 type ElasticSearcherMock struct {
 	// GetStatusFunc mocks the GetStatus method.
-	GetStatusFunc func() ([]byte, error)
+	GetStatusFunc func(ctx context.Context) ([]byte, error)
 
 	// MultiSearchFunc mocks the MultiSearch method.
 	MultiSearchFunc func(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
@@ -53,6 +53,8 @@ type ElasticSearcherMock struct {
 	calls struct {
 		// GetStatus holds details about calls to the GetStatus method.
 		GetStatus []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 		}
 		// MultiSearch holds details about calls to the MultiSearch method.
 		MultiSearch []struct {
@@ -80,24 +82,29 @@ type ElasticSearcherMock struct {
 }
 
 // GetStatus calls GetStatusFunc.
-func (mock *ElasticSearcherMock) GetStatus() ([]byte, error) {
+func (mock *ElasticSearcherMock) GetStatus(ctx context.Context) ([]byte, error) {
 	if mock.GetStatusFunc == nil {
 		panic("ElasticSearcherMock.GetStatusFunc: method is nil but ElasticSearcher.GetStatus was just called")
 	}
 	callInfo := struct {
-	}{}
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
 	lockElasticSearcherMockGetStatus.Lock()
 	mock.calls.GetStatus = append(mock.calls.GetStatus, callInfo)
 	lockElasticSearcherMockGetStatus.Unlock()
-	return mock.GetStatusFunc()
+	return mock.GetStatusFunc(ctx)
 }
 
 // GetStatusCalls gets all the calls that were made to GetStatus.
 // Check the length with:
 //     len(mockedElasticSearcher.GetStatusCalls())
 func (mock *ElasticSearcherMock) GetStatusCalls() []struct {
+	Ctx context.Context
 } {
 	var calls []struct {
+		Ctx context.Context
 	}
 	lockElasticSearcherMockGetStatus.RLock()
 	calls = mock.calls.GetStatus
