@@ -10,7 +10,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 )
@@ -124,17 +124,19 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
-		size, err := strconv.Atoi(paramGet(params, "size", "10"))
+		sizeParam := paramGet(params, "size", "10")
+		size, err := strconv.Atoi(sizeParam)
 		if err != nil {
-			log.Debug("Expected number only characters for paramater 'size'",
-				log.Data{"Size": paramGet(params, "size", "10"), "Error": err.Error()})
+			log.Event(ctx, "search paramater 'size' provided with non numeric characters",
+				log.Data{"Size": sizeParam})
 			http.Error(w, "Invalid size paramater", http.StatusBadRequest)
 			return
 		}
-		from, err := strconv.Atoi(paramGet(params, "from", "0"))
+		fromParam := paramGet(params, "from", "0")
+		from, err := strconv.Atoi(fromParam)
 		if err != nil {
-			log.Debug("Expected number only characters for paramater 'from'",
-				log.Data{"From": paramGet(params, "from", "0"), "Error": err.Error()})
+			log.Event(ctx, "search paramater 'from' provided with non numeric characters",
+				log.Data{"From": fromParam})
 			http.Error(w, "Invalid from paramater", http.StatusBadRequest)
 			return
 		}
@@ -168,13 +170,13 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 			Published:           paramGetBool(params, "published", false),
 			Now:                 time.Now().UTC().Format(time.RFC3339),
 		}
-		log.Debug("SearchHandler", log.Data{"queries": queries, "request": reqParams})
+		log.Event(ctx, "search handler called", log.Data{"queries": queries, "request": reqParams})
 		var doc bytes.Buffer
 
 		err = searchTemplates.Execute(&doc, reqParams)
 
 		if err != nil {
-			log.Debug("Failed to create search from template", log.Data{"Error": err.Error(), "Params": reqParams})
+			log.Event(ctx, "creation of search from template failed", log.Data{"Params": reqParams}, log.Error(err), log.ERROR)
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
@@ -182,20 +184,20 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 		//Put new lines in for ElasticSearch to determine the headers and the queries are detected
 		formattedQuery, err := formatMultiQuery(doc.Bytes())
 		if err != nil {
-			log.Debug("Failed to format query for elasticsearch", log.Data{"Error": err.Error()})
+			log.Event(ctx, "formating of query for elasticsearch failed", log.Error(err), log.ERROR)
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData, err := elasticSearchClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
-			log.Debug("Failed to query elasticsearch", log.Data{"Error": err.Error()})
+			log.Event(ctx, "elasticsearch query failed", log.Error(err), log.ERROR)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
 			return
 		}
 
 		if !json.Valid([]byte(responseData)) {
-			log.Debug("Invlid JSON returned by elastic search for search query", nil)
+			log.Event(ctx, "elastic search returned invalid JSON for search query", log.ERROR)
 			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
 			return
 		}

@@ -5,8 +5,8 @@ package api
 import (
 	"context"
 
-	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/go-ns/server"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -58,9 +58,9 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 	httpServer.HandleOSSignals = false
 
 	go func() {
-		log.Debug("Starting search-query api...", nil)
+		log.Event(nil, "search-query api starting")
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.ErrorC("search-query api http server returned error", err, nil)
+			log.Event(nil, "search-query api http server returned error", log.Error(err), log.ERROR)
 			errorChan <- err
 		}
 	}()
@@ -88,6 +88,6 @@ func Close(ctx context.Context) error {
 	if err := httpServer.Shutdown(ctx); err != nil {
 		return err
 	}
-	log.Info("graceful shutdown of http server complete", nil)
+	log.Event(ctx, "graceful shutdown of http server complete")
 	return nil
 }
