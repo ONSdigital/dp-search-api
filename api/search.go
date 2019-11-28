@@ -127,17 +127,21 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 		sizeParam := paramGet(params, "size", "10")
 		size, err := strconv.Atoi(sizeParam)
 		if err != nil {
-			log.Event(ctx, "search paramater 'size' provided with non numeric characters",
-				log.Data{"Size": sizeParam})
-			http.Error(w, "Invalid size paramater", http.StatusBadRequest)
+			log.Event(ctx, "numeric search parameter provided with non numeric characters", log.Data{
+				"param": "size",
+				"value": sizeParam,
+			})
+			http.Error(w, "Invalid size parameter", http.StatusBadRequest)
 			return
 		}
 		fromParam := paramGet(params, "from", "0")
 		from, err := strconv.Atoi(fromParam)
 		if err != nil {
-			log.Event(ctx, "search paramater 'from' provided with non numeric characters",
-				log.Data{"From": fromParam})
-			http.Error(w, "Invalid from paramater", http.StatusBadRequest)
+			log.Event(ctx, "numeric search parameter provided with non numeric characters", log.Data{
+				"param": "from",
+				"value": fromParam,
+			})
+			http.Error(w, "Invalid from parameter", http.StatusBadRequest)
 			return
 		}
 

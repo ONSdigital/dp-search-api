@@ -54,7 +54,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusBadRequest)
-		So(resp.Body.String(), ShouldContainSubstring, "Invalid size paramater")
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid size parameter")
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
@@ -74,7 +74,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusBadRequest)
-		So(resp.Body.String(), ShouldContainSubstring, "Invalid from paramater")
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid from parameter")
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
