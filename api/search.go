@@ -176,7 +176,7 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 		err = searchTemplates.Execute(&doc, reqParams)
 
 		if err != nil {
-			log.Event(ctx, "creation of search from template failed", log.Data{"Params": reqParams}, log.Error(err), log.ERROR)
+			log.Event(ctx, "creation of search from template failed", log.Data{"Params": reqParams}, log.Error(err))
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
@@ -184,14 +184,14 @@ func SearchHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 		//Put new lines in for ElasticSearch to determine the headers and the queries are detected
 		formattedQuery, err := formatMultiQuery(doc.Bytes())
 		if err != nil {
-			log.Event(ctx, "formating of query for elasticsearch failed", log.Error(err), log.ERROR)
+			log.Event(ctx, "formating of query for elasticsearch failed", log.Error(err))
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData, err := elasticSearchClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
-			log.Event(ctx, "elasticsearch query failed", log.Error(err), log.ERROR)
+			log.Event(ctx, "elasticsearch query failed", log.Error(err))
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
 			return
 		}

@@ -42,7 +42,7 @@ func main() {
 
 		// stop any incoming requests before closing any outbound connections
 		if err := api.Close(ctx); err != nil {
-			log.Event(ctx, "error closing API", log.Error(err), log.ERROR)
+			log.Event(ctx, "error closing API", log.Error(err))
 		}
 
 		log.Event(ctx, "shutdown complete")

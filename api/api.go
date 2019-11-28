@@ -60,7 +60,7 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 	go func() {
 		log.Event(nil, "search-query api starting")
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Event(nil, "search-query api http server returned error", log.Error(err), log.ERROR)
+			log.Event(nil, "search-query api http server returned error", log.Error(err))
 			errorChan <- err
 		}
 	}()
