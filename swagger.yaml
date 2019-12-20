@@ -1,0 +1,310 @@
+swagger: "2.0"
+info:
+  description: "Search Query API"
+  version: "1.0.1"
+  title: "dp-search-query"
+  license:
+    name: "Open Government Licence v3.0"
+    url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+basePath: "/v1"
+schemes:
+  - "http"
+tags:
+  - name: "search"
+  - name: "department"
+  - name: "health"
+
+paths:
+
+  /search:
+    get:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API which combines the content with type counts"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: type
+          description: "List of content types to be returned."
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          collectionFormat: csv
+          required: false
+        - in: query
+          name: sort_order
+          description: ""
+          type: string
+          enum: [relevance,release_date,title]
+        - in: query
+          name: limit
+          description: "The number of items requested, defaulted to 50 and limited to 1000."
+          type: integer
+          required: false
+        - in: query
+          name: offset
+          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
+          type: integer
+          required: false          
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /departments/search:
+    get:
+      tags:
+        - department
+      summary: "Department query API"
+      description: "Department query API which returns matching links to other departments"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: limit
+          description: "The number of items requested, defaulted to 50 and limited to 1000."
+          type: integer
+          required: false
+        - in: query
+          name: offset
+          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
+          type: integer
+          required: false    
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DepartmentResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+        
+  /health:
+    get:
+      tags:
+        - health
+      summary: "Health check API"
+      description: "API to query the APP for current health status"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Health'
+        500:
+          description: Internal Server Error
+
+
+definitions:
+  SearchResponse:
+    type: object
+    properties:
+      count:
+        type: number
+        description: "Number of search results which match query"
+        example: 80
+      took:
+        type: number
+        description: "Time taken to execute query in milliseconds"
+        example: 530
+      items:
+        type: array
+        description: "List of matching content items for the current page"
+        items:
+          $ref: '#/definitions/ContentItem'
+      content_types:
+        type: array
+        description: "List of content types included in results"
+        items:
+          $ref: '#/definitions/ContentType'
+    required:
+      - count
+      - took
+
+  DepartmentResponse:
+    type: object
+    properties:
+      count:
+        type: number
+        description: "Number of search results which match query"
+        example: 80
+      took:
+        type: number
+        description: "Time taken to execute query in milliseconds"
+        example: 530
+      items:
+        type: array
+        description: "List of matching content items for the current page"
+        items:
+          $ref: '#/definitions/DepartmentItem'
+    required:
+      - count
+      - took
+    
+  ContentType:
+    type: object
+    properties:
+      type:
+        type: string
+      count:
+        type: integer
+
+  ContentItem:
+    type: object
+    properties:
+      description:
+        type: object
+        properties:
+          summary: 
+            type: string
+          next_release: 
+            type: string
+            example: "14 August 2015"
+          unit:
+            type: string
+          pre_unit: 
+            type: string
+          keywords: 
+            type: array
+            items:
+              type: string
+          release_date: 
+            type: string
+            format: date-time
+          edition:
+            type: string
+          latest_release:
+            type: boolean
+          language:
+            type: string
+            example: "English"
+          contact:
+            type: object
+            properties:
+              name: 
+                type: string
+              telephone:
+                type: string
+              email:
+                type: string
+          dataset_id:
+            type: string
+          source: 
+            type: string
+          title: 
+            type: string
+          meta_description: 
+            type: string
+          national_statistic: 
+            type: boolean
+          headline1: 
+            type: string
+          headline2: 
+            type: string
+          headline3: 
+            type: string
+        required:
+          - summary
+          - title
+      type:
+        type: string
+      uri: 
+        type: string
+      matches:
+        type: array
+        items:
+          type: object
+          properties:
+            description:
+              type: object
+              properties:
+                summary: 
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+                title: 
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+                edition: 
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+                meta_description: 
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+                keywords: 
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+                dataset_id:
+                  type: array
+                  items:
+                    $ref: '#/definitions/MatchDetails'
+    required:
+      - description
+      - type
+      - uri
+
+  DepartmentItem:
+    type: object
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      url:
+        type: string
+      terms:
+        type: array
+        items:
+          type: string
+      matches:
+        type: array
+        items:
+          type: object
+          properties:
+            terms: 
+              type: array
+              items:
+                $ref: '#/definitions/MatchDetails'
+
+  MatchDetails:
+    description: "A pair of integers to define the start and end of substring in the member that matched the search terms. The first character of the string is index 1."
+    type: object
+    properties:
+      start:
+        type: integer
+        description: "An integer to define the start of a substring in the member that matched. The first character of the string is index 1."
+        example: 3
+      end:
+        type: integer
+        description: "An integer to define the end of a substring in the member that matched."
+        example: 8
+
+          
+
+  Health:
+    type: object
+    properties:
+      elasticsearch:
+        type: string
+        example: available
+      dp_fasttext:
+        type: string
+        example: available
