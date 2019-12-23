@@ -25,7 +25,7 @@ paths:
       parameters:
         - in: query
           name: q
-          description: "Query search term"
+          description: "Query search term."
           type: string
           required: true
         - in: query
@@ -39,9 +39,10 @@ paths:
           required: false
         - in: query
           name: sort_order
-          description: ""
+          description: "The order to return the results."
           type: string
           enum: [relevance,release_date,title]
+          required: false
         - in: query
           name: limit
           description: "The number of items requested, defaulted to 50 and limited to 1000."
@@ -99,7 +100,7 @@ paths:
       tags:
         - health
       summary: "Health check API"
-      description: "API to query the APP for current health status"
+      description: "API to query the app for current health status"
       responses:
         200:
           description: OK
@@ -296,8 +297,6 @@ definitions:
         type: integer
         description: "An integer to define the end of a substring in the member that matched."
         example: 8
-
-          
 
   Health:
     type: object
