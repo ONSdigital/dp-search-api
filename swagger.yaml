@@ -29,8 +29,8 @@ paths:
           type: string
           required: true
         - in: query
-          name: type
-          description: "List of content types to be returned."
+          name: content_type
+          description: "Comma separated list of content types to be returned."
           type: array
           uniqueItems: true
           items:
@@ -226,37 +226,35 @@ definitions:
       uri: 
         type: string
       matches:
-        type: array
-        items:
-          type: object
-          properties:
-            description:
-              type: object
-              properties:
-                summary: 
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
-                title: 
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
-                edition: 
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
-                meta_description: 
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
-                keywords: 
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
-                dataset_id:
-                  type: array
-                  items:
-                    $ref: '#/definitions/MatchDetails'
+        type: object
+        properties:
+          description:
+            type: object
+            properties:
+              summary: 
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
+              title: 
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
+              edition: 
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
+              meta_description: 
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
+              keywords: 
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
+              dataset_id:
+                type: array
+                items:
+                  $ref: '#/definitions/MatchDetails'
     required:
       - description
       - type
@@ -289,9 +287,12 @@ definitions:
     description: "A pair of integers to define the start and end of substring in the member that matched the search terms. The first character of the string is index 1."
     type: object
     properties:
+      value:
+        type: string
+        description: "For matches in keys that a re part of an array, this will contain the value containing a match."
       start:
         type: integer
-        description: "An integer to define the start of a substring in the member that matched. The first character of the string is index 1."
+        description: "An integer to define the start byte of a substring in the member that matched. The first character of the string is index 1."
         example: 3
       end:
         type: integer
@@ -303,7 +304,6 @@ definitions:
     properties:
       elasticsearch:
         type: string
-        example: available
       dp_fasttext:
         type: string
         example: available

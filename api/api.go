@@ -1,6 +1,6 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer
 
 import (
 	"context"
@@ -16,7 +16,9 @@ var httpServer *server.Server
 //SearchQueryAPI provides an API around elasticseach
 type SearchQueryAPI struct {
 	Router        *mux.Router
+	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
+	Transformer   ResponseTransformer
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -26,19 +28,27 @@ type ElasticSearcher interface {
 	GetStatus(ctx context.Context) ([]byte, error)
 }
 
+// QueryBuilder provides methods for the search package
+type QueryBuilder interface {
+	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error)
+}
+
+// ResponseTransformer provides methods for the transform package
+type ResponseTransformer interface {
+	TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error)
+}
+
 // CreateAndInitialise initiates a new Search Query API
-func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, errorChan chan error) error {
+func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
 	}
 
-	router := mux.NewRouter()
-
-	errSearch := SetupSearch()
-	if errSearch != nil {
-		return errors.Wrap(errSearch, "Failed to setup search templates")
+	if queryBuilder == nil {
+		return errors.New("CreateAndInitialise called without a valid query builder")
 	}
+	router := mux.NewRouter()
 
 	errData := SetupData()
 	if errData != nil {
@@ -50,7 +60,7 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	api := NewSearchQueryAPI(router, elasticSearchClient)
+	api := NewSearchQueryAPI(router, elasticSearchClient, queryBuilder, transformer)
 
 	httpServer = server.New(bindAddr, api.Router)
 
@@ -69,14 +79,16 @@ func CreateAndInitialise(bindAddr string, elasticSearchClient ElasticSearcher, e
 }
 
 // NewSearchQueryAPI returns a new Search Query API struct after registering the routes
-func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher) *SearchQueryAPI {
+func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchQueryAPI {
 
 	api := &SearchQueryAPI{
 		Router:        router,
+		QueryBuilder:  queryBuilder,
 		ElasticSearch: elasticSearch,
+		Transformer:   transformer,
 	}
 
-	router.HandleFunc("/search", SearchHandlerFunc(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")

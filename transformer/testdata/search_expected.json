@@ -1,0 +1,87 @@
+{
+    "count": 2,
+    "took": 96,
+    "items": [
+        {
+            "description": {
+                "summary": "",
+                "keywords": [
+                    "regional house prices",
+                    "property prices",
+                    "area with cheapest houses",
+                    "area with most expensive houses"
+                ],
+                "release_date": "2015-02-17T00:00:00.000Z",
+                "edition": "1995 to 2013",
+                "latest_release": true,
+                "contact": {
+                    "name": "Somebody's Name",
+                    "telephone": "+44 (0)1329 123456",
+                    "email": "somebody@ons.gov.uk"
+                },
+                "title": "House Price Statistics for Small Areas in England and Wales",
+                "meta_description": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs)."
+            },
+            "type": "article",
+            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
+            "matches": {
+                "description": {
+                    "summary": null,
+                    "title": [
+                        {
+                            "start": 1,
+                            "end": 5
+                        }
+                    ],
+                    "keywords": [
+                        {
+                            "value": "regional house prices",
+                            "start": 10,
+                            "end": 14
+                        },
+                        {
+                            "value": "area with cheapest houses",
+                            "start": 20,
+                            "end": 25
+                        },
+                        {
+                            "value": "area with most expensive houses",
+                            "start": 26,
+                            "end": 31
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "description": {
+                "summary": "Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
+                "contact": {},
+                "title": "Housing"
+            },
+            "type": "product_page",
+            "uri": "/peoplepopulationandcommunity/housing",
+            "matches": {
+                "description": {
+                    "summary": null,
+                    "title": [
+                        {
+                            "start": 1,
+                            "end": 7
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "content_types": [
+        {
+            "Type": "article",
+            "Count": 1
+        },
+        {
+            "Type": "product_page",
+            "Count": 1
+        }
+    ]
+}

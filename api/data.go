@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"regexp"
 
 	"github.com/ONSdigital/log.go/log"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/js"
 )
 
 type dataLookupRequest struct {
@@ -20,11 +23,27 @@ type dataLookupResponse struct {
 
 var dataTemplates *template.Template
 
-// SetupTimeseries loads templates for use by the timeseries lookup handler and should be done only once
+// SetupData loads templates for use by the timeseries lookup handler and should be done only once
 func SetupData() error {
 	templates, err := template.ParseFiles("templates/data/queryByUri.tmpl")
 	dataTemplates = templates
 	return err
+}
+
+func formatMultiQuery(rawQuery []byte) ([]byte, error) {
+	//Is minify thread Safe? can I put this as a global?
+	m := minify.New()
+	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
+
+	linearQuery, err := m.Bytes("application/js", rawQuery)
+
+	if err != nil {
+		return nil, err
+	}
+
+	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
+	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
+
 }
 
 // DataLookupHandlerFunc returns a http handler function handling search api requests.

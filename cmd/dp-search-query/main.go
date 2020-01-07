@@ -10,6 +10,8 @@ import (
 	"github.com/ONSdigital/dp-search-query/api"
 	"github.com/ONSdigital/dp-search-query/config"
 	"github.com/ONSdigital/dp-search-query/elasticsearch"
+	"github.com/ONSdigital/dp-search-query/query"
+	"github.com/ONSdigital/dp-search-query/transformer"
 	"github.com/ONSdigital/log.go/log"
 )
 
@@ -30,8 +32,17 @@ func main() {
 
 	apiErrors := make(chan error, 1)
 
+	log.Event(nil, "initialising query builder")
+	queryBuilder, err := query.NewQueryBuilder()
+	if err != nil {
+		log.Event(nil, "error initialising query builder", log.Error(err), nil)
+		os.Exit(1)
+	}
+
 	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, rchttp.NewClient())
-	if err := api.CreateAndInitialise(cfg.BindAddr, elasticSearchClient, apiErrors); err != nil {
+	transformer := transformer.New()
+
+	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), nil)
 		os.Exit(1)
 	}

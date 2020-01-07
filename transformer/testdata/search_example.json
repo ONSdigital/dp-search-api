@@ -1,0 +1,134 @@
+{
+    "responses": [
+        {
+            "took": 69,
+            "timed_out": false,
+            "_shards": {
+                "total": 3,
+                "successful": 3,
+                "failed": 0
+            },
+            "hits": {
+                "total": 2,
+                "max_score": null,
+                "hits": [
+                    {
+                        "_index": "ons1572283650465",
+                        "_type": "article",
+                        "_id": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
+                        "_score": 51.435966,
+                        "_source": {
+                            "description": {
+                                "latestRelease": true,
+                                "unit": "",
+                                "keywords": [
+                                    "regional house prices",
+                                    "property prices",
+                                    "area with cheapest houses",
+                                    "area with most expensive houses"
+                                ],
+                                "releaseDate": "2015-02-17T00:00:00.000Z",
+                                "contact": {
+                                    "name": "Somebody's Name",
+                                    "telephone": "+44 (0)1329 123456",
+                                    "email": "somebody@ons.gov.uk"
+                                },
+                                "edition": "1995 to 2013",
+                                "source": "",
+                                "title": "House Price Statistics for Small Areas in England and Wales",
+                                "metaDescription": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs).",
+                                "nationalStatistic": false,
+                                "_abstract": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs).",
+                                "preUnit": ""
+                            },
+                            "searchBoost": [],
+                            "type": "article",
+                            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
+                        },
+                        "highlight": {
+                            "description.title": [
+                                "<strong>House</strong> Price Statistics for Small Areas in England and Wales"
+                            ],
+                            "description.keywords": [
+                                "regional <strong>house</strong> prices",
+                                "area with cheapest <strong>houses</strong>",
+                                "area with most expensive <strong>houses</strong>"
+                            ]
+                        },
+                        "sort": [
+                            51.435966,
+                            1424131200000
+                        ]
+                    },
+                    {
+                        "_index": "ons1572283650465",
+                        "_type": "product_page",
+                        "_id": "/peoplepopulationandcommunity/housing",
+                        "_score": 5.010441,
+                        "_source": {
+                            "description": {
+                                "summary": "Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
+                                "unit": "",
+                                "source": "",
+                                "title": "Housing",
+                                "preUnit": ""
+                            },
+                            "searchBoost": [],
+                            "type": "product_page",
+                            "uri": "/peoplepopulationandcommunity/housing"
+                        },
+                        "highlight": {
+                            "description.title": [
+                                "<strong>Housing</strong>"
+                            ]
+                        },
+                        "sort": [
+                            5.010441,
+                            -9223372036854775808
+                        ]
+                    }
+                ]
+            },
+            "suggest": {
+                "search_suggest": [
+                    {
+                        "text": "housing",
+                        "offset": 0,
+                        "length": 7,
+                        "options": []
+                    }
+                ]
+            }
+        },
+        {
+            "took": 27,
+            "timed_out": false,
+            "_shards": {
+                "total": 3,
+                "successful": 3,
+                "failed": 0
+            },
+            "hits": {
+                "total": 2,
+                "max_score": 0.0,
+                "hits": []
+            },
+            "aggregations": {
+                "docCounts": {
+                    "doc_count_error_upper_bound": 0,
+                    "sum_other_doc_count": 0,
+                    "buckets": [
+                        {
+                            "key": "article",
+                            "doc_count": 1
+                        },
+                        {
+                            "key": "product_page",
+                            "doc_count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
