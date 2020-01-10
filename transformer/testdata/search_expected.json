@@ -76,12 +76,12 @@
     ],
     "content_types": [
         {
-            "Type": "article",
-            "Count": 1
+            "type": "article",
+            "count": 1
         },
         {
-            "Type": "product_page",
-            "Count": 1
+            "type": "product_page",
+            "count": 1
         }
     ]
 }

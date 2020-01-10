@@ -12,21 +12,23 @@ const startHighlightTag string = "<strong>"
 const endHighlightTag string = "</strong>"
 
 // Transformer represents an instance of the ResposeTransformer interface
-type Transformer struct {
-}
+type Transformer struct{}
 
+// Structs representing the transformed response
 type searchResponse struct {
 	Count        int           `json:"count"`
 	Took         int           `json:"took"`
 	Items        []contentItem `json:"items"`
 	ContentTypes []contentType `json:"content_types"`
 }
+
 type contentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
 	Matches     matches     `json:"matches,omitempty"`
 }
+
 type description struct {
 	Summary           string   `json:"summary"`
 	NextRelease       string   `json:"next_release,omitempty"`
@@ -46,11 +48,13 @@ type description struct {
 	Headline2         string   `json:"headline2,omitempty"`
 	Headline3         string   `json:"headline3,omitempty"`
 }
+
 type contact struct {
 	Name      string `json:"name,omitempty"`
 	Telephone string `json:"telephone,omitempty"`
 	Email     string `json:"email,omitempty"`
 }
+
 type matches struct {
 	Description struct {
 		Summary         []matchDetails `json:"summary"`
@@ -61,6 +65,7 @@ type matches struct {
 		DatasetID       []matchDetails `json:"dataset_id,omitempty"`
 	} `json:"description"`
 }
+
 type matchDetails struct {
 	Value string `json:"value,omitempty"`
 	Start int    `json:"start"`
@@ -68,26 +73,32 @@ type matchDetails struct {
 }
 
 type contentType struct {
-	Type  string
-	Count int
+	Type  string `json:"type"`
+	Count int    `json:"count"`
 }
+
+// Structs representing the raw elastic search response
 
 type esResponse struct {
 	Responses []esResponseItem `json:"responses"`
 }
+
 type esResponseItem struct {
 	Took         int                    `json:"took"`
 	Hits         esResponseHits         `json:"hits"`
 	Aggregations esResponseAggregations `json:"aggregations"`
 }
+
 type esResponseHits struct {
 	Total int
 	Hits  []esResponseHit `json:"hits"`
 }
+
 type esResponseHit struct {
 	Source    esSourceDocument `json:"_source"`
 	Highlight esHighlight      `json:"highlight"`
 }
+
 type esSourceDocument struct {
 	Description struct {
 		Summary           string   `json:"summary"`
@@ -111,6 +122,7 @@ type esSourceDocument struct {
 	Type string `json:"type"`
 	URI  string `json:"uri"`
 }
+
 type esHighlight struct {
 	DescriptionTitle     []string `json:"description.title"`
 	DescriptionEdition   []string `json:"description.edition"`
@@ -119,11 +131,13 @@ type esHighlight struct {
 	DescriptionKeywords  []string `json:"description.keywords"`
 	DescriptionDatasetID []string `json:"description.datasetId"`
 }
+
 type esResponseAggregations struct {
 	DocCounts struct {
 		Buckets []esBucket `json:"buckets"`
 	} `json:"docCounts"`
 }
+
 type esBucket struct {
 	Key   string `json:"key"`
 	Count int    `json:"doc_count"`
