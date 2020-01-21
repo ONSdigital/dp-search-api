@@ -96,10 +96,20 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 	}
 
 	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	formattedQuery, err := formatMultiQuery(doc.Bytes())
+	formattedQuery, err := FormatMultiQuery(doc.Bytes())
 	if err != nil {
 		return nil, errors.Wrap(err, "formating of query for elasticsearch failed")
 	}
 
 	return formattedQuery, nil
+}
+
+// HasQuery is a helper method used by certain templates
+func (sr searchRequest) HasQuery(query string) bool {
+	for _, q := range sr.Queries {
+		if q == query {
+			return true
+		}
+	}
+	return false
 }

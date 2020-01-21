@@ -10,14 +10,9 @@ import (
 )
 
 func TestBuildMatches(t *testing.T) {
-	Convey("Build matches for translates successfully", t, func() {
+	Convey("Build matches for Title translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionTitle:     []string{"<strong>value</strong> and double <strong>value</strong>"},
-			DescriptionEdition:   []string{"<strong>value</strong>"},
-			DescriptionSummary:   []string{"single <strong>value</strong>"},
-			DescriptionMeta:      []string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
-			DescriptionKeywords:  []string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
-			DescriptionDatasetID: []string{"       space before <strong>value</strong> and after    "},
+			DescriptionTitle: []string{"<strong>value</strong> and double <strong>value</strong>"},
 		}
 
 		matches := buildMatches(hl)
@@ -34,6 +29,16 @@ func TestBuildMatches(t *testing.T) {
 		So(titleDetails[1].Value, ShouldBeBlank)
 		So(titleDetails[1].Start, ShouldEqual, 18)
 		So(titleDetails[1].End, ShouldEqual, 22)
+	})
+
+	Convey("Build matches for Edition translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionEdition: []string{"<strong>value</strong>"},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Edition, ShouldNotBeNil)
 		editionDetails := matches.Description.Edition
@@ -43,6 +48,17 @@ func TestBuildMatches(t *testing.T) {
 		So(editionDetails[0].Start, ShouldEqual, 1)
 		So(editionDetails[0].End, ShouldEqual, 5)
 
+	})
+
+	Convey("Build matches for Summary translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionSummary: []string{"single <strong>value</strong>"},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
+
 		So(matches.Description.Summary, ShouldNotBeNil)
 		summaryDetails := matches.Description.Summary
 		So(summaryDetails, ShouldNotBeEmpty)
@@ -50,6 +66,16 @@ func TestBuildMatches(t *testing.T) {
 		So(summaryDetails[0].Value, ShouldBeBlank)
 		So(summaryDetails[0].Start, ShouldEqual, 8)
 		So(summaryDetails[0].End, ShouldEqual, 12)
+	})
+
+	Convey("Build matches for MetaDescription translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionMeta: []string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.MetaDescription, ShouldNotBeNil)
 		metaDetails := matches.Description.MetaDescription
@@ -58,6 +84,16 @@ func TestBuildMatches(t *testing.T) {
 		So(metaDetails[0].Value, ShouldBeBlank)
 		So(metaDetails[0].Start, ShouldEqual, 38)
 		So(metaDetails[0].End, ShouldEqual, 42)
+	})
+
+	Convey("Build matches for Keywords translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionKeywords: []string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Keywords, ShouldNotBeNil)
 		keywordsDetails := matches.Description.Keywords
@@ -78,6 +114,16 @@ func TestBuildMatches(t *testing.T) {
 		So(keywordsDetails[4].Value, ShouldResemble, "value again")
 		So(keywordsDetails[4].Start, ShouldEqual, 1)
 		So(keywordsDetails[4].End, ShouldEqual, 5)
+	})
+
+	Convey("Build matches for DatasetID translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionDatasetID: []string{"       space before <strong>value</strong> and after    "},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.DatasetID, ShouldNotBeNil)
 		dataSetDetails := matches.Description.DatasetID
@@ -86,6 +132,39 @@ func TestBuildMatches(t *testing.T) {
 		So(dataSetDetails[0].Value, ShouldBeBlank)
 		So(dataSetDetails[0].Start, ShouldEqual, 21)
 		So(dataSetDetails[0].End, ShouldEqual, 25)
+	})
+
+	Convey("Build matches for all items translates successfully", t, func() {
+		hl := esHighlight{
+			DescriptionTitle:     []string{"<strong>value</strong> and double <strong>value</strong>"},
+			DescriptionEdition:   []string{"<strong>value</strong>"},
+			DescriptionSummary:   []string{"single <strong>value</strong>"},
+			DescriptionMeta:      []string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
+			DescriptionKeywords:  []string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
+			DescriptionDatasetID: []string{"       space before <strong>value</strong> and after    "},
+		}
+
+		matches := buildMatches(hl)
+		So(matches, ShouldNotBeNil)
+		So(matches.Description, ShouldNotBeNil)
+
+		So(matches.Description.Title, ShouldNotBeNil)
+		So(matches.Description.Title, ShouldNotBeEmpty)
+
+		So(matches.Description.Edition, ShouldNotBeNil)
+		So(matches.Description.Edition, ShouldNotBeEmpty)
+
+		So(matches.Description.Summary, ShouldNotBeNil)
+		So(matches.Description.Summary, ShouldNotBeEmpty)
+
+		So(matches.Description.MetaDescription, ShouldNotBeNil)
+		So(matches.Description.MetaDescription, ShouldNotBeEmpty)
+
+		So(matches.Description.Keywords, ShouldNotBeNil)
+		So(matches.Description.Keywords, ShouldNotBeEmpty)
+
+		So(matches.Description.DatasetID, ShouldNotBeNil)
+		So(matches.Description.DatasetID, ShouldNotBeEmpty)
 	})
 }
 

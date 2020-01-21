@@ -26,17 +26,8 @@ func NewQueryBuilder() (*Builder, error) {
 	}, nil
 }
 
-// HasQuery is a helper method used by certain templates
-func (sr searchRequest) HasQuery(query string) bool {
-	for _, q := range sr.Queries {
-		if q == query {
-			return true
-		}
-	}
-	return false
-}
-
-func formatMultiQuery(rawQuery []byte) ([]byte, error) {
+// FormatMultiQuery minifies and reformats an elasticsearch MultiQuery
+func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
 	//Is minify thread Safe? can I put this as a global?
 	m := minify.New()
 	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)

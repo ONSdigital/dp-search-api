@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
-	"regexp"
 
+	"github.com/ONSdigital/dp-search-query/query"
 	"github.com/ONSdigital/log.go/log"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/js"
 )
 
 type dataLookupRequest struct {
@@ -30,22 +28,6 @@ func SetupData() error {
 	return err
 }
 
-func formatMultiQuery(rawQuery []byte) ([]byte, error) {
-	//Is minify thread Safe? can I put this as a global?
-	m := minify.New()
-	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
-
-	linearQuery, err := m.Bytes("application/js", rawQuery)
-
-	if err != nil {
-		return nil, err
-	}
-
-	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
-
-}
-
 // DataLookupHandlerFunc returns a http handler function handling search api requests.
 func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -64,7 +46,7 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 			return
 		}
 
-		formattedQuery, err := formatMultiQuery(doc.Bytes())
+		formattedQuery, err := query.FormatMultiQuery(doc.Bytes())
 		if err != nil {
 			log.Event(ctx, "formating of data query for elasticsearch failed", log.Error(err))
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
