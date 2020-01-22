@@ -1,29 +1,40 @@
 {
     "count": 2,
     "took": 96,
+    "content_types": [
+        {
+            "type": "article",
+            "count": 1
+        },
+        {
+            "type": "product_page",
+            "count": 1
+        }
+    ],
     "items": [
         {
             "description": {
-                "summary": "",
+                "contact": {
+                    "email": "somebody@ons.gov.uk",
+                    "name": "Somebody's Name",
+                    "telephone": "+44 (0)1329 123456"
+                },
+                "edition": "1995 to 2013",
                 "keywords": [
                     "regional house prices",
                     "property prices",
                     "area with cheapest houses",
                     "area with most expensive houses"
                 ],
-                "release_date": "2015-02-17T00:00:00.000Z",
-                "edition": "1995 to 2013",
                 "latest_release": true,
-                "contact": {
-                    "name": "Somebody's Name",
-                    "telephone": "+44 (0)1329 123456",
-                    "email": "somebody@ons.gov.uk"
-                },
+                "meta_description": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs).",
+                "national_statistic": false,
+                "release_date": "2015-02-17T00:00:00.000Z",
+                "source": "",
+                "summary": "",
                 "title": "House Price Statistics for Small Areas in England and Wales",
-                "meta_description": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs)."
+                "unit": ""
             },
-            "type": "article",
-            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
             "matches": {
                 "description": {
                     "summary": null,
@@ -51,13 +62,17 @@
                         }
                     ]
                 }
-            }
+            },
+            "type": "article",
+            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
         },
         {
             "description": {
                 "summary": "Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
-                "contact": {},
-                "title": "Housing"
+                "title": "Housing",
+                "unit": "",
+                "source": "",
+                "pre_unit": ""
             },
             "type": "product_page",
             "uri": "/peoplepopulationandcommunity/housing",
@@ -72,16 +87,6 @@
                     ]
                 }
             }
-        }
-    ],
-    "content_types": [
-        {
-            "type": "article",
-            "count": 1
-        },
-        {
-            "type": "product_page",
-            "count": 1
         }
     ]
 }

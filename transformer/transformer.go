@@ -26,43 +26,43 @@ type contentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
-	Matches     matches     `json:"matches,omitempty"`
+	Matches     *matches    `json:"matches,omitempty"`
 }
 
 type description struct {
-	Summary           string   `json:"summary"`
-	NextRelease       string   `json:"next_release,omitempty"`
-	Unit              string   `json:"unit,omitempty"`
-	Keywords          []string `json:"keywords,omitempty"`
-	ReleaseDate       string   `json:"release_date,omitempty"`
-	Edition           string   `json:"edition,omitempty"`
-	LatestRelease     bool     `json:"latest_release,omitempty"`
-	Language          string   `json:"language,omitempty"`
-	Contact           contact  `json:"contact,omitempty"`
-	DatasetID         string   `json:"dataset_id,omitempty"`
-	Source            string   `json:"source,omitempty"`
-	Title             string   `json:"title"`
-	MetaDescription   string   `json:"meta_description,omitempty"`
-	NationalStatistic bool     `json:"national_statistic,omitempty"`
-	Headline1         string   `json:"headline1,omitempty"`
-	Headline2         string   `json:"headline2,omitempty"`
-	Headline3         string   `json:"headline3,omitempty"`
+	Summary           string    `json:"summary"`
+	NextRelease       *string   `json:"next_release,omitempty"`
+	Unit              *string   `json:"unit,omitempty"`
+	Keywords          *[]string `json:"keywords,omitempty"`
+	ReleaseDate       *string   `json:"release_date,omitempty"`
+	Edition           *string   `json:"edition,omitempty"`
+	LatestRelease     *bool     `json:"latest_release,omitempty"`
+	Language          *string   `json:"language,omitempty"`
+	Contact           *contact  `json:"contact,omitempty"`
+	DatasetID         *string   `json:"dataset_id,omitempty"`
+	Source            *string   `json:"source,omitempty"`
+	Title             string    `json:"title"`
+	MetaDescription   *string   `json:"meta_description,omitempty"`
+	NationalStatistic *bool     `json:"national_statistic,omitempty"`
+	Headline1         *string   `json:"headline1,omitempty"`
+	Headline2         *string   `json:"headline2,omitempty"`
+	Headline3         *string   `json:"headline3,omitempty"`
 }
 
 type contact struct {
-	Name      string `json:"name,omitempty"`
-	Telephone string `json:"telephone,omitempty"`
-	Email     string `json:"email,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	Telephone *string `json:"telephone,omitempty"`
+	Email     *string `json:"email,omitempty"`
 }
 
 type matches struct {
 	Description struct {
-		Summary         []matchDetails `json:"summary"`
-		Title           []matchDetails `json:"title"`
-		Edition         []matchDetails `json:"edition,omitempty"`
-		MetaDescription []matchDetails `json:"meta_description,omitempty"`
-		Keywords        []matchDetails `json:"keywords,omitempty"`
-		DatasetID       []matchDetails `json:"dataset_id,omitempty"`
+		Summary         *[]matchDetails `json:"summary"`
+		Title           *[]matchDetails `json:"title"`
+		Edition         *[]matchDetails `json:"edition,omitempty"`
+		MetaDescription *[]matchDetails `json:"meta_description,omitempty"`
+		Keywords        *[]matchDetails `json:"keywords,omitempty"`
+		DatasetID       *[]matchDetails `json:"dataset_id,omitempty"`
 	} `json:"description"`
 }
 
@@ -101,35 +101,35 @@ type esResponseHit struct {
 
 type esSourceDocument struct {
 	Description struct {
-		Summary           string   `json:"summary"`
-		NextRelease       string   `json:"nextRelease"`
-		Unit              string   `json:"unit"`
-		Keywords          []string `json:"keywords"`
-		ReleaseDate       string   `json:"releaseDate"`
-		Edition           string   `json:"edition"`
-		LatestRelease     bool     `json:"latestRelease"`
-		Language          string   `json:"language"`
-		Contact           contact  `json:"contact"`
-		DatasetID         string   `json:"datasetId"`
-		Source            string   `json:"source"`
-		Title             string   `json:"title"`
-		MetaDescription   string   `json:"metaDescription"`
-		NationalStatistic bool     `json:"nationalStatistic"`
-		Headline1         string   `json:"headline1"`
-		Headline2         string   `json:"headline2"`
-		Headline3         string   `json:"headline3"`
+		Summary           string    `json:"summary"`
+		NextRelease       *string   `json:"nextRelease,omitempty"`
+		Unit              *string   `json:"unit,omitempty"`
+		Keywords          *[]string `json:"keywords,omitempty"`
+		ReleaseDate       *string   `json:"releaseDate,omitempty"`
+		Edition           *string   `json:"edition,omitempty"`
+		LatestRelease     *bool     `json:"latestRelease,omitempty"`
+		Language          *string   `json:"language,omitempty"`
+		Contact           *contact  `json:"contact,omitempty"`
+		DatasetID         *string   `json:"datasetId,omitempty"`
+		Source            *string   `json:"source,omitempty"`
+		Title             string    `json:"title"`
+		MetaDescription   *string   `json:"metaDescription,omitempty"`
+		NationalStatistic *bool     `json:"nationalStatistic,omitempty"`
+		Headline1         *string   `json:"headline1,omitempty"`
+		Headline2         *string   `json:"headline2,omitempty"`
+		Headline3         *string   `json:"headline3,omitempty"`
 	} `json:"description"`
 	Type string `json:"type"`
 	URI  string `json:"uri"`
 }
 
 type esHighlight struct {
-	DescriptionTitle     []string `json:"description.title"`
-	DescriptionEdition   []string `json:"description.edition"`
-	DescriptionSummary   []string `json:"description.summary"`
-	DescriptionMeta      []string `json:"description.metaDescription"`
-	DescriptionKeywords  []string `json:"description.keywords"`
-	DescriptionDatasetID []string `json:"description.datasetId"`
+	DescriptionTitle     *[]string `json:"description.title"`
+	DescriptionEdition   *[]string `json:"description.edition"`
+	DescriptionSummary   *[]string `json:"description.summary"`
+	DescriptionMeta      *[]string `json:"description.metaDescription"`
+	DescriptionKeywords  *[]string `json:"description.keywords"`
+	DescriptionDatasetID *[]string `json:"description.datasetId"`
 }
 
 type esResponseAggregations struct {
@@ -220,43 +220,67 @@ func buildDescription(doc esResponseHit) description {
 	}
 }
 
-func buildMatches(hl esHighlight) matches {
+func buildMatches(hl esHighlight) *matches {
 	var matches matches
 
-	for _, m := range hl.DescriptionTitle {
-		matchDetails, _ := findMatches(m)
-		matches.Description.Title = append(matches.Description.Title, matchDetails...)
-	}
-
-	for _, m := range hl.DescriptionEdition {
-		matchDetails, _ := findMatches(m)
-		matches.Description.Edition = append(matches.Description.Edition, matchDetails...)
-	}
-
-	for _, m := range hl.DescriptionSummary {
-		matchDetails, _ := findMatches(m)
-		matches.Description.Summary = append(matches.Description.Summary, matchDetails...)
-	}
-
-	for _, m := range hl.DescriptionMeta {
-		matchDetails, _ := findMatches(m)
-		matches.Description.MetaDescription = append(matches.Description.MetaDescription, matchDetails...)
-	}
-
-	for _, m := range hl.DescriptionKeywords {
-		matchDetails, value := findMatches(m)
-		for _, md := range matchDetails {
-			md.Value = value
-			matches.Description.Keywords = append(matches.Description.Keywords, md)
+	if highlights := hl.DescriptionTitle; highlights != nil {
+		titleMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, _ := findMatches(m)
+			titleMatches = append(titleMatches, foundMatchDetails...)
 		}
+		matches.Description.Title = &titleMatches
 	}
 
-	for _, m := range hl.DescriptionDatasetID {
-		matchDetails, _ := findMatches(m)
-		matches.Description.DatasetID = append(matches.Description.DatasetID, matchDetails...)
+	if highlights := hl.DescriptionEdition; highlights != nil {
+		editionMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, _ := findMatches(m)
+			editionMatches = append(editionMatches, foundMatchDetails...)
+		}
+		matches.Description.Edition = &editionMatches
 	}
 
-	return matches
+	if highlights := hl.DescriptionSummary; highlights != nil {
+		summaryMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, _ := findMatches(m)
+			summaryMatches = append(summaryMatches, foundMatchDetails...)
+		}
+		matches.Description.Summary = &summaryMatches
+	}
+
+	if highlights := hl.DescriptionMeta; highlights != nil {
+		summaryMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, _ := findMatches(m)
+			summaryMatches = append(summaryMatches, foundMatchDetails...)
+		}
+		matches.Description.MetaDescription = &summaryMatches
+	}
+
+	if highlights := hl.DescriptionKeywords; highlights != nil {
+		keywordsMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, value := findMatches(m)
+			for _, md := range foundMatchDetails {
+				md.Value = value
+				keywordsMatches = append(keywordsMatches, md)
+			}
+		}
+		matches.Description.Keywords = &keywordsMatches
+	}
+
+	if highlights := hl.DescriptionDatasetID; highlights != nil {
+		datasetIDMatches := make([]matchDetails, 0, len(*highlights))
+		for _, m := range *highlights {
+			foundMatchDetails, _ := findMatches(m)
+			datasetIDMatches = append(datasetIDMatches, foundMatchDetails...)
+		}
+		matches.Description.DatasetID = &datasetIDMatches
+	}
+
+	return &matches
 }
 
 // Find matches finds all the matching marked-up phrases and returns a slice of their start and end points in the string

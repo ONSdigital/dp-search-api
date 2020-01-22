@@ -12,7 +12,7 @@ import (
 func TestBuildMatches(t *testing.T) {
 	Convey("Build matches for Title translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionTitle: []string{"<strong>value</strong> and double <strong>value</strong>"},
+			DescriptionTitle: &[]string{"<strong>value</strong> and double <strong>value</strong>"},
 		}
 
 		matches := buildMatches(hl)
@@ -20,7 +20,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Title, ShouldNotBeNil)
-		titleDetails := matches.Description.Title
+		titleDetails := *matches.Description.Title
 		So(titleDetails, ShouldNotBeEmpty)
 		So(len(titleDetails), ShouldEqual, 2)
 		So(titleDetails[0].Value, ShouldBeBlank)
@@ -33,7 +33,7 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for Edition translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionEdition: []string{"<strong>value</strong>"},
+			DescriptionEdition: &[]string{"<strong>value</strong>"},
 		}
 
 		matches := buildMatches(hl)
@@ -41,7 +41,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Edition, ShouldNotBeNil)
-		editionDetails := matches.Description.Edition
+		editionDetails := *matches.Description.Edition
 		So(editionDetails, ShouldNotBeEmpty)
 		So(len(editionDetails), ShouldEqual, 1)
 		So(editionDetails[0].Value, ShouldBeBlank)
@@ -52,7 +52,7 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for Summary translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionSummary: []string{"single <strong>value</strong>"},
+			DescriptionSummary: &[]string{"single <strong>value</strong>"},
 		}
 
 		matches := buildMatches(hl)
@@ -60,7 +60,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Summary, ShouldNotBeNil)
-		summaryDetails := matches.Description.Summary
+		summaryDetails := *matches.Description.Summary
 		So(summaryDetails, ShouldNotBeEmpty)
 		So(len(summaryDetails), ShouldEqual, 1)
 		So(summaryDetails[0].Value, ShouldBeBlank)
@@ -70,7 +70,7 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for MetaDescription translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionMeta: []string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
+			DescriptionMeta: &[]string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
 		}
 
 		matches := buildMatches(hl)
@@ -78,7 +78,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.MetaDescription, ShouldNotBeNil)
-		metaDetails := matches.Description.MetaDescription
+		metaDetails := *matches.Description.MetaDescription
 		So(metaDetails, ShouldNotBeEmpty)
 		So(len(metaDetails), ShouldEqual, 1)
 		So(metaDetails[0].Value, ShouldBeBlank)
@@ -88,7 +88,7 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for Keywords translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionKeywords: []string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
+			DescriptionKeywords: &[]string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
 		}
 
 		matches := buildMatches(hl)
@@ -96,7 +96,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.Keywords, ShouldNotBeNil)
-		keywordsDetails := matches.Description.Keywords
+		keywordsDetails := *matches.Description.Keywords
 		So(keywordsDetails, ShouldNotBeEmpty)
 		So(len(keywordsDetails), ShouldEqual, 5)
 		So(keywordsDetails[0].Value, ShouldResemble, "one value")
@@ -118,7 +118,7 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for DatasetID translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionDatasetID: []string{"       space before <strong>value</strong> and after    "},
+			DescriptionDatasetID: &[]string{"       space before <strong>value</strong> and after    "},
 		}
 
 		matches := buildMatches(hl)
@@ -126,7 +126,7 @@ func TestBuildMatches(t *testing.T) {
 		So(matches.Description, ShouldNotBeNil)
 
 		So(matches.Description.DatasetID, ShouldNotBeNil)
-		dataSetDetails := matches.Description.DatasetID
+		dataSetDetails := *matches.Description.DatasetID
 		So(dataSetDetails, ShouldNotBeEmpty)
 		So(len(dataSetDetails), ShouldEqual, 1)
 		So(dataSetDetails[0].Value, ShouldBeBlank)
@@ -136,12 +136,12 @@ func TestBuildMatches(t *testing.T) {
 
 	Convey("Build matches for all items translates successfully", t, func() {
 		hl := esHighlight{
-			DescriptionTitle:     []string{"<strong>value</strong> and double <strong>value</strong>"},
-			DescriptionEdition:   []string{"<strong>value</strong>"},
-			DescriptionSummary:   []string{"single <strong>value</strong>"},
-			DescriptionMeta:      []string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
-			DescriptionKeywords:  []string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
-			DescriptionDatasetID: []string{"       space before <strong>value</strong> and after    "},
+			DescriptionTitle:     &[]string{"<strong>value</strong> and double <strong>value</strong>"},
+			DescriptionEdition:   &[]string{"<strong>value</strong>"},
+			DescriptionSummary:   &[]string{"single <strong>value</strong>"},
+			DescriptionMeta:      &[]string{"a <wrong>value</strong> here but not <strong>value</strong> here"},
+			DescriptionKeywords:  &[]string{"one <strong>value</strong>", "<strong>value</strong> another <strong>value</strong> third <strong>value</strong>", "<strong>value</strong> again"},
+			DescriptionDatasetID: &[]string{"       space before <strong>value</strong> and after    "},
 		}
 
 		matches := buildMatches(hl)
