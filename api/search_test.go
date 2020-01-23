@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -52,7 +51,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Body.String(), ShouldContainSubstring, "Invalid offset parameter")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
-		fmt.Println("It's lunch time")
 	})
 
 	Convey("Should return InternalError for errors returned from query builder", t, func() {
