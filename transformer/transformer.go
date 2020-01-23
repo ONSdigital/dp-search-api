@@ -224,7 +224,7 @@ func buildMatches(hl esHighlight) *matches {
 	var matches matches
 
 	if highlights := hl.DescriptionTitle; highlights != nil {
-		titleMatches := make([]matchDetails, 0, len(*highlights))
+		var titleMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, _ := findMatches(m)
 			titleMatches = append(titleMatches, foundMatchDetails...)
@@ -233,7 +233,7 @@ func buildMatches(hl esHighlight) *matches {
 	}
 
 	if highlights := hl.DescriptionEdition; highlights != nil {
-		editionMatches := make([]matchDetails, 0, len(*highlights))
+		var editionMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, _ := findMatches(m)
 			editionMatches = append(editionMatches, foundMatchDetails...)
@@ -242,7 +242,7 @@ func buildMatches(hl esHighlight) *matches {
 	}
 
 	if highlights := hl.DescriptionSummary; highlights != nil {
-		summaryMatches := make([]matchDetails, 0, len(*highlights))
+		var summaryMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, _ := findMatches(m)
 			summaryMatches = append(summaryMatches, foundMatchDetails...)
@@ -251,7 +251,7 @@ func buildMatches(hl esHighlight) *matches {
 	}
 
 	if highlights := hl.DescriptionMeta; highlights != nil {
-		summaryMatches := make([]matchDetails, 0, len(*highlights))
+		var summaryMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, _ := findMatches(m)
 			summaryMatches = append(summaryMatches, foundMatchDetails...)
@@ -260,7 +260,7 @@ func buildMatches(hl esHighlight) *matches {
 	}
 
 	if highlights := hl.DescriptionKeywords; highlights != nil {
-		keywordsMatches := make([]matchDetails, 0, len(*highlights))
+		var keywordsMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, value := findMatches(m)
 			for _, md := range foundMatchDetails {
@@ -272,7 +272,7 @@ func buildMatches(hl esHighlight) *matches {
 	}
 
 	if highlights := hl.DescriptionDatasetID; highlights != nil {
-		datasetIDMatches := make([]matchDetails, 0, len(*highlights))
+		var datasetIDMatches []matchDetails
 		for _, m := range *highlights {
 			foundMatchDetails, _ := findMatches(m)
 			datasetIDMatches = append(datasetIDMatches, foundMatchDetails...)
