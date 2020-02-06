@@ -15,7 +15,6 @@ tags:
   - name: "health"
 
 paths:
-
   /search:
     get:
       tags:
@@ -41,7 +40,7 @@ paths:
           name: sort_order
           description: "The order to return the results."
           type: string
-          enum: [relevance,release_date,title]
+          enum: [relevance, release_date, title]
           required: false
         - in: query
           name: limit
@@ -52,12 +51,12 @@ paths:
           name: offset
           description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
           type: integer
-          required: false          
+          required: false
       responses:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/SearchResponse'
+            $ref: "#/definitions/SearchResponse"
         400:
           description: Query term not specified
         500:
@@ -84,17 +83,17 @@ paths:
           name: offset
           description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
           type: integer
-          required: false    
+          required: false
       responses:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/DepartmentResponse'
+            $ref: "#/definitions/DepartmentResponse"
         400:
           description: Query term not specified
         500:
           description: Internal server error
-        
+
   /health:
     get:
       tags:
@@ -105,10 +104,9 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Health'
+            $ref: "#/definitions/Health"
         500:
           description: Internal Server Error
-
 
 definitions:
   SearchResponse:
@@ -126,12 +124,12 @@ definitions:
         type: array
         description: "List of content types included in results"
         items:
-          $ref: '#/definitions/ContentType'
+          $ref: "#/definitions/ContentType"
       items:
         type: array
         description: "List of matching content items for the current page"
         items:
-          $ref: '#/definitions/ContentItem'
+          $ref: "#/definitions/ContentItem"
     required:
       - count
       - took
@@ -151,11 +149,11 @@ definitions:
         type: array
         description: "List of matching content items for the current page"
         items:
-          $ref: '#/definitions/DepartmentItem'
+          $ref: "#/definitions/DepartmentItem"
     required:
       - count
       - took
-    
+
   ContentType:
     type: object
     properties:
@@ -175,7 +173,7 @@ definitions:
             properties:
               email:
                 type: string
-              name: 
+              name:
                 type: string
               telephone:
                 type: string
@@ -183,13 +181,13 @@ definitions:
             type: string
           edition:
             type: string
-          headline1: 
+          headline1:
             type: string
-          headline2: 
+          headline2:
             type: string
-          headline3: 
+          headline3:
             type: string
-          keywords: 
+          keywords:
             type: array
             items:
               type: string
@@ -198,23 +196,23 @@ definitions:
           language:
             type: string
             example: "English"
-          meta_description: 
+          meta_description:
             type: string
-          national_statistic: 
+          national_statistic:
             type: boolean
-          next_release: 
+          next_release:
             type: string
             example: "14 August 2015"
-          pre_unit: 
+          pre_unit:
             type: string
-          release_date: 
+          release_date:
             type: string
             format: date-time
-          source: 
+          source:
             type: string
-          summary: 
+          summary:
             type: string
-          title: 
+          title:
             type: string
           unit:
             type: string
@@ -230,30 +228,30 @@ definitions:
               dataset_id:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
-              edition: 
+                  $ref: "#/definitions/MatchDetails"
+              edition:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
-              keywords: 
+                  $ref: "#/definitions/MatchDetails"
+              keywords:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
-              meta_description: 
+                  $ref: "#/definitions/MatchDetails"
+              meta_description:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
-              summary: 
+                  $ref: "#/definitions/MatchDetails"
+              summary:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
-              title: 
+                  $ref: "#/definitions/MatchDetails"
+              title:
                 type: array
                 items:
-                  $ref: '#/definitions/MatchDetails'
+                  $ref: "#/definitions/MatchDetails"
       type:
         type: string
-      uri: 
+      uri:
         type: string
     required:
       - description
@@ -278,10 +276,10 @@ definitions:
         items:
           type: object
           properties:
-            terms: 
+            terms:
               type: array
               items:
-                $ref: '#/definitions/MatchDetails'
+                $ref: "#/definitions/MatchDetails"
 
   MatchDetails:
     description: "A pair of integers to define the start and end of substring in the member that matched the search terms. The first character of the string is index 1."
@@ -289,14 +287,14 @@ definitions:
     properties:
       value:
         type: string
-        description: "For matches in keys that a re part of an array, this will contain the value containing a match."
+        description: "For matches in keys that are part of an array, this will contain the value containing a match."
       start:
         type: integer
         description: "An integer to define the start byte of a substring in the member that matched. The first character of the string is index 1."
         example: 3
       end:
         type: integer
-        description: "An integer to define the end of a substring in the member that matched."
+        description: "An integer to define the end byte of a substring in the member that matched."
         example: 8
 
   Health:
