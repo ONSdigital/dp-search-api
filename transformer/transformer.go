@@ -50,9 +50,9 @@ type description struct {
 }
 
 type contact struct {
-	Name      *string `json:"name,omitempty"`
-	Telephone *string `json:"telephone,omitempty"`
-	Email     *string `json:"email,omitempty"`
+	Name      string `json:"name"`
+	Telephone string `json:"telephone,omitempty"`
+	Email     string `json:"email"`
 }
 
 type matches struct {
