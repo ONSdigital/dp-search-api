@@ -18,8 +18,13 @@ type Transformer struct{}
 type searchResponse struct {
 	Count        int           `json:"count"`
 	Took         int           `json:"took"`
-	Items        []contentItem `json:"items"`
 	ContentTypes []contentType `json:"content_types"`
+	Items        []contentItem `json:"items"`
+}
+
+type contentType struct {
+	Type  string `json:"type"`
+	Count int    `json:"count"`
 }
 
 type contentItem struct {
@@ -30,23 +35,24 @@ type contentItem struct {
 }
 
 type description struct {
-	Summary           string    `json:"summary"`
-	NextRelease       *string   `json:"next_release,omitempty"`
-	Unit              *string   `json:"unit,omitempty"`
-	Keywords          *[]string `json:"keywords,omitempty"`
-	ReleaseDate       *string   `json:"release_date,omitempty"`
-	Edition           *string   `json:"edition,omitempty"`
-	LatestRelease     *bool     `json:"latest_release,omitempty"`
-	Language          *string   `json:"language,omitempty"`
 	Contact           *contact  `json:"contact,omitempty"`
-	DatasetID         *string   `json:"dataset_id,omitempty"`
-	Source            *string   `json:"source,omitempty"`
-	Title             string    `json:"title"`
-	MetaDescription   *string   `json:"meta_description,omitempty"`
+	DatasetID         string    `json:"dataset_id,omitempty"`
+	Edition           string    `json:"edition,omitempty"`
+	Headline1         string    `json:"headline1,omitempty"`
+	Headline2         string    `json:"headline2,omitempty"`
+	Headline3         string    `json:"headline3,omitempty"`
+	Keywords          *[]string `json:"keywords,omitempty"`
+	LatestRelease     *bool     `json:"latest_release,omitempty"`
+	Language          string    `json:"language,omitempty"`
+	MetaDescription   string    `json:"meta_description,omitempty"`
 	NationalStatistic *bool     `json:"national_statistic,omitempty"`
-	Headline1         *string   `json:"headline1,omitempty"`
-	Headline2         *string   `json:"headline2,omitempty"`
-	Headline3         *string   `json:"headline3,omitempty"`
+	NextRelease       string    `json:"next_release,omitempty"`
+	PreUnit           string    `json:"pre_unit,omitempty"`
+	ReleaseDate       string    `json:"release_date,omitempty"`
+	Source            string    `json:"source,omitempty"`
+	Summary           string    `json:"summary"`
+	Title             string    `json:"title"`
+	Unit              string    `json:"unit,omitempty"`
 }
 
 type contact struct {
@@ -70,11 +76,6 @@ type matchDetails struct {
 	Value string `json:"value,omitempty"`
 	Start int    `json:"start"`
 	End   int    `json:"end"`
-}
-
-type contentType struct {
-	Type  string `json:"type"`
-	Count int    `json:"count"`
 }
 
 // Structs representing the raw elastic search response
@@ -102,22 +103,23 @@ type esResponseHit struct {
 type esSourceDocument struct {
 	Description struct {
 		Summary           string    `json:"summary"`
-		NextRelease       *string   `json:"nextRelease,omitempty"`
-		Unit              *string   `json:"unit,omitempty"`
+		NextRelease       string    `json:"nextRelease,omitempty"`
+		Unit              string    `json:"unit,omitempty"`
 		Keywords          *[]string `json:"keywords,omitempty"`
-		ReleaseDate       *string   `json:"releaseDate,omitempty"`
-		Edition           *string   `json:"edition,omitempty"`
+		ReleaseDate       string    `json:"releaseDate,omitempty"`
+		Edition           string    `json:"edition,omitempty"`
 		LatestRelease     *bool     `json:"latestRelease,omitempty"`
-		Language          *string   `json:"language,omitempty"`
+		Language          string    `json:"language,omitempty"`
 		Contact           *contact  `json:"contact,omitempty"`
-		DatasetID         *string   `json:"datasetId,omitempty"`
-		Source            *string   `json:"source,omitempty"`
+		DatasetID         string    `json:"datasetId,omitempty"`
+		Source            string    `json:"source,omitempty"`
 		Title             string    `json:"title"`
-		MetaDescription   *string   `json:"metaDescription,omitempty"`
+		MetaDescription   string    `json:"metaDescription,omitempty"`
 		NationalStatistic *bool     `json:"nationalStatistic,omitempty"`
-		Headline1         *string   `json:"headline1,omitempty"`
-		Headline2         *string   `json:"headline2,omitempty"`
-		Headline3         *string   `json:"headline3,omitempty"`
+		PreUnit           string    `json:"preUnit,omitempty"`
+		Headline1         string    `json:"headline1,omitempty"`
+		Headline2         string    `json:"headline2,omitempty"`
+		Headline3         string    `json:"headline3,omitempty"`
 	} `json:"description"`
 	Type string `json:"type"`
 	URI  string `json:"uri"`
@@ -203,6 +205,7 @@ func buildDescription(doc esResponseHit) description {
 		Summary:           sd.Summary,
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
+		PreUnit:           sd.PreUnit,
 		Keywords:          sd.Keywords,
 		ReleaseDate:       sd.ReleaseDate,
 		Edition:           sd.Edition,

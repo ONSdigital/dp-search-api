@@ -25,17 +25,17 @@ func main() {
 	}
 
 	// sensitive fields are omitted from config.String().
-	log.Event(nil, "config on startup", log.Data{"config": cfg})
+	log.Event(nil, "config on startup", log.Data{"config": cfg}, log.INFO)
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	apiErrors := make(chan error, 1)
 
-	log.Event(nil, "initialising query builder")
+	log.Event(nil, "initialising query builder", log.INFO)
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
-		log.Event(nil, "error initialising query builder", log.Error(err), nil)
+		log.Event(nil, "error initialising query builder", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}
 
@@ -43,20 +43,20 @@ func main() {
 	transformer := transformer.New()
 
 	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {
-		log.Event(nil, "error initialising API", log.Error(err), nil)
+		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}
 
 	gracefulShutdown := func() {
-		log.Event(nil, "commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout})
+		log.Event(nil, "commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout}, log.INFO)
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
 		// stop any incoming requests before closing any outbound connections
 		if err := api.Close(ctx); err != nil {
-			log.Event(ctx, "error closing API", log.Error(err))
+			log.Event(ctx, "error closing API", log.Error(err), log.ERROR)
 		}
 
-		log.Event(ctx, "shutdown complete")
+		log.Event(ctx, "shutdown complete", log.INFO)
 		cancel()
 	}
 
@@ -65,7 +65,7 @@ func main() {
 	case err := <-apiErrors:
 		log.Event(nil, "search-query api error received", log.Error(err), log.FATAL)
 	case <-signals:
-		log.Event(nil, "os signal received")
+		log.Event(nil, "os signal received", log.INFO)
 		gracefulShutdown()
 	}
 

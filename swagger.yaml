@@ -133,6 +133,8 @@ definitions:
     required:
       - count
       - took
+      - content_types
+      - items
 
   DepartmentResponse:
     type: object
@@ -181,8 +183,8 @@ definitions:
               telephone:
                 type: string
             required:
-              - "name"
-              - "email"
+              - name
+              - email
           dataset_id:
             type: string
           edition:
@@ -302,6 +304,9 @@ definitions:
         type: integer
         description: "An integer to define the end byte of a substring in the member that matched."
         example: 8
+    required:
+      - start
+      - end
 
   Health:
     type: object

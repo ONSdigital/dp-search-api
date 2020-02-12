@@ -35,14 +35,14 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 		var doc bytes.Buffer
 		err := timeseriesTemplate.Execute(&doc, reqParams)
 		if err != nil {
-			log.Event(ctx, "creation of timeseries query from template failed", log.Data{"Params": reqParams}, log.Error(err))
+			log.Event(ctx, "creation of timeseries query from template failed", log.Data{"Params": reqParams}, log.Error(err), log.ERROR)
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData, err := elasticSearchClient.Search(ctx, "ons", "timeseries", doc.Bytes())
 		if err != nil {
-			log.Event(ctx, "elasticsearch query failed", log.Error(err))
+			log.Event(ctx, "elasticsearch query failed", log.Error(err), log.ERROR)
 			http.Error(w, "Failed to run timeseries query", http.StatusInternalServerError)
 			return
 		}

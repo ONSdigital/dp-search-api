@@ -68,9 +68,9 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 	httpServer.HandleOSSignals = false
 
 	go func() {
-		log.Event(nil, "search-query api starting")
+		log.Event(nil, "search-query api starting", log.INFO)
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Event(nil, "search-query api http server returned error", log.Error(err))
+			log.Event(nil, "search-query api http server returned error", log.Error(err), log.ERROR)
 			errorChan <- err
 		}
 	}()
@@ -100,6 +100,6 @@ func Close(ctx context.Context) error {
 	if err := httpServer.Shutdown(ctx); err != nil {
 		return err
 	}
-	log.Event(ctx, "graceful shutdown of http server complete")
+	log.Event(ctx, "graceful shutdown of http server complete", log.INFO)
 	return nil
 }

@@ -41,7 +41,7 @@ func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.Re
 				Status: "error",
 				Error:  healthIssue,
 			}); err != nil {
-				log.Event(ctx, "elasticsearch healthcheck status json failed to parse", log.Error(err))
+				log.Event(ctx, "elasticsearch healthcheck status json failed to parse", log.Error(err), log.ERROR)
 				panic(err)
 			}
 		}
