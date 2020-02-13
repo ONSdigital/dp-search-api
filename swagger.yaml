@@ -130,6 +130,11 @@ definitions:
         description: "List of matching content items for the current page"
         items:
           $ref: "#/definitions/ContentItem"
+      suggestions:
+        type: array
+        description: "List of suggested alternative similar search queries"  
+        items:
+          type: string
     required:
       - count
       - took

@@ -88,5 +88,9 @@
                 }
             }
         }
+    ],
+    "suggestions": [
+        "home",
+        "tent"
     ]
 }

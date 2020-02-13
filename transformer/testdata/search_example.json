@@ -94,8 +94,17 @@
                     {
                         "text": "housing",
                         "offset": 0,
-                        "length": 7,
-                        "options": []
+                        "length": 5,
+                        "options": [
+                            {
+                                "text": "home",
+                                "score": 0.0849763
+                            },
+                            {
+                                "text": "tent",
+                                "score": 0.0314159
+                            }
+                        ]
                     }
                 ]
             }

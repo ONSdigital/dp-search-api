@@ -9,6 +9,73 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func TestTransform(t *testing.T) {
+	Convey("Transforms unmarshalled search responses successfully", t, func() {
+		Convey("Zero suggestions creates empty array", func() {
+			es := esResponse{
+				Responses: []esResponseItem{esResponseItem{
+					Suggest: esSuggest{
+						SearchSuggest: []esSearchSuggest{esSearchSuggest{
+							Options: []esSearchSuggestOptions{},
+						}},
+					},
+				}},
+			}
+			sr := transform(&es)
+			So(sr.Suggestions, ShouldBeEmpty)
+		})
+
+		Convey("One suggestion creates a populated array", func() {
+			es := esResponse{
+				Responses: []esResponseItem{esResponseItem{
+					Suggest: esSuggest{
+						SearchSuggest: []esSearchSuggest{esSearchSuggest{
+							Options: []esSearchSuggestOptions{
+								esSearchSuggestOptions{Text: "option1"},
+							},
+						}},
+					},
+				}},
+			}
+			sr := transform(&es)
+			So(sr.Suggestions, ShouldNotBeEmpty)
+			So(len(sr.Suggestions), ShouldEqual, 1)
+			So(sr.Suggestions[0], ShouldResemble, "option1")
+		})
+		Convey("Multiple suggestions creates a populated array incorrect order", func() {
+			es := esResponse{
+				Responses: []esResponseItem{esResponseItem{
+					Suggest: esSuggest{
+						SearchSuggest: []esSearchSuggest{
+							esSearchSuggest{
+								Options: []esSearchSuggestOptions{
+									esSearchSuggestOptions{Text: "option1"},
+								},
+							},
+							esSearchSuggest{
+								Options: []esSearchSuggestOptions{
+									esSearchSuggestOptions{Text: "option2"},
+								},
+							},
+							esSearchSuggest{
+								Options: []esSearchSuggestOptions{
+									esSearchSuggestOptions{Text: "option3"},
+								},
+							},
+						},
+					},
+				}},
+			}
+			sr := transform(&es)
+			So(sr.Suggestions, ShouldNotBeEmpty)
+			So(len(sr.Suggestions), ShouldEqual, 3)
+			So(sr.Suggestions[0], ShouldResemble, "option1")
+			So(sr.Suggestions[1], ShouldResemble, "option2")
+			So(sr.Suggestions[2], ShouldResemble, "option3")
+		})
+	})
+}
+
 func TestBuildMatches(t *testing.T) {
 	Convey("Build matches for Title translates successfully", t, func() {
 		hl := esHighlight{

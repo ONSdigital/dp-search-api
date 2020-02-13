@@ -11,7 +11,7 @@ import (
 const startHighlightTag string = "<strong>"
 const endHighlightTag string = "</strong>"
 
-// Transformer represents an instance of the ResposeTransformer interface
+// Transformer represents an instance of the ResponseTransformer interface
 type Transformer struct{}
 
 // Structs representing the transformed response
@@ -20,6 +20,7 @@ type searchResponse struct {
 	Took         int           `json:"took"`
 	ContentTypes []contentType `json:"content_types"`
 	Items        []contentItem `json:"items"`
+	Suggestions  []string      `json:"suggestions,omitempty"`
 }
 
 type contentType struct {
@@ -88,6 +89,7 @@ type esResponseItem struct {
 	Took         int                    `json:"took"`
 	Hits         esResponseHits         `json:"hits"`
 	Aggregations esResponseAggregations `json:"aggregations"`
+	Suggest      esSuggest              `json:"suggest"`
 }
 
 type esResponseHits struct {
@@ -145,6 +147,18 @@ type esBucket struct {
 	Count int    `json:"doc_count"`
 }
 
+type esSuggest struct {
+	SearchSuggest []esSearchSuggest `json:"search_suggest"`
+}
+
+type esSearchSuggest struct {
+	Options []esSearchSuggestOptions `json:"options"`
+}
+
+type esSearchSuggestOptions struct {
+	Text string `json:"text"`
+}
+
 // New returns a new instance of Transformer
 func New() *Transformer {
 	return &Transformer{}
@@ -152,40 +166,49 @@ func New() *Transformer {
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error) {
+	var source esResponse
 
-	var esResponse esResponse
-
-	err := json.Unmarshal(responseData, &esResponse)
+	err := json.Unmarshal(responseData, &source)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to decode elastic search response")
 	}
 
-	if len(esResponse.Responses) < 1 {
+	if len(source.Responses) < 1 {
 		return nil, errors.New("Response to be transformed contained 0 items")
 	}
 
-	sr := searchResponse{
-		Count:        esResponse.Responses[0].Hits.Total,
-		Items:        []contentItem{},
-		ContentTypes: []contentType{},
-	}
-	var took int = 0
-	for _, response := range esResponse.Responses {
-		for _, doc := range response.Hits.Hits {
-			sr.Items = append(sr.Items, buildContentItem(doc))
-		}
-		for _, bucket := range response.Aggregations.DocCounts.Buckets {
-			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(bucket))
-		}
-		took += response.Took
-	}
-	sr.Took = took
+	sr := transform(&source)
 
 	transformedData, err := json.Marshal(sr)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to encode transformed response")
 	}
 	return transformedData, nil
+}
+
+func transform(source *esResponse) searchResponse {
+	sr := searchResponse{
+		Count:        source.Responses[0].Hits.Total,
+		Items:        []contentItem{},
+		ContentTypes: []contentType{},
+	}
+	var took int = 0
+	for _, response := range source.Responses {
+		for _, doc := range response.Hits.Hits {
+			sr.Items = append(sr.Items, buildContentItem(doc))
+		}
+		for _, bucket := range response.Aggregations.DocCounts.Buckets {
+			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(bucket))
+		}
+		for _, suggest := range response.Suggest.SearchSuggest {
+			for _, option := range suggest.Options {
+				sr.Suggestions = append(sr.Suggestions, option.Text)
+			}
+		}
+		took += response.Took
+	}
+	sr.Took = took
+	return sr
 }
 
 func buildContentItem(doc esResponseHit) contentItem {
