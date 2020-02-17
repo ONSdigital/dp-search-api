@@ -3,8 +3,7 @@
  {{- if .From -}}
  	"from" : {{- .From}},
  {{- end}}
- {{if .Size}}
- 	 "size" : {{.Size}},{{end}}
+ "size" : {{.Size}},
  "query" : {
      "bool" : {
        "must" : {
