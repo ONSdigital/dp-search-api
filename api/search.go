@@ -60,11 +60,27 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
 			return
 		}
+		if limit < 0 {
+			log.Event(ctx, "numeric search parameter provided with negative value", log.Data{
+				"param": "limit",
+				"value": limitParam,
+			}, log.WARN)
+			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+			return
+		}
 
 		offsetParam := paramGet(params, "offset", "0")
 		offset, err := strconv.Atoi(offsetParam)
 		if err != nil {
 			log.Event(ctx, "numeric search parameter provided with non numeric characters", log.Data{
+				"param": "from",
+				"value": offsetParam,
+			}, log.WARN)
+			http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
+			return
+		}
+		if offset < 0 {
+			log.Event(ctx, "numeric search parameter provided with negative value", log.Data{
 				"param": "from",
 				"value": offsetParam,
 			}, log.WARN)

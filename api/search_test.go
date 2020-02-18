@@ -35,6 +35,24 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
+	Convey("Should return BadRequest for negative limit parameter", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=-1", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid limit parameter")
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
+	})
+
 	Convey("Should return BadRequest for invalid offset parameter", t, func() {
 		qbMock := newQueryBuilderMock(nil, nil)
 		esMock := newElasticSearcherMock(nil, nil)
@@ -43,6 +61,24 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=b", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid offset parameter")
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
+	})
+
+	Convey("Should return BadRequest for negative offset parameter", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=-1", nil)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
