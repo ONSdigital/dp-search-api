@@ -20,7 +20,7 @@ func main() {
 
 	cfg, err := config.Get()
 	if err != nil {
-		log.Event(nil, "error retreiving config", log.Error(err), log.FATAL)
+		log.Event(nil, "error retrieving config", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}
 

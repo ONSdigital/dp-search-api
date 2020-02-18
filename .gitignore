@@ -1,4 +1,9 @@
+/build/
 *.tar.gz
+
+#IntelliJ
 .idea
 *.iml
-/build/
+
+#VSCode
+.vscode
