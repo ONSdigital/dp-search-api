@@ -13,6 +13,10 @@ const defaultContentTypes string = "bulletin," +
 	"article," +
 	"article_download," +
 	"compendium_landing_page," +
+	"compendium_chapter," +
+	"compendium_data," +
+	"timeseries_dataset," +
+	"dataset," +
 	"dataset_landing_page," +
 	"reference_tables," +
 	"static_adhoc," +
