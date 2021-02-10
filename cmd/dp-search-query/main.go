@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	log.Namespace = "dp-search-query"
+	log.Namespace = "dp-search-api"
 
 	cfg, err := config.Get()
 	if err != nil {
