@@ -1,4 +1,4 @@
-job "dp-search-query" {
+job "dp-search-api" {
   datacenters = ["DATA_CENTER"]
   constraint {
   }
@@ -6,8 +6,8 @@ job "dp-search-query" {
     stagger = "10s"
     max_parallel = 1
   }
-  group "dp-search-query" {
-    task "dp-search-query" {
+  group "dp-search-api" {
+    task "dp-search-api" {
       artifact {
         source = "s3::S3_TAR_FILE"
         destination = "."
@@ -24,7 +24,7 @@ job "dp-search-query" {
       }
       driver = "exec" // To run on OSX change this to raw_exec
       config {
-        command = "bin/dp-search-query"
+        command = "bin/dp-search-api"
         args = []
       }
       resources {

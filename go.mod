@@ -1,4 +1,4 @@
-module github.com/ONSdigital/dp-search-query
+module github.com/ONSdigital/dp-search-api
 
 go 1.12
 

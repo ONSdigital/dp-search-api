@@ -9,10 +9,10 @@ image_resource:
     tag: 1.12.12
 
 inputs:
-  - name: dp-search-query
+  - name: dp-search-api
 
 caches:
   - path: go/
 
 run:
-  path: dp-search-query/ci/scripts/unit.sh
+  path: dp-search-api/ci/scripts/unit.sh

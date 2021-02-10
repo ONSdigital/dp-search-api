@@ -8,8 +8,8 @@ image_resource:
     tag: latest
 
 inputs:
-  - name: dp-search-query
-    path: dp-search-query
+  - name: dp-search-api
+    path: dp-search-api
 
 run:
-  path: dp-search-query/ci/scripts/audit.sh 
+  path: dp-search-api/ci/scripts/audit.sh

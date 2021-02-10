@@ -3,6 +3,6 @@ FROM onsdigital/dp-concourse-tools-ubuntu
 WORKDIR /app/
 
 COPY templates templates
-COPY dp-search-query .
+COPY dp-search-api .
 
-CMD ./dp-search-query
+CMD ./dp-search-api

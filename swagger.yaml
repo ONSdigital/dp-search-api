@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   description: "Search Query API"
   version: "1.0.1"
-  title: "dp-search-query"
+  title: "dp-search-api"
   license:
     name: "Open Government Licence v3.0"
     url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"

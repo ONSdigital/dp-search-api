@@ -1,4 +1,4 @@
-dp-search-query
+dp-search-api
 ================
 
 A Go application microservice to provide query functionality on to the ONS Website
@@ -56,7 +56,7 @@ Export the following variables;
 * export `ELASTIC_SEARCH_URL` to elastic search url.
 
 Then run `make nomad` this shall create a nomad plan within the root directory
-called `dp-search-query.nomad`
+called `dp-search-api.nomad`
 
 ### Contributing
 

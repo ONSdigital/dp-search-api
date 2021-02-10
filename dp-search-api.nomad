@@ -1,4 +1,4 @@
-job "dp-search-query" {
+job "dp-search-api" {
   datacenters = ["eu-west-1"]
   region      = "eu"
   type        = "service"
@@ -26,17 +26,17 @@ job "dp-search-query" {
       mode     = "delay"
     }
 
-    task "dp-search-query-web" {
+    task "dp-search-api-web" {
       driver = "docker"
 
       artifact {
-        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-search-query/{{REVISION}}.tar.gz"
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-search-api/{{REVISION}}.tar.gz"
       }
 
       config {
         command = "${NOMAD_TASK_DIR}/start-task"
         
-	args = ["./dp-search-query"]
+	args = ["./dp-search-api"]
 
         image = "{{ECR_URL}}:concourse-{{REVISION}}"
 
@@ -46,7 +46,7 @@ job "dp-search-query" {
       }
 
       service {
-        name = "dp-search-query"
+        name = "dp-search-api"
         port = "http"
         tags = ["web"]
         check {
@@ -72,7 +72,7 @@ job "dp-search-query" {
       }
 
       vault {
-        policies = ["dp-search-query-web"]
+        policies = ["dp-search-api-web"]
       }
     }
   }
@@ -92,17 +92,17 @@ job "dp-search-query" {
       mode     = "delay"
     }
 
-    task "dp-search-query-publishing" {
+    task "dp-search-api-publishing" {
       driver = "docker"
 
       artifact {
-        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-search-query/{{REVISION}}.tar.gz"
+        source = "s3::https://s3-eu-west-1.amazonaws.com/{{DEPLOYMENT_BUCKET}}/dp-search-api/{{REVISION}}.tar.gz"
       }
 
       config {
         command = "${NOMAD_TASK_DIR}/start-task"
 
-	args = ["./dp-search-query"]
+	args = ["./dp-search-api"]
 
         image = "{{ECR_URL}}:concourse-{{REVISION}}"
 
@@ -112,7 +112,7 @@ job "dp-search-query" {
       }
 
       service {
-        name = "dp-search-query"
+        name = "dp-search-api"
         port = "http"
         tags = ["publishing"]
         check {
@@ -138,7 +138,7 @@ job "dp-search-query" {
       }
 
       vault {
-        policies = ["dp-search-query-publishing"]
+        policies = ["dp-search-api-publishing"]
       }
     }
   }

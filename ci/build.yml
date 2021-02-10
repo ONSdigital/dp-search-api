@@ -9,7 +9,7 @@ image_resource:
     tag: 1.12.12
 
 inputs:
-  - name: dp-search-query
+  - name: dp-search-api
 
 outputs:
   - name: build
@@ -18,4 +18,4 @@ caches:
   - path: go/
 
 run:
-  path: dp-search-query/ci/scripts/build.sh
+  path: dp-search-api/ci/scripts/build.sh

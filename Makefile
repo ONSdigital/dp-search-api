@@ -1,5 +1,5 @@
 SHELL=bash
-MAIN=dp-search-query
+MAIN=dp-search-api
 
 BUILD=build
 BUILD_ARCH=$(BUILD)/$(GOOS)-$(GOARCH)
@@ -18,19 +18,19 @@ audit:
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
-	go build -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) cmd/dp-search-query/main.go
+	go build -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) cmd/dp-search-api/main.go
 
 .PHONY: debug
 debug: build
-	HUMAN_LOG=1 go run -race cmd/dp-search-query/main.go
+	HUMAN_LOG=1 go run -race cmd/dp-search-api/main.go
 
 .PHONY: acceptance-publishing
 acceptance-publishing: build
-	HUMAN_LOG=1 go run cmd/dp-search-query/main.go
+	HUMAN_LOG=1 go run cmd/dp-search-api/main.go
 
 .PHONY: acceptance-web
 acceptance-web: build
-	HUMAN_LOG=1 go run cmd/dp-search-query/main.go
+	HUMAN_LOG=1 go run cmd/dp-search-api/main.go
 
 .PHONY: test
 test:
