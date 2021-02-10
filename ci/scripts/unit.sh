@@ -2,6 +2,6 @@
 
 export GOPATH=$(pwd)/go
 
-pushd dp-search-query
+pushd dp-search-api
   make test
 popd

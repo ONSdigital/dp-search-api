@@ -2,6 +2,6 @@
 
 export cwd=$(pwd)
 
-pushd $cwd/dp-search-query
+pushd $cwd/dp-search-api
   make audit
 popd 

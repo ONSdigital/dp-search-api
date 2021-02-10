@@ -7,11 +7,11 @@ import (
 	"syscall"
 
 	rchttp "github.com/ONSdigital/dp-rchttp"
-	"github.com/ONSdigital/dp-search-query/api"
-	"github.com/ONSdigital/dp-search-query/config"
-	"github.com/ONSdigital/dp-search-query/elasticsearch"
-	"github.com/ONSdigital/dp-search-query/query"
-	"github.com/ONSdigital/dp-search-query/transformer"
+	"github.com/ONSdigital/dp-search-api/api"
+	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/query"
+	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/log"
 )
 

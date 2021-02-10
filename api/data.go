@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/ONSdigital/dp-search-query/query"
+	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/log.go/log"
 )
 

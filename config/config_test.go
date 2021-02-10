@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ONSdigital/dp-search-query/config"
+	"github.com/ONSdigital/dp-search-api/config"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
