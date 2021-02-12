@@ -63,7 +63,7 @@ func main() {
 	// blocks until a fatal error occurs
 	select {
 	case err := <-apiErrors:
-		log.Event(nil, "search-query api error received", log.Error(err), log.FATAL)
+		log.Event(nil, "search api error received", log.Error(err), log.FATAL)
 	case <-signals:
 		log.Event(nil, "os signal received", log.INFO)
 		gracefulShutdown()

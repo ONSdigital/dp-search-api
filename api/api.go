@@ -13,8 +13,8 @@ import (
 
 var httpServer *server.Server
 
-//SearchQueryAPI provides an API around elasticseach
-type SearchQueryAPI struct {
+//SearchAPI provides an API around elasticseach
+type SearchAPI struct {
 	Router        *mux.Router
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
@@ -38,7 +38,7 @@ type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error)
 }
 
-// CreateAndInitialise initiates a new Search Query API
+// CreateAndInitialise initiates a new Search API
 func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
@@ -60,7 +60,7 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	api := NewSearchQueryAPI(router, elasticSearchClient, queryBuilder, transformer)
+	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
 	httpServer = server.New(bindAddr, api.Router)
 
@@ -68,9 +68,9 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 	httpServer.HandleOSSignals = false
 
 	go func() {
-		log.Event(nil, "search-query api starting", log.INFO)
+		log.Event(nil, "search api starting", log.INFO)
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Event(nil, "search-query api http server returned error", log.Error(err), log.ERROR)
+			log.Event(nil, "search api http server returned error", log.Error(err), log.ERROR)
 			errorChan <- err
 		}
 	}()
@@ -78,10 +78,10 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 	return nil
 }
 
-// NewSearchQueryAPI returns a new Search Query API struct after registering the routes
-func NewSearchQueryAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchQueryAPI {
+// NewSearchAPI returns a new Search Query API struct after registering the routes
+func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
 
-	api := &SearchQueryAPI{
+	api := &SearchAPI{
 		Router:        router,
 		QueryBuilder:  queryBuilder,
 		ElasticSearch: elasticSearch,

@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  description: "Search Query API"
+  description: "Search API"
   version: "1.0.1"
   title: "dp-search-api"
   license:

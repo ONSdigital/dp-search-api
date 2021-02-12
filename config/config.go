@@ -7,7 +7,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Config is the search query handler config
+// Config is the search API handler config
 type Config struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL     string        `envconfig:"ELASTIC_SEARCH_URL"`
