@@ -23,22 +23,22 @@ audit:
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
-	go build -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) cmd/dp-search-api/main.go
+	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) cmd/dp-search-api/main.go
 
 .PHONY: debug
 debug: build
-	HUMAN_LOG=1 go run -race cmd/dp-search-api/main.go
+	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/dp-search-api/main.go
 
 .PHONY: acceptance-publishing
 acceptance-publishing: build
-	HUMAN_LOG=1 go run cmd/dp-search-api/main.go
+	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/dp-search-api/main.go
 
 .PHONY: acceptance-web
 acceptance-web: build
-	HUMAN_LOG=1 go run cmd/dp-search-api/main.go
+	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/dp-search-api/main.go
 
 .PHONY: test
 test:
-	go test -v -cover $(shell go list ./... | grep -v /vendor/)
+	go test -cover -race ./...
 
 .PHONY: build debug test
