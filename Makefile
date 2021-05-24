@@ -29,14 +29,6 @@ build:
 debug: build
 	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/$(MAIN)/main.go
 
-.PHONY: acceptance-publishing
-acceptance-publishing: build
-	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/$(MAIN)/main.go
-
-.PHONY: acceptance-web
-acceptance-web: build
-	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/$(MAIN)/main.go
-
 .PHONY: test
 test:
 	go test -cover -race ./...
