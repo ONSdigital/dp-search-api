@@ -15,8 +15,19 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
+const serviceName = "dp-search-api"
+
+var (
+	// BuildTime represents the time in which the service was built
+	BuildTime string
+	// GitCommit represents the commit (SHA-1) hash of the service that is running
+	GitCommit string
+	// Version represents the version of the service that is running
+	Version string
+)
+
 func main() {
-	log.Namespace = "dp-search-api"
+	log.Namespace = serviceName
 
 	cfg, err := config.Get()
 	if err != nil {
