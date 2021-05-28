@@ -1,7 +1,16 @@
 dp-search-api
 ================
+Digital Publishing Search API
 
 A Go application microservice to provide query functionality on to the ONS Website
+
+### Getting started
+
+* Run `make debug`
+
+### Dependencies
+
+* No further dependencies other than those defined in `go.mod`
 
 ## /data?
 
@@ -41,10 +50,11 @@ Remember to update the [README](README.md) and [CHANGELOG](CHANGELOG.md) files.
 An overview of the configuration options available, either as a table of
 environment variables, or with a link to a configuration guide.
 
-| Environment variable | Default | Description
-| -------------------- | ------- | -----------
-| BIND_ADDR            | :23900  | The host and port to bind to
-| ELASTIC_URL	       | "http://localhost:9200" | Http url of the ElasticSearch server
+| Environment variable      | Default                 | Description
+| ------------------------- | ----------------------- | ------------------
+| BIND_ADDR                 | :23900                  | The host and port to bind to
+| ELASTIC_URL	            | http://localhost:9200 | Http url of the ElasticSearch server
+| GRACEFUL_SHUTDOWN_TIMEOUT | 5s                      | The graceful shutdown timeout in seconds (`time.Duration` format)
 
 ## Releasing
 To package up the API uses `make package`
