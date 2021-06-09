@@ -58,12 +58,12 @@ paths:
           name: from
           description:
           default: 0
-          type: string
-          required: false
+          type: integer
+          required: true
         in: query
           name: index
           description:
-          type: integer
+          type: string
           required: false
         in: query
           name: type
@@ -73,8 +73,8 @@ paths:
         in: query
           name: aggField
           description: "The field that will be used to group on by the `count` query"
-          type:
-          required: false
+          type: string
+          required: true
         in: query
           name: withFirstLetter
           description: "Restricted to `search` queries will only return results where the title starts with the letter `?`"
@@ -105,7 +105,7 @@ paths:
           name: upcoming
           description: "Determines whether items in the `SEARCH` that are not published and not cancelled __OR__ are published and are not due."
           type: boolean
-          required:
+          required: true
         in: query
           name: published
           description: "Determines whether items in the `SEARCH` that are published and not cancelled __OR__ are cancelled and are due."
@@ -116,7 +116,7 @@ paths:
           description:
           type: string
           enum: [search, counts, departments, featured]
-          required: false
+          required: true
         - in: query
           name: size
           description: "Number of returned results"
@@ -158,6 +158,7 @@ paths:
         - timeseries
       summary:
       description:
+      responses:
 
   /departments/search:
     get:
