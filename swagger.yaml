@@ -55,85 +55,13 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
-          name: from
-          description:
-          default: 0
-          type: integer
-          required: true
-        in: query
-          name: index
-          description:
-          type: string
-          required: false
-        in: query
-          name: type
-          description:
-          type: string
-          required: false
-        in: query
-          name: aggField
-          description: "The field that will be used to group on by the `count` query"
-          type: string
-          required: true
-        in: query
-          name: withFirstLetter
-          description: "Restricted to `search` queries will only return results where the title starts with the letter `?`"
-          type: string
-          enum: [a..Z]
-          required:
-        in: query
-          name: uriPrefix
-          description: "Prefix filter on the URI."
-          type: string
-          required: false
-        in: query
-          name: topic
-          description: "Topic filter, matches exact Topic."
-          type: string
-          required: false
-        in: query
-          name: topicWildcard
-          description: "Matches Topics using Wildcard pattern matching."
-          type: string
-          required: false
-        in: query
-          name: highlight
-          description: "Determines whether to include highlighting on the `SEARCH` results."
-          type: boolean
-          required:
-        in: query
-          name: upcoming
-          description: "Determines whether items in the `SEARCH` that are not published and not cancelled __OR__ are published and are not due."
-          type: boolean
-          required: true
-        in: query
-          name: published
-          description: "Determines whether items in the `SEARCH` that are published and not cancelled __OR__ are cancelled and are due."
-          type: boolean
-          required:
-        in: query
-          name: queries
-          description:
-          type: string
-          enum: [search, counts, departments, featured]
-          required: true
-        - in: query
-          name: size
-          description: "Number of returned results"
-          type: integer
-          default: 10
-          required: true
-        - in: query
           name: sort
           description: "The order to return the results."
           type: string
-          default: "relevance"
-          enum: [relevance, release_date, release_date_asc, first_letter, title]
           required: false
         - in: query
           name: limit
           description: "The number of items requested, defaulted to 50 and limited to 1000."
-          default: "search"
           type: integer
           required: false
         - in: query
@@ -141,7 +69,6 @@ paths:
           description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
           type: integer
           required: false
-        -
       responses:
         200:
           description: OK
