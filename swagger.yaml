@@ -10,10 +10,11 @@ basePath: "/v1"
 schemes:
   - "http"
 tags:
-  - name: "search"
+  - name: "data"
   - name: "department"
   - name: "health"
-  - name: "data"
+  - name: "search"
+  - name: "timeseries"
 
 paths:
   /data:
@@ -30,9 +31,63 @@ paths:
           required: true
         - in: query
           name: types
-          description:
+          description: "Type of data returned."
           type: string
           required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: "#/definitions/Data"
+          500:
+            description: Internal server error
+
+  /departments/search:
+    get:
+      tags:
+        - department
+      summary: "Department query API"
+      description: "Department query API which returns matching links to other departments"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: limit
+          description: "The number of items requested, defaulted to 50 and limited to 1000."
+          type: integer
+          required: false
+        - in: query
+          name: offset
+          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/DepartmentResponse"
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /health:
+    get:
+      tags:
+        - health
+      summary: "Health check API"
+      description: "API to query the app for current health status"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Health"
+        500:
+          description: Internal Server Error
+
   /search:
     get:
       tags:
@@ -85,55 +140,29 @@ paths:
         - timeseries
       summary:
       description:
-      responses:
-
-  /departments/search:
-    get:
-      tags:
-        - department
-      summary: "Department query API"
-      description: "Department query API which returns matching links to other departments"
       parameters:
         - in: query
-          name: q
-          description: "Query search term"
-          type: string
-          required: true
-        - in: query
-          name: limit
-          description: "The number of items requested, defaulted to 50 and limited to 1000."
-          type: integer
-          required: false
-        - in: query
-          name: offset
-          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
-          type: integer
-          required: false
+            name: cdid
+            description: "The timeseries id."
+            type: string
+            required: true
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/DepartmentResponse"
-        400:
-          description: Query term not specified
+            $ref: "#/definitions/TimeseriesResponse"
         500:
           description: Internal server error
 
-  /health:
-    get:
-      tags:
-        - health
-      summary: "Health check API"
-      description: "API to query the app for current health status"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/Health"
-        500:
-          description: Internal Server Error
-
 definitions:
+  DataResponse:
+    type: object
+      properties:
+        xyx:
+          type:
+          description:
+          example:
+
   SearchResponse:
     type: object
     properties:
@@ -346,3 +375,11 @@ definitions:
       dp_fasttext:
         type: string
         example: available
+
+  TimeseriesResponse:
+    type: object
+      properties:
+        xyx:
+          type:
+          description:
+          example:
