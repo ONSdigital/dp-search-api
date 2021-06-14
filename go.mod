@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.34.4 // indirect
-	github.com/ONSdigital/dp-net v1.0.0
+	github.com/ONSdigital/dp-net v1.0.12
 	github.com/ONSdigital/go-ns v0.0.0-20210410105122-6d6a140e952e
 	github.com/ONSdigital/log.go v1.0.1
 	github.com/gorilla/mux v1.8.0
