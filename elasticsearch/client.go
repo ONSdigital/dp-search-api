@@ -7,21 +7,21 @@ import (
 	"net/http"
 	"strings"
 
-	rchttp "github.com/ONSdigital/dp-rchttp"
+	net "github.com/ONSdigital/dp-net"
 	"github.com/pkg/errors"
 )
 
 // Client represents an instance of the elasticsearch client
 type Client struct {
 	url          string
-	rchttpClient rchttp.Clienter
+	netClient net.Clienter
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, rchttpClient rchttp.Clienter) *Client {
+func New(url string, netClient net.Clienter) *Client {
 	return &Client{
 		url:          strings.TrimRight(url, "/"),
-		rchttpClient: rchttpClient,
+		netClient: netClient,
 	}
 }
 
@@ -41,7 +41,7 @@ func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cli.rchttpClient.Do(ctx, req)
+	resp, err := cli.netClient.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 		return nil, err
 	}
 
-	resp, err := cli.rchttpClient.Do(ctx, req)
+	resp, err := cli.netClient.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	rchttp "github.com/ONSdigital/dp-rchttp"
+	net "github.com/ONSdigital/dp-net"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -50,7 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, rchttp.NewClient())
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, net.NewClient())
 	transformer := transformer.New()
 
 	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {
