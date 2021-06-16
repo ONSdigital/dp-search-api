@@ -50,7 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, net.NewClient())
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, net.NewClient())
 	transformer := transformer.New()
 
 	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {

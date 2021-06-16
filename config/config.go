@@ -9,9 +9,10 @@ import (
 
 // Config is the search API handler config
 type Config struct {
-	BindAddr                string        `envconfig:"BIND_ADDR"`
-	ElasticSearchAPIURL     string        `envconfig:"ELASTIC_SEARCH_URL"`
-	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	BindAddr                  string        `envconfig:"BIND_ADDR"`
+	ElasticSearchAPIURL       string        `envconfig:"ELASTIC_SEARCH_URL"`
+	GracefulShutdownTimeout   time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	SignElasticsearchRequests bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 }
 
 var cfg *Config
@@ -23,9 +24,10 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
-		BindAddr:                ":23900",
-		ElasticSearchAPIURL:     "http://localhost:9200",
-		GracefulShutdownTimeout: 5 * time.Second,
+		BindAddr:                  ":23900",
+		ElasticSearchAPIURL:       "http://localhost:9200",
+		GracefulShutdownTimeout:   5 * time.Second,
+		SignElasticsearchRequests: false,
 	}
 
 	return cfg, envconfig.Process("", cfg)
