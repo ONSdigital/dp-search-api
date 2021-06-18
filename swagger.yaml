@@ -165,10 +165,10 @@ definitions:
           items:
             _shards:
               schema:
-                $ref: "#/definitions/ShardsResponse"
+                $ref: "#/definitions/ShardsItem"
             hits:
               schema:
-                $ref: "#/definitions/HitsResponse"
+                $ref: "#/definitions/HitsItem"
             timed_out:
               type: boolean
             took:
@@ -387,7 +387,7 @@ definitions:
         type: string
         example: available
 
-  ShardItem:
+  ShardsItem:
     type: object
     properities:
       failed:
@@ -404,34 +404,33 @@ definitions:
         type: array
         items:
           hits:
-          type: object
-          properties:
-            _id:
-              type: string
-            _index:
-              type: string
-            _score:
-              type: integer
-            _source:
-              type: object
-                properties:
-                  code:
-                    type: string
-                  name:
-                    type: string
-                  terms:
-                    type: array
-                      items:
-                        type: string
-                  url:
-                    type: string
-            _type:
-              type: string
+           type: object
+           properties:
+             _id:
+               type: string
+             _index:
+               type: string
+             _score:
+               type: integer
+             _source:
+               type: object
+               properties:
+                 code:
+                   type: string
+                 name:
+                   type: string
+                 terms:
+                   type: array
+                   items:
+                     type: string
+             url:
+               type: string
+             _type:
+               type: string
       max_score:
         type: integer
       total:
         type: integer
-
 
   TimeseriesResponse:
     type: object
@@ -450,23 +449,24 @@ definitions:
           type: array
           items:
             type: object
-              _index:
-                type: string
-              _type:
-                type: string
-                example: "timeseries"
-              _id:
-                type: string
-              _score:
-                type: string
-              _source:
-                type: object
-                  properties:
-                    uri:
-                    type: string
+              properties:
+                _index:
+                  type: string
+                _type:
+                  type: string
+                  example: "timeseries"
+                _id:
+                  type: string
+                _score:
+                  type: string
+                _source:
+                  type: object
+                    properties:
+                      uri:
+                        type: string
             sort:
               type: array
-                item:
+                items:
                   type: integer
 
 
