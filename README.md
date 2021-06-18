@@ -10,9 +10,10 @@ A Go application microservice to provide query functionality on the ONS Website
 
 ### Dependencies
 
-* No further dependencies other than those defined in `go.mod`
+Clone and set up the following project following the README instructions:
+- [dp-compose](https://github.com/ONSdigital/dp-compose)
 
-Remember to update the [README](README.md) file.
+No further dependencies other than those defined in `go.mod`
 
 ### Configuration
 
