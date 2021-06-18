@@ -414,17 +414,17 @@ definitions:
                type: integer
              _source:
                type: object
-                 properties:
-                   code:
+               properties:
+                 code:
+                   type: string
+                 name:
+                   type: string
+                 terms:
+                   type: array
+                   items:
                      type: string
-                   name:
-                     type: string
-                   terms:
-                     type: array
-                       items:
-                         type: string
-                   url:
-                     type: string
+             url:
+               type: string
              _type:
                type: string
       max_score:
@@ -467,7 +467,7 @@ definitions:
                       type: string
             sort:
               type: array
-                item:
+                items:
                   type: integer
 
 
