@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	net "github.com/ONSdigital/dp-net"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/pkg/errors"
 	awsauth "github.com/smartystreets/go-aws-auth"
 )
@@ -15,12 +15,12 @@ import (
 // Client represents an instance of the elasticsearch client
 type Client struct {
 	url          string
-	client       net.Clienter
+	client       dphttp.Clienter
 	signRequests bool
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client net.Clienter, signRequests bool) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool) *Client {
 	return &Client{
 		url:          strings.TrimRight(url, "/"),
 		client:       client,

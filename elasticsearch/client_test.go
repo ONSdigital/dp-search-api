@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	net "github.com/ONSdigital/dp-net"
+	dphttp "github.com/ONSdigital/dp-net/http"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -18,19 +18,19 @@ func TestSearch(t *testing.T) {
 	Convey("When Search is called", t, func() {
 
 		Convey("Then a request with the search action should be posted", func() {
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return newResponse("moo"), nil
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			res, err := client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldBeNil)
 			So(res, ShouldNotBeEmpty)
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/index/doctype/_search")
 			So(actualRequest.Method, ShouldResemble, "POST")
 			body, err := ioutil.ReadAll(actualRequest.Body)
@@ -40,19 +40,19 @@ func TestSearch(t *testing.T) {
 		})
 
 		Convey("Then a returned error should be passed back", func() {
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return nil, errors.New("http error")
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			_, err := client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "http error")
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/index/doctype/_search")
 			So(actualRequest.Method, ShouldResemble, "POST")
 			body, err := ioutil.ReadAll(actualRequest.Body)
@@ -70,19 +70,19 @@ func TestMultiSearch(t *testing.T) {
 
 		Convey("Then a request with the multi search action should be posted", func() {
 
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return newResponse("moo"), nil
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			res, err := client.MultiSearch(context.Background(), "index", "doctype", []byte("multiSearch request"))
 			So(err, ShouldBeNil)
 			So(res, ShouldNotBeEmpty)
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/index/doctype/_msearch")
 			So(actualRequest.Method, ShouldResemble, "POST")
 			body, err := ioutil.ReadAll(actualRequest.Body)
@@ -91,19 +91,19 @@ func TestMultiSearch(t *testing.T) {
 		})
 
 		Convey("Then a returned error should be passed back", func() {
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return nil, errors.New("http error")
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			_, err := client.MultiSearch(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "http error")
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/index/doctype/_msearch")
 			So(actualRequest.Method, ShouldResemble, "POST")
 			body, err := ioutil.ReadAll(actualRequest.Body)
@@ -120,37 +120,37 @@ func TestGetStatus(t *testing.T) {
 
 		Convey("Then a GET request with the status action should be called", func() {
 
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return newResponse("moo"), nil
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			res, err := client.GetStatus(context.Background())
 			So(err, ShouldBeNil)
 			So(res, ShouldNotBeEmpty)
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/_cat/health")
 			So(actualRequest.Method, ShouldResemble, "GET")
 		})
 
 		Convey("Then a returned error should be passed back", func() {
-			rchttpMock := &rchttp.ClienterMock{
+			dphttpMock := &dphttp.ClienterMock{
 				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
 					return nil, errors.New("http error")
 				},
 			}
 
-			client := New("http://localhost:999", rchttpMock)
+			client := New("http://localhost:999", dphttpMock, false)
 
 			_, err := client.GetStatus(context.Background())
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "http error")
-			So(rchttpMock.DoCalls(), ShouldHaveLength, 1)
-			actualRequest := rchttpMock.DoCalls()[0].Req
+			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
+			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/_cat/health")
 			So(actualRequest.Method, ShouldResemble, "GET")
 
