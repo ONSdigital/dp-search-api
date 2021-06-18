@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	net "github.com/ONSdigital/dp-net"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -50,7 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, net.NewClient())
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests)
 	transformer := transformer.New()
 
 	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {
