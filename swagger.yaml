@@ -165,10 +165,10 @@ definitions:
           items:
             _shards:
               schema:
-                $ref: "#/definitions/ShardsResponse"
+                $ref: "#/definitions/ShardsItem"
             hits:
               schema:
-                $ref: "#/definitions/HitsResponse"
+                $ref: "#/definitions/HitsItem"
             timed_out:
               type: boolean
             took:
@@ -404,29 +404,29 @@ definitions:
         type: array
         items:
           hits:
-          type: object
-          properties:
-            _id:
-              type: string
-            _index:
-              type: string
-            _score:
-              type: integer
-            _source:
-              type: object
-                properties:
-                  code:
-                    type: string
-                  name:
-                    type: string
-                  terms:
-                    type: array
-                      items:
-                        type: string
-                  url:
-                    type: string
-            _type:
-              type: string
+           type: object
+           properties:
+             _id:
+               type: string
+             _index:
+               type: string
+             _score:
+               type: integer
+             _source:
+               type: object
+                 properties:
+                   code:
+                     type: string
+                   name:
+                     type: string
+                   terms:
+                     type: array
+                       items:
+                         type: string
+                   url:
+                     type: string
+             _type:
+               type: string
       max_score:
         type: integer
       total:
