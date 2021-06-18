@@ -2,7 +2,7 @@ dp-search-api
 ================
 Digital Publishing Search API
 
-A Go application microservice to provide query functionality on to the ONS Website
+A Go application microservice to provide query functionality on the ONS Website
 
 ### Getting started
 
