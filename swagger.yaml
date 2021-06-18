@@ -450,20 +450,21 @@ definitions:
           type: array
           items:
             type: object
-              _index:
-                type: string
-              _type:
-                type: string
-                example: "timeseries"
-              _id:
-                type: string
-              _score:
-                type: string
-              _source:
-                type: object
-                  properties:
-                    uri:
-                    type: string
+              properties:
+                _index:
+                  type: string
+                _type:
+                  type: string
+                  example: "timeseries"
+                _id:
+                  type: string
+                _score:
+                  type: string
+                _source:
+                  type: object
+                    properties:
+                      uri:
+                      type: string
             sort:
               type: array
                 item:
