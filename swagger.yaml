@@ -433,11 +433,41 @@ definitions:
         type: integer
 
 
-
   TimeseriesResponse:
     type: object
       properties:
-        xyx:
-          type:
+        took:
+          type: integer
           description:
-          example:
+          example: 3
+        timed_out:
+          type: boolean
+        _shards:
+          type: object
+          schema:
+            $ref: "#/definitions/ShardsItem"
+        hits:
+          type: array
+          items:
+            type: object
+              _index:
+                type: string
+              _type:
+                type: string
+                example: "timeseries"
+              _id:
+                type: string
+              _score:
+                type: string
+              _source:
+                type: object
+                  properties:
+                    uri:
+                    type: string
+            sort:
+              type: array
+                item:
+                  type: integer
+
+
+
