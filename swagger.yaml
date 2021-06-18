@@ -387,7 +387,7 @@ definitions:
         type: string
         example: available
 
-  ShardItem:
+  ShardsItem:
     type: object
     properities:
       failed:
