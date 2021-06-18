@@ -20,11 +20,11 @@ No further dependencies other than those defined in `go.mod`
 An overview of the configuration options available, either as a table of
 environment variables, or with a link to a configuration guide.
 
-| Environment variable      | Default                 | Description
-| ------------------------- | ----------------------- | ------------------
-| BIND_ADDR                 | :23900                  | The host and port to bind to
-| ELASTIC_URL	            | http://localhost:9200 | Http url of the ElasticSearch server
-| GRACEFUL_SHUTDOWN_TIMEOUT | 5s                      | The graceful shutdown timeout in seconds (`time.Duration` format)
+| Environment variable | Default | Description
+| -------------------- | ------- | -----------
+| BIND_ADDR            | :23900  | The host and port to bind to
+| ELASTIC_URL	       | "http://localhost:9200" | Http url of the ElasticSearch server
+| SIGN_ELASTICSEARCH_REQUESTS | false | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
 
 ## Releasing
 To package up the API uses `make package`
