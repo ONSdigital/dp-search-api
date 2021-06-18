@@ -44,6 +44,11 @@ func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if cli.signRequests {
+		awsauth.Sign(req)
+	}
+
 	resp, err := cli.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
