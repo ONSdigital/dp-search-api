@@ -38,7 +38,7 @@ paths:
           200:
             description: OK
             schema:
-              $ref: "#/definitions/Data"
+              $ref: "#/definitions/DataResponse"
           500:
             description: Internal server error
 
@@ -155,13 +155,24 @@ paths:
           description: Internal server error
 
 definitions:
+
   DataResponse:
     type: object
       properties:
-        xyx:
-          type:
+        responses:
+          type: array
           description:
-          example:
+          items:
+            _shards:
+              schema:
+                $ref: "#/definitions/ShardsResponse"
+            hits:
+              schema:
+                $ref: "#/definitions/HitsResponse"
+            timed_out:
+              type: boolean
+            took:
+              type: integer
 
   SearchResponse:
     type: object
@@ -375,6 +386,53 @@ definitions:
       dp_fasttext:
         type: string
         example: available
+
+  ShardItem:
+    type: object
+    properities:
+      failed:
+        type: integer
+      successful:
+        type: integer
+      total:
+        type: integer
+
+  HitsItem:
+    type: object
+    properties:
+      hits:
+        type: array
+        items:
+          hits:
+          type: object
+          properties:
+            _id:
+              type: string
+            _index:
+              type: string
+            _score:
+              type: integer
+            _source:
+              type: object
+                properties:
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  terms:
+                    type: array
+                      items:
+                        type: string
+                  url:
+                    type: string
+            _type:
+              type: string
+      max_score:
+        type: integer
+      total:
+        type: integer
+
+
 
   TimeseriesResponse:
     type: object
