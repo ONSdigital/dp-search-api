@@ -432,7 +432,6 @@ definitions:
       total:
         type: integer
 
-
   TimeseriesResponse:
     type: object
       properties:
@@ -464,7 +463,7 @@ definitions:
                   type: object
                     properties:
                       uri:
-                      type: string
+                        type: string
             sort:
               type: array
                 items:
