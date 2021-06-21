@@ -7,21 +7,24 @@ import (
 	"net/http"
 	"strings"
 
-	rchttp "github.com/ONSdigital/dp-rchttp"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/pkg/errors"
+	awsauth "github.com/smartystreets/go-aws-auth"
 )
 
 // Client represents an instance of the elasticsearch client
 type Client struct {
 	url          string
-	rchttpClient rchttp.Clienter
+	client       dphttp.Clienter
+	signRequests bool
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, rchttpClient rchttp.Clienter) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool) *Client {
 	return &Client{
 		url:          strings.TrimRight(url, "/"),
-		rchttpClient: rchttpClient,
+		client:       client,
+		signRequests: signRequests,
 	}
 }
 
@@ -41,7 +44,12 @@ func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cli.rchttpClient.Do(ctx, req)
+
+	if cli.signRequests {
+		awsauth.Sign(req)
+	}
+
+	resp, err := cli.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +70,11 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 		return nil, err
 	}
 
-	resp, err := cli.rchttpClient.Do(ctx, req)
+	if cli.signRequests {
+		awsauth.Sign(req)
+	}
+
+	resp, err := cli.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
