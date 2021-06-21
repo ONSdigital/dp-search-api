@@ -21,17 +21,16 @@ paths:
     get:
       tags:
         - data
-      summary: ""
-      description: ""
+      summary: "Data query API"
+      description: "Data query API which returns matching links to department"
       parameters:
         - in: query
           name: uris
-          description:
           type: string
           required: true
         - in: query
           name: types
-          description: "Type of data returned."
+          description: "Type of data returned"
           type: string
           required: true
         responses:
@@ -138,8 +137,8 @@ paths:
     get:
       tags:
         - timeseries
-      summary:
-      description:
+      summary: "Query for timeseries data"
+      description: "API to query the app for timeseries by id"
       parameters:
         - in: query
             name: cdid
@@ -172,6 +171,7 @@ definitions:
             timed_out:
               type: boolean
             took:
+              description: "Time taken to execute query in milliseconds"
               type: integer
 
   SearchResponse:
@@ -437,37 +437,44 @@ definitions:
       properties:
         took:
           type: integer
-          description:
-          example: 3
+          description: "Time taken to execute query in milliseconds"
+          example: 530
         timed_out:
           type: boolean
         _shards:
           type: object
           schema:
             $ref: "#/definitions/ShardsItem"
-        hits:
-          type: array
-          items:
-            type: object
-              properties:
-                _index:
-                  type: string
-                _type:
-                  type: string
-                  example: "timeseries"
-                _id:
-                  type: string
-                _score:
-                  type: string
-                _source:
-                  type: object
-                    properties:
-                      uri:
-                        type: string
-            sort:
-              type: array
-                items:
-                  type: integer
+    hits:
+      type: object
+        properties:
+          total:
+            type: integer
+          max_score:
+            type: integer
+          hits:
+            type: array
+            items:
+              type: object
+                properties:
+                  _index:
+                    type: string
+                  _type:
+                    type: string
+                    example: "timeseries"
+                  _id:
+                    type: string
+                  _score:
+                    type: string
+                  _source:
+                    type: object
+                      properties:
+                        uri:
+                          type: string
+              sort:
+                type: array
+                  items:
+                    type: integer
 
 
 
