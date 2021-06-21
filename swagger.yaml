@@ -445,36 +445,30 @@ definitions:
           type: object
           schema:
             $ref: "#/definitions/ShardsItem"
-    hits:
-      type: object
-        properties:
-          total:
-            type: integer
-          max_score:
-            type: integer
-          hits:
-            type: array
-            items:
-              type: object
-                properties:
-                  _index:
-                    type: string
-                  _type:
-                    type: string
-                    example: "timeseries"
-                  _id:
-                    type: string
-                  _score:
-                    type: string
-                  _source:
-                    type: object
-                      properties:
-                        uri:
-                          type: string
-              sort:
-                type: array
-                  items:
-                    type: integer
+        hits:
+          type: array
+          items:
+            type: object
+              properties:
+                _index:
+                  type: string
+                _type:
+                  type: string
+                  example: "timeseries"
+                _id:
+                  type: string
+                _score:
+                  type: string
+                _source:
+                  type: object
+                    properties:
+                      uri:
+                        type: string
+            sort:
+              type: array
+                items:
+                  type: integer
+
 
 
 
