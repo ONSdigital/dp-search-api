@@ -20,6 +20,8 @@ func TestSpec(t *testing.T) {
 			})
 
 			Convey("The values should be set to the expected defaults", func() {
+				So(cfg.AwsRegion, ShouldEqual, "eu-west-1")
+				So(cfg.AwsService, ShouldEqual, "es")
 				So(cfg.BindAddr, ShouldEqual, ":23900")
 				So(cfg.ElasticSearchAPIURL, ShouldEqual, "http://localhost:9200")
 				So(cfg.GracefulShutdownTimeout, ShouldEqual, 5*time.Second)
