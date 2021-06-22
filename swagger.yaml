@@ -33,13 +33,13 @@ paths:
           description: "Type of data returned"
           type: string
           required: true
-        responses:
-          200:
-            description: OK
-            schema:
-              $ref: "#/definitions/DataResponse"
-          500:
-            description: Internal server error
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/DataResponse"
+        500:
+          description: Internal server error
 
   /departments/search:
     get:
@@ -133,7 +133,7 @@ paths:
         500:
           description: Internal server error
 
-  /timeseries/{cdid}:
+  /timeseries:
     get:
       tags:
         - timeseries
@@ -141,10 +141,10 @@ paths:
       description: "API to query the app for timeseries by id"
       parameters:
         - in: query
-            name: cdid
-            description: "The timeseries id."
-            type: string
-            required: true
+          name: cdid
+          description: "The timeseries id."
+          type: string
+          required: true
       responses:
         200:
           description: OK
@@ -157,22 +157,22 @@ definitions:
 
   DataResponse:
     type: object
-      properties:
-        responses:
-          type: array
-          description:
-          items:
-            _shards:
-              schema:
-                $ref: "#/definitions/ShardsItem"
-            hits:
-              schema:
-                $ref: "#/definitions/HitsItem"
-            timed_out:
-              type: boolean
-            took:
-              description: "Time taken to execute query in milliseconds"
-              type: integer
+    properties:
+      responses:
+        type: array
+        description: "A json list containing data associate with a particular dataset"
+        items:
+          _shards:
+            schema:
+              $ref: "#/definitions/ShardsItem"
+          hits:
+            schema:
+              $ref: "#/definitions/HitsItem"
+          timed_out:
+            type: boolean
+          took:
+            description: "Time taken to execute query in milliseconds"
+            type: integer
 
   SearchResponse:
     type: object
@@ -434,41 +434,37 @@ definitions:
 
   TimeseriesResponse:
     type: object
-      properties:
-        took:
-          type: integer
-          description: "Time taken to execute query in milliseconds"
-          example: 530
-        timed_out:
-          type: boolean
-        _shards:
+    properties:
+      took:
+        type: integer
+        description: "Time taken to execute query in milliseconds"
+        example: 530
+      timed_out:
+        type: boolean
+      _shards:
+        type: object
+        schema:
+          $ref: "#/definitions/ShardsItem"
+      hits:
+        type: array
+        items:
           type: object
-          schema:
-            $ref: "#/definitions/ShardsItem"
-        hits:
-          type: array
-          items:
-            type: object
-              properties:
-                _index:
-                  type: string
-                _type:
-                  type: string
-                  example: "timeseries"
-                _id:
-                  type: string
-                _score:
-                  type: string
-                _source:
-                  type: object
-                    properties:
-                      uri:
-                        type: string
-            sort:
-              type: array
-                items:
-                  type: integer
-
-
-
-
+            properties:
+              _index:
+                type: string
+              _type:
+                type: string
+                example: "timeseries"
+              _id:
+                type: string
+              _score:
+                type: string
+              _source:
+                type: object
+                  properties:
+                    uri:
+                      type: string
+          sort:
+            type: array
+              items:
+                type: integer
