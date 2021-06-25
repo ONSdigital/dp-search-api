@@ -162,17 +162,17 @@ definitions:
         type: array
         description: "A json list containing data associate with a particular dataset"
         items:
-          _shards:
-            schema:
+          type: object
+          properties:
+            _shards:
               $ref: "#/definitions/ShardsItem"
-          hits:
-            schema:
-              $ref: "#/definitions/HitsItem"
-          timed_out:
-            type: boolean
-          took:
-            description: "Time taken to execute query in milliseconds"
-            type: integer
+            hits:
+              $ref: "#/definitions/HitsObject"
+            timed_out:
+              type: boolean
+            took:
+              description: "Time taken to execute query in milliseconds"
+              type: integer
 
   SearchResponse:
     type: object
@@ -197,7 +197,7 @@ definitions:
           $ref: "#/definitions/ContentItem"
       suggestions:
         type: array
-        description: "List of suggested alternative similar search queries"  
+        description: "List of suggested alternative similar search queries"
         items:
           type: string
     required:
@@ -389,7 +389,7 @@ definitions:
 
   ShardsItem:
     type: object
-    properities:
+    properties:
       failed:
         type: integer
       successful:
@@ -397,40 +397,43 @@ definitions:
       total:
         type: integer
 
-  HitsItem:
+
+  HitsObject:
     type: object
     properties:
       hits:
         type: array
         items:
-          hits:
-           type: object
-           properties:
-             _id:
-               type: string
-             _index:
-               type: string
-             _score:
-               type: integer
-             _source:
-               type: object
-               properties:
-                 code:
-                   type: string
-                 name:
-                   type: string
-                 terms:
-                   type: array
-                   items:
-                     type: string
-             url:
-               type: string
-             _type:
-               type: string
+          $ref: "#/definitions/HitsItem"
       max_score:
         type: integer
       total:
         type: integer
+
+  HitsItem:
+    type: object
+    properties:
+      _id:
+        type: string
+      _index:
+        type: string
+      _score:
+        type: integer
+      _source:
+        type: object
+        properties:
+          code:
+            type: string
+          name:
+            type: string
+          terms:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+      _type:
+        type: string
 
   TimeseriesResponse:
     type: object
@@ -442,29 +445,28 @@ definitions:
       timed_out:
         type: boolean
       _shards:
-        type: object
-        schema:
+        items:
           $ref: "#/definitions/ShardsItem"
       hits:
         type: array
         items:
           type: object
-            properties:
-              _index:
-                type: string
-              _type:
-                type: string
-                example: "timeseries"
-              _id:
-                type: string
-              _score:
-                type: string
-              _source:
-                type: object
-                  properties:
-                    uri:
-                      type: string
-          sort:
-            type: array
-              items:
-                type: integer
+          properties:
+            _index:
+              type: string
+            _type:
+              type: string
+              example: "timeseries"
+            _id:
+              type: string
+            _score:
+              type: string
+            _source:
+              type: object
+              properties:
+                uri:
+                  type: string
+      sort:
+        type: array
+        items:
+          type: integer
