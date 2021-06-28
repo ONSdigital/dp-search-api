@@ -160,7 +160,7 @@ definitions:
     properties:
       responses:
         type: array
-        description: "A json list containing data associate with a particular dataset"
+        description: "A json list containing data associated with a particular dataset"
         items:
           type: object
           properties:
@@ -396,7 +396,6 @@ definitions:
         type: integer
       total:
         type: integer
-
 
   HitsObject:
     type: object
