@@ -140,7 +140,7 @@ definitions:
         description: "List of suggested alternative search queries from current search query"
         items:
           type: string
-        example: ['UK', 'economy']
+        example: ['UK', 'economy', "inflation rate"]
     required:
       - count
       - took
