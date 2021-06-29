@@ -10,55 +10,34 @@ basePath: "/v1"
 schemes:
   - "http"
 tags:
-  - name: "search"
+  - name: "data"
   - name: "department"
   - name: "health"
+  - name: "search"
+  - name: "timeseries"
 
 paths:
-  /search:
+  /data:
     get:
       tags:
-        - search
-      summary: "Default ONS query API"
-      description: "Default ONS query API which combines the content with type counts"
+        - data
+      summary: "Data query API"
+      description: "Data query API which returns matching links to department"
       parameters:
         - in: query
-          name: q
-          description: "Query search term."
+          name: uris
           type: string
           required: true
         - in: query
-          name: content_type
-          description: "Comma separated list of content types to be returned."
-          type: array
-          uniqueItems: true
-          items:
-            type: string
-          collectionFormat: csv
-          required: false
-        - in: query
-          name: sort
-          description: "The order to return the results."
+          name: types
+          description: "Type of data returned"
           type: string
-          enum: [relevance, release_date, title]
-          required: false
-        - in: query
-          name: limit
-          description: "The number of items requested, defaulted to 50 and limited to 1000."
-          type: integer
-          required: false
-        - in: query
-          name: offset
-          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
-          type: integer
-          required: false
+          required: true
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/SearchResponse"
-        400:
-          description: Query term not specified
+            $ref: "#/definitions/DataResponse"
         500:
           description: Internal server error
 
@@ -108,7 +87,93 @@ paths:
         500:
           description: Internal Server Error
 
+  /search:
+    get:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API which combines the content with type counts"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term."
+          type: string
+          required: true
+        - in: query
+          name: content_type
+          description: "Comma separated list of content types to be returned."
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          collectionFormat: csv
+          required: false
+        - in: query
+          name: sort
+          description: "The order to return the results."
+          type: string
+          required: false
+        - in: query
+          name: limit
+          description: "The number of items requested, defaulted to 50 and limited to 1000."
+          type: integer
+          required: false
+        - in: query
+          name: offset
+          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/SearchResponse"
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /timeseries:
+    get:
+      tags:
+        - timeseries
+      summary: "Query for timeseries data"
+      description: "API to query the app for timeseries by id"
+      parameters:
+        - in: query
+          name: cdid
+          description: "The timeseries id."
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/TimeseriesResponse"
+        500:
+          description: Internal server error
+
 definitions:
+
+  DataResponse:
+    type: object
+    properties:
+      responses:
+        type: array
+        description: "A json list containing data associated with a particular dataset"
+        items:
+          type: object
+          properties:
+            _shards:
+              $ref: "#/definitions/ShardsItem"
+            hits:
+              $ref: "#/definitions/HitsObject"
+            timed_out:
+              type: boolean
+            took:
+              description: "Time taken to execute query in milliseconds"
+              type: integer
+
   SearchResponse:
     type: object
     properties:
@@ -132,7 +197,7 @@ definitions:
           $ref: "#/definitions/ContentItem"
       suggestions:
         type: array
-        description: "List of suggested alternative similar search queries"  
+        description: "List of suggested alternative similar search queries"
         items:
           type: string
       alternative_suggestions:
@@ -328,3 +393,86 @@ definitions:
       dp_fasttext:
         type: string
         example: available
+
+  ShardsItem:
+    type: object
+    properties:
+      failed:
+        type: integer
+      successful:
+        type: integer
+      total:
+        type: integer
+
+  HitsObject:
+    type: object
+    properties:
+      hits:
+        type: array
+        items:
+          $ref: "#/definitions/HitsItem"
+      max_score:
+        type: integer
+      total:
+        type: integer
+
+  HitsItem:
+    type: object
+    properties:
+      _id:
+        type: string
+      _index:
+        type: string
+      _score:
+        type: integer
+      _source:
+        type: object
+        properties:
+          code:
+            type: string
+          name:
+            type: string
+          terms:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+      _type:
+        type: string
+
+  TimeseriesResponse:
+    type: object
+    properties:
+      took:
+        type: integer
+        description: "Time taken to execute query in milliseconds"
+        example: 530
+      timed_out:
+        type: boolean
+      _shards:
+        items:
+          $ref: "#/definitions/ShardsItem"
+      hits:
+        type: array
+        items:
+          type: object
+          properties:
+            _index:
+              type: string
+            _type:
+              type: string
+              example: "timeseries"
+            _id:
+              type: string
+            _score:
+              type: string
+            _source:
+              type: object
+              properties:
+                uri:
+                  type: string
+      sort:
+        type: array
+        items:
+          type: integer
