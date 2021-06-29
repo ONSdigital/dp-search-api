@@ -135,11 +135,18 @@ definitions:
         description: "List of suggested alternative similar search queries"  
         items:
           type: string
+      alternative_suggestions:
+        type: array
+        description: "List of suggested alternative search queries from current search query e.g. return 'uk' and 'economy' and 'uk economy'"
+        items:
+          type: string
     required:
       - count
       - took
       - content_types
       - items
+      
+      
 
   DepartmentResponse:
     type: object
