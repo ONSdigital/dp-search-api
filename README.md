@@ -27,10 +27,6 @@ environment variables, or with a link to a configuration guide.
 | GRACEFUL_SHUTDOWN_TIMEOUT   | 5s                      | The graceful shutdown timeout in seconds (`time.Duration` format)
 | SIGN_ELASTICSEARCH_REQUESTS | false                   | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
 
-## Releasing
-
-To package up the API uses `make package`
-
 ### Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details.
