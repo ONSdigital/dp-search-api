@@ -28,16 +28,8 @@ environment variables, or with a link to a configuration guide.
 | SIGN_ELASTICSEARCH_REQUESTS | false                   | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
 
 ## Releasing
+
 To package up the API uses `make package`
-
-## Deploying
-Export the following variables;
-* export `DATA_CENTER` to the nomad datacenter to use.
-* export `S3_TAR_FILE` to a S3 location on where a release file can be found.
-* export `ELASTIC_SEARCH_URL` to elastic search url.
-
-Then run `make nomad` this shall create a nomad plan within the root directory
-called `dp-search-api.nomad`
 
 ### Contributing
 
