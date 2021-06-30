@@ -46,14 +46,15 @@ func (cli *Client) MultiSearch(ctx context.Context, index string, docType string
 }
 
 // GetStatus makes status call for healthcheck purposes
-func (cli *Client) GetStatus(ctx context.Context, request []byte) ([]byte, error) {
-	reader := bytes.NewReader(request)
+func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
+
 	req, err := http.NewRequest("GET", cli.url+"/_cat/health", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if cli.signRequests {
+		reader := bytes.NewReader([]byte{})
 		if err = cli.awsSDKSigner.Sign(req, reader, time.Now()); err != nil {
 			return nil, err
 		}

@@ -55,7 +55,7 @@ func main() {
 	if cfg.SignElasticsearchRequests {
 		esSigner, err = esauth.NewAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
 		if err != nil {
-			log.Event(ctx, "failed to create aws v4 signer", log.ERROR, log.Error(err))
+			log.Event(nil, "failed to create aws v4 signer", log.ERROR, log.Error(err))
 			os.Exit(1)
 		}
 	}

@@ -139,7 +139,7 @@ func TestGetStatus(t *testing.T) {
 
 			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1")
 
-			res, err := client.GetStatus(context.Background(),)
+			res, err := client.GetStatus(context.Background())
 			So(err, ShouldBeNil)
 			So(res, ShouldNotBeEmpty)
 			So(dphttpMock.DoCalls(), ShouldHaveLength, 1)
