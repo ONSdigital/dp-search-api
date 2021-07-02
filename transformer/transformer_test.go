@@ -295,6 +295,28 @@ func TestFindMatches(t *testing.T) {
 	})
 }
 
+func TestBuildAdditionalSuggestionsList(t *testing.T) {
+	Convey("buildAdditionalSuggestionList successfully", t, func() {
+
+		Convey("returns array of strings", func() {
+			query1 := buildAdditionalSuggestionList("test-query")
+			So(query1, ShouldHaveLength, 1)
+			So(query1[0], ShouldEqual, "test-query")
+
+			query2 := buildAdditionalSuggestionList("test query")
+			So(query2, ShouldHaveLength, 2)
+			So(query2[0], ShouldEqual, "test")
+			So(query2[1], ShouldEqual, "query")
+
+			query3 := buildAdditionalSuggestionList("test query \"with quote marks\"")
+			So(query3, ShouldHaveLength, 3)
+			So(query3[0], ShouldEqual, "test")
+			So(query3[1], ShouldEqual, "query")
+			So(query3[2], ShouldEqual, "\"with quote marks\"")
+		})
+	})
+}
+
 func TestTransformSearchResponse(t *testing.T) {
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
@@ -303,14 +325,14 @@ func TestTransformSearchResponse(t *testing.T) {
 
 		Convey("Throws error on invalid JSON", func() {
 			sampleResponse := []byte(`{"invalid":"json"`)
-			_, err := t.TransformSearchResponse(ctx, sampleResponse)
+			_, err := t.TransformSearchResponse(ctx, sampleResponse, "test-query")
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "Failed to decode elastic search response: unexpected end of JSON input")
 		})
 
 		Convey("Handles missing responses", func() {
 			sampleResponse := []byte(`{}`)
-			_, err := t.TransformSearchResponse(ctx, sampleResponse)
+			_, err := t.TransformSearchResponse(ctx, sampleResponse, "test-query")
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "Response to be transformed contained 0 items")
 		})
@@ -321,7 +343,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			expected, err := ioutil.ReadFile("testdata/search_expected.json")
 			So(err, ShouldBeNil)
 
-			actual, err := t.TransformSearchResponse(ctx, sampleResponse)
+			actual, err := t.TransformSearchResponse(ctx, sampleResponse, "test-query")
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
 			var exp, act searchResponse
