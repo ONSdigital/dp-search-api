@@ -3,13 +3,12 @@ package elasticsearch
 import (
 	"context"
 	"errors"
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	dphttp "github.com/ONSdigital/dp-net/http"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -166,6 +165,23 @@ func TestGetStatus(t *testing.T) {
 			actualRequest := dphttpMock.DoCalls()[0].Req
 			So(actualRequest.URL.String(), ShouldResemble, "http://localhost:999/_cat/health")
 			So(actualRequest.Method, ShouldResemble, "GET")
+
+		})
+
+		Convey("Then a signing error should be passed back", func() {
+			dphttpMock := &dphttp.ClienterMock{
+				DoFunc: func(ctx context.Context, req *http.Request) (*http.Response, error) {
+					return newResponse("moo"), nil
+				},
+			}
+
+			var testSigner *esauth.Signer
+
+			client := New("http://localhost:999", dphttpMock, true, testSigner, "es", "eu-west-1")
+
+			_, err := client.GetStatus(context.Background())
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldResemble, "v4 signer missing. Cannot sign request")
 
 		})
 	})
