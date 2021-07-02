@@ -353,5 +353,20 @@ func TestTransformSearchResponse(t *testing.T) {
 
 		})
 
+		Convey("Calls buildAdditionalSuggestionsList if zero search results", func() {
+			sampleResponse, err := ioutil.ReadFile("testdata/zero_search_example.json")
+			So(err, ShouldBeNil)
+			expected, err := ioutil.ReadFile("testdata/zero_search_expected.json")
+			So(err, ShouldBeNil)
+
+			actual, err := t.TransformSearchResponse(ctx, sampleResponse, "test query \"with quote marks\"")
+			So(err, ShouldBeNil)
+			So(actual, ShouldNotBeEmpty)
+			var exp, act searchResponse
+			So(json.Unmarshal(expected, &exp), ShouldBeNil)
+			So(json.Unmarshal(actual, &act), ShouldBeNil)
+			So(act, ShouldResemble, exp)
+		})
+
 	})
 }
