@@ -200,6 +200,12 @@ definitions:
         description: "List of suggested alternative similar search queries"
         items:
           type: string
+      alternative_suggestions:
+        type: array
+        description: "List of suggested alternative search queries from current search query"
+        items:
+          type: string
+        example: ['UK', 'economy', "inflation rate"]
     required:
       - count
       - took
