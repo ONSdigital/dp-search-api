@@ -3,6 +3,7 @@ package transformer
 import (
 	"context"
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -16,11 +17,12 @@ type Transformer struct{}
 
 // Structs representing the transformed response
 type searchResponse struct {
-	Count        int           `json:"count"`
-	Took         int           `json:"took"`
-	ContentTypes []contentType `json:"content_types"`
-	Items        []contentItem `json:"items"`
-	Suggestions  []string      `json:"suggestions,omitempty"`
+	Count               int           `json:"count"`
+	Took                int           `json:"took"`
+	ContentTypes        []contentType `json:"content_types"`
+	Items               []contentItem `json:"items"`
+	Suggestions         []string      `json:"suggestions,omitempty"`
+	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
 }
 
 type contentType struct {
@@ -165,7 +167,7 @@ func New() *Transformer {
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error) {
+func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error) {
 	var source esResponse
 
 	err := json.Unmarshal(responseData, &source)
@@ -178,6 +180,11 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	}
 
 	sr := transform(&source)
+
+	if sr.Count == 0 {
+		as := buildAdditionalSuggestionList(query)
+		sr.AdditionSuggestions = as
+	}
 
 	transformedData, err := json.Marshal(sr)
 	if err != nil {
@@ -350,4 +357,14 @@ func buildContentTypes(bucket esBucket) contentType {
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
+}
+
+func buildAdditionalSuggestionList(query string) []string {
+	regex := regexp.MustCompile(`"[^"]*"|\S+`)
+
+	queryTerms := []string{}
+	for _, match := range regex.FindAllStringSubmatch(query, -1) {
+		queryTerms = append(queryTerms, match[0])
+	}
+	return queryTerms
 }
