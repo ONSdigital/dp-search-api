@@ -23,7 +23,6 @@ environment variables, or with a link to a configuration guide.
 | Environment variable | Default | Description
 | -------------------- | ------- | -----------
 | AWS_REGION                  | eu-west-1               | The AWS region to use when signing requests with AWS SDK
-| AWS_SDK_SIGNER              | false                   | Boolean flag to identify which library to use to sign elasticsearch requests, if true use the AWS SDK
 | AWS_SERVICE                 | "es"                    | The aws service that the AWS SDK signing mechanism needs to sign a request
 | BIND_ADDR                   | :23900                  | The host and port to bind to
 | ELASTIC_URL	              | "http://localhost:9200" | Http url of the ElasticSearch server
