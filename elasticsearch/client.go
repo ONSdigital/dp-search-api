@@ -6,22 +6,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/pkg/errors"
-	awsauth "github.com/smartystreets/go-aws-auth"
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 )
 
 // Client represents an instance of the elasticsearch client
 type Client struct {
+	awsRegion    string
+	awsSDKSigner *esauth.Signer
+	awsService   string
 	url          string
 	client       dphttp.Clienter
 	signRequests bool
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string) *Client {
 	return &Client{
+		awsSDKSigner: awsSDKSigner,
+		awsRegion:    awsRegion,
+		awsService:   awsService,
 		url:          strings.TrimRight(url, "/"),
 		client:       client,
 		signRequests: signRequests,
@@ -40,13 +47,17 @@ func (cli *Client) MultiSearch(ctx context.Context, index string, docType string
 
 // GetStatus makes status call for healthcheck purposes
 func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
+
 	req, err := http.NewRequest("GET", cli.url+"/_cat/health", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if cli.signRequests {
-		awsauth.Sign(req)
+		reader := bytes.NewReader([]byte{})
+		if err = cli.awsSDKSigner.Sign(req, reader, time.Now()); err != nil {
+			return nil, err
+		}
 	}
 
 	resp, err := cli.client.Do(ctx, req)
@@ -71,7 +82,9 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 	}
 
 	if cli.signRequests {
-		awsauth.Sign(req)
+		if err = cli.awsSDKSigner.Sign(req, reader, time.Now()); err != nil {
+			return nil, err
+		}
 	}
 
 	resp, err := cli.client.Do(ctx, req)
