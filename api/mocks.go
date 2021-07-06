@@ -310,7 +310,7 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 //
 //         // make and configure a mocked ResponseTransformer
 //         mockedResponseTransformer := &ResponseTransformerMock{
-//             TransformSearchResponseFunc: func(ctx context.Context, responseData []byte) ([]byte, error) {
+//             TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string) ([]byte, error) {
 // 	               panic("mock out the TransformSearchResponse method")
 //             },
 //         }
@@ -321,7 +321,7 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 //     }
 type ResponseTransformerMock struct {
 	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
-	TransformSearchResponseFunc func(ctx context.Context, responseData []byte) ([]byte, error)
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -331,26 +331,30 @@ type ResponseTransformerMock struct {
 			Ctx context.Context
 			// ResponseData is the responseData argument value.
 			ResponseData []byte
+			// Query is the query argument value.
+			Query string
 		}
 	}
 }
 
 // TransformSearchResponse calls TransformSearchResponseFunc.
-func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error) {
+func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error) {
 	if mock.TransformSearchResponseFunc == nil {
 		panic("ResponseTransformerMock.TransformSearchResponseFunc: method is nil but ResponseTransformer.TransformSearchResponse was just called")
 	}
 	callInfo := struct {
 		Ctx          context.Context
 		ResponseData []byte
+		Query        string
 	}{
 		Ctx:          ctx,
 		ResponseData: responseData,
+		Query:        query,
 	}
 	lockResponseTransformerMockTransformSearchResponse.Lock()
 	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
 	lockResponseTransformerMockTransformSearchResponse.Unlock()
-	return mock.TransformSearchResponseFunc(ctx, responseData)
+	return mock.TransformSearchResponseFunc(ctx, responseData, query)
 }
 
 // TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
@@ -359,10 +363,12 @@ func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context
 func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	Ctx          context.Context
 	ResponseData []byte
+	Query        string
 } {
 	var calls []struct {
 		Ctx          context.Context
 		ResponseData []byte
+		Query        string
 	}
 	lockResponseTransformerMockTransformSearchResponse.RLock()
 	calls = mock.calls.TransformSearchResponse
