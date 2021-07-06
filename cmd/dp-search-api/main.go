@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	dphttp "github.com/ONSdigital/dp-net/http"
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -50,7 +51,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests)
+	var esSigner *esauth.Signer
+	if cfg.SignElasticsearchRequests {
+		esSigner, err = esauth.NewAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
+		if err != nil {
+			log.Event(nil, "failed to create aws v4 signer", log.ERROR, log.Error(err))
+			os.Exit(1)
+		}
+	}
+
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 	transformer := transformer.New()
 
 	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {

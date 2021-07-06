@@ -9,6 +9,8 @@ import (
 
 // Config is the search API handler config
 type Config struct {
+	AwsRegion                 string        `envconfig:"AWS_REGION"`
+	AwsService                string        `envconfig:"AWS_SERVICE"`
 	BindAddr                  string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL       string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout   time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
@@ -24,6 +26,8 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
+		AwsRegion:                  "eu-west-1",
+		AwsService:                 "es",
 		BindAddr:                  ":23900",
 		ElasticSearchAPIURL:       "http://localhost:9200",
 		GracefulShutdownTimeout:   5 * time.Second,
