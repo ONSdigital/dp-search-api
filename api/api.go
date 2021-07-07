@@ -91,7 +91,7 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/health", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")
 	return api
 }
 
