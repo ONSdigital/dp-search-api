@@ -35,7 +35,7 @@ type QueryBuilder interface {
 
 // ResponseTransformer provides methods for the transform package
 type ResponseTransformer interface {
-	TransformSearchResponse(ctx context.Context, responseData []byte) ([]byte, error)
+	TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search API
