@@ -22,11 +22,6 @@ type SearchAPI struct {
 	Transformer   ResponseTransformer
 }
 
-type HealthCheck interface {
-	Start(ctx context.Context)
-	Stop()
-}
-
 // ElasticSearcher provides client methods for the elasticsearch package
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
