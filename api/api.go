@@ -9,6 +9,7 @@ import (
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
 
 var httpServer *server.Server
@@ -19,6 +20,11 @@ type SearchAPI struct {
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
 	Transformer   ResponseTransformer
+}
+
+type HealthCheck interface {
+	Start(ctx context.Context)
+	Stop()
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -39,7 +45,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
+func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, healthCheck *healthcheck.HealthCheck , errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -91,7 +97,7 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/health", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/health", healthcheck.Handler)
 	return api
 }
 
