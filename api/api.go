@@ -4,17 +4,14 @@ package api
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-api-clients-go/health"
+
 	"github.com/ONSdigital/dp-search-api/config"
-	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/service"
-	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
 
 var httpServer *server.Server
