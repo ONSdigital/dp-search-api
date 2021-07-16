@@ -4,6 +4,11 @@ package api
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-api-clients-go/health"
+	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/service"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/log"
@@ -20,6 +25,7 @@ type SearchAPI struct {
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
 	Transformer   ResponseTransformer
+	ServiceList   *service.ExternalServiceList
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -40,7 +46,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, healthCheck *healthcheck.HealthCheck , errorChan chan error) error {
+func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, serviceList *service.ExternalServiceList, buildTime, gitCommit, version string, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -60,6 +66,25 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 	if errTimeseries != nil {
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
+
+	// Get HealthCheck
+	cfg, err := config.Get()
+	if err != nil {
+		return errors.Wrap(err, "unable to retrieve service configuration")
+	}
+
+	ctx := context.Background()
+	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
+	if err != nil {
+		log.Event(ctx, "could not instantiate healthcheck", log.FATAL, log.Error(err))
+		return err
+	}
+	if err := registerCheckers(ctx, elasticSearchClient, hc); err != nil {
+		return errors.Wrap(err, "unable to register checkers")
+	}
+
+	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
+	hc.Start(ctx)
 
 	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
@@ -92,7 +117,6 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/health", healthcheck.Handler)
 	return api
 }
 
@@ -102,5 +126,20 @@ func Close(ctx context.Context) error {
 		return err
 	}
 	log.Event(ctx, "graceful shutdown of http server complete", log.INFO)
+	return nil
+}
+
+func registerCheckers(ctx context.Context, elasticSearchClient elasticsearch.Client, hc service.HealthChecker) (err error) {
+
+	hasErrors := false
+
+	if err = hc.AddCheck("Elasticsearch", elasticSearchClient.Checker); err != nil {
+		log.Event(ctx, "error creating elasticsearch health check", log.ERROR, log.Error(err))
+		hasErrors = true
+	}
+
+	if hasErrors {
+		return errors.New("Error(s) registering checkers for healthcheck")
+	}
 	return nil
 }

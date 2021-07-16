@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/config"
 	"net/http"
@@ -17,4 +19,4 @@ type HealthChecker interface {
 	Start(ctx context.Context)
 	Stop()
 	AddCheck(name string, checker healthcheck.Checker) (err error)
-}
+
