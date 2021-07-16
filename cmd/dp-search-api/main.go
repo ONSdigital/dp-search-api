@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/service"
-	"github.com/pkg/errors"
 	"os"
 	"os/signal"
 	"syscall"
 
 	dphttp "github.com/ONSdigital/dp-net/http"
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -62,17 +63,19 @@ func main() {
 		}
 	}
 
+	elasticHTTPClient := dphttp.NewClient()
 	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 	transformer := transformer.New()
 	svcList := service.NewServiceList(&service.Init{})
 
 	// Get HealthCheck
+	ctx := context.Background()
 	hc, err := svcList.GetHealthCheck(cfg, BuildTime, GitCommit, Version)
 	if err != nil {
 		log.Event(nil, "could not instantiate healthcheck", log.FATAL, log.Error(err))
 		os.Exit(1)
 	}
-	if err := registerCheckers(elasticSearchClient, hc); err != nil {
+	if err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner); err != nil {
 		os.Exit(1)
 	}
 
@@ -108,17 +111,29 @@ func main() {
 	os.Exit(1)
 }
 
-func registerCheckers(elasticSearchClient api.ElasticSearcher, hc service.HealthChecker) (err error) {
+func registerCheckers(ctx context.Context,
+	cfg *config.Config,
+	elasticHTTPClient dphttp.Clienter,
+	esSigner *esauth.Signer) *healthcheck.HealthCheck {
 
 	hasErrors := false
 
-	if err = hc.AddCheck("Elasticsearch", elasticSearchClient.Checker); err != nil {
-		log.Event(nil, "error creating elasticsearch health check", log.ERROR, log.Error(err))
+	versionInfo, err := healthcheck.NewVersionInfo(BuildTime, GitCommit, Version)
+	if err != nil {
+		log.Event(ctx, "error creating version info", log.FATAL, log.Error(err))
+		hasErrors = true
+	}
+
+	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
+
+	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
+	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
+		log.Event(ctx, "error creating elasticsearch health check", log.ERROR, log.Error(err))
 		hasErrors = true
 	}
 
 	if hasErrors {
-		return errors.New("Error(s) registering checkers for healthcheck")
+		os.Exit(1)
 	}
-	return nil
+	return &hc
 }
