@@ -16,7 +16,7 @@ type Config struct {
 	GracefulShutdownTimeout   time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	SignElasticsearchRequests bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	CriticalTimeout           time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
-	Interval                  time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	HealthCheckInterval                  time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 }
 
 var cfg *Config

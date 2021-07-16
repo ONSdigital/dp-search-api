@@ -46,7 +46,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, serviceList *service.ExternalServiceList, buildTime, gitCommit, version string, errorChan chan error) error {
+func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, serviceList *service.ExternalServiceList, buildTime, gitCommit, version string, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -68,11 +68,6 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 	}
 
 	// Get HealthCheck
-	cfg, err := config.Get()
-	if err != nil {
-		return errors.Wrap(err, "unable to retrieve service configuration")
-	}
-
 	ctx := context.Background()
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 	if err != nil {
@@ -88,7 +83,7 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 
 	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
-	httpServer = server.New(bindAddr, api.Router)
+	httpServer = server.New(cfg.BindAddr, api.Router)
 
 	// Disable this here to allow service to manage graceful shutdown of the entire app.
 	httpServer.HandleOSSignals = false
@@ -129,7 +124,7 @@ func Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context, elasticSearchClient elasticsearch.Client, hc service.HealthChecker) (err error) {
+func registerCheckers(ctx context.Context, elasticSearchClient ElasticSearcher, hc service.HealthChecker) (err error) {
 
 	hasErrors := false
 

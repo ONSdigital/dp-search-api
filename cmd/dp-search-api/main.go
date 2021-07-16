@@ -65,7 +65,7 @@ func main() {
 	transformer := transformer.New()
 	svcList := service.NewServiceList(&service.Init{})
 
-	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, svcList, BuildTime, GitCommit, Version, apiErrors); err != nil {
+	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, svcList, BuildTime, GitCommit, Version, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}

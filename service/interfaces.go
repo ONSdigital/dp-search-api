@@ -19,4 +19,4 @@ type HealthChecker interface {
 	Start(ctx context.Context)
 	Stop()
 	AddCheck(name string, checker healthcheck.Checker) (err error)
-
+}
