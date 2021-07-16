@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/ONSdigital/dp-search-api/service"
+	"github.com/pkg/errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -65,7 +66,17 @@ func main() {
 	transformer := transformer.New()
 	svcList := service.NewServiceList(&service.Init{})
 
-	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, svcList, BuildTime, GitCommit, Version, apiErrors); err != nil {
+	// Get HealthCheck
+	hc, err := svcList.GetHealthCheck(cfg, BuildTime, GitCommit, Version)
+	if err != nil {
+		log.Event(nil, "could not instantiate healthcheck", log.FATAL, log.Error(err))
+		os.Exit(1)
+	}
+	if err := registerCheckers(elasticSearchClient, hc); err != nil {
+		os.Exit(1)
+	}
+
+	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}
@@ -78,6 +89,8 @@ func main() {
 		if err := api.Close(ctx); err != nil {
 			log.Event(ctx, "error closing API", log.Error(err), log.ERROR)
 		}
+
+		hc.Stop()
 
 		log.Event(ctx, "shutdown complete", log.INFO)
 		cancel()
@@ -93,4 +106,19 @@ func main() {
 	}
 
 	os.Exit(1)
+}
+
+func registerCheckers(elasticSearchClient api.ElasticSearcher, hc service.HealthChecker) (err error) {
+
+	hasErrors := false
+
+	if err = hc.AddCheck("Elasticsearch", elasticSearchClient.Checker); err != nil {
+		log.Event(nil, "error creating elasticsearch health check", log.ERROR, log.Error(err))
+		hasErrors = true
+	}
+
+	if hasErrors {
+		return errors.New("Error(s) registering checkers for healthcheck")
+	}
+	return nil
 }

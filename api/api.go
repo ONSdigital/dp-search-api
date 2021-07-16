@@ -46,7 +46,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, serviceList *service.ExternalServiceList, buildTime, gitCommit, version string, errorChan chan error) error {
+func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, hc service.HealthChecker, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -67,17 +67,7 @@ func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticS
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	// Get HealthCheck
 	ctx := context.Background()
-	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
-	if err != nil {
-		log.Event(ctx, "could not instantiate healthcheck", log.FATAL, log.Error(err))
-		return err
-	}
-	if err := registerCheckers(ctx, elasticSearchClient, hc); err != nil {
-		return errors.Wrap(err, "unable to register checkers")
-	}
-
 	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
 	hc.Start(ctx)
 
@@ -124,17 +114,4 @@ func Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context, elasticSearchClient ElasticSearcher, hc service.HealthChecker) (err error) {
 
-	hasErrors := false
-
-	if err = hc.AddCheck("Elasticsearch", elasticSearchClient.Checker); err != nil {
-		log.Event(ctx, "error creating elasticsearch health check", log.ERROR, log.Error(err))
-		hasErrors = true
-	}
-
-	if hasErrors {
-		return errors.New("Error(s) registering checkers for healthcheck")
-	}
-	return nil
-}
