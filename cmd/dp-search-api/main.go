@@ -76,9 +76,7 @@ func main() {
 		log.Event(nil, "could not instantiate healthcheck", log.FATAL, log.Error(err))
 		os.Exit(1)
 	}
-	if err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner); err != nil {
-		os.Exit(1)
-	}
+	 registerCheckers(ctx, cfg, elasticHTTPClient, esSigner)
 
 	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
