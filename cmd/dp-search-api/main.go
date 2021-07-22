@@ -70,11 +70,6 @@ func main() {
 	// Get HealthCheck
 	ctx := context.Background()
 
-	if err != nil {
-		log.Event(nil, "could not instantiate healthcheck", log.FATAL, log.Error(err))
-		os.Exit(1)
-	}
-
 	hc, err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner, svcList)
 	if err != nil {
 		log.Event(nil, "could not register healthcheck", log.FATAL, log.Error(err))
