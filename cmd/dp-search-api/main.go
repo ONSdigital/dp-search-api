@@ -77,7 +77,6 @@ func main() {
 		os.Exit(1)
 	}
 	if err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner); err != nil {
-		log.Event(ctx, "failed to successfully register API checks - exiting", log.FATAL)
 		os.Exit(1)
 	}
 
