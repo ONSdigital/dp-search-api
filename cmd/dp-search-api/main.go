@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/service"
 	"os"
 	"os/signal"
 	"syscall"
 
-	dphttp "github.com/ONSdigital/dp-net/http"
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -70,13 +69,17 @@ func main() {
 
 	// Get HealthCheck
 	ctx := context.Background()
-	hc, err := svcList.GetHealthCheck(cfg, BuildTime, GitCommit, Version)
 
 	if err != nil {
 		log.Event(nil, "could not instantiate healthcheck", log.FATAL, log.Error(err))
 		os.Exit(1)
 	}
-	 registerCheckers(ctx, cfg, elasticHTTPClient, esSigner)
+
+	hc, err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner, svcList)
+	if err != nil {
+		log.Event(nil, "could not register healthcheck", log.FATAL, log.Error(err))
+		os.Exit(1)
+	}
 
 	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
@@ -113,17 +116,15 @@ func main() {
 func registerCheckers(ctx context.Context,
 	cfg *config.Config,
 	elasticHTTPClient dphttp.Clienter,
-	esSigner *esauth.Signer) *healthcheck.HealthCheck {
+	esSigner *esauth.Signer,
+	svcList *service.ExternalServiceList) (service.HealthChecker, error) {
 
 	hasErrors := false
 
-	versionInfo, err := healthcheck.NewVersionInfo(BuildTime, GitCommit, Version)
+	hc, err := svcList.GetHealthCheck(cfg, BuildTime, GitCommit, Version)
 	if err != nil {
-		log.Event(ctx, "error creating version info", log.FATAL, log.Error(err))
-		hasErrors = true
+		return nil, err
 	}
-
-	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
 
 	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
 	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
@@ -132,8 +133,8 @@ func registerCheckers(ctx context.Context,
 	}
 
 	if hasErrors {
-		log.Event(ctx, "failed to successfully register API checks - exiting", log.ERROR, log.Error(err))
-		os.Exit(1)
+		return nil, err
+
 	}
-	return &hc
+	return hc, nil
 }
