@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-search-api/service"
 	"os"
 	"os/signal"
 	"syscall"
 
-	dphttp "github.com/ONSdigital/dp-net/http"
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -60,10 +62,21 @@ func main() {
 		}
 	}
 
+	elasticHTTPClient := dphttp.NewClient()
 	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 	transformer := transformer.New()
+	svcList := service.NewServiceList(&service.Init{})
 
-	if err := api.CreateAndInitialise(cfg.BindAddr, queryBuilder, elasticSearchClient, transformer, apiErrors); err != nil {
+	// Get HealthCheck
+	ctx := context.Background()
+
+	hc, err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner, svcList)
+	if err != nil {
+		log.Event(nil, "could not register healthcheck", log.FATAL, log.Error(err))
+		os.Exit(1)
+	}
+
+	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
 		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
 		os.Exit(1)
 	}
@@ -76,6 +89,8 @@ func main() {
 		if err := api.Close(ctx); err != nil {
 			log.Event(ctx, "error closing API", log.Error(err), log.ERROR)
 		}
+
+		hc.Stop()
 
 		log.Event(ctx, "shutdown complete", log.INFO)
 		cancel()
@@ -91,4 +106,30 @@ func main() {
 	}
 
 	os.Exit(1)
+}
+
+func registerCheckers(ctx context.Context,
+	cfg *config.Config,
+	elasticHTTPClient dphttp.Clienter,
+	esSigner *esauth.Signer,
+	svcList *service.ExternalServiceList) (service.HealthChecker, error) {
+
+	hasErrors := false
+
+	hc, err := svcList.GetHealthCheck(cfg, BuildTime, GitCommit, Version)
+	if err != nil {
+		return nil, err
+	}
+
+	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
+	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
+		log.Event(ctx, "error creating elasticsearch health check", log.ERROR, log.Error(err))
+		hasErrors = true
+	}
+
+	if hasErrors {
+		return nil, err
+
+	}
+	return hc, nil
 }

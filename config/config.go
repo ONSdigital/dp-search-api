@@ -9,12 +9,14 @@ import (
 
 // Config is the search API handler config
 type Config struct {
-	AwsRegion                 string        `envconfig:"AWS_REGION"`
-	AwsService                string        `envconfig:"AWS_SERVICE"`
-	BindAddr                  string        `envconfig:"BIND_ADDR"`
-	ElasticSearchAPIURL       string        `envconfig:"ELASTIC_SEARCH_URL"`
-	GracefulShutdownTimeout   time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	SignElasticsearchRequests bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
+	AwsRegion                  string        `envconfig:"AWS_REGION"`
+	AwsService                 string        `envconfig:"AWS_SERVICE"`
+	BindAddr                   string        `envconfig:"BIND_ADDR"`
+	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
+	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
+	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
+	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 }
 
 var cfg *Config
@@ -32,6 +34,8 @@ func Get() (*Config, error) {
 		ElasticSearchAPIURL:       "http://localhost:9200",
 		GracefulShutdownTimeout:   5 * time.Second,
 		SignElasticsearchRequests: false,
+		HealthCheckCriticalTimeout:           90 * time.Second,
+		HealthCheckInterval:                  30 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

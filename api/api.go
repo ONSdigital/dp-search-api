@@ -5,6 +5,9 @@ package api
 import (
 	"context"
 
+	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/dp-search-api/service"
+
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/gorilla/mux"
@@ -19,6 +22,7 @@ type SearchAPI struct {
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
 	Transformer   ResponseTransformer
+	ServiceList   *service.ExternalServiceList
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -39,7 +43,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
+func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, hc service.HealthChecker, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -60,9 +64,13 @@ func CreateAndInitialise(bindAddr string, queryBuilder QueryBuilder, elasticSear
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
+	ctx := context.Background()
+	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
+	hc.Start(ctx)
+
 	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
-	httpServer = server.New(bindAddr, api.Router)
+	httpServer = server.New(cfg.BindAddr, api.Router)
 
 	// Disable this here to allow service to manage graceful shutdown of the entire app.
 	httpServer.HandleOSSignals = false
@@ -91,7 +99,6 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/healthcheck", HealthCheckHandlerCreator(api.ElasticSearch)).Methods("GET")
 	return api
 }
 
@@ -103,3 +110,5 @@ func Close(ctx context.Context) error {
 	log.Event(ctx, "graceful shutdown of http server complete", log.INFO)
 	return nil
 }
+
+
