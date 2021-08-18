@@ -47,12 +47,12 @@
                         },
                         "highlight": {
                             "description.title": [
-                                "<strong>House</strong> Price Statistics for Small Areas in England and Wales"
+                                "<em>House</em> Price Statistics for Small Areas in England and Wales"
                             ],
                             "description.keywords": [
-                                "regional <strong>house</strong> prices",
-                                "area with cheapest <strong>houses</strong>",
-                                "area with most expensive <strong>houses</strong>"
+                                "regional <em>house</em> prices",
+                                "area with cheapest <em>>houses</em>",
+                                "area with most expensive <em>houses</em>"
                             ]
                         },
                         "sort": [
@@ -79,7 +79,7 @@
                         },
                         "highlight": {
                             "description.title": [
-                                "<strong>Housing</strong>"
+                                "<em>Housing</em>"
                             ]
                         },
                         "sort": [

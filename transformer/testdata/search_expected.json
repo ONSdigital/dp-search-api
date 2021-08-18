@@ -40,25 +40,17 @@
                     "summary": null,
                     "title": [
                         {
-                            "start": 1,
-                            "end": 5
                         }
                     ],
                     "keywords": [
                         {
-                            "value": "regional house prices",
-                            "start": 10,
-                            "end": 14
+                            "value": "regional house prices"
                         },
                         {
-                            "value": "area with cheapest houses",
-                            "start": 20,
-                            "end": 25
+                            "value": "area with cheapest houses"
                         },
                         {
-                            "value": "area with most expensive houses",
-                            "start": 26,
-                            "end": 31
+                            "value": "area with most expensive houses"
                         }
                     ]
                 }
@@ -76,17 +68,7 @@
             },
             "type": "product_page",
             "uri": "/peoplepopulationandcommunity/housing",
-            "matches": {
-                "description": {
-                    "summary": null,
-                    "title": [
-                        {
-                            "start": 1,
-                            "end": 7
-                        }
-                    ]
-                }
-            }
+            "matches": []
         }
     ],
     "suggestions": [

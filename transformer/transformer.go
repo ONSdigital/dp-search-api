@@ -7,8 +7,6 @@ import (
 	"regexp"
 )
 
-const startHighlightTag string = "<em>"
-const endHighlightTag string = "</em>"
 
 // Transformer represents an instance of the ResponseTransformer interface
 type Transformer struct{}
