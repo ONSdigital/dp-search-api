@@ -3,14 +3,12 @@ package transformer
 import (
 	"context"
 	"encoding/json"
-	"regexp"
-	"strings"
-
 	"github.com/pkg/errors"
+	"regexp"
 )
 
-const startHighlightTag string = "<strong>"
-const endHighlightTag string = "</strong>"
+const startHighlightTag string = "<em>"
+const endHighlightTag string = "</em>"
 
 // Transformer represents an instance of the ResponseTransformer interface
 type Transformer struct{}
@@ -31,10 +29,10 @@ type contentType struct {
 }
 
 type contentItem struct {
-	Description description `json:"description"`
-	Type        string      `json:"type"`
-	URI         string      `json:"uri"`
-	Matches     *matches    `json:"matches,omitempty"`
+	Description description  `json:"description"`
+	Type        string       `json:"type"`
+	URI         string       `json:"uri"`
+	Matches     *esHighlight `json:"matches,omitempty"`
 }
 
 type description struct {
@@ -62,23 +60,6 @@ type contact struct {
 	Name      string `json:"name"`
 	Telephone string `json:"telephone,omitempty"`
 	Email     string `json:"email"`
-}
-
-type matches struct {
-	Description struct {
-		Summary         *[]matchDetails `json:"summary"`
-		Title           *[]matchDetails `json:"title"`
-		Edition         *[]matchDetails `json:"edition,omitempty"`
-		MetaDescription *[]matchDetails `json:"meta_description,omitempty"`
-		Keywords        *[]matchDetails `json:"keywords,omitempty"`
-		DatasetID       *[]matchDetails `json:"dataset_id,omitempty"`
-	} `json:"description"`
-}
-
-type matchDetails struct {
-	Value string `json:"value,omitempty"`
-	Start int    `json:"start"`
-	End   int    `json:"end"`
 }
 
 // Structs representing the raw elastic search response
@@ -223,7 +204,7 @@ func buildContentItem(doc esResponseHit) contentItem {
 		Description: buildDescription(doc),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
-		Matches:     buildMatches(doc.Highlight),
+		Matches:     &doc.Highlight,
 	}
 
 	return ci
@@ -251,105 +232,6 @@ func buildDescription(doc esResponseHit) description {
 		Headline2:         sd.Headline2,
 		Headline3:         sd.Headline3,
 	}
-}
-
-func buildMatches(hl esHighlight) *matches {
-	var matches matches
-
-	if highlights := hl.DescriptionTitle; highlights != nil {
-		var titleMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			titleMatches = append(titleMatches, foundMatchDetails...)
-		}
-		matches.Description.Title = &titleMatches
-	}
-
-	if highlights := hl.DescriptionEdition; highlights != nil {
-		var editionMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			editionMatches = append(editionMatches, foundMatchDetails...)
-		}
-		matches.Description.Edition = &editionMatches
-	}
-
-	if highlights := hl.DescriptionSummary; highlights != nil {
-		var summaryMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			summaryMatches = append(summaryMatches, foundMatchDetails...)
-		}
-		matches.Description.Summary = &summaryMatches
-	}
-
-	if highlights := hl.DescriptionMeta; highlights != nil {
-		var summaryMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			summaryMatches = append(summaryMatches, foundMatchDetails...)
-		}
-		matches.Description.MetaDescription = &summaryMatches
-	}
-
-	if highlights := hl.DescriptionKeywords; highlights != nil {
-		var keywordsMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, value := findMatches(m)
-			for _, md := range foundMatchDetails {
-				md.Value = value
-				keywordsMatches = append(keywordsMatches, md)
-			}
-		}
-		matches.Description.Keywords = &keywordsMatches
-	}
-
-	if highlights := hl.DescriptionDatasetID; highlights != nil {
-		var datasetIDMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			datasetIDMatches = append(datasetIDMatches, foundMatchDetails...)
-		}
-		matches.Description.DatasetID = &datasetIDMatches
-	}
-
-	return &matches
-}
-
-// Find matches finds all the matching marked-up phrases and returns a slice of their start and end points in the string
-// NB. The start and end values are the number of bytes, not characters, so be aware when the input contains higher-order
-// UTF-8 characters.
-func findMatches(s string) ([]matchDetails, string) {
-
-	md := make([]matchDetails, 0, 2)
-	fs := s
-
-	if start := strings.Index(s, startHighlightTag); start >= 0 {
-		left := s[0:start]
-		right := s[start+len(startHighlightTag) : len(s)]
-		if end := strings.Index(right, endHighlightTag); end >= 0 {
-			mid := right[0:end]
-			remain := right[end+len(endHighlightTag) : len(right)]
-
-			md = append(md, matchDetails{
-				Start: start + 1,
-				End:   start + end,
-			})
-
-			remainMatches, remain := findMatches(remain)
-			for _, rm := range remainMatches {
-				rm.Start += len(left) + len(mid)
-				rm.End += len(left) + len(mid)
-				md = append(md, rm)
-			}
-
-			right = mid + remain
-		}
-
-		fs = left + right
-	}
-
-	return md, fs
 }
 
 func buildContentTypes(bucket esBucket) contentType {
