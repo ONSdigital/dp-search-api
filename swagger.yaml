@@ -306,27 +306,27 @@ definitions:
       matches:
         type: object
         properties:
-          description_title:
+          description.title:
             type: array
             items:
               type: string
-          description_edition:
+          description.edition:
             type: array
             items:
               type: string
-          description_summary:
+          description.summary:
             type: array
             items:
               type: string
-          description_meta:
+          description.metaDesription:
             type: array
             items:
               type: string
-          description_keywords:
+          description.keywords:
             type: array
             items:
               type: string
-          description_dataset_id:
+          description.datasetId:
             type: array
             items:
               type: string
