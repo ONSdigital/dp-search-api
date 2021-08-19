@@ -304,9 +304,32 @@ definitions:
           - summary
           - title
       matches:
-        type: array
-        items:
-          type: string
+        type: object
+        properties:
+          description_title:
+            type: array
+            items:
+              type: string
+          description_edition:
+            type: array
+            items:
+              type: string
+          description_summary:
+            type: array
+            items:
+              type: string
+          description_meta:
+            type: array
+            items:
+              type: string
+          description_keywords:
+            type: array
+            items:
+              type: string
+          description_dataset_id:
+            type: array
+            items:
+              type: string
       type:
         type: string
       uri:
