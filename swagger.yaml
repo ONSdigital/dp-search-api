@@ -417,13 +417,6 @@ definitions:
             type: string
       _type:
         type: string
-      _highlight:
-        type: object
-        properties:
-          terms:
-            type: array
-            items:
-              type: string
 
   TimeseriesResponse:
     type: object
