@@ -37,15 +37,15 @@
             },
             "matches": {
                     "description.title": [
-                        "<em>House</em> Price Statistics for Small Areas in England and Wales"
+                        "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales"
                     ],
                     "description.edition": null,
                     "description.summary": null,
                     "description.metaDescription": null,
                     "description.keywords": [
-                        "regional <em>house</em> prices",
-                        "area with cheapest <em>houses</em>",
-                        "area with most expensive <em>houses</em>"
+                        "regional <em class=\"highlight\">house</em> prices",
+                        "area with cheapest <em class=\"highlight\">houses</em>",
+                        "area with most expensive <em class=\"highlight\">houses</em>"
                     ],
                     "description.datasetId": null
             },
@@ -64,7 +64,7 @@
             "uri": "/peoplepopulationandcommunity/housing",
             "matches": {
                     "description.title": [
-                        "<em>Housing</em>"
+                        "<em class=\"highlight\">Housing</em>"
                     ],
                     "description.edition": null,
                     "description.summary": null,
