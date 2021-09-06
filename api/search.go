@@ -50,6 +50,8 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		q := params.Get("q")
 		sort := paramGet(params, "sort", "relevance")
 
+		highlight := paramGetBool(params, "highlight", true)
+
 		limitParam := paramGet(params, "limit", "10")
 		limit, err := strconv.Atoi(limitParam)
 		if err != nil {
@@ -111,8 +113,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			//TODO - determine whether to return highlighted response or not
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, true)
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
 			if err != nil {
 				log.Event(ctx, "transformation of response data failed", log.Error(err), log.ERROR)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)

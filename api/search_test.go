@@ -216,6 +216,57 @@ func TestSearchHandlerFunc(t *testing.T) {
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
+		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeTrue)
+		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
+		So(actualResponse, ShouldResemble, validESResponse)
+	})
+
+	Convey("Should return OK for valid search result with highlight = true", t, func() {
+		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=true", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusOK)
+		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
+		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
+		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
+		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
+		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeTrue)
+		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
+		So(actualResponse, ShouldResemble, validESResponse)
+	})
+
+	Convey("Should return OK for valid search result with highlight = false", t, func() {
+		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=false", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusOK)
+		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
+		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
+		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
+		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
+		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeFalse)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
 		So(actualResponse, ShouldResemble, validESResponse)
 	})

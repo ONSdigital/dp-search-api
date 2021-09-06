@@ -109,6 +109,12 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
+          name: highlight
+          description: "Determines whether to return HTML highlighted fields."
+          type: boolean
+          required: false
+          default: true
+        - in: query
           name: sort
           description: "The order to return the results."
           type: string
@@ -303,33 +309,6 @@ definitions:
         required:
           - summary
           - title
-      matches:
-        type: object
-        properties:
-          description.title:
-            type: array
-            items:
-              type: string
-          description.edition:
-            type: array
-            items:
-              type: string
-          description.summary:
-            type: array
-            items:
-              type: string
-          description.metaDesription:
-            type: array
-            items:
-              type: string
-          description.keywords:
-            type: array
-            items:
-              type: string
-          description.datasetId:
-            type: array
-            items:
-              type: string
       type:
         type: string
       uri:
