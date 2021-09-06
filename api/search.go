@@ -111,7 +111,8 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q)
+			//TODO - determine whether to return highlighted response or not
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, true)
 			if err != nil {
 				log.Event(ctx, "transformation of response data failed", log.Error(err), log.ERROR)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)

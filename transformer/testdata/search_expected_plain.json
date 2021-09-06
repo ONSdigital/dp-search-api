@@ -27,27 +27,13 @@
                     "area with most expensive houses"
                 ],
                 "latest_release": true,
-                "meta_description": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs).",
+                "meta_description": "A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
                 "national_statistic": false,
                 "release_date": "2015-02-17T00:00:00.000Z",
                 "source": "",
                 "summary": "",
                 "title": "House Price Statistics for Small Areas in England and Wales",
                 "unit": ""
-            },
-            "matches": {
-                    "description.title": [
-                        "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales"
-                    ],
-                    "description.edition": null,
-                    "description.summary": null,
-                    "description.metaDescription": null,
-                    "description.keywords": [
-                        "regional <em class=\"highlight\">house</em> prices",
-                        "area with cheapest <em class=\"highlight\">houses</em>",
-                        "area with most expensive <em class=\"highlight\">houses</em>"
-                    ],
-                    "description.datasetId": null
             },
             "type": "article",
             "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
@@ -61,17 +47,7 @@
                 "pre_unit": ""
             },
             "type": "product_page",
-            "uri": "/peoplepopulationandcommunity/housing",
-            "matches": {
-                    "description.title": [
-                        "<em class=\"highlight\">Housing</em>"
-                    ],
-                    "description.edition": null,
-                    "description.summary": null,
-                    "description.metaDescription": null,
-                    "description.keywords": null,
-                    "description.datasetId": null
-            }
+            "uri": "/peoplepopulationandcommunity/housing"
         }
     ],
     "suggestions": [

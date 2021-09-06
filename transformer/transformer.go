@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"regexp"
+	"strings"
 )
 
-
 // Transformer represents an instance of the ResponseTransformer interface
-type Transformer struct{}
+type Transformer struct {
+	higlightReplacer strings.Replacer
+}
 
 // Structs representing the transformed response
 type searchResponse struct {
@@ -27,10 +29,9 @@ type contentType struct {
 }
 
 type contentItem struct {
-	Description description  `json:"description"`
-	Type        string       `json:"type"`
-	URI         string       `json:"uri"`
-	Matches     *esHighlight `json:"matches,omitempty"`
+	Description description `json:"description"`
+	Type        string      `json:"type"`
+	URI         string      `json:"uri"`
 }
 
 type description struct {
@@ -142,11 +143,14 @@ type esSearchSuggestOptions struct {
 
 // New returns a new instance of Transformer
 func New() *Transformer {
-	return &Transformer{}
+	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
+	return &Transformer{
+		higlightReplacer: *highlightReplacer,
+	}
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error) {
+func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source esResponse
 
 	err := json.Unmarshal(responseData, &source)
@@ -158,7 +162,7 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 		return nil, errors.New("Response to be transformed contained 0 items")
 	}
 
-	sr := transform(&source)
+	sr := t.transform(&source, highlight)
 
 	if sr.Count == 0 {
 		as := buildAdditionalSuggestionList(query)
@@ -172,7 +176,7 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func transform(source *esResponse) searchResponse {
+func (t *Transformer) transform(source *esResponse, highlight bool) searchResponse {
 	sr := searchResponse{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []contentItem{},
@@ -181,7 +185,7 @@ func transform(source *esResponse) searchResponse {
 	var took int = 0
 	for _, response := range source.Responses {
 		for _, doc := range response.Hits.Hits {
-			sr.Items = append(sr.Items, buildContentItem(doc))
+			sr.Items = append(sr.Items, t.buildContentItem(doc, highlight))
 		}
 		for _, bucket := range response.Aggregations.DocCounts.Buckets {
 			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(bucket))
@@ -197,39 +201,66 @@ func transform(source *esResponse) searchResponse {
 	return sr
 }
 
-func buildContentItem(doc esResponseHit) contentItem {
+func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) contentItem {
 	ci := contentItem{
-		Description: buildDescription(doc),
+		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
-		Matches:     &doc.Highlight,
 	}
 
 	return ci
 }
 
-func buildDescription(doc esResponseHit) description {
+func (t *Transformer) buildDescription(doc esResponseHit, highlight bool) description {
 	sd := doc.Source.Description
+	hl := doc.Highlight
+
 	return description{
-		Summary:           sd.Summary,
+		Summary:           t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
 		PreUnit:           sd.PreUnit,
-		Keywords:          sd.Keywords,
+		Keywords:          t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
 		ReleaseDate:       sd.ReleaseDate,
-		Edition:           sd.Edition,
+		Edition:           t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
 		LatestRelease:     sd.LatestRelease,
 		Language:          sd.Language,
 		Contact:           sd.Contact,
-		DatasetID:         sd.DatasetID,
+		DatasetID:         t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
 		Source:            sd.Source,
-		Title:             sd.Title,
-		MetaDescription:   sd.MetaDescription,
+		Title:             t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
+		MetaDescription:   t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
 		NationalStatistic: sd.NationalStatistic,
 		Headline1:         sd.Headline1,
 		Headline2:         sd.Headline2,
 		Headline3:         sd.Headline3,
 	}
+}
+
+func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) string {
+	overlaid := def
+	if highlight && hl != nil && len(*hl) > 0 {
+		overlaid = (*hl)[0]
+	}
+	return overlaid
+}
+
+func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, highlight bool) *[]string {
+	if defaultList == nil {
+		return nil
+	}
+	overlaid := *defaultList
+	if highlight && hlList != nil {
+		for _, hl := range *hlList {
+			unformatted := t.higlightReplacer.Replace(hl)
+			for i, defItem := range overlaid {
+				if defItem == unformatted {
+					overlaid[i] = hl
+				}
+			}
+		}
+	}
+	return &overlaid
 }
 
 func buildContentTypes(bucket esBucket) contentType {

@@ -39,7 +39,7 @@ type QueryBuilder interface {
 
 // ResponseTransformer provides methods for the transform package
 type ResponseTransformer interface {
-	TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error)
+	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search API
@@ -110,5 +110,3 @@ func Close(ctx context.Context) error {
 	log.Event(ctx, "graceful shutdown of http server complete", log.INFO)
 	return nil
 }
-
-

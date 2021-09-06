@@ -276,7 +276,7 @@ func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
 
 func newResponseTransformerMock(response []byte, err error) *ResponseTransformerMock {
 	return &ResponseTransformerMock{
-		TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string) ([]byte, error) {
+		TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 			return response, err
 		},
 	}
