@@ -3,11 +3,10 @@ module github.com/ONSdigital/dp-search-api
 go 1.16
 
 require (
-	github.com/ONSdigital/dp-api-clients-go v1.34.4 // indirect
 	github.com/ONSdigital/dp-elasticsearch/v2 v2.2.0
-	github.com/ONSdigital/dp-healthcheck v1.0.5
-	github.com/ONSdigital/dp-net v1.0.12
-	github.com/ONSdigital/go-ns v0.0.0-20210410105122-6d6a140e952e
+	github.com/ONSdigital/dp-healthcheck v1.1.0
+	github.com/ONSdigital/dp-net v1.2.0
+	github.com/ONSdigital/go-ns v0.0.0-20210831102424-ebdecc20fe9e
 	github.com/ONSdigital/log.go/v2 v2.0.9
 	github.com/aws/aws-sdk-go v1.38.65 // indirect
 	github.com/gorilla/mux v1.8.0
