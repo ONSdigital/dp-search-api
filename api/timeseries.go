@@ -7,8 +7,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 type timeseriesLookupRequest struct {
@@ -35,20 +36,20 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 		var doc bytes.Buffer
 		err := timeseriesTemplate.Execute(&doc, reqParams)
 		if err != nil {
-			log.Event(ctx, "creation of timeseries query from template failed", log.Data{"Params": reqParams}, log.Error(err), log.ERROR)
+			log.Error(ctx, "creation of timeseries query from template failed", err, log.Data{"Params": reqParams})
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData, err := elasticSearchClient.Search(ctx, "ons", "timeseries", doc.Bytes())
 		if err != nil {
-			log.Event(ctx, "elasticsearch query failed", log.Error(err), log.ERROR)
+			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run timeseries query", http.StatusInternalServerError)
 			return
 		}
 
 		if !json.Valid([]byte(responseData)) {
-			log.Event(ctx, "elastic search returned invalid JSON for timeseries query", log.ERROR)
+			log.Error(ctx, "elastic search returned invalid JSON for timeseries query", errors.New("elastic search returned invalid JSON for timeseries query"))
 			http.Error(w, "Failed to process timeseries query", http.StatusInternalServerError)
 			return
 		}
