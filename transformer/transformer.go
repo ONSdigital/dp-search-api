@@ -3,17 +3,15 @@ package transformer
 import (
 	"context"
 	"encoding/json"
+	"github.com/pkg/errors"
 	"regexp"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
-const startHighlightTag string = "<strong>"
-const endHighlightTag string = "</strong>"
-
 // Transformer represents an instance of the ResponseTransformer interface
-type Transformer struct{}
+type Transformer struct {
+	higlightReplacer strings.Replacer
+}
 
 // Structs representing the transformed response
 type searchResponse struct {
@@ -34,7 +32,6 @@ type contentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
-	Matches     *matches    `json:"matches,omitempty"`
 }
 
 type description struct {
@@ -62,23 +59,6 @@ type contact struct {
 	Name      string `json:"name"`
 	Telephone string `json:"telephone,omitempty"`
 	Email     string `json:"email"`
-}
-
-type matches struct {
-	Description struct {
-		Summary         *[]matchDetails `json:"summary"`
-		Title           *[]matchDetails `json:"title"`
-		Edition         *[]matchDetails `json:"edition,omitempty"`
-		MetaDescription *[]matchDetails `json:"meta_description,omitempty"`
-		Keywords        *[]matchDetails `json:"keywords,omitempty"`
-		DatasetID       *[]matchDetails `json:"dataset_id,omitempty"`
-	} `json:"description"`
-}
-
-type matchDetails struct {
-	Value string `json:"value,omitempty"`
-	Start int    `json:"start"`
-	End   int    `json:"end"`
 }
 
 // Structs representing the raw elastic search response
@@ -163,11 +143,14 @@ type esSearchSuggestOptions struct {
 
 // New returns a new instance of Transformer
 func New() *Transformer {
-	return &Transformer{}
+	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
+	return &Transformer{
+		higlightReplacer: *highlightReplacer,
+	}
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error) {
+func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source esResponse
 
 	err := json.Unmarshal(responseData, &source)
@@ -179,7 +162,7 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 		return nil, errors.New("Response to be transformed contained 0 items")
 	}
 
-	sr := transform(&source)
+	sr := t.transform(&source, highlight)
 
 	if sr.Count == 0 {
 		as := buildAdditionalSuggestionList(query)
@@ -193,7 +176,7 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func transform(source *esResponse) searchResponse {
+func (t *Transformer) transform(source *esResponse, highlight bool) searchResponse {
 	sr := searchResponse{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []contentItem{},
@@ -202,7 +185,7 @@ func transform(source *esResponse) searchResponse {
 	var took int = 0
 	for _, response := range source.Responses {
 		for _, doc := range response.Hits.Hits {
-			sr.Items = append(sr.Items, buildContentItem(doc))
+			sr.Items = append(sr.Items, t.buildContentItem(doc, highlight))
 		}
 		for _, bucket := range response.Aggregations.DocCounts.Buckets {
 			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(bucket))
@@ -218,34 +201,35 @@ func transform(source *esResponse) searchResponse {
 	return sr
 }
 
-func buildContentItem(doc esResponseHit) contentItem {
+func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) contentItem {
 	ci := contentItem{
-		Description: buildDescription(doc),
+		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
-		Matches:     buildMatches(doc.Highlight),
 	}
 
 	return ci
 }
 
-func buildDescription(doc esResponseHit) description {
+func (t *Transformer) buildDescription(doc esResponseHit, highlight bool) description {
 	sd := doc.Source.Description
+	hl := doc.Highlight
+
 	return description{
-		Summary:           sd.Summary,
+		Summary:           t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
 		PreUnit:           sd.PreUnit,
-		Keywords:          sd.Keywords,
+		Keywords:          t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
 		ReleaseDate:       sd.ReleaseDate,
-		Edition:           sd.Edition,
+		Edition:           t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
 		LatestRelease:     sd.LatestRelease,
 		Language:          sd.Language,
 		Contact:           sd.Contact,
-		DatasetID:         sd.DatasetID,
+		DatasetID:         t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
 		Source:            sd.Source,
-		Title:             sd.Title,
-		MetaDescription:   sd.MetaDescription,
+		Title:             t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
+		MetaDescription:   t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
 		NationalStatistic: sd.NationalStatistic,
 		Headline1:         sd.Headline1,
 		Headline2:         sd.Headline2,
@@ -253,103 +237,30 @@ func buildDescription(doc esResponseHit) description {
 	}
 }
 
-func buildMatches(hl esHighlight) *matches {
-	var matches matches
-
-	if highlights := hl.DescriptionTitle; highlights != nil {
-		var titleMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			titleMatches = append(titleMatches, foundMatchDetails...)
-		}
-		matches.Description.Title = &titleMatches
+func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) string {
+	overlaid := def
+	if highlight && hl != nil && len(*hl) > 0 {
+		overlaid = (*hl)[0]
 	}
-
-	if highlights := hl.DescriptionEdition; highlights != nil {
-		var editionMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			editionMatches = append(editionMatches, foundMatchDetails...)
-		}
-		matches.Description.Edition = &editionMatches
-	}
-
-	if highlights := hl.DescriptionSummary; highlights != nil {
-		var summaryMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			summaryMatches = append(summaryMatches, foundMatchDetails...)
-		}
-		matches.Description.Summary = &summaryMatches
-	}
-
-	if highlights := hl.DescriptionMeta; highlights != nil {
-		var summaryMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			summaryMatches = append(summaryMatches, foundMatchDetails...)
-		}
-		matches.Description.MetaDescription = &summaryMatches
-	}
-
-	if highlights := hl.DescriptionKeywords; highlights != nil {
-		var keywordsMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, value := findMatches(m)
-			for _, md := range foundMatchDetails {
-				md.Value = value
-				keywordsMatches = append(keywordsMatches, md)
-			}
-		}
-		matches.Description.Keywords = &keywordsMatches
-	}
-
-	if highlights := hl.DescriptionDatasetID; highlights != nil {
-		var datasetIDMatches []matchDetails
-		for _, m := range *highlights {
-			foundMatchDetails, _ := findMatches(m)
-			datasetIDMatches = append(datasetIDMatches, foundMatchDetails...)
-		}
-		matches.Description.DatasetID = &datasetIDMatches
-	}
-
-	return &matches
+	return overlaid
 }
 
-// Find matches finds all the matching marked-up phrases and returns a slice of their start and end points in the string
-// NB. The start and end values are the number of bytes, not characters, so be aware when the input contains higher-order
-// UTF-8 characters.
-func findMatches(s string) ([]matchDetails, string) {
-
-	md := make([]matchDetails, 0, 2)
-	fs := s
-
-	if start := strings.Index(s, startHighlightTag); start >= 0 {
-		left := s[0:start]
-		right := s[start+len(startHighlightTag) : len(s)]
-		if end := strings.Index(right, endHighlightTag); end >= 0 {
-			mid := right[0:end]
-			remain := right[end+len(endHighlightTag) : len(right)]
-
-			md = append(md, matchDetails{
-				Start: start + 1,
-				End:   start + end,
-			})
-
-			remainMatches, remain := findMatches(remain)
-			for _, rm := range remainMatches {
-				rm.Start += len(left) + len(mid)
-				rm.End += len(left) + len(mid)
-				md = append(md, rm)
-			}
-
-			right = mid + remain
-		}
-
-		fs = left + right
+func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, highlight bool) *[]string {
+	if defaultList == nil {
+		return nil
 	}
-
-	return md, fs
+	overlaid := *defaultList
+	if highlight && hlList != nil {
+		for _, hl := range *hlList {
+			unformatted := t.higlightReplacer.Replace(hl)
+			for i, defItem := range overlaid {
+				if defItem == unformatted {
+					overlaid[i] = hl
+				}
+			}
+		}
+	}
+	return &overlaid
 }
 
 func buildContentTypes(bucket esBucket) contentType {

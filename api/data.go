@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-search-api/query"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type dataLookupRequest struct {
@@ -41,35 +41,35 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 
 		err := dataTemplates.Execute(&doc, reqParams)
 		if err != nil {
-			log.Event(ctx, "creation of search from template failed", log.Data{"Params": reqParams}, log.Error(err), log.ERROR)
+			log.Error(ctx, "creation of search from template failed", err, log.Data{"Params": reqParams})
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		formattedQuery, err := query.FormatMultiQuery(doc.Bytes())
 		if err != nil {
-			log.Event(ctx, "formating of data query for elasticsearch failed", log.Error(err), log.ERROR)
+			log.Error(ctx, "formating of data query for elasticsearch failed", err)
 			http.Error(w, "Failed to create query", http.StatusInternalServerError)
 			return
 		}
 
 		responseString, err := elasticSearchClient.Search(ctx, "", "", formattedQuery)
 		if err != nil {
-			log.Event(ctx, "elasticsearch data query failed", log.Error(err), log.ERROR)
+			log.Error(ctx, "elasticsearch data query failed", err)
 			http.Error(w, "Failed to run data query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData := dataLookupResponse{Responses: make([]interface{}, 1)}
 		if err := json.Unmarshal([]byte(responseString), &responseData.Responses[0]); err != nil {
-			log.Event(ctx, "failed to unmarshal response from elasticsearch for data query", log.Error(err), log.ERROR)
+			log.Error(ctx, "failed to unmarshal response from elasticsearch for data query", err)
 			http.Error(w, "Failed to process data query", http.StatusInternalServerError)
 			return
 		}
 
 		dataWithResponse, err := json.Marshal(responseData)
 		if err != nil {
-			log.Event(ctx, "Failed to marshal response data for data query", log.Error(err), log.ERROR)
+			log.Error(ctx, "Failed to marshal response data for data query", err)
 			http.Error(w, "Failed to encode data query response", http.StatusInternalServerError)
 			return
 		}

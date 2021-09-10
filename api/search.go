@@ -6,7 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/pkg/errors"
 )
 
 const defaultContentTypes string = "bulletin," +
@@ -50,21 +51,23 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		q := params.Get("q")
 		sort := paramGet(params, "sort", "relevance")
 
+		highlight := paramGetBool(params, "highlight", true)
+
 		limitParam := paramGet(params, "limit", "10")
 		limit, err := strconv.Atoi(limitParam)
 		if err != nil {
-			log.Event(ctx, "numeric search parameter provided with non numeric characters", log.Data{
+			log.Warn(ctx, "numeric search parameter provided with non numeric characters", log.Data{
 				"param": "limit",
 				"value": limitParam,
-			}, log.WARN)
+			})
 			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
 			return
 		}
 		if limit < 0 {
-			log.Event(ctx, "numeric search parameter provided with negative value", log.Data{
+			log.Warn(ctx, "numeric search parameter provided with negative value", log.Data{
 				"param": "limit",
 				"value": limitParam,
-			}, log.WARN)
+			})
 			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
 			return
 		}
@@ -72,18 +75,18 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		offsetParam := paramGet(params, "offset", "0")
 		offset, err := strconv.Atoi(offsetParam)
 		if err != nil {
-			log.Event(ctx, "numeric search parameter provided with non numeric characters", log.Data{
+			log.Warn(ctx, "numeric search parameter provided with non numeric characters", log.Data{
 				"param": "from",
 				"value": offsetParam,
-			}, log.WARN)
+			})
 			http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
 			return
 		}
 		if offset < 0 {
-			log.Event(ctx, "numeric search parameter provided with negative value", log.Data{
+			log.Warn(ctx, "numeric search parameter provided with negative value", log.Data{
 				"param": "from",
 				"value": offsetParam,
-			}, log.WARN)
+			})
 			http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
 			return
 		}
@@ -92,28 +95,28 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 
 		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, limit, offset)
 		if err != nil {
-			log.Event(ctx, "creation of search query failed", log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset}, log.Error(err), log.ERROR)
+			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
 			return
 		}
 
 		responseData, err := elasticSearchClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
-			log.Event(ctx, "elasticsearch query failed", log.Error(err), log.ERROR)
+			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
 			return
 		}
 
 		if !json.Valid([]byte(responseData)) {
-			log.Event(ctx, "elastic search returned invalid JSON for search query", log.ERROR)
+			log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
 			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
 			return
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q)
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
 			if err != nil {
-				log.Event(ctx, "transformation of response data failed", log.Error(err), log.ERROR)
+				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
 				return
 			}
@@ -122,7 +125,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
 		_, err = w.Write(responseData)
 		if err != nil {
-			log.Event(ctx, "writing response failed", log.Error(err), log.ERROR)
+			log.Error(ctx, "writing response failed", err)
 			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
 			return
 		}
