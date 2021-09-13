@@ -1,6 +1,6 @@
 module github.com/ONSdigital/dp-search-api
 
-go 1.16
+go 1.17
 
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.34.4 // indirect
@@ -18,4 +18,17 @@ require (
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
+)
+
+require (
+	github.com/fatih/color v1.9.0 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/jtolds/gls v4.20.0+incompatible // indirect
+	github.com/justinas/alice v1.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.4 // indirect
+	github.com/mattn/go-isatty v0.0.11 // indirect
+	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 )
