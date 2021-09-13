@@ -2,9 +2,9 @@ package elasticsearch
 
 import _ "embed"
 
-//go:embed mappings.json
-var mappingsJson []byte
+//go:embed search-index-settings.json
+var searchIndexSettingsJson []byte
 
-func GetDefaultMappings() []byte {
-	return mappingsJson
+func GetSearchIndexSettings() []byte {
+	return searchIndexSettingsJson
 }

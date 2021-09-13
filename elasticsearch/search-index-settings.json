@@ -1,0 +1,278 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 0
+    },
+    "analysis": {
+      "analyzer": {
+        "default_index": {
+          "tokenizer": "keyword",
+          "filter": [
+            "trim",
+            "lowercase"
+          ]
+        },
+        "ons_standard": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "standard",
+            "stop"
+          ]
+        },
+        "ons_synonym_stem": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "ons_synonyms",
+            "standard",
+            "stop",
+            "stem_exclusion",
+            "snowball"
+          ]
+        },
+        "ons_synonym": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "ons_synonyms",
+            "standard",
+            "stop"
+          ]
+        },
+        "ons_stem": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "standard",
+            "stop",
+            "stem_exclusion",
+            "snowball"
+          ]
+        },
+        "ons_synonym_stem_clear_dates": {
+          "tokenizer": "standard",
+          "char_filter": "clear_dates",
+          "filter": [
+            "lowercase",
+            "ons_synonyms",
+            "standard",
+            "stop",
+            "stem_exclusion",
+            "snowball"
+          ]
+        },
+        "ons_stem_clear_dates": {
+          "tokenizer": "standard",
+          "char_filter": "clear_dates",
+          "filter": [
+            "lowercase",
+            "standard",
+            "stop",
+            "stem_exclusion",
+            "snowball"
+          ]
+        },
+        "first_letter": {
+          "tokenizer": "keyword",
+          "filter": [
+            "lowercase",
+            "first_letter"
+          ]
+        }
+      },
+      "char_filter": {
+        "clear_dates": {
+          "type": "pattern_replace",
+          "pattern": "([1|2]\\d{3})|((?i)january|february|march|april|may|june|july|august|september|october|november|december)"
+        }
+      },
+      "filter": {
+        "stem_exclusion": {
+          "type": "keyword_marker",
+          "keywords": [
+            "productivity",
+            "production"
+          ]
+        },
+        "first_letter": {
+          "type": "pattern_capture",
+          "preserve_original": false,
+          "patterns": [
+            "^[^a-zA-Z]*([a-zA-Z]).*"
+          ]
+        },
+        "ons_synonyms": {
+          "type": "synonym",
+          "synonyms": [
+            "cpi, consumer price inflation, consumer price index",
+            "rpi,  retail price index",
+            "gdp,  gross domestic product",
+            "ashe,  annual survey of hours and earnings",
+            "gva,  gross value added",
+            "awe,  average weekly earnings",
+            "lsoa,  lower layer super output area",
+            "ppi,  producer price inflation, producer price index",
+            "sic,  standard industrial classification",
+            "ukea,  uk economic accounts",
+            "neet,  young people not in education",
+            "neet,  employment or training",
+            "fdi,  foreign direct investment",
+            "bop,  balance of payments",
+            "sme,  small medium enterprises",
+            "bres,  business register and employment survey",
+            "gdhi,  gross disposable household income",
+            "hpi,  house price index",
+            "idbr,  inter departmental business register",
+            "uk,  united kingdom",
+            "copd,  chronic obstructive pulmonary disease",
+            "lfs,  labour force survey",
+            "imd,  index of multiple deprivation",
+            "ccg,  clinical commissioning group",
+            "abs,  annual business survey",
+            "sppi,  services producer price indices",
+            "hiv,  human immunodeficiency virus",
+            "ips,  international passenger survey",
+            "msoa,  middle layer super output areas",
+            "aei,  average earnings index",
+            "soc,  standard occupational classification",
+            "jsa,  jobseekers allowance",
+            "vat,  value added tax",
+            "hmrc,  hm revenue and customs published",
+            "ltim,  long term international migration",
+            "ns sec,  national statistics socio economic classification",
+            "nssec,  national statistics socio economic classification",
+            "topsi,  turnover and orders in production and services industries",
+            "r&d,  research and development",
+            "berd,  business enterprise research and development",
+            "iop,  uk index of production",
+            "ios,  index of services",
+            "rsi,  retail sales index",
+            "ict,  information and communication technology",
+            "gfcf,  gross fixed capital formation",
+            "esa,  european system of accounts",
+            "aps,  annual population survey",
+            "eu,  european union",
+            "m&a, mergers and acquisitions",
+            "itis, international trade in services",
+            "imr, infant mortality rate",
+            "tfr, total fertility rate",
+            "evo, estimates of the very old",
+            "asdr, age specific death rate",
+            "asmr, age standardised mortality rate or ratio",
+            "etb, etbhi, effects of taxes & benefits on household income",
+            "lcf, lcfs, living costs & food survey",
+            "eu-silc, eusilc, silc, eu-statistics on income & living condition",
+            "esspros, european system of social protections statistics",
+            "sdg, sustainable development goals",
+            "sdi, sustainable development indicators",
+            "pwb, personal well-being",
+            "ghg, greenhouse gas emissions",
+            "wfj, workforce jobs",
+            "was, wealth and assets survey",
+            "oa, output area",
+            "wz, workplace zone",
+            "npp, national population projections",
+            "snpp, subnational population projections",
+            "suid, sudden unexpected/unexplained infant deaths",
+            "drd, drug related deaths",
+            "c diff, clostridium difficile",
+            "eolc, end of life care",
+            "mb1, cancer registrations",
+            "imd, index of multiple deprivation",
+            "utla, upper tier local authority",
+            "sep, socioeconomic position",
+            "hi, health inequality",
+            "wellbeing => well being",
+            "psf => public sector finance"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+      "dynamic_date_formats": [
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      ],
+      "properties": {
+        "type": {
+          "type": "keyword"
+        },
+        "description": {
+          "properties": {
+            "cdid": {
+              "type": "text",
+              "analyzer": "ons_standard"
+            },
+            "datasetId": {
+              "type": "text",
+              "analyzer": "ons_standard"
+            },
+            "title": {
+              "type": "text",
+              "analyzer": "ons_synonym_stem",
+              "search_analyzer": "ons_stem",
+              "fields": {
+                "title_raw": {
+                  "type": "keywords"
+                },
+                "title_no_stem": {
+                  "type": "text",
+                  "analyzer": "ons_synonym",
+                  "search_analyzer": "ons_standard"
+                },
+                "title_no_synonym_no_stem": {
+                  "type": "text",
+                  "analyzer": "ons_standard"
+                },
+                "title_no_dates": {
+                  "type": "text",
+                  "analyzer": "ons_synonym_stem_clear_dates",
+                  "search_analyzer": "ons_stem_clear_dates"
+                },
+                "title_first_letter": {
+                  "type": "text",
+                  "analyzer": "first_letter"
+                }
+              }
+            },
+            "edition": {
+              "type": "text",
+              "analyzer": "ons_synonym_stem",
+              "search_analyzer": "ons_stem"
+            },
+            "metaDescription": {
+              "type": "text",
+              "analyzer": "ons_standard"
+            },
+            "summary": {
+              "type": "text",
+              "analyzer": "ons_standard"
+            },
+            "keywords": {
+              "type": "text",
+              "analyzer": "ons_synonym_stem",
+              "search_analyzer": "ons_stem",
+              "fields": {
+                "keywords_raw": {
+                  "type": "text"
+                }
+              }
+            },
+            "releaseDate": {
+              "type": "date"
+            }
+          }
+        },
+        "searchBoost": {
+          "type": "text",
+          "analyzer": "ons_synonym_stem",
+          "search_analyzer": "ons_stem",
+          "norms": {
+            "enabled": false
+          }
+        }
+    }
+  }
+}

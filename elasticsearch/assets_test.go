@@ -8,9 +8,9 @@ import (
 )
 
 func TestGetDefaultMappings_ValidJson(t *testing.T) {
-	Convey("File `matchers.json` is valid jason", t, func() {
-		Convey("When we get the default mappings json", func() {
-			mappingsJson := elasticsearch.GetDefaultMappings()
+	Convey("File `search-index-settings.json` is valid jason", t, func() {
+		Convey("When we get the default search index settings json", func() {
+			mappingsJson := elasticsearch.GetSearchIndexSettings()
 
 			Convey("Then the json returned should be valid", func() {
 
