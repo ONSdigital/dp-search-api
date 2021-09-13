@@ -109,6 +109,12 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
+          name: highlight
+          description: "Determines whether to return HTML highlighted fields."
+          type: boolean
+          required: false
+          default: true
+        - in: query
           name: sort
           description: "The order to return the results."
           type: string
@@ -303,36 +309,6 @@ definitions:
         required:
           - summary
           - title
-      matches:
-        type: object
-        properties:
-          description:
-            type: object
-            properties:
-              dataset_id:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
-              edition:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
-              keywords:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
-              meta_description:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
-              summary:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
-              title:
-                type: array
-                items:
-                  $ref: "#/definitions/MatchDetails"
       type:
         type: string
       uri:
@@ -363,26 +339,7 @@ definitions:
             terms:
               type: array
               items:
-                $ref: "#/definitions/MatchDetails"
-
-  MatchDetails:
-    description: "A pair of integers to define the start and end of substring in the member that matched the search terms. The first character of the string is index 1."
-    type: object
-    properties:
-      value:
-        type: string
-        description: "For matches in keys that are part of an array, this will contain the value containing a match."
-      start:
-        type: integer
-        description: "An integer to define the start byte of a substring in the member that matched. The first character of the string is index 1."
-        example: 3
-      end:
-        type: integer
-        description: "An integer to define the end byte of a substring in the member that matched."
-        example: 8
-    required:
-      - start
-      - end
+                type: string
 
   Health:
     type: object

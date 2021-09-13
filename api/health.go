@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type healthMessage struct {
@@ -41,7 +41,7 @@ func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.Re
 				Status: "error",
 				Error:  healthIssue,
 			}); err != nil {
-				log.Event(ctx, "elasticsearch healthcheck status json failed to parse", log.Error(err), log.ERROR)
+				log.Error(ctx, "elasticsearch healthcheck status json failed to parse", err)
 				panic(err)
 			}
 		}

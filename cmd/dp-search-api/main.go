@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-search-api/service"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/ONSdigital/dp-search-api/service"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
@@ -15,7 +16,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 const serviceName = "dp-search-api"
@@ -32,24 +33,25 @@ var (
 func main() {
 	log.Namespace = serviceName
 
+	ctx := context.Background()
 	cfg, err := config.Get()
 	if err != nil {
-		log.Event(nil, "error retrieving config", log.Error(err), log.FATAL)
+		log.Fatal(ctx, "error retrieving config", err)
 		os.Exit(1)
 	}
 
 	// sensitive fields are omitted from config.String().
-	log.Event(nil, "config on startup", log.Data{"config": cfg}, log.INFO)
+	log.Info(ctx, "config on startup", log.Data{"config": cfg})
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	apiErrors := make(chan error, 1)
 
-	log.Event(nil, "initialising query builder", log.INFO)
+	log.Info(ctx, "initialising query builder")
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
-		log.Event(nil, "error initialising query builder", log.Error(err), log.FATAL)
+		log.Fatal(ctx, "error initialising query builder", err)
 		os.Exit(1)
 	}
 
@@ -57,7 +59,7 @@ func main() {
 	if cfg.SignElasticsearchRequests {
 		esSigner, err = esauth.NewAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
 		if err != nil {
-			log.Event(nil, "failed to create aws v4 signer", log.ERROR, log.Error(err))
+			log.Error(ctx, "failed to create aws v4 signer", err)
 			os.Exit(1)
 		}
 	}
@@ -68,40 +70,39 @@ func main() {
 	svcList := service.NewServiceList(&service.Init{})
 
 	// Get HealthCheck
-	ctx := context.Background()
 
 	hc, err := registerCheckers(ctx, cfg, elasticHTTPClient, esSigner, svcList)
 	if err != nil {
-		log.Event(nil, "could not register healthcheck", log.FATAL, log.Error(err))
+		log.Fatal(ctx, "could not register healthcheck", err)
 		os.Exit(1)
 	}
 
 	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
-		log.Event(nil, "error initialising API", log.Error(err), log.FATAL)
+		log.Fatal(ctx, "error initialising API", err)
 		os.Exit(1)
 	}
 
 	gracefulShutdown := func() {
-		log.Event(nil, "commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout}, log.INFO)
+		log.Info(ctx, "commencing graceful shutdown", log.Data{"graceful_shutdown_timeout": cfg.GracefulShutdownTimeout})
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.GracefulShutdownTimeout)
 
 		// stop any incoming requests before closing any outbound connections
 		if err := api.Close(ctx); err != nil {
-			log.Event(ctx, "error closing API", log.Error(err), log.ERROR)
+			log.Error(ctx, "error closing API", err)
 		}
 
 		hc.Stop()
 
-		log.Event(ctx, "shutdown complete", log.INFO)
+		log.Info(ctx, "shutdown complete")
 		cancel()
 	}
 
 	// blocks until a fatal error occurs
 	select {
 	case err := <-apiErrors:
-		log.Event(nil, "search api error received", log.Error(err), log.FATAL)
+		log.Fatal(ctx, "search api error received", err)
 	case <-signals:
-		log.Event(nil, "os signal received", log.INFO)
+		log.Info(ctx, "os signal received")
 		gracefulShutdown()
 	}
 
@@ -123,7 +124,7 @@ func registerCheckers(ctx context.Context,
 
 	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
 	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
-		log.Event(ctx, "error creating elasticsearch health check", log.ERROR, log.Error(err))
+		log.Error(ctx, "error creating elasticsearch health check", err)
 		hasErrors = true
 	}
 

@@ -9,7 +9,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/service"
 
 	"github.com/ONSdigital/go-ns/server"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -39,7 +39,7 @@ type QueryBuilder interface {
 
 // ResponseTransformer provides methods for the transform package
 type ResponseTransformer interface {
-	TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error)
+	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
 // CreateAndInitialise initiates a new Search API
@@ -76,9 +76,10 @@ func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticS
 	httpServer.HandleOSSignals = false
 
 	go func() {
-		log.Event(nil, "search api starting", log.INFO)
+		ctx := context.Background()
+		log.Info(ctx, "search api starting")
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Event(nil, "search api http server returned error", log.Error(err), log.ERROR)
+			log.Error(ctx, "search api http server returned error", err)
 			errorChan <- err
 		}
 	}()
@@ -107,8 +108,6 @@ func Close(ctx context.Context) error {
 	if err := httpServer.Shutdown(ctx); err != nil {
 		return err
 	}
-	log.Event(ctx, "graceful shutdown of http server complete", log.INFO)
+	log.Info(ctx, "graceful shutdown of http server complete")
 	return nil
 }
-
-

@@ -8,37 +8,31 @@ import (
 	"sync"
 )
 
-var (
-	lockElasticSearcherMockGetStatus   sync.RWMutex
-	lockElasticSearcherMockMultiSearch sync.RWMutex
-	lockElasticSearcherMockSearch      sync.RWMutex
-)
-
 // Ensure, that ElasticSearcherMock does implement ElasticSearcher.
 // If this is not the case, regenerate this file with moq.
 var _ ElasticSearcher = &ElasticSearcherMock{}
 
 // ElasticSearcherMock is a mock implementation of ElasticSearcher.
 //
-//     func TestSomethingThatUsesElasticSearcher(t *testing.T) {
+// 	func TestSomethingThatUsesElasticSearcher(t *testing.T) {
 //
-//         // make and configure a mocked ElasticSearcher
-//         mockedElasticSearcher := &ElasticSearcherMock{
-//             GetStatusFunc: func(ctx context.Context) ([]byte, error) {
-// 	               panic("mock out the GetStatus method")
-//             },
-//             MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 	               panic("mock out the MultiSearch method")
-//             },
-//             SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 	               panic("mock out the Search method")
-//             },
-//         }
+// 		// make and configure a mocked ElasticSearcher
+// 		mockedElasticSearcher := &ElasticSearcherMock{
+// 			GetStatusFunc: func(ctx context.Context) ([]byte, error) {
+// 				panic("mock out the GetStatus method")
+// 			},
+// 			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
+// 				panic("mock out the MultiSearch method")
+// 			},
+// 			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
+// 				panic("mock out the Search method")
+// 			},
+// 		}
 //
-//         // use mockedElasticSearcher in code that requires ElasticSearcher
-//         // and then make assertions.
+// 		// use mockedElasticSearcher in code that requires ElasticSearcher
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ElasticSearcherMock struct {
 	// GetStatusFunc mocks the GetStatus method.
 	GetStatusFunc func(ctx context.Context) ([]byte, error)
@@ -79,6 +73,9 @@ type ElasticSearcherMock struct {
 			Request []byte
 		}
 	}
+	lockGetStatus   sync.RWMutex
+	lockMultiSearch sync.RWMutex
+	lockSearch      sync.RWMutex
 }
 
 // GetStatus calls GetStatusFunc.
@@ -91,9 +88,9 @@ func (mock *ElasticSearcherMock) GetStatus(ctx context.Context) ([]byte, error) 
 	}{
 		Ctx: ctx,
 	}
-	lockElasticSearcherMockGetStatus.Lock()
+	mock.lockGetStatus.Lock()
 	mock.calls.GetStatus = append(mock.calls.GetStatus, callInfo)
-	lockElasticSearcherMockGetStatus.Unlock()
+	mock.lockGetStatus.Unlock()
 	return mock.GetStatusFunc(ctx)
 }
 
@@ -106,9 +103,9 @@ func (mock *ElasticSearcherMock) GetStatusCalls() []struct {
 	var calls []struct {
 		Ctx context.Context
 	}
-	lockElasticSearcherMockGetStatus.RLock()
+	mock.lockGetStatus.RLock()
 	calls = mock.calls.GetStatus
-	lockElasticSearcherMockGetStatus.RUnlock()
+	mock.lockGetStatus.RUnlock()
 	return calls
 }
 
@@ -128,9 +125,9 @@ func (mock *ElasticSearcherMock) MultiSearch(ctx context.Context, index string, 
 		DocType: docType,
 		Request: request,
 	}
-	lockElasticSearcherMockMultiSearch.Lock()
+	mock.lockMultiSearch.Lock()
 	mock.calls.MultiSearch = append(mock.calls.MultiSearch, callInfo)
-	lockElasticSearcherMockMultiSearch.Unlock()
+	mock.lockMultiSearch.Unlock()
 	return mock.MultiSearchFunc(ctx, index, docType, request)
 }
 
@@ -149,9 +146,9 @@ func (mock *ElasticSearcherMock) MultiSearchCalls() []struct {
 		DocType string
 		Request []byte
 	}
-	lockElasticSearcherMockMultiSearch.RLock()
+	mock.lockMultiSearch.RLock()
 	calls = mock.calls.MultiSearch
-	lockElasticSearcherMockMultiSearch.RUnlock()
+	mock.lockMultiSearch.RUnlock()
 	return calls
 }
 
@@ -171,9 +168,9 @@ func (mock *ElasticSearcherMock) Search(ctx context.Context, index string, docTy
 		DocType: docType,
 		Request: request,
 	}
-	lockElasticSearcherMockSearch.Lock()
+	mock.lockSearch.Lock()
 	mock.calls.Search = append(mock.calls.Search, callInfo)
-	lockElasticSearcherMockSearch.Unlock()
+	mock.lockSearch.Unlock()
 	return mock.SearchFunc(ctx, index, docType, request)
 }
 
@@ -192,15 +189,11 @@ func (mock *ElasticSearcherMock) SearchCalls() []struct {
 		DocType string
 		Request []byte
 	}
-	lockElasticSearcherMockSearch.RLock()
+	mock.lockSearch.RLock()
 	calls = mock.calls.Search
-	lockElasticSearcherMockSearch.RUnlock()
+	mock.lockSearch.RUnlock()
 	return calls
 }
-
-var (
-	lockQueryBuilderMockBuildSearchQuery sync.RWMutex
-)
 
 // Ensure, that QueryBuilderMock does implement QueryBuilder.
 // If this is not the case, regenerate this file with moq.
@@ -208,19 +201,19 @@ var _ QueryBuilder = &QueryBuilderMock{}
 
 // QueryBuilderMock is a mock implementation of QueryBuilder.
 //
-//     func TestSomethingThatUsesQueryBuilder(t *testing.T) {
+// 	func TestSomethingThatUsesQueryBuilder(t *testing.T) {
 //
-//         // make and configure a mocked QueryBuilder
-//         mockedQueryBuilder := &QueryBuilderMock{
-//             BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, limit int, offset int) ([]byte, error) {
-// 	               panic("mock out the BuildSearchQuery method")
-//             },
-//         }
+// 		// make and configure a mocked QueryBuilder
+// 		mockedQueryBuilder := &QueryBuilderMock{
+// 			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, limit int, offset int) ([]byte, error) {
+// 				panic("mock out the BuildSearchQuery method")
+// 			},
+// 		}
 //
-//         // use mockedQueryBuilder in code that requires QueryBuilder
-//         // and then make assertions.
+// 		// use mockedQueryBuilder in code that requires QueryBuilder
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type QueryBuilderMock struct {
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
 	BuildSearchQueryFunc func(ctx context.Context, q string, contentTypes string, sort string, limit int, offset int) ([]byte, error)
@@ -243,6 +236,7 @@ type QueryBuilderMock struct {
 			Offset int
 		}
 	}
+	lockBuildSearchQuery sync.RWMutex
 }
 
 // BuildSearchQuery calls BuildSearchQueryFunc.
@@ -265,9 +259,9 @@ func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, co
 		Limit:        limit,
 		Offset:       offset,
 	}
-	lockQueryBuilderMockBuildSearchQuery.Lock()
+	mock.lockBuildSearchQuery.Lock()
 	mock.calls.BuildSearchQuery = append(mock.calls.BuildSearchQuery, callInfo)
-	lockQueryBuilderMockBuildSearchQuery.Unlock()
+	mock.lockBuildSearchQuery.Unlock()
 	return mock.BuildSearchQueryFunc(ctx, q, contentTypes, sort, limit, offset)
 }
 
@@ -290,15 +284,11 @@ func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 		Limit        int
 		Offset       int
 	}
-	lockQueryBuilderMockBuildSearchQuery.RLock()
+	mock.lockBuildSearchQuery.RLock()
 	calls = mock.calls.BuildSearchQuery
-	lockQueryBuilderMockBuildSearchQuery.RUnlock()
+	mock.lockBuildSearchQuery.RUnlock()
 	return calls
 }
-
-var (
-	lockResponseTransformerMockTransformSearchResponse sync.RWMutex
-)
 
 // Ensure, that ResponseTransformerMock does implement ResponseTransformer.
 // If this is not the case, regenerate this file with moq.
@@ -306,22 +296,22 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 
 // ResponseTransformerMock is a mock implementation of ResponseTransformer.
 //
-//     func TestSomethingThatUsesResponseTransformer(t *testing.T) {
+// 	func TestSomethingThatUsesResponseTransformer(t *testing.T) {
 //
-//         // make and configure a mocked ResponseTransformer
-//         mockedResponseTransformer := &ResponseTransformerMock{
-//             TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string) ([]byte, error) {
-// 	               panic("mock out the TransformSearchResponse method")
-//             },
-//         }
+// 		// make and configure a mocked ResponseTransformer
+// 		mockedResponseTransformer := &ResponseTransformerMock{
+// 			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+// 				panic("mock out the TransformSearchResponse method")
+// 			},
+// 		}
 //
-//         // use mockedResponseTransformer in code that requires ResponseTransformer
-//         // and then make assertions.
+// 		// use mockedResponseTransformer in code that requires ResponseTransformer
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ResponseTransformerMock struct {
 	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
-	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string) ([]byte, error)
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -333,12 +323,15 @@ type ResponseTransformerMock struct {
 			ResponseData []byte
 			// Query is the query argument value.
 			Query string
+			// Highlight is the highlight argument value.
+			Highlight bool
 		}
 	}
+	lockTransformSearchResponse sync.RWMutex
 }
 
 // TransformSearchResponse calls TransformSearchResponseFunc.
-func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, query string) ([]byte, error) {
+func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	if mock.TransformSearchResponseFunc == nil {
 		panic("ResponseTransformerMock.TransformSearchResponseFunc: method is nil but ResponseTransformer.TransformSearchResponse was just called")
 	}
@@ -346,15 +339,17 @@ func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context
 		Ctx          context.Context
 		ResponseData []byte
 		Query        string
+		Highlight    bool
 	}{
 		Ctx:          ctx,
 		ResponseData: responseData,
 		Query:        query,
+		Highlight:    highlight,
 	}
-	lockResponseTransformerMockTransformSearchResponse.Lock()
+	mock.lockTransformSearchResponse.Lock()
 	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
-	lockResponseTransformerMockTransformSearchResponse.Unlock()
-	return mock.TransformSearchResponseFunc(ctx, responseData, query)
+	mock.lockTransformSearchResponse.Unlock()
+	return mock.TransformSearchResponseFunc(ctx, responseData, query, highlight)
 }
 
 // TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
@@ -364,14 +359,16 @@ func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	Ctx          context.Context
 	ResponseData []byte
 	Query        string
+	Highlight    bool
 } {
 	var calls []struct {
 		Ctx          context.Context
 		ResponseData []byte
 		Query        string
+		Highlight    bool
 	}
-	lockResponseTransformerMockTransformSearchResponse.RLock()
+	mock.lockTransformSearchResponse.RLock()
 	calls = mock.calls.TransformSearchResponse
-	lockResponseTransformerMockTransformSearchResponse.RUnlock()
+	mock.lockTransformSearchResponse.RUnlock()
 	return calls
 }
