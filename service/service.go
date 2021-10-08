@@ -25,13 +25,12 @@ type Service struct {
 	server              HTTPServer
 	serviceList         *ExternalServiceList
 	esSigner            *esauth.Signer
-	elasticHTTPClient   dphttp.Clienter
 	queryBuilder        api.QueryBuilder
 	elasticSearchClient elasticsearch.Client
 	transformer         transformer.Transformer
 }
 
-//New creates a new service
+// New creates a new service
 func New(cfg *config.Configuration, serviceList *ExternalServiceList) *Service {
 	svc := &Service{
 		config:      cfg,
@@ -60,22 +59,17 @@ func (svc *Service) SetEsSigner(esSigner *esauth.Signer) {
 	svc.esSigner = esSigner
 }
 
-//SetElasticHTTPClient sets the HTTP client for a service
-func (svc *Service) SetElasticHTTPClient(elasticHTTPClient dphttp.Clienter) {
-	svc.elasticHTTPClient = elasticHTTPClient
-}
-
-//SetElasticSearchClient sets the new instance of elasticsearch for a service
+// SetElasticSearchClient sets the new instance of elasticsearch for a service
 func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Client) {
 	svc.elasticSearchClient = elasticSearchClient
 }
 
-//SetTransformer sets the transformer for a service
+// SetTransformer sets the transformer for a service
 func (svc *Service) SetTransformer(transformer transformer.Transformer) {
 	svc.transformer = transformer
 }
 
-//Run the service
+// Run the service
 func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version string, svcErrors chan error) (err error) {
 	elasticHTTPClient := dphttp.NewClient()
 	//Get HealthCheck
@@ -84,22 +78,22 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 		log.Fatal(ctx, "could not instantiate healthcheck", err)
 		return err
 	}
+
 	if err := svc.registerCheckers(ctx, elasticHTTPClient); err != nil {
 		return errors.Wrap(err, "unable to register checkers")
 	}
 
 	svc.router = mux.NewRouter()
-	//svc.server = svc.serviceList.GetHTTPServer(svc.config.BindAddr, svc.router)
 	svc.router.StrictSlash(true).Path("/health").HandlerFunc(svc.healthCheck.Handler)
 	svc.healthCheck.Start(ctx)
 
-	//Initialise transformer
+	// Initialise transformer
 	transformer := transformer.New()
 
-	//Initialse elasticSearchClient
+	// Initialse elasticSearchClient
 	elasticSearchClient := elasticsearch.New(svc.config.ElasticSearchAPIURL, dphttp.NewClient(), svc.config.SignElasticsearchRequests, svc.esSigner, svc.config.AwsRegion, svc.config.AwsService)
 
-	//Initialse AWS signer
+	// Initialse AWS signer
 	if svc.config.SignElasticsearchRequests {
 		svc.esSigner, err = esauth.NewAwsSigner("", "", svc.config.AwsRegion, svc.config.AwsService)
 		if err != nil {
@@ -108,17 +102,15 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 		}
 	}
 
-	//Initialise query builder
+	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
-		os.Exit(1)
 	}
 
-	//Create Search API
+	// Create Search API
 	if err := api.CreateAndInitialise(svc.config, svc.router, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
 		log.Fatal(ctx, "error initialising API", err)
-		os.Exit(1)
 	}
 
 	return nil
