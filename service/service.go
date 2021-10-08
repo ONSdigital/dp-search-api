@@ -2,19 +2,17 @@ package service
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-search-api/api"
-	"github.com/ONSdigital/dp-search-api/elasticsearch"
-	"github.com/ONSdigital/dp-search-api/query"
-	"github.com/ONSdigital/dp-search-api/transformer"
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
-	"os"
-
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/query"
+	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 type Service struct {
@@ -98,7 +96,7 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 		svc.esSigner, err = esauth.NewAwsSigner("", "", svc.config.AwsRegion, svc.config.AwsService)
 		if err != nil {
 			log.Error(ctx, "failed to create aws v4 signer", err)
-			os.Exit(1)
+			return nil
 		}
 	}
 
@@ -106,11 +104,13 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
+		return nil
 	}
 
 	// Create Search API
 	if err := api.CreateAndInitialise(svc.config, svc.router, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
 		log.Fatal(ctx, "error initialising API", err)
+		return nil
 	}
 
 	return nil
