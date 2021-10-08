@@ -96,7 +96,7 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 		svc.esSigner, err = esauth.NewAwsSigner("", "", svc.config.AwsRegion, svc.config.AwsService)
 		if err != nil {
 			log.Error(ctx, "failed to create aws v4 signer", err)
-			return nil
+			return err
 		}
 	}
 
@@ -104,13 +104,13 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
-		return nil
+		return err
 	}
 
 	// Create Search API
 	if err := api.CreateAndInitialise(svc.config, svc.router, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
 		log.Fatal(ctx, "error initialising API", err)
-		return nil
+		return err
 	}
 
 	return nil
