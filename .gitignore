@@ -10,3 +10,6 @@
 
 #Mac
 .DS_Store
+
+#Test output files
+coverage.txt

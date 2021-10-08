@@ -4,9 +4,7 @@ package api
 
 import (
 	"context"
-
 	"github.com/ONSdigital/dp-search-api/config"
-	"github.com/ONSdigital/dp-search-api/service"
 
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -22,7 +20,6 @@ type SearchAPI struct {
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
 	Transformer   ResponseTransformer
-	ServiceList   *service.ExternalServiceList
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -43,7 +40,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, hc service.HealthChecker, errorChan chan error) error {
+func CreateAndInitialise(cfg *config.Configuration, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -64,9 +61,10 @@ func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticS
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	ctx := context.Background()
-	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
-	hc.Start(ctx)
+	//TODO... delete...
+	//ctx := context.Background()
+	//router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
+	//hc.Start(ctx)
 
 	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
@@ -104,10 +102,11 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 }
 
 // Close represents the graceful shutting down of the http server
-func Close(ctx context.Context) error {
-	if err := httpServer.Shutdown(ctx); err != nil {
-		return err
-	}
-	log.Info(ctx, "graceful shutdown of http server complete")
-	return nil
-}
+//TODO: delete...
+//func Close(ctx context.Context) error {
+//	if err := httpServer.Shutdown(ctx); err != nil {
+//		return err
+//	}
+//	log.Info(ctx, "graceful shutdown of http server complete")
+//	return nil
+//}
