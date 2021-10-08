@@ -141,10 +141,10 @@ func (svc *Service) Close(ctx context.Context) error {
 		}
 
 		// stop any incoming requests before closing any outbound connections
-		//if err := svc.server.Shutdown(shutdownContext); err != nil {
-		//	log.Error(shutdownContext, "error closing API", err)
-		//	hasShutdownError = true
-		//}
+		if err := svc.server.Shutdown(shutdownContext); err != nil {
+			log.Error(shutdownContext, "error closing API", err)
+			hasShutdownError = true
+		}
 
 	}()
 
@@ -170,10 +170,6 @@ func (svc *Service) Close(ctx context.Context) error {
 }
 
 func (svc *Service) registerCheckers(ctx context.Context, elasticHTTPClient dphttp.Clienter) (err error) {
-	//cfg *config.Configuration,
-	//elasticHTTPClient dphttp.Clienter,
-	//esSigner *esauth.Signer,
-	//svcList *service.ExternalServiceList)
 
 	hasErrors := false
 	elasticHTTPClient = dphttp.NewClient()

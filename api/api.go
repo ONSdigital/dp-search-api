@@ -61,11 +61,6 @@ func CreateAndInitialise(cfg *config.Configuration, router *mux.Router, queryBui
 		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
 
-	//TODO... delete...
-	//ctx := context.Background()
-	//router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
-	//hc.Start(ctx)
-
 	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
 
 	httpServer = server.New(cfg.BindAddr, api.Router)
@@ -100,13 +95,3 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	return api
 }
-
-// Close represents the graceful shutting down of the http server
-//TODO: delete...
-//func Close(ctx context.Context) error {
-//	if err := httpServer.Shutdown(ctx); err != nil {
-//		return err
-//	}
-//	log.Info(ctx, "graceful shutdown of http server complete")
-//	return nil
-//}
