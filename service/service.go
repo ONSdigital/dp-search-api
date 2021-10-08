@@ -162,9 +162,7 @@ func (svc *Service) Close(ctx context.Context) error {
 }
 
 func (svc *Service) registerCheckers(ctx context.Context, elasticHTTPClient dphttp.Clienter) (err error) {
-
 	hasErrors := false
-	elasticHTTPClient = dphttp.NewClient()
 	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(svc.config.ElasticSearchAPIURL, svc.esSigner, svc.config.SignElasticsearchRequests, elasticHTTPClient)
 	if err = svc.healthCheck.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
