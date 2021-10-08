@@ -40,7 +40,7 @@ type ResponseTransformer interface {
 }
 
 // CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Configuration, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
+func CreateAndInitialise(cfg *config.Configuration, router *mux.Router, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
 
 	if elasticSearchClient == nil {
 		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
@@ -49,7 +49,7 @@ func CreateAndInitialise(cfg *config.Configuration, queryBuilder QueryBuilder, e
 	if queryBuilder == nil {
 		return errors.New("CreateAndInitialise called without a valid query builder")
 	}
-	router := mux.NewRouter()
+	router = mux.NewRouter()
 
 	errData := SetupData()
 	if errData != nil {

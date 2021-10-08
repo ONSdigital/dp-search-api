@@ -116,7 +116,7 @@ func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version strin
 	}
 
 	//Create Search API
-	if err := api.CreateAndInitialise(svc.config, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
+	if err := api.CreateAndInitialise(svc.config, svc.router, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		os.Exit(1)
 	}
