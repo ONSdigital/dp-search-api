@@ -4,15 +4,10 @@ package api
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-search-api/config"
 
-	"github.com/ONSdigital/go-ns/server"
-	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
-
-var httpServer *server.Server
 
 //SearchAPI provides an API around elasticseach
 type SearchAPI struct {
@@ -39,49 +34,17 @@ type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
-// CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Configuration, router *mux.Router, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, errorChan chan error) error {
-
-	if elasticSearchClient == nil {
-		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
-	}
-
-	if queryBuilder == nil {
-		return errors.New("CreateAndInitialise called without a valid query builder")
-	}
-	router = mux.NewRouter()
-
+// NewSearchAPI returns a new Search API struct after registering the routes
+func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) (*SearchAPI, error) {
 	errData := SetupData()
 	if errData != nil {
-		return errors.Wrap(errData, "Failed to setup data templates")
+		return nil, errors.Wrap(errData, "Failed to setup data templates")
 	}
 
 	errTimeseries := SetupTimeseries()
 	if errTimeseries != nil {
-		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
+		return nil, errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
-
-	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
-
-	httpServer = server.New(cfg.BindAddr, api.Router)
-
-	// Disable this here to allow service to manage graceful shutdown of the entire app.
-	httpServer.HandleOSSignals = false
-
-	go func() {
-		ctx := context.Background()
-		log.Info(ctx, "search api starting")
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Error(ctx, "search api http server returned error", err)
-			errorChan <- err
-		}
-	}()
-
-	return nil
-}
-
-// NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
 
 	api := &SearchAPI{
 		Router:        router,
@@ -93,5 +56,6 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	return api
+
+	return api, nil
 }

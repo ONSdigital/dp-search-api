@@ -1,11 +1,12 @@
 package service
 
 import (
+	"net/http"
+
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/config"
-	"net/http"
 )
 
 // ExternalServiceList holds the initialiser and initialisation state of external services.
