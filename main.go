@@ -37,11 +37,11 @@ func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	//Create the service, providing an error channel for fatal errors
+	// Create the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)
 	svcList := service.NewServiceList(&service.Init{})
 
-	//Read config
+	// Read config
 	cfg, err := config.Get()
 	if err != nil {
 		log.Fatal(ctx, "error retrieving configuration", err)
@@ -50,7 +50,7 @@ func run(ctx context.Context) error {
 
 	log.Info(ctx, "config on startup", log.Data{"config": cfg, "build_time": BuildTime, "git-commit": GitCommit})
 
-	//Run the service
+	// Run the service
 	svc := service.New(cfg, svcList)
 
 	if err := svc.Run(ctx, BuildTime, GitCommit, Version, svcErrors); err != nil {

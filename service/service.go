@@ -172,5 +172,6 @@ func (svc *Service) registerCheckers(ctx context.Context, elasticHTTPClient dpht
 	if hasErrors {
 		errors.New("Error(s) registering checkers for healthcheck")
 	}
+
 	return nil
 }
