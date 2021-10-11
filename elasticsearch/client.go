@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/pkg/errors"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 )
 
 // Client represents an instance of the elasticsearch client
@@ -29,9 +29,9 @@ func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *es
 		awsSDKSigner: awsSDKSigner,
 		awsRegion:    awsRegion,
 		awsService:   awsService,
-		url:          strings.TrimRight(url, "/"),
 		client:       client,
 		signRequests: signRequests,
+		url:          strings.TrimRight(url, "/"),
 	}
 }
 

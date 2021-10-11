@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
-	dphttp "github.com/ONSdigital/dp-net/http"
+
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -13,18 +11,22 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dphttp "github.com/ONSdigital/dp-net/http"
 )
 
 type Service struct {
-	config              *config.Configuration
-	healthCheck         HealthChecker
 	api                 *api.SearchAPI
+	config              *config.Configuration
+	elasticSearchClient elasticsearch.Client
+	esSigner            *esauth.Signer
+	healthCheck         HealthChecker
+	queryBuilder        api.QueryBuilder
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	esSigner            *esauth.Signer
-	queryBuilder        api.QueryBuilder
-	elasticSearchClient elasticsearch.Client
 	transformer         transformer.Transformer
 }
 
@@ -68,52 +70,76 @@ func (svc *Service) SetTransformer(transformer transformer.Transformer) {
 }
 
 // Run the service
-func (svc *Service) Run(ctx context.Context, buildTime, gitCommit, version string, svcErrors chan error) (err error) {
+func Run(ctx context.Context, cfg *config.Configuration, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
+	var esSigner *esauth.Signer
 	elasticHTTPClient := dphttp.NewClient()
-	//Get HealthCheck
-	svc.healthCheck, err = svc.serviceList.GetHealthCheck(svc.config, buildTime, gitCommit, version)
-	if err != nil {
-		log.Fatal(ctx, "could not instantiate healthcheck", err)
-		return err
-	}
-
-	if err := svc.registerCheckers(ctx, elasticHTTPClient); err != nil {
-		return errors.Wrap(err, "unable to register checkers")
-	}
-
-	svc.router = mux.NewRouter()
-	svc.router.StrictSlash(true).Path("/health").HandlerFunc(svc.healthCheck.Handler)
-	svc.healthCheck.Start(ctx)
 
 	// Initialise transformer
 	transformer := transformer.New()
 
-	// Initialse elasticSearchClient
-	elasticSearchClient := elasticsearch.New(svc.config.ElasticSearchAPIURL, dphttp.NewClient(), svc.config.SignElasticsearchRequests, svc.esSigner, svc.config.AwsRegion, svc.config.AwsService)
-
 	// Initialse AWS signer
-	if svc.config.SignElasticsearchRequests {
-		svc.esSigner, err = esauth.NewAwsSigner("", "", svc.config.AwsRegion, svc.config.AwsService)
+	if cfg.SignElasticsearchRequests {
+		esSigner, err = esauth.NewAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
 		if err != nil {
 			log.Error(ctx, "failed to create aws v4 signer", err)
-			return err
+			return nil, err
 		}
 	}
+
+	// Initialse elasticSearchClient
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
-		return err
+		return nil, err
 	}
+
+	//Get HealthCheck
+	healthCheck, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
+	if err != nil {
+		log.Fatal(ctx, "could not instantiate healthcheck", err)
+		return nil, err
+	}
+
+	if err := registerCheckers(ctx, *cfg, healthCheck, elasticHTTPClient, esSigner); err != nil {
+		return nil, errors.Wrap(err, "unable to register checkers")
+	}
+
+	router := mux.NewRouter()
+	server := serviceList.GetHTTPServer(cfg.BindAddr, router)
+
+	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
+	healthCheck.Start(ctx)
 
 	// Create Search API
-	if err := api.CreateAndInitialise(svc.config, svc.router, queryBuilder, elasticSearchClient, transformer, svcErrors); err != nil {
+	searchAPI, err := api.NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
+	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	go func() {
+		log.Info(ctx, "search api starting")
+		if err := server.ListenAndServe(); err != nil {
+			log.Error(ctx, "search api http server returned error", err)
+			svcErrors <- err
+		}
+	}()
+
+	return &Service{
+		api:                 searchAPI,
+		config:              cfg,
+		elasticSearchClient: *elasticSearchClient,
+		esSigner:            esSigner,
+		healthCheck:         healthCheck,
+		queryBuilder:        queryBuilder,
+		router:              router,
+		server:              server,
+		serviceList:         serviceList,
+		transformer:         *transformer,
+	}, nil
 }
 
 // Close gracefully shuts the service down in the required order, with timeout
@@ -137,7 +163,6 @@ func (svc *Service) Close(ctx context.Context) error {
 			log.Error(shutdownContext, "error closing API", err)
 			hasShutdownError = true
 		}
-
 	}()
 
 	// wait for shutdown success (via cancel) or failure (timeout)
@@ -161,10 +186,16 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func (svc *Service) registerCheckers(ctx context.Context, elasticHTTPClient dphttp.Clienter) (err error) {
+func registerCheckers(ctx context.Context,
+	cfg config.Configuration,
+	hc HealthChecker,
+	elasticHTTPClient dphttp.Clienter,
+	esSigner *esauth.Signer) (err error) {
+
 	hasErrors := false
-	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(svc.config.ElasticSearchAPIURL, svc.esSigner, svc.config.SignElasticsearchRequests, elasticHTTPClient)
-	if err = svc.healthCheck.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
+
+	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
+	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		hasErrors = true
 	}

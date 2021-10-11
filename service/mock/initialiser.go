@@ -11,31 +11,37 @@ import (
 	"sync"
 )
 
+var (
+	lockInitialiserMockDoGetHTTPServer   sync.RWMutex
+	lockInitialiserMockDoGetHealthCheck  sync.RWMutex
+	lockInitialiserMockDoGetHealthClient sync.RWMutex
+)
+
 // Ensure, that InitialiserMock does implement service.Initialiser.
 // If this is not the case, regenerate this file with moq.
 var _ service.Initialiser = &InitialiserMock{}
 
 // InitialiserMock is a mock implementation of service.Initialiser.
 //
-// 	func TestSomethingThatUsesInitialiser(t *testing.T) {
+//     func TestSomethingThatUsesInitialiser(t *testing.T) {
 //
-// 		// make and configure a mocked service.Initialiser
-// 		mockedInitialiser := &InitialiserMock{
-// 			DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
-// 				panic("mock out the DoGetHTTPServer method")
-// 			},
-// 			DoGetHealthCheckFunc: func(cfg *config.Configuration, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
-// 				panic("mock out the DoGetHealthCheck method")
-// 			},
-// 			DoGetHealthClientFunc: func(name string, url string) *health.Client {
-// 				panic("mock out the DoGetHealthClient method")
-// 			},
-// 		}
+//         // make and configure a mocked service.Initialiser
+//         mockedInitialiser := &InitialiserMock{
+//             DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
+// 	               panic("mock out the DoGetHTTPServer method")
+//             },
+//             DoGetHealthCheckFunc: func(cfg *config.Configuration, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
+// 	               panic("mock out the DoGetHealthCheck method")
+//             },
+//             DoGetHealthClientFunc: func(name string, url string) *health.Client {
+// 	               panic("mock out the DoGetHealthClient method")
+//             },
+//         }
 //
-// 		// use mockedInitialiser in code that requires service.Initialiser
-// 		// and then make assertions.
+//         // use mockedInitialiser in code that requires service.Initialiser
+//         // and then make assertions.
 //
-// 	}
+//     }
 type InitialiserMock struct {
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
@@ -74,9 +80,6 @@ type InitialiserMock struct {
 			URL string
 		}
 	}
-	lockDoGetHTTPServer   sync.RWMutex
-	lockDoGetHealthCheck  sync.RWMutex
-	lockDoGetHealthClient sync.RWMutex
 }
 
 // DoGetHTTPServer calls DoGetHTTPServerFunc.
@@ -91,9 +94,9 @@ func (mock *InitialiserMock) DoGetHTTPServer(bindAddr string, router http.Handle
 		BindAddr: bindAddr,
 		Router:   router,
 	}
-	mock.lockDoGetHTTPServer.Lock()
+	lockInitialiserMockDoGetHTTPServer.Lock()
 	mock.calls.DoGetHTTPServer = append(mock.calls.DoGetHTTPServer, callInfo)
-	mock.lockDoGetHTTPServer.Unlock()
+	lockInitialiserMockDoGetHTTPServer.Unlock()
 	return mock.DoGetHTTPServerFunc(bindAddr, router)
 }
 
@@ -108,9 +111,9 @@ func (mock *InitialiserMock) DoGetHTTPServerCalls() []struct {
 		BindAddr string
 		Router   http.Handler
 	}
-	mock.lockDoGetHTTPServer.RLock()
+	lockInitialiserMockDoGetHTTPServer.RLock()
 	calls = mock.calls.DoGetHTTPServer
-	mock.lockDoGetHTTPServer.RUnlock()
+	lockInitialiserMockDoGetHTTPServer.RUnlock()
 	return calls
 }
 
@@ -130,9 +133,9 @@ func (mock *InitialiserMock) DoGetHealthCheck(cfg *config.Configuration, buildTi
 		GitCommit: gitCommit,
 		Version:   version,
 	}
-	mock.lockDoGetHealthCheck.Lock()
+	lockInitialiserMockDoGetHealthCheck.Lock()
 	mock.calls.DoGetHealthCheck = append(mock.calls.DoGetHealthCheck, callInfo)
-	mock.lockDoGetHealthCheck.Unlock()
+	lockInitialiserMockDoGetHealthCheck.Unlock()
 	return mock.DoGetHealthCheckFunc(cfg, buildTime, gitCommit, version)
 }
 
@@ -151,9 +154,9 @@ func (mock *InitialiserMock) DoGetHealthCheckCalls() []struct {
 		GitCommit string
 		Version   string
 	}
-	mock.lockDoGetHealthCheck.RLock()
+	lockInitialiserMockDoGetHealthCheck.RLock()
 	calls = mock.calls.DoGetHealthCheck
-	mock.lockDoGetHealthCheck.RUnlock()
+	lockInitialiserMockDoGetHealthCheck.RUnlock()
 	return calls
 }
 
@@ -169,9 +172,9 @@ func (mock *InitialiserMock) DoGetHealthClient(name string, url string) *health.
 		Name: name,
 		URL:  url,
 	}
-	mock.lockDoGetHealthClient.Lock()
+	lockInitialiserMockDoGetHealthClient.Lock()
 	mock.calls.DoGetHealthClient = append(mock.calls.DoGetHealthClient, callInfo)
-	mock.lockDoGetHealthClient.Unlock()
+	lockInitialiserMockDoGetHealthClient.Unlock()
 	return mock.DoGetHealthClientFunc(name, url)
 }
 
@@ -186,8 +189,8 @@ func (mock *InitialiserMock) DoGetHealthClientCalls() []struct {
 		Name string
 		URL  string
 	}
-	mock.lockDoGetHealthClient.RLock()
+	lockInitialiserMockDoGetHealthClient.RLock()
 	calls = mock.calls.DoGetHealthClient
-	mock.lockDoGetHealthClient.RUnlock()
+	lockInitialiserMockDoGetHealthClient.RUnlock()
 	return calls
 }
