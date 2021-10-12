@@ -30,15 +30,6 @@ type Service struct {
 	transformer         transformer.Transformer
 }
 
-// New creates a new service
-func New(cfg *config.Configuration, serviceList *ExternalServiceList) *Service {
-	svc := &Service{
-		config:      cfg,
-		serviceList: serviceList,
-	}
-	return svc
-}
-
 // SetServer sets the http server for a service
 func (svc *Service) SetServer(server HTTPServer) {
 	svc.server = server
