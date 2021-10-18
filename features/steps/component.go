@@ -73,6 +73,7 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	c.StartTime = time.Now()
 	c.ServiceRunning = true
+	c.APIFeature = componentTest.NewAPIFeature(c.InitialiseService)
 
 	return c, nil
 }
@@ -87,7 +88,7 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 // Reset resets the search api component
 func (c *Component) Reset() *Component {
 	c.FakeElasticSearchAPI.Reset()
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/_cluster/health", 200)
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=cpi", 200)
 	return c
 }
 

@@ -3,6 +3,7 @@ package steps
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cucumber/messages-go/v10"
 	"io/ioutil"
 	"strconv"
 	"time"
@@ -35,12 +36,31 @@ type Check struct {
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
-	ctx.Step(`^I wait "([^"]*)" seconds`, delayTimeBySeconds)
+	c.APIFeature.RegisterSteps(ctx)
 	ctx.Step(`^all of the downstream services are healthy$`, c.allOfTheDownstreamServicesAreHealthy)
-	ctx.Step(`^one of the downstream services is warning`, c.oneOfTheDownstreamServicesIsWarning)
-	ctx.Step(`^one of the downstream services is failing`, c.oneOfTheDownstreamServicesIsFailing)
-	ctx.Step(`^I should receive the following health JSON response:$`, c.iShouldReceiveTheFollowingHealthJSONResponse)
 }
+
+func iGET(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iGETSearch(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveTheFollowingJSONResponse(arg1 *messages.PickleStepArgument_PickleDocString) error {
+	return godog.ErrPending
+}
+
+func theHTTPStatusCodeShouldBe(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theResponseHeaderShouldBe(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+
 
 // delayTimeBySeconds pauses the goroutine for the given seconds
 func delayTimeBySeconds(seconds string) error {
@@ -53,17 +73,17 @@ func delayTimeBySeconds(seconds string) error {
 }
 
 func (c *Component) allOfTheDownstreamServicesAreHealthy() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/_cluster/health", 200)
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 200)
 	return nil
 }
 
 func (c *Component) oneOfTheDownstreamServicesIsWarning() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/health", 429)
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 429)
 	return nil
 }
 
 func (c *Component) oneOfTheDownstreamServicesIsFailing() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/health", 500)
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 500)
 	return nil
 }
 
