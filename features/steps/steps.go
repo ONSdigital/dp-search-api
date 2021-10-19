@@ -11,33 +11,15 @@ import (
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/assert"
+	"github.com/ONSdigital/dp-search-api/transformer"
 )
 
-// HealthCheckTest represents a test healthcheck struct that mimics the real healthcheck struct
-type HealthCheckTest struct {
-	Status    string                  `json:"status"`
-	Version   healthcheck.VersionInfo `json:"version"`
-	Uptime    time.Duration           `json:"uptime"`
-	StartTime time.Time               `json:"start_time"`
-	Checks    []*Check                `json:"checks"`
-}
-
-// Check represents a health status of a registered app that mimics the real check struct
-// As the component test needs to access fields that are not exported in the real struct
-type Check struct {
-	Name        string     `json:"name"`
-	Status      string     `json:"status"`
-	StatusCode  int        `json:"status_code"`
-	Message     string     `json:"message"`
-	LastChecked *time.Time `json:"last_checked"`
-	LastSuccess *time.Time `json:"last_success"`
-	LastFailure *time.Time `json:"last_failure"`
-}
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
-	ctx.Step(`^all of the downstream services are healthy$`, c.allOfTheDownstreamServicesAreHealthy)
+	ctx.Step(`^return one search response$`, c.successfullyReturnOneSearchResult)
+	ctx.Step(`^return multiple search responses$`, c.successfullyReturnMultipleSearchResults)
 }
 
 func iGET(arg1 string) error {
@@ -72,45 +54,60 @@ func delayTimeBySeconds(seconds string) error {
 	return nil
 }
 
-func (c *Component) allOfTheDownstreamServicesAreHealthy() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 200)
+func (c *Component) successfullyReturnOneSearchResult() error {
+	body, err := ioutil.ReadFile("testdata/single_search_result.json")
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search", 200, b)
 	return nil
 }
 
-func (c *Component) oneOfTheDownstreamServicesIsWarning() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 429)
+func (c *Component) successfullyReturnMultipleSearchResults() error {
+	body, err := ioutil.ReadFile("testdata/multiple_search_results.json")
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search", 200, b)
 	return nil
 }
 
-func (c *Component) oneOfTheDownstreamServicesIsFailing() error {
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search", 500)
-	return nil
-}
-
-func (c *Component) iShouldReceiveTheFollowingHealthJSONResponse(expectedResponse *godog.DocString) error {
-	var healthResponse, expectedHealth HealthCheckTest
+func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedResponse *godog.DocString) error {
+	var searchResponse, expectedSearchResponse transformer.SearchResponse
 
 	responseBody, err := ioutil.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response of search controller component - error: %v", err)
+		return fmt.Errorf("failed to read response of search api component - error: %v", err)
 	}
 
-	err = json.Unmarshal(responseBody, &healthResponse)
+	err = json.Unmarshal(responseBody, &searchResponse)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal response of search controller component - error: %v", err)
+		return fmt.Errorf("failed to unmarshal response of search api component - error: %v", err)
 	}
-
-	err = json.Unmarshal([]byte(expectedResponse.Content), &expectedHealth)
+	expectedSearchResults, err := ioutil.ReadFile("testdata/multiple_search_expected_results.json")
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal expected health response - error: %v", err)
+		return fmt.Errorf("failed to read file of expected results - error: %v", err)
 	}
 
-	c.validateHealthCheckResponse(healthResponse, expectedHealth)
+	err = json.Unmarshal(expectedSearchResults, &expectedSearchResponse)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal expected results from file - error: %v", err)
+	}
+
+	c.validateSearchResponse(searchResponse, expectedSearchResponse)
 
 	return c.ErrorFeature.StepError()
 }
 
-func (c *Component) validateHealthCheckResponse(healthResponse HealthCheckTest, expectedResponse HealthCheckTest) {
+func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.SearchResponse) {
 	maxExpectedStartTime := c.StartTime.Add((c.cfg.HealthCheckInterval + 1) * time.Second)
 
 	assert.Equal(&c.ErrorFeature, expectedResponse.Status, healthResponse.Status)
@@ -119,7 +116,7 @@ func (c *Component) validateHealthCheckResponse(healthResponse HealthCheckTest, 
 	assert.Greater(&c.ErrorFeature, healthResponse.Uptime.Seconds(), float64(0))
 
 	c.validateHealthVersion(healthResponse.Version, expectedResponse.Version, maxExpectedStartTime)
-
+// TODO: check length first before iterating any arrays; nested for loops...check keywords, items, etc
 	for i, checkResponse := range healthResponse.Checks {
 		c.validateHealthCheck(checkResponse, expectedResponse.Checks[i])
 	}

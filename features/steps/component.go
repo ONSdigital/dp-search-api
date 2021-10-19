@@ -54,7 +54,7 @@ func NewSearchAPIComponent() (c *Component, err error) {
 		return nil, err
 	}
 
-	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("")
+	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/ons/_search")
 
 	c.cfg.HealthCheckInterval = 1 * time.Second
 	c.cfg.HealthCheckCriticalTimeout = 2 * time.Second

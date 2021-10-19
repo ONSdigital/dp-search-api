@@ -35,8 +35,8 @@ func NewFakeAPI(t testing.TB) *FakeAPI {
 	return fa
 }
 
-func (f *FakeAPI) setJSONResponseForGet(url string, statusCode int) {
-	f.fakeHTTP.NewHandler().Get(url).Reply(statusCode).Body([]byte(`[]`))
+func (f *FakeAPI) setJSONResponseForGet(url string, statusCode int, body []byte) {
+	f.fakeHTTP.NewHandler().Get(url).Reply(statusCode).Body(body)
 }
 
 // Close closes the fake API

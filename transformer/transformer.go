@@ -14,21 +14,21 @@ type Transformer struct {
 }
 
 // Structs representing the transformed response
-type searchResponse struct {
+type SearchResponse struct {
 	Count               int           `json:"count"`
 	Took                int           `json:"took"`
-	ContentTypes        []contentType `json:"content_types"`
-	Items               []contentItem `json:"items"`
+	ContentTypes        []ContentType `json:"content_types"`
+	Items               []ContentItem `json:"items"`
 	Suggestions         []string      `json:"suggestions,omitempty"`
 	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
 }
 
-type contentType struct {
+type ContentType struct {
 	Type  string `json:"type"`
 	Count int    `json:"count"`
 }
 
-type contentItem struct {
+type ContentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
@@ -176,11 +176,11 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func (t *Transformer) transform(source *esResponse, highlight bool) searchResponse {
-	sr := searchResponse{
+func (t *Transformer) transform(source *esResponse, highlight bool) SearchResponse {
+	sr := SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
-		Items:        []contentItem{},
-		ContentTypes: []contentType{},
+		Items:        []ContentItem{},
+		ContentTypes: []ContentType{},
 	}
 	var took int = 0
 	for _, response := range source.Responses {
@@ -201,8 +201,8 @@ func (t *Transformer) transform(source *esResponse, highlight bool) searchRespon
 	return sr
 }
 
-func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) contentItem {
-	ci := contentItem{
+func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) ContentItem {
+	ci := ContentItem{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
@@ -263,8 +263,8 @@ func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, h
 	return &overlaid
 }
 
-func buildContentTypes(bucket esBucket) contentType {
-	return contentType{
+func buildContentTypes(bucket esBucket) ContentType {
+	return ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
