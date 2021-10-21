@@ -63,7 +63,7 @@ type contact struct {
 
 // Structs representing the raw elastic search response
 
-type esResponse struct {
+type ESResponse struct {
 	Responses []esResponseItem `json:"responses"`
 }
 

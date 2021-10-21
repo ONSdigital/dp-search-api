@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cucumber/messages-go/v10"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"strconv"
 	"time"
@@ -81,7 +82,7 @@ func (c *Component) successfullyReturnMultipleSearchResults() error {
 }
 
 func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedResponse *godog.DocString) error {
-	var searchResponse, expectedSearchResponse transformer.SearchResponse
+	var searchResponse, expectedSearchResponse transformer.ESResponse
 
 	responseBody, err := ioutil.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {
@@ -107,19 +108,22 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedResponse *g
 	return c.ErrorFeature.StepError()
 }
 
-func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.SearchResponse) {
+func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.ESResponse) error {
 	maxExpectedStartTime := c.StartTime.Add((c.cfg.HealthCheckInterval + 1) * time.Second)
 
-	assert.Equal(&c.ErrorFeature, expectedResponse.Status, healthResponse.Status)
-	assert.True(&c.ErrorFeature, healthResponse.StartTime.After(c.StartTime))
-	assert.True(&c.ErrorFeature, healthResponse.StartTime.Before(maxExpectedStartTime))
-	assert.Greater(&c.ErrorFeature, healthResponse.Uptime.Seconds(), float64(0))
+	assert.Equal(&c.ErrorFeature, expectedResponse.Responses, actualResponse.Responses)
 
-	c.validateHealthVersion(healthResponse.Version, expectedResponse.Version, maxExpectedStartTime)
-// TODO: check length first before iterating any arrays; nested for loops...check keywords, items, etc
-	for i, checkResponse := range healthResponse.Checks {
-		c.validateHealthCheck(checkResponse, expectedResponse.Checks[i])
+	//c.validateHealthVersion(healthResponse.Version, expectedResponse.Version, maxExpectedStartTime)
+
+	if len(expectedResponse.Responses) < 1 {
+		return fmt.Errorf("Response contained 0 items")
 	}
+	// TODO: check length first before iterating any arrays; nested for loops...check keywords, items, etc
+	for _, checkExpectedResponse := range expectedResponse.Responses {
+		for i, checkExpectedHits := range checkExpectedResponse.Hits.Hits {
+		}
+	}
+	return nil
 }
 
 func (c *Component) validateHealthVersion(versionResponse healthcheck.VersionInfo, expectedVersion healthcheck.VersionInfo, maxExpectedStartTime time.Time) {
