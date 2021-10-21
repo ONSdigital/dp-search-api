@@ -12,7 +12,7 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
-	"github.com/ONSdigital/dp-search-api/service/mock"
+	mocks "github.com/ONSdigital/dp-search-api/service/mock"
 	"github.com/maxcnunes/httpfake"
 )
 
@@ -66,7 +66,7 @@ func NewSearchAPIComponent() (c *Component, err error) {
 	}
 
 	serviceList := service.NewServiceList(initFunctions)
-	c.svc, err = service.Run(ctx, c.cfg, serviceList,buildTime, gitCommitHash, appVersion, svcErrors)
+	c.svc, err = service.Run(ctx, c.cfg, serviceList, buildTime, gitCommitHash, appVersion, svcErrors)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,8 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 // Reset resets the search api component
 func (c *Component) Reset() *Component {
 	c.FakeElasticSearchAPI.Reset()
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=cpi", 200)
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search?q=test", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=test2", 200, []byte{})
 	return c
 }
 

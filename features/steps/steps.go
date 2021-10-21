@@ -3,18 +3,17 @@ package steps
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cucumber/messages-go/v10"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"strconv"
 	"time"
 
+	"github.com/cucumber/messages-go/v10"
+
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
+	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/assert"
-	"github.com/ONSdigital/dp-search-api/transformer"
 )
-
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
@@ -42,8 +41,6 @@ func theHTTPStatusCodeShouldBe(arg1 string) error {
 func theResponseHeaderShouldBe(arg1, arg2 string) error {
 	return godog.ErrPending
 }
-
-
 
 // delayTimeBySeconds pauses the goroutine for the given seconds
 func delayTimeBySeconds(seconds string) error {
@@ -108,21 +105,32 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedResponse *g
 	return c.ErrorFeature.StepError()
 }
 
-func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.ESResponse) error {
-	maxExpectedStartTime := c.StartTime.Add((c.cfg.HealthCheckInterval + 1) * time.Second)
+func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.SearchResponse) error {
 
-	assert.Equal(&c.ErrorFeature, expectedResponse.Responses, actualResponse.Responses)
+	assert.Equal(&c.ErrorFeature, expectedResponse.Items, actualResponse.Items)
 
 	//c.validateHealthVersion(healthResponse.Version, expectedResponse.Version, maxExpectedStartTime)
 
-	if len(expectedResponse.Responses) < 1 {
+	if len(actualResponse.Items) < 1 {
 		return fmt.Errorf("Response contained 0 items")
 	}
+
+	// Example data should look like
+	// {
+	// 	took: ...
+	//  items: [
+	//	 dummy: something
+	// 	...
+	// ]
+	// }
+
+	assert.Equal(actualResult.took, expectedResult.took)
+
 	// TODO: check length first before iterating any arrays; nested for loops...check keywords, items, etc
-	for _, checkExpectedResponse := range expectedResponse.Responses {
-		for i, checkExpectedHits := range checkExpectedResponse.Hits.Hits {
-		}
+	for i, _ := range actualResponse.Items {
+		checkItems(actualResponse.Items[i], expectedResponse.Items[i])
 	}
+
 	return nil
 }
 
