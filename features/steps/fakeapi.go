@@ -48,3 +48,7 @@ func (f *FakeAPI) Close() {
 func (f *FakeAPI) Reset() {
 	f.fakeHTTP.Reset()
 }
+
+func (f *FakeAPI) setJSONResponseForPost(url string, statusCode int, body []byte) {
+	f.fakeHTTP.NewHandler().Post(url).Reply(statusCode).Body(body)
+}

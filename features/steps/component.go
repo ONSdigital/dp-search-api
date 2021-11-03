@@ -3,7 +3,6 @@ package steps
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
@@ -88,8 +87,11 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 // Reset resets the search api component
 func (c *Component) Reset() *Component {
 	c.FakeElasticSearchAPI.Reset()
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search?q=test", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=test2", 200, []byte{})
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/ons/_search/ons/_msearch", 200, []byte(`{}`) )
+	 // TODO Maybe url needs to change and add test
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search?q=test", 200, []byte(`{}`)) // TODO Maybe url needs to change and add test
+	// body for response
+	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=test", 200, []byte(`{}`))
 	return c
 }
 
@@ -110,14 +112,12 @@ func (c *Component) InitialiseService() (http.Handler, error) {
 	return c.HTTPServer.Handler, nil
 }
 
-func getHealthCheckOK(cfg *config.Configuration, buildTime, gitCommit, version string) (service.HealthChecker, error) {
-	componentBuildTime := strconv.Itoa(int(time.Now().Unix()))
-	versionInfo, err := healthcheck.NewVersionInfo(componentBuildTime, gitCommitHash, appVersion)
-	if err != nil {
-		return nil, err
-	}
-	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
-	return &hc, nil
+func getHealthCheckOK() (service.HealthChecker, error) {
+	return &mocks.HealthCheckerMock{
+		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
+		StartFunc:    func(ctx context.Context) {},
+		StopFunc:     func() {},
+	}, nil
 }
 
 func (c *Component) getHealthClient(name string, url string) *health.Client {

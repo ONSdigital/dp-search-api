@@ -1,7 +1,7 @@
 Feature: Search endpoint should return data for requested search parameter
     Scenario: When Searching for CPI I get the same results as Consumer Price Index
-        Given I GET "/search?q=consumer%20price%20index"
-        And I should receive the following JSON response with status "200":
+        Given I GET "/search?q=test"
+        And I should receive the following JSON response with status "500":
         """
             {
                 "count":"",
