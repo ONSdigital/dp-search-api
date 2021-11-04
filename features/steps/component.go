@@ -3,6 +3,7 @@ package steps
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
@@ -53,7 +54,7 @@ func NewSearchAPIComponent() (c *Component, err error) {
 		return nil, err
 	}
 
-	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/ons/_search")
+	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
 
 	c.cfg.HealthCheckInterval = 1 * time.Second
 	c.cfg.HealthCheckCriticalTimeout = 2 * time.Second
@@ -87,11 +88,11 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 // Reset resets the search api component
 func (c *Component) Reset() *Component {
 	c.FakeElasticSearchAPI.Reset()
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/ons/_search/ons/_msearch", 200, []byte(`{}`) )
-	 // TODO Maybe url needs to change and add test
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search?q=test", 200, []byte(`{}`)) // TODO Maybe url needs to change and add test
-	// body for response
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=test", 200, []byte(`{}`))
+
+	// testdata, _ := ioutil.ReadFile("./features/testdata/mulitple_search_results.json")
+	// c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
+	// c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, testdata)    // TODO Maybe url needs to change and add test body for response
+
 	return c
 }
 
@@ -112,12 +113,14 @@ func (c *Component) InitialiseService() (http.Handler, error) {
 	return c.HTTPServer.Handler, nil
 }
 
-func getHealthCheckOK() (service.HealthChecker, error) {
-	return &mocks.HealthCheckerMock{
-		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
-		StartFunc:    func(ctx context.Context) {},
-		StopFunc:     func() {},
-	}, nil
+func getHealthCheckOK(cfg *config.Configuration, buildTime, gitCommit, version string) (service.HealthChecker, error) {
+	componentBuildTime := strconv.Itoa(int(time.Now().Unix()))
+	versionInfo, err := healthcheck.NewVersionInfo(componentBuildTime, gitCommitHash, appVersion)
+	if err != nil {
+		return nil, err
+	}
+	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
+	return &hc, nil
 }
 
 func (c *Component) getHealthClient(name string, url string) *health.Client {
