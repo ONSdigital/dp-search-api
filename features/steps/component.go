@@ -54,7 +54,7 @@ func NewSearchAPIComponent() (c *Component, err error) {
 		return nil, err
 	}
 
-	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/ons/_search")
+	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
 
 	c.cfg.HealthCheckInterval = 1 * time.Second
 	c.cfg.HealthCheckCriticalTimeout = 2 * time.Second
@@ -88,8 +88,9 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 // Reset resets the search api component
 func (c *Component) Reset() *Component {
 	c.FakeElasticSearchAPI.Reset()
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/ons/_search?q=test", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
-	c.FakeElasticSearchAPI.setJSONResponseForGet("/search?q=test2", 200, []byte{})
+	// testdata, _ := ioutil.ReadFile("./features/testdata/mulitple_search_results.json")
+	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
+	// c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, testdata)    // TODO Maybe url needs to change and add test body for response
 	return c
 }
 

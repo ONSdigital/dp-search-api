@@ -63,7 +63,3 @@ func TestMain(t *testing.T) {
 		t.Skip("component flag required to run component tests")
 	}
 }
-
-
-
-
