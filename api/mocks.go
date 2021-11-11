@@ -18,6 +18,9 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 // 		// make and configure a mocked ElasticSearcher
 // 		mockedElasticSearcher := &ElasticSearcherMock{
+// 			CreateNewEmptyIndexFunc: func(ctx context.Context, indexName string) (bool, error) {
+// 				panic("mock out the CreateNewEmptyIndex method")
+// 			},
 // 			GetStatusFunc: func(ctx context.Context) ([]byte, error) {
 // 				panic("mock out the GetStatus method")
 // 			},
@@ -34,6 +37,9 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 // 	}
 type ElasticSearcherMock struct {
+	// CreateNewEmptyIndexFunc mocks the CreateNewEmptyIndex method.
+	CreateNewEmptyIndexFunc func(ctx context.Context, indexName string) (bool, error)
+
 	// GetStatusFunc mocks the GetStatus method.
 	GetStatusFunc func(ctx context.Context) ([]byte, error)
 
@@ -45,6 +51,13 @@ type ElasticSearcherMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CreateNewEmptyIndex holds details about calls to the CreateNewEmptyIndex method.
+		CreateNewEmptyIndex []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// IndexName is the indexName argument value.
+			IndexName string
+		}
 		// GetStatus holds details about calls to the GetStatus method.
 		GetStatus []struct {
 			// Ctx is the ctx argument value.
@@ -73,9 +86,45 @@ type ElasticSearcherMock struct {
 			Request []byte
 		}
 	}
-	lockGetStatus   sync.RWMutex
-	lockMultiSearch sync.RWMutex
-	lockSearch      sync.RWMutex
+	lockCreateNewEmptyIndex sync.RWMutex
+	lockGetStatus           sync.RWMutex
+	lockMultiSearch         sync.RWMutex
+	lockSearch              sync.RWMutex
+}
+
+// CreateNewEmptyIndex calls CreateNewEmptyIndexFunc.
+func (mock *ElasticSearcherMock) CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error) {
+	if mock.CreateNewEmptyIndexFunc == nil {
+		panic("ElasticSearcherMock.CreateNewEmptyIndexFunc: method is nil but ElasticSearcher.CreateNewEmptyIndex was just called")
+	}
+	callInfo := struct {
+		Ctx       context.Context
+		IndexName string
+	}{
+		Ctx:       ctx,
+		IndexName: indexName,
+	}
+	mock.lockCreateNewEmptyIndex.Lock()
+	mock.calls.CreateNewEmptyIndex = append(mock.calls.CreateNewEmptyIndex, callInfo)
+	mock.lockCreateNewEmptyIndex.Unlock()
+	return mock.CreateNewEmptyIndexFunc(ctx, indexName)
+}
+
+// CreateNewEmptyIndexCalls gets all the calls that were made to CreateNewEmptyIndex.
+// Check the length with:
+//     len(mockedElasticSearcher.CreateNewEmptyIndexCalls())
+func (mock *ElasticSearcherMock) CreateNewEmptyIndexCalls() []struct {
+	Ctx       context.Context
+	IndexName string
+} {
+	var calls []struct {
+		Ctx       context.Context
+		IndexName string
+	}
+	mock.lockCreateNewEmptyIndex.RLock()
+	calls = mock.calls.CreateNewEmptyIndex
+	mock.lockCreateNewEmptyIndex.RUnlock()
+	return calls
 }
 
 // GetStatus calls GetStatusFunc.

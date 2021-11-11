@@ -30,6 +30,7 @@ type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	GetStatus(ctx context.Context) ([]byte, error)
+	CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error)
 }
 
 // QueryBuilder provides methods for the search package
@@ -100,6 +101,8 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/search", CreateSearchIndexHandlerFunc(api.ElasticSearch)).Methods("POST")
+
 	return api
 }
 

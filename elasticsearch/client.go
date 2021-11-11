@@ -3,14 +3,17 @@ package elasticsearch
 import (
 	"bytes"
 	"context"
+	dpelasticsearch "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/config"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/pkg/errors"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 )
 
 // Client represents an instance of the elasticsearch client
@@ -21,10 +24,11 @@ type Client struct {
 	url          string
 	client       dphttp.Clienter
 	signRequests bool
+	cfg          *config.Config
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, cfg *config.Config) *Client {
 	return &Client{
 		awsSDKSigner: awsSDKSigner,
 		awsRegion:    awsRegion,
@@ -32,6 +36,7 @@ func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *es
 		url:          strings.TrimRight(url, "/"),
 		client:       client,
 		signRequests: signRequests,
+		cfg:          cfg,
 	}
 }
 
@@ -99,6 +104,24 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 	}
 
 	return response, err
+}
+
+//CreateNewEmptyIndex is a method that creates an empty Elasticsearch index with the given indexName
+//It returns true if the index was created successfully, otherwise false
+func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error) {
+	esClient := dpelasticsearch.NewClient(cli.cfg.ElasticSearchAPIURL, cli.cfg.SignElasticsearchRequests, 5)
+	indexCreated := false
+	status, err := esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
+	if err != nil {
+		log.Fatal(ctx, "error creating index", err)
+		return indexCreated, err
+	}
+	if status != http.StatusOK {
+		log.Fatal(ctx, "error creating index http status - ", status)
+		return indexCreated, err
+	}
+	indexCreated = true
+	return indexCreated, err
 }
 
 func buildContext(index string, docType string) string {

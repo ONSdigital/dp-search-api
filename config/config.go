@@ -30,12 +30,12 @@ func Get() (*Config, error) {
 	cfg = &Config{
 		AwsRegion:                  "eu-west-1",
 		AwsService:                 "es",
-		BindAddr:                  ":23900",
-		ElasticSearchAPIURL:       "http://localhost:9200",
-		GracefulShutdownTimeout:   5 * time.Second,
-		SignElasticsearchRequests: false,
-		HealthCheckCriticalTimeout:           90 * time.Second,
-		HealthCheckInterval:                  30 * time.Second,
+		BindAddr:                   ":23900",
+		ElasticSearchAPIURL:        "http://localhost:9200",
+		GracefulShutdownTimeout:    5 * time.Second,
+		SignElasticsearchRequests:  false,
+		HealthCheckCriticalTimeout: 90 * time.Second,
+		HealthCheckInterval:        30 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

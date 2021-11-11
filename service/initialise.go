@@ -8,7 +8,7 @@ import (
 // ExternalServiceList holds the initialiser and initialisation state of external services.
 type ExternalServiceList struct {
 	HealthCheck bool
-	Init		Initialiser
+	Init        Initialiser
 }
 
 // NewServiceList creates a new service list with the provided initialiser
