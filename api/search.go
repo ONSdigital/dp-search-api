@@ -161,7 +161,6 @@ func CreateSearchIndexHandlerFunc(elasticSearchClient ElasticSearcher) http.Hand
 			IndexName: indexName}
 		jsonResponse, _ := json.MarshalIndent(createIndexResponse, "", " ")
 
-		//_ = ioutil.WriteFile("test.json", file, 0644)
 		_, err = w.Write(jsonResponse)
 		if err != nil {
 			log.Error(ctx, "writing response failed", err)

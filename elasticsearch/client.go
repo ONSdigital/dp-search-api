@@ -3,16 +3,17 @@ package elasticsearch
 import (
 	"bytes"
 	"context"
-	dpelasticsearch "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
-	"github.com/ONSdigital/dp-search-api/config"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	dpelasticsearch "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -113,11 +114,11 @@ func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (b
 	indexCreated := false
 	status, err := esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
 	if err != nil {
-		log.Fatal(ctx, "error creating index", err)
+		log.Error(ctx, "error creating index. Make sure that ELASTIC_SEARCH_URL is set to http://localhost:11200", err)
 		return indexCreated, err
 	}
 	if status != http.StatusOK {
-		log.Fatal(ctx, "error creating index http status - ", status)
+		log.Error(ctx, "error creating index http status - "+strconv.Itoa(status), err)
 		return indexCreated, err
 	}
 	indexCreated = true
