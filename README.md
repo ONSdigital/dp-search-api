@@ -6,14 +6,38 @@ A Go application microservice to provide query functionality on the ONS Website
 
 ### Getting started
 
-* Run `make debug`
+* There are now 2 versions of ElasticSearch being used by this service:
+* 2.4.2 (the old/existing ElasticSearch)
+* 7.10.0 (Site Wide ElasticSearch)
+  
+Version 2.4.2 is used by all endpoints except for the POST /search endpoint, which uses 7.10
+
+* Set up dependencies locally as follows:
+
+In dp-compose run `docker-compose up -d` to run both versions of ElasticSearch
+NB. Version 2.4.2 will run on port 9200, version 7.10 will run on port 11200
+
+If using version 2.4.2, there are no more dependencies to set up. Of if using version 7.10 then authorisation for the POST /search endpoint requires running Vault and Zebedee as follows:
+
+In any directory run `vault server -dev` as Zebedee has a dependency on Vault
+
+In the zebedee directory run `./run.sh` to run Zebedee
+
+For version 7.10 it is also necessary to export the ELASTIC_SEARCH_URL, environment variable, as follows:
+`export ELASTIC_SEARCH_URL="http://localhost:11200"`
+
+* Then in the dp-search-api run `make debug`
 
 ### Dependencies
 
-Clone and set up the following project following the README instructions:
-- [dp-compose](https://github.com/ONSdigital/dp-compose)
+For the old/existing ElasticSearch (version 2.4.2):
+* Requires ElasticSearch running on port 9200
+* No further dependencies other than those defined in `go.mod`
 
-No further dependencies other than those defined in `go.mod`
+For the Site Wide ElasticSearch (version 7.10.0):
+* Requires ElasticSearch running on port 11200
+* Requires Zebedee running on port 8082
+* No further dependencies other than those defined in `go.mod`
 
 ### Configuration
 
