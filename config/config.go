@@ -17,6 +17,7 @@ type Config struct {
 	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
 var cfg *Config
@@ -36,6 +37,7 @@ func Get() (*Config, error) {
 		SignElasticsearchRequests:  false,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
+		ZebedeeURL:                 "http://localhost:8082",
 	}
 
 	return cfg, envconfig.Process("", cfg)

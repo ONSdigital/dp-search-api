@@ -4,17 +4,18 @@ package api
 
 import (
 	"context"
+	"net/http"
 
-	"github.com/ONSdigital/dp-search-api/config"
-	"github.com/ONSdigital/dp-search-api/service"
-
+	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 )
 
-var httpServer *server.Server
+var (
+	httpServer *server.Server
+	update     = auth.Permissions{Update: true}
+)
 
 //SearchAPI provides an API around elasticseach
 type SearchAPI struct {
@@ -22,7 +23,12 @@ type SearchAPI struct {
 	QueryBuilder  QueryBuilder
 	ElasticSearch ElasticSearcher
 	Transformer   ResponseTransformer
-	ServiceList   *service.ExternalServiceList
+	permissions   AuthHandler
+}
+
+// AuthHandler provides authorisation checks on requests
+type AuthHandler interface {
+	Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
 }
 
 // ElasticSearcher provides client methods for the elasticsearch package
@@ -43,65 +49,22 @@ type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
-// CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, hc service.HealthChecker, errorChan chan error) error {
-
-	if elasticSearchClient == nil {
-		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
-	}
-
-	if queryBuilder == nil {
-		return errors.New("CreateAndInitialise called without a valid query builder")
-	}
-	router := mux.NewRouter()
-
-	errData := SetupData()
-	if errData != nil {
-		return errors.Wrap(errData, "Failed to setup data templates")
-	}
-
-	errTimeseries := SetupTimeseries()
-	if errTimeseries != nil {
-		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
-	}
-
-	ctx := context.Background()
-	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
-	hc.Start(ctx)
-
-	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
-
-	httpServer = server.New(cfg.BindAddr, api.Router)
-
-	// Disable this here to allow service to manage graceful shutdown of the entire app.
-	httpServer.HandleOSSignals = false
-
-	go func() {
-		ctx := context.Background()
-		log.Info(ctx, "search api starting")
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Error(ctx, "search api http server returned error", err)
-			errorChan <- err
-		}
-	}()
-
-	return nil
-}
-
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
+func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) *SearchAPI {
 
 	api := &SearchAPI{
 		Router:        router,
 		QueryBuilder:  queryBuilder,
 		ElasticSearch: elasticSearch,
 		Transformer:   transformer,
+		permissions:   permissions,
 	}
 
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/search", CreateSearchIndexHandlerFunc(api.ElasticSearch)).Methods("POST")
+	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.ElasticSearch))
+	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 
 	return api
 }

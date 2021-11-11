@@ -6,8 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ONSdigital/dp-search-api/service"
-
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
@@ -15,6 +13,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
+	"github.com/ONSdigital/dp-search-api/service"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -77,7 +76,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := api.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors); err != nil {
+	if err := service.CreateAndInitialise(cfg, queryBuilder, elasticSearchClient, transformer, hc, apiErrors, svcList); err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		os.Exit(1)
 	}
