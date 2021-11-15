@@ -158,9 +158,8 @@ func CreateSearchIndexHandlerFunc(elasticSearchClient ElasticSearcher) http.Hand
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		createIndexResponse := CreateIndexResponse{
-			IndexName: indexName}
-		jsonResponse, _ := json.MarshalIndent(createIndexResponse, "", " ")
+		createIndexResponse := CreateIndexResponse{IndexName: indexName}
+		jsonResponse, _ := json.Marshal(createIndexResponse)
 
 		_, err = w.Write(jsonResponse)
 		if err != nil {
