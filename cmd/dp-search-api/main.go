@@ -64,7 +64,8 @@ func main() {
 	}
 
 	elasticHTTPClient := dphttp.NewClient()
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, cfg)
+	esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, cfg, esClient)
 	transformer := transformer.New()
 	svcList := service.NewServiceList(&service.Init{})
 

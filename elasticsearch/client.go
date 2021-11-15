@@ -10,7 +10,7 @@ import (
 	"time"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	dpelasticsearch "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -26,10 +26,11 @@ type Client struct {
 	client       dphttp.Clienter
 	signRequests bool
 	cfg          *config.Config
+	esClient     *elastic.Client
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, cfg *config.Config) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, cfg *config.Config, esClient *elastic.Client) *Client {
 	return &Client{
 		awsSDKSigner: awsSDKSigner,
 		awsRegion:    awsRegion,
@@ -38,6 +39,7 @@ func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *es
 		client:       client,
 		signRequests: signRequests,
 		cfg:          cfg,
+		esClient:     esClient,
 	}
 }
 
@@ -110,9 +112,8 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 //CreateNewEmptyIndex is a method that creates an empty Elasticsearch index with the given indexName
 //It returns true if the index was created successfully, otherwise false
 func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error) {
-	esClient := dpelasticsearch.NewClient(cli.cfg.ElasticSearchAPIURL, cli.cfg.SignElasticsearchRequests, 5)
 	indexCreated := false
-	status, err := esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
+	status, err := cli.esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
 	if err != nil {
 		log.Error(ctx, "error creating index. Make sure that ELASTIC_SEARCH_URL is set to http://localhost:11200", err)
 		return indexCreated, err
