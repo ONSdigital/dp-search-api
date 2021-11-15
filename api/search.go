@@ -150,8 +150,9 @@ func CreateSearchIndexHandlerFunc(elasticSearchClient ElasticSearcher) http.Hand
 		indexCreated, err := elasticSearchClient.CreateNewEmptyIndex(ctx, indexName)
 		if !indexCreated {
 			if err != nil {
-				http.Error(w, serverErrorMessage, http.StatusInternalServerError)
+				log.Error(ctx, "creating index failed with this error", err)
 			}
+			http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 			return
 		}
 
