@@ -13,6 +13,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	mocks "github.com/ONSdigital/dp-search-api/service/mock"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/maxcnunes/httpfake"
 )
 
@@ -56,8 +57,8 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
 
-	c.cfg.HealthCheckInterval = 1 * time.Second
-	c.cfg.HealthCheckCriticalTimeout = 2 * time.Second
+	c.cfg.HealthCheckInterval = 30 * time.Second
+	c.cfg.HealthCheckCriticalTimeout = 90 * time.Second
 
 	initFunctions := &mocks.InitialiserMock{
 		DoGetHTTPServerFunc:   c.getHTTPServer,
@@ -66,6 +67,13 @@ func NewSearchAPIComponent() (c *Component, err error) {
 	}
 
 	serviceList := service.NewServiceList(initFunctions)
+
+	// Setup responses from registered checkers for component
+	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
+
+	// overwrite log namespace from library
+	log.Namespace = "dp-search-api-tests"
+
 	c.svc, err = service.Run(ctx, c.cfg, serviceList, buildTime, gitCommitHash, appVersion, svcErrors)
 	if err != nil {
 		return nil, err
@@ -73,7 +81,6 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	c.StartTime = time.Now()
 	c.ServiceRunning = true
-	c.APIFeature = componentTest.NewAPIFeature(c.InitialiseService)
 
 	return c, nil
 }
@@ -85,13 +92,8 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 	return c.APIFeature
 }
 
-// Reset resets the search api component
+// Reset resets the search api component (should not reset Fake APIs)
 func (c *Component) Reset() *Component {
-	c.FakeElasticSearchAPI.Reset()
-
-	// testdata, _ := ioutil.ReadFile("./features/testdata/mulitple_search_results.json")
-	// c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200, []byte{}) // TODO Maybe url needs to change and add test body for response
-	// c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, testdata)    // TODO Maybe url needs to change and add test body for response
 
 	return c
 }

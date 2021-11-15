@@ -4,65 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"strconv"
-	"time"
 
-	"github.com/cucumber/messages-go/v10"
+	"github.com/google/go-cmp/cmp"
 
-	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/cucumber/godog"
-	"github.com/stretchr/testify/assert"
 )
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
-	ctx.Step(`^elasticsearch returns one item in search response$`, c.successfullyReturnOneSearchResult)
+	ctx.Step(`^elasticsearch returns one item in search response$`, c.successfullyReturnSingleSearchResult)
 	ctx.Step(`^elasticsearch returns multiple items in search response$`, c.successfullyReturnMultipleSearchResults)
+	ctx.Step(`^elasticsearch returns zero items in search response$`, c.successfullyReturnNoSearchResults)
 	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponse)
-
-}
-
-func iGET(arg1 string) error {
-	return godog.ErrPending
-}
-
-func iGETSearch(arg1 string) error {
-	return godog.ErrPending
-}
-
-func iShouldReceiveTheFollowingJSONResponse(arg1 *messages.PickleStepArgument_PickleDocString) error {
-	return godog.ErrPending
-}
-
-func theHTTPStatusCodeShouldBe(arg1 string) error {
-	return godog.ErrPending
-}
-
-func theResponseHeaderShouldBe(arg1, arg2 string) error {
-	return godog.ErrPending
-}
-
-// delayTimeBySeconds pauses the goroutine for the given seconds
-func delayTimeBySeconds(seconds string) error {
-	sec, err := strconv.Atoi(seconds)
-	if err != nil {
-		return err
-	}
-	time.Sleep(time.Duration(sec) * time.Second)
-	return nil
-}
-
-// TheHTTPStatusCodeShouldBe asserts that the status code of the response matches the expected code
-func (c *Component) theHTTPStatusCodeShouldBes(expectedCodeStr string) error {
-	expectedCode, err := strconv.Atoi(expectedCodeStr)
-	if err != nil {
-		return err
-	}
-
-	assert.Equal(c.APIFeature, expectedCode, c.APIFeature.HttpResponse.StatusCode)
-	return nil
+	ctx.Step(`^elasticsearch returns internal server error$`, c.failureInternalServerError)
 }
 
 func (c *Component) successfullyReturnOneSearchResult() error {
@@ -76,12 +32,40 @@ func (c *Component) successfullyReturnOneSearchResult() error {
 }
 
 func (c *Component) successfullyReturnMultipleSearchResults() error {
-	body, err := ioutil.ReadFile("./features/testdata/mulitple_search_results.json")
+	body, err := ioutil.ReadFile("./features/testdata/es_mulitple_search_results.json")
 	if err != nil {
 		return err
 	}
 
 	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
+
+	return nil
+}
+
+func (c *Component) successfullyReturnSingleSearchResult() error {
+	body, err := ioutil.ReadFile("./features/testdata/es_single_search_result.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
+
+	return nil
+}
+
+func (c *Component) successfullyReturnNoSearchResults() error {
+	body, err := ioutil.ReadFile("./features/testdata/es_zero_search_results.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
+
+	return nil
+}
+
+func (c *Component) failureInternalServerError() error {
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 500, []byte{})
 
 	return nil
 }
@@ -108,35 +92,9 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile st
 		return fmt.Errorf("failed to unmarshal expected results from file - error: %v", err)
 	}
 
-	c.validateSearchResponse(searchResponse, expectedSearchResponse)
-
-	return c.ErrorFeature.StepError()
-}
-
-func (c *Component) validateSearchResponse(actualResponse, expectedResponse transformer.SearchResponse) error {
-
-	// assert.Equal(&c.ErrorFeature, expectedResponse.Items, actualResponse.Items)
-
-	// Probably remove this for 0 items being returned (which is a valid scenario which returns 200 OK responses)
-	if len(actualResponse.Items) < 1 {
-		return fmt.Errorf("Response contained 0 items")
+	if diff := cmp.Diff(expectedSearchResponse, searchResponse); diff != "" {
+		return fmt.Errorf("Expected response mismatch (-expected +actual):\n%s", diff)
 	}
 
-	assert.Equal(&c.ErrorFeature, actualResponse.AdditionSuggestions, expectedResponse.AdditionSuggestions)
-
-	// TODO: check length first before iterating any arrays; nested for loops...check keywords, items, etc
-	// for i, _ := range actualResponse.Items {
-	// 	checkItems(actualResponse.Items[i], expectedResponse.Items[i])
-	// }
-
-	return nil
-}
-
-// TODO remove this - kept in so know what assertions to use
-func (c *Component) validateHealthVersion(versionResponse healthcheck.VersionInfo, expectedVersion healthcheck.VersionInfo, maxExpectedStartTime time.Time) {
-	assert.True(&c.ErrorFeature, versionResponse.BuildTime.Before(maxExpectedStartTime))
-	assert.Equal(&c.ErrorFeature, expectedVersion.GitCommit, versionResponse.GitCommit)
-	assert.Equal(&c.ErrorFeature, expectedVersion.Language, versionResponse.Language)
-	assert.NotEmpty(&c.ErrorFeature, versionResponse.LanguageVersion)
-	assert.Equal(&c.ErrorFeature, expectedVersion.Version, versionResponse.Version)
+	return c.ErrorFeature.StepError()
 }

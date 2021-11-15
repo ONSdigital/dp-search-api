@@ -39,8 +39,8 @@ func (f *FakeAPI) setJSONResponseForPost(url string, statusCode int, body []byte
 	f.fakeHTTP.NewHandler().Post(url).Reply(statusCode).Body(body)
 }
 
-func (f *FakeAPI) setJSONResponseForGetHealth(url string, statusCode int, body []byte) {
-	f.fakeHTTP.NewHandler().Post(url).Reply(statusCode).Body(body)
+func (f *FakeAPI) setJSONResponseForGetHealth(url string, statusCode int) {
+	f.fakeHTTP.NewHandler().Get(url).Reply(statusCode)
 }
 
 // Close closes the fake API

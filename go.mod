@@ -6,13 +6,17 @@ replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 
 require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.3.0
+	github.com/ONSdigital/dp-component-test v0.6.0
 	github.com/ONSdigital/dp-elasticsearch/v2 v2.2.1
 	github.com/ONSdigital/dp-healthcheck v1.1.3
 	github.com/ONSdigital/dp-net v1.2.0
 	github.com/ONSdigital/log.go/v2 v2.0.9
 	github.com/aws/aws-sdk-go v1.38.65 // indirect
+	github.com/cucumber/godog v0.10.0
+	github.com/google/go-cmp v0.5.5
 	github.com/gorilla/mux v1.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/maxcnunes/httpfake v1.2.3
 	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/tdewolff/minify v2.3.6+incompatible
@@ -22,11 +26,9 @@ require (
 
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.41.1 // indirect
-	github.com/ONSdigital/dp-component-test v0.6.0 // indirect
 	github.com/ONSdigital/dp-mongodb-in-memory v1.0.0 // indirect
 	github.com/ONSdigital/log.go v1.1.0 // indirect
 	github.com/cucumber/gherkin-go/v11 v11.0.0 // indirect
-	github.com/cucumber/godog v0.10.0 // indirect
 	github.com/cucumber/messages-go/v10 v10.0.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.12.0 // indirect
@@ -45,7 +47,6 @@ require (
 	github.com/klauspost/compress v1.9.5 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
-	github.com/maxcnunes/httpfake v1.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/afero v1.6.0 // indirect

@@ -29,11 +29,14 @@ func InitializeScenario(godogCtx *godog.ScenarioContext) {
 		apiComponent.Reset()
 	})
 
-	godogCtx.AfterScenario(func(*godog.Scenario, error) {
-		apiComponent.Close()
-	})
-
 	apiComponent.RegisterSteps(godogCtx)
+
+	godogCtx.AfterScenario(func(*godog.Scenario, error) {
+		if err := apiComponent.Close(); err != nil {
+			fmt.Println(ctx, "error occurred while closing the api component - error: #{err}")
+			os.Exit(1)
+		}
+	})
 }
 
 func TestMain(t *testing.T) {
