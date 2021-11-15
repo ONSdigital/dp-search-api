@@ -115,11 +115,11 @@ func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (b
 	indexCreated := false
 	status, err := cli.esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
 	if err != nil {
-		log.Error(ctx, "error creating index. Make sure that ELASTIC_SEARCH_URL is set to http://localhost:11200", err)
+		log.Info(ctx, "error creating index. Make sure that ELASTIC_SEARCH_URL is set to the correct one - see README", log.Data{"ELASTIC_SEARCH_URL": cli.cfg.ElasticSearchAPIURL})
 		return indexCreated, err
 	}
 	if status != http.StatusOK {
-		log.Error(ctx, "error creating index http status - "+strconv.Itoa(status), err)
+		log.Error(ctx, "unexpected http status when creating index - "+strconv.Itoa(status), err)
 		return indexCreated, err
 	}
 	indexCreated = true
