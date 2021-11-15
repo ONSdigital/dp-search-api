@@ -9,7 +9,7 @@
                 "failed":0
             },
             "hits":{
-                "total":2,
+                "total":1,
                 "max_score":null,
                 "hits":[
                     {
@@ -20,7 +20,7 @@
                         "_source":{
                             "description":{
                                 "latestRelease":true,
-                                "unit":"",
+                                "unit":"number of people",
                                 "keywords":[
                                     "regional house prices",
                                     "property prices",
@@ -73,35 +73,6 @@
                             51.435966,
                             1424131200000
                         ]
-                    },
-                    {
-                        "_index":"ons1572283650465",
-                        "_type":"product_page",
-                        "_id":"/peoplepopulationandcommunity/housing",
-                        "_score":5.010441,
-                        "_source":{
-                            "description":{
-                                "summary":"Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
-                                "unit":"",
-                                "source":"",
-                                "title":"Housing",
-                                "preUnit":""
-                            },
-                            "searchBoost":[
-
-                            ],
-                            "type":"product_page",
-                            "uri":"/peoplepopulationandcommunity/housing"
-                        },
-                        "highlight":{
-                            "description.title":[
-                                "<em class=\"highlight\">Housing</em>"
-                            ]
-                        },
-                        "sort":[
-                            5.010441,
-                            -9223372036854775808
-                        ]
                     }
                 ]
             },
@@ -123,6 +94,32 @@
                         ]
                     }
                 ]
+            }
+        },
+        {
+            "took": 27,
+            "timed_out": false,
+            "_shards": {
+                "total": 3,
+                "successful": 3,
+                "failed": 0
+            },
+            "hits": {
+                "total": 2,
+                "max_score": 0.0,
+                "hits": []
+            },
+            "aggregations": {
+                "docCounts": {
+                    "doc_count_error_upper_bound": 0,
+                    "sum_other_doc_count": 0,
+                    "buckets": [
+                        {
+                            "key": "article",
+                            "doc_count": 1
+                        }
+                    ]
+                }
             }
         }
     ]

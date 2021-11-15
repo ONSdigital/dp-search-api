@@ -19,21 +19,21 @@
                     "name": "Somebody's Name",
                     "telephone": "+44 (0)1329 123456"
                 },
-                "dataset_id": "/peoplepopulationandcommunity/housing/articles/\\u003em class=\"highlight\"\\u003ehouse\\u003/em\\u003epricestatisticsforsmallareasinenglandandwales/2015-02-17",
-                "edition": "1995 \\u003em class=\"highlight\"\\u003eto\\u003/em\\u003e 2013",
+                "dataset_id": "/peoplepopulationandcommunity/housing/articles/<em class=\"highlight\">house</em>pricestatisticsforsmallareasinenglandandwales/2015-02-17",
+                "edition": "1995 <em class=\"highlight\">to</em> 2013",
                 "keywords": [
-                    "regional \\u003em class=\"highlight\"\\u003ehouse\\u003/em\\u003e prices",
+                    "regional <em class=\"highlight\">house</em> prices",
                     "property prices",
-                    "area with cheapest \\u003em class=\"highlight\"\\u003ehouses\\u003/em\\u003e",
-                    "area with most expensive \\u003em class=\"highlight\"\\u003ehouses\\u003/em\\u003e"
+                    "area with cheapest <em class=\"highlight\">houses</em>",
+                    "area with most expensive <em class=\"highlight\">houses</em>"
                 ],
                 "latest_release": true,
-                "meta_description": "A brief overview of average (median) \\u003em class=\"highlight\"\\u003ehouse\\u003/em\\u003e prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
+                "meta_description": "A brief overview of average (median) <em class=\"highlight\">house</em> prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
                 "national_statistic": false,
                 "release_date": "2015-02-17T00:00:00.000Z",
                 "source": "",
-                "summary": "regional \\u003em class=\"highlight\"\\u003ehouse\\u003/em\\u003e prices",
-                "title": "\\u003em class=\"highlight\"\\u003eHouse\\u003/em\\u003e Price Statistics for Small Areas in England and Wales",
+                "summary": "regional <em class=\"highlight\">house</em> prices",
+                "title": "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales",
                 "unit": ""
             },
             "type": "article",
@@ -42,7 +42,7 @@
         {
             "description": {
                 "summary": "Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
-                "title": "\\u003em class=\"highlight\"\\u003eHousing\\u003/em\\u003e",
+                "title": "<em class=\"highlight\">Housing</em>",
                 "unit": "",
                 "source": "",
                 "pre_unit": ""

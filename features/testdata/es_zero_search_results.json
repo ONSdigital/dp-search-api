@@ -13,21 +13,6 @@
             },
             "suggest": {
                 "search_suggest": [
-                    {
-                        "text": "housing",
-                        "offset": 0,
-                        "length": 5,
-                        "options": [
-                            {
-                                "text": "home",
-                                "score": 0.0849763
-                            },
-                            {
-                                "text": "tent",
-                                "score": 0.0314159
-                            }
-                        ]
-                    }
                 ]
             }
         },
@@ -40,7 +25,7 @@
                 "failed": 0
             },
             "hits": {
-                "total": 2,
+                "total": 0,
                 "max_score": 0.0,
                 "hits": []
             },
@@ -49,14 +34,6 @@
                     "doc_count_error_upper_bound": 0,
                     "sum_other_doc_count": 0,
                     "buckets": [
-                        {
-                            "key": "article",
-                            "doc_count": 1
-                        },
-                        {
-                            "key": "product_page",
-                            "doc_count": 1
-                        }
                     ]
                 }
             }

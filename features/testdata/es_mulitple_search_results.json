@@ -9,7 +9,7 @@
                 "failed":0
             },
             "hits":{
-                "total":1,
+                "total":2,
                 "max_score":null,
                 "hits":[
                     {
@@ -123,6 +123,36 @@
                         ]
                     }
                 ]
+            }
+        },
+        {
+            "took": 27,
+            "timed_out": false,
+            "_shards": {
+                "total": 3,
+                "successful": 3,
+                "failed": 0
+            },
+            "hits": {
+                "total": 2,
+                "max_score": 0.0,
+                "hits": []
+            },
+            "aggregations": {
+                "docCounts": {
+                    "doc_count_error_upper_bound": 0,
+                    "sum_other_doc_count": 0,
+                    "buckets": [
+                        {
+                            "key": "article",
+                            "doc_count": 1
+                        },
+                        {
+                            "key": "product_page",
+                            "doc_count": 1
+                        }
+                    ]
+                }
             }
         }
     ]
