@@ -5,6 +5,7 @@ package mocks
 
 import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	"net/http"
@@ -12,9 +13,10 @@ import (
 )
 
 var (
-	lockInitialiserMockDoGetHTTPServer   sync.RWMutex
-	lockInitialiserMockDoGetHealthCheck  sync.RWMutex
-	lockInitialiserMockDoGetHealthClient sync.RWMutex
+	lockInitialiserMockDoGetAuthorisationHandlers sync.RWMutex
+	lockInitialiserMockDoGetHTTPServer            sync.RWMutex
+	lockInitialiserMockDoGetHealthCheck           sync.RWMutex
+	lockInitialiserMockDoGetHealthClient          sync.RWMutex
 )
 
 // Ensure, that InitialiserMock does implement service.Initialiser.
@@ -27,10 +29,13 @@ var _ service.Initialiser = &InitialiserMock{}
 //
 //         // make and configure a mocked service.Initialiser
 //         mockedInitialiser := &InitialiserMock{
+//             DoGetAuthorisationHandlersFunc: func(cfg *config.Config) api.AuthHandler {
+// 	               panic("mock out the DoGetAuthorisationHandlers method")
+//             },
 //             DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
 // 	               panic("mock out the DoGetHTTPServer method")
 //             },
-//             DoGetHealthCheckFunc: func(cfg *config.Configuration, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
+//             DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 // 	               panic("mock out the DoGetHealthCheck method")
 //             },
 //             DoGetHealthClientFunc: func(name string, url string) *health.Client {
@@ -43,17 +48,25 @@ var _ service.Initialiser = &InitialiserMock{}
 //
 //     }
 type InitialiserMock struct {
+	// DoGetAuthorisationHandlersFunc mocks the DoGetAuthorisationHandlers method.
+	DoGetAuthorisationHandlersFunc func(cfg *config.Config) api.AuthHandler
+
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
 
 	// DoGetHealthCheckFunc mocks the DoGetHealthCheck method.
-	DoGetHealthCheckFunc func(cfg *config.Configuration, buildTime string, gitCommit string, version string) (service.HealthChecker, error)
+	DoGetHealthCheckFunc func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error)
 
 	// DoGetHealthClientFunc mocks the DoGetHealthClient method.
 	DoGetHealthClientFunc func(name string, url string) *health.Client
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// DoGetAuthorisationHandlers holds details about calls to the DoGetAuthorisationHandlers method.
+		DoGetAuthorisationHandlers []struct {
+			// Cfg is the cfg argument value.
+			Cfg *config.Config
+		}
 		// DoGetHTTPServer holds details about calls to the DoGetHTTPServer method.
 		DoGetHTTPServer []struct {
 			// BindAddr is the bindAddr argument value.
@@ -64,7 +77,7 @@ type InitialiserMock struct {
 		// DoGetHealthCheck holds details about calls to the DoGetHealthCheck method.
 		DoGetHealthCheck []struct {
 			// Cfg is the cfg argument value.
-			Cfg *config.Configuration
+			Cfg *config.Config
 			// BuildTime is the buildTime argument value.
 			BuildTime string
 			// GitCommit is the gitCommit argument value.
@@ -80,6 +93,37 @@ type InitialiserMock struct {
 			URL string
 		}
 	}
+}
+
+// DoGetAuthorisationHandlers calls DoGetAuthorisationHandlersFunc.
+func (mock *InitialiserMock) DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+	if mock.DoGetAuthorisationHandlersFunc == nil {
+		panic("InitialiserMock.DoGetAuthorisationHandlersFunc: method is nil but Initialiser.DoGetAuthorisationHandlers was just called")
+	}
+	callInfo := struct {
+		Cfg *config.Config
+	}{
+		Cfg: cfg,
+	}
+	lockInitialiserMockDoGetAuthorisationHandlers.Lock()
+	mock.calls.DoGetAuthorisationHandlers = append(mock.calls.DoGetAuthorisationHandlers, callInfo)
+	lockInitialiserMockDoGetAuthorisationHandlers.Unlock()
+	return mock.DoGetAuthorisationHandlersFunc(cfg)
+}
+
+// DoGetAuthorisationHandlersCalls gets all the calls that were made to DoGetAuthorisationHandlers.
+// Check the length with:
+//     len(mockedInitialiser.DoGetAuthorisationHandlersCalls())
+func (mock *InitialiserMock) DoGetAuthorisationHandlersCalls() []struct {
+	Cfg *config.Config
+} {
+	var calls []struct {
+		Cfg *config.Config
+	}
+	lockInitialiserMockDoGetAuthorisationHandlers.RLock()
+	calls = mock.calls.DoGetAuthorisationHandlers
+	lockInitialiserMockDoGetAuthorisationHandlers.RUnlock()
+	return calls
 }
 
 // DoGetHTTPServer calls DoGetHTTPServerFunc.
@@ -118,12 +162,12 @@ func (mock *InitialiserMock) DoGetHTTPServerCalls() []struct {
 }
 
 // DoGetHealthCheck calls DoGetHealthCheckFunc.
-func (mock *InitialiserMock) DoGetHealthCheck(cfg *config.Configuration, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
+func (mock *InitialiserMock) DoGetHealthCheck(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 	if mock.DoGetHealthCheckFunc == nil {
 		panic("InitialiserMock.DoGetHealthCheckFunc: method is nil but Initialiser.DoGetHealthCheck was just called")
 	}
 	callInfo := struct {
-		Cfg       *config.Configuration
+		Cfg       *config.Config
 		BuildTime string
 		GitCommit string
 		Version   string
@@ -143,13 +187,13 @@ func (mock *InitialiserMock) DoGetHealthCheck(cfg *config.Configuration, buildTi
 // Check the length with:
 //     len(mockedInitialiser.DoGetHealthCheckCalls())
 func (mock *InitialiserMock) DoGetHealthCheckCalls() []struct {
-	Cfg       *config.Configuration
+	Cfg       *config.Config
 	BuildTime string
 	GitCommit string
 	Version   string
 } {
 	var calls []struct {
-		Cfg       *config.Configuration
+		Cfg       *config.Config
 		BuildTime string
 		GitCommit string
 		Version   string

@@ -8,7 +8,7 @@ import (
 )
 
 // Config is the search API handler config
-type Configuration struct {
+type Config struct {
 	AwsRegion                  string        `envconfig:"AWS_REGION"`
 	AwsService                 string        `envconfig:"AWS_SERVICE"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
@@ -17,17 +17,18 @@ type Configuration struct {
 	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
-var cfg *Configuration
+var cfg *Config
 
-// Get configures the application and returns the configuration
-func Get() (*Configuration, error) {
+// Get configures the application and returns the Config
+func Get() (*Config, error) {
 	if cfg != nil {
 		return cfg, nil
 	}
 
-	cfg = &Configuration{
+	cfg = &Config{
 		AwsRegion:                  "eu-west-1",
 		AwsService:                 "es",
 		BindAddr:                   ":23900",
@@ -36,6 +37,7 @@ func Get() (*Configuration, error) {
 		SignElasticsearchRequests:  false,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
+		ZebedeeURL:                 "http://localhost:8082",
 	}
 
 	return cfg, envconfig.Process("", cfg)
@@ -43,7 +45,7 @@ func Get() (*Configuration, error) {
 
 // String is implemented to prevent sensitive fields being logged.
 // The config is returned as JSON with sensitive fields omitted.
-func (config Configuration) String() string {
+func (config Config) String() string {
 	json, _ := json.Marshal(config)
 	return string(json)
 }

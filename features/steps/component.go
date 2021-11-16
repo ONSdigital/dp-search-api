@@ -25,7 +25,7 @@ const (
 // Component contains all the information to create a component test
 type Component struct {
 	APIFeature           *componentTest.APIFeature
-	cfg                  *config.Configuration
+	cfg                  *config.Config
 	ErrorFeature         componentTest.ErrorFeature
 	FakeElasticSearchAPI *FakeAPI
 	fakeRequest          *httpfake.Request
@@ -111,7 +111,7 @@ func (c *Component) InitialiseService() (http.Handler, error) {
 	return c.HTTPServer.Handler, nil
 }
 
-func getHealthCheckOK(cfg *config.Configuration, buildTime, gitCommit, version string) (service.HealthChecker, error) {
+func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {
 	componentBuildTime := strconv.Itoa(int(time.Now().Unix()))
 	versionInfo, err := healthcheck.NewVersionInfo(componentBuildTime, gitCommitHash, appVersion)
 	if err != nil {

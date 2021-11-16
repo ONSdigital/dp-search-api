@@ -6,7 +6,7 @@
     },
     "analysis": {
       "analyzer": {
-        "default_index": {
+        "default": {
           "tokenizer": "keyword",
           "filter": [
             "trim",
@@ -17,7 +17,6 @@
           "tokenizer": "standard",
           "filter": [
             "lowercase",
-            "standard",
             "stop"
           ]
         },
@@ -26,7 +25,6 @@
           "filter": [
             "lowercase",
             "ons_synonyms",
-            "standard",
             "stop",
             "stem_exclusion",
             "snowball"
@@ -37,7 +35,6 @@
           "filter": [
             "lowercase",
             "ons_synonyms",
-            "standard",
             "stop"
           ]
         },
@@ -45,7 +42,6 @@
           "tokenizer": "standard",
           "filter": [
             "lowercase",
-            "standard",
             "stop",
             "stem_exclusion",
             "snowball"
@@ -57,7 +53,6 @@
           "filter": [
             "lowercase",
             "ons_synonyms",
-            "standard",
             "stop",
             "stem_exclusion",
             "snowball"
@@ -68,7 +63,6 @@
           "char_filter": "clear_dates",
           "filter": [
             "lowercase",
-            "standard",
             "stop",
             "stem_exclusion",
             "snowball"
@@ -192,87 +186,85 @@
     }
   },
   "mappings": {
-      "dynamic_date_formats": [
-        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-      ],
-      "properties": {
-        "type": {
-          "type": "keyword"
-        },
-        "description": {
-          "properties": {
-            "cdid": {
-              "type": "text",
-              "analyzer": "ons_standard"
-            },
-            "datasetId": {
-              "type": "text",
-              "analyzer": "ons_standard"
-            },
-            "title": {
-              "type": "text",
-              "analyzer": "ons_synonym_stem",
-              "search_analyzer": "ons_stem",
-              "fields": {
-                "title_raw": {
-                  "type": "keywords"
-                },
-                "title_no_stem": {
-                  "type": "text",
-                  "analyzer": "ons_synonym",
-                  "search_analyzer": "ons_standard"
-                },
-                "title_no_synonym_no_stem": {
-                  "type": "text",
-                  "analyzer": "ons_standard"
-                },
-                "title_no_dates": {
-                  "type": "text",
-                  "analyzer": "ons_synonym_stem_clear_dates",
-                  "search_analyzer": "ons_stem_clear_dates"
-                },
-                "title_first_letter": {
-                  "type": "text",
-                  "analyzer": "first_letter"
-                }
+    "dynamic_date_formats": [
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    ],
+    "properties": {
+      "type": {
+        "type": "keyword"
+      },
+      "description": {
+        "properties": {
+          "cdid": {
+            "type": "text",
+            "analyzer": "ons_standard"
+          },
+          "datasetId": {
+            "type": "text",
+            "analyzer": "ons_standard"
+          },
+          "title": {
+            "type": "text",
+            "analyzer": "ons_synonym_stem",
+            "search_analyzer": "ons_stem",
+            "fields": {
+              "title_raw": {
+                "type": "keyword"
+              },
+              "title_no_stem": {
+                "type": "text",
+                "analyzer": "ons_synonym",
+                "search_analyzer": "ons_standard"
+              },
+              "title_no_synonym_no_stem": {
+                "type": "text",
+                "analyzer": "ons_standard"
+              },
+              "title_no_dates": {
+                "type": "text",
+                "analyzer": "ons_synonym_stem_clear_dates",
+                "search_analyzer": "ons_stem_clear_dates"
+              },
+              "title_first_letter": {
+                "type": "text",
+                "analyzer": "first_letter"
               }
-            },
-            "edition": {
-              "type": "text",
-              "analyzer": "ons_synonym_stem",
-              "search_analyzer": "ons_stem"
-            },
-            "metaDescription": {
-              "type": "text",
-              "analyzer": "ons_standard"
-            },
-            "summary": {
-              "type": "text",
-              "analyzer": "ons_standard"
-            },
-            "keywords": {
-              "type": "text",
-              "analyzer": "ons_synonym_stem",
-              "search_analyzer": "ons_stem",
-              "fields": {
-                "keywords_raw": {
-                  "type": "text"
-                }
-              }
-            },
-            "releaseDate": {
-              "type": "date"
             }
-          }
-        },
-        "searchBoost": {
-          "type": "text",
-          "analyzer": "ons_synonym_stem",
-          "search_analyzer": "ons_stem",
-          "norms": {
-            "enabled": false
+          },
+          "edition": {
+            "type": "text",
+            "analyzer": "ons_synonym_stem",
+            "search_analyzer": "ons_stem"
+          },
+          "metaDescription": {
+            "type": "text",
+            "analyzer": "ons_standard"
+          },
+          "summary": {
+            "type": "text",
+            "analyzer": "ons_standard"
+          },
+          "keywords": {
+            "type": "text",
+            "analyzer": "ons_synonym_stem",
+            "search_analyzer": "ons_stem",
+            "fields": {
+              "keywords_raw": {
+                "type": "text"
+              }
+            }
+          },
+          "releaseDate": {
+            "type": "date"
           }
         }
+      },
+      "searchBoost": {
+        "type": "text",
+        "analyzer": "ons_synonym_stem",
+        "search_analyzer": "ons_stem",
+        "norms": false
+      }
     }
   }
 }

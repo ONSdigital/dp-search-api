@@ -5,11 +5,12 @@ import (
 	"context"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -21,17 +22,18 @@ type Client struct {
 	url          string
 	client       dphttp.Clienter
 	signRequests bool
+	esClient     *elastic.Client
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, esClient *elastic.Client) *Client {
 	return &Client{
 		awsSDKSigner: awsSDKSigner,
 		awsRegion:    awsRegion,
 		awsService:   awsService,
 		client:       client,
 		signRequests: signRequests,
-		url:          strings.TrimRight(url, "/"),
+		esClient:     esClient,
 	}
 }
 
@@ -99,6 +101,25 @@ func (cli *Client) post(ctx context.Context, index string, docType string, actio
 	}
 
 	return response, err
+}
+
+//CreateNewEmptyIndex is a method that creates an empty Elasticsearch index with the given indexName
+//It returns true if the index was created successfully, otherwise false
+func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error) {
+	indexCreated := false
+	status, err := cli.esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
+	if err != nil {
+		log.Error(ctx, "error creating index", err, log.Data{"response_status": status, "index_name": indexName})
+		return indexCreated, err
+	}
+
+	if status != http.StatusOK {
+		log.Error(ctx, "unexpected http status when creating index", err, log.Data{"response_status": status, "index_name": indexName})
+		return indexCreated, err
+	}
+
+	indexCreated = true
+	return indexCreated, err
 }
 
 func buildContext(index string, docType string) string {

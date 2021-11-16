@@ -133,11 +133,23 @@ paths:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/SearchResponse"
+            $ref: "#/definitions/GetSearchResponse"
         400:
           description: Query term not specified
         500:
           description: Internal server error
+    post:
+     tags:
+       - search
+     summary: "Create new empty ONS Elasticsearch index"
+     description: "Request a new search index and receive the name of the new index created in response. Endpoint requires service or user authentication."
+     responses:
+       200:
+         description: OK
+         schema:
+           $ref: "#/definitions/PostSearchResponse"
+       500:
+         description: Internal server error
 
   /timeseries:
     get:
@@ -180,7 +192,7 @@ definitions:
               description: "Time taken to execute query in milliseconds"
               type: integer
 
-  SearchResponse:
+  GetSearchResponse:
     type: object
     properties:
       count:
@@ -217,6 +229,16 @@ definitions:
       - took
       - content_types
       - items
+
+  PostSearchResponse:
+    type: object
+    properties:
+      index_name:
+        type: string
+        description: "Name of new empty search index"
+        example: "ons1636458168532"
+    required:
+      - index_name
 
   DepartmentResponse:
     type: object

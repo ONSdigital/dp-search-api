@@ -7,17 +7,20 @@ package service
 import (
 	"context"
 
+	"net/http"
+
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
-	"net/http"
 )
 
 // Initialiser defines the methods to initialise external services
 type Initialiser interface {
-	DoGetHealthCheck(cfg *config.Configuration, buildTime, gitCommit, version string) (HealthChecker, error)
+	DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error)
 	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
 	DoGetHealthClient(name, url string) *health.Client
+	DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler
 }
 
 // HealthChecker defines the required methods from Healthcheck

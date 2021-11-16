@@ -44,7 +44,7 @@ func run(ctx context.Context) error {
 	// Read config
 	cfg, err := config.Get()
 	if err != nil {
-		log.Fatal(ctx, "error retrieving configuration", err)
+		log.Fatal(ctx, "error retrieving Config", err)
 		return err
 	}
 

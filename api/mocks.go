@@ -5,13 +5,16 @@ package api
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-authorisation/auth"
+	"net/http"
 	"sync"
 )
 
 var (
-	lockElasticSearcherMockGetStatus   sync.RWMutex
-	lockElasticSearcherMockMultiSearch sync.RWMutex
-	lockElasticSearcherMockSearch      sync.RWMutex
+	lockElasticSearcherMockCreateNewEmptyIndex sync.RWMutex
+	lockElasticSearcherMockGetStatus           sync.RWMutex
+	lockElasticSearcherMockMultiSearch         sync.RWMutex
+	lockElasticSearcherMockSearch              sync.RWMutex
 )
 
 // Ensure, that ElasticSearcherMock does implement ElasticSearcher.
@@ -24,6 +27,9 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 //         // make and configure a mocked ElasticSearcher
 //         mockedElasticSearcher := &ElasticSearcherMock{
+//             CreateNewEmptyIndexFunc: func(ctx context.Context, indexName string) (bool, error) {
+// 	               panic("mock out the CreateNewEmptyIndex method")
+//             },
 //             GetStatusFunc: func(ctx context.Context) ([]byte, error) {
 // 	               panic("mock out the GetStatus method")
 //             },
@@ -40,6 +46,9 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 //
 //     }
 type ElasticSearcherMock struct {
+	// CreateNewEmptyIndexFunc mocks the CreateNewEmptyIndex method.
+	CreateNewEmptyIndexFunc func(ctx context.Context, indexName string) (bool, error)
+
 	// GetStatusFunc mocks the GetStatus method.
 	GetStatusFunc func(ctx context.Context) ([]byte, error)
 
@@ -51,6 +60,13 @@ type ElasticSearcherMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CreateNewEmptyIndex holds details about calls to the CreateNewEmptyIndex method.
+		CreateNewEmptyIndex []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// IndexName is the indexName argument value.
+			IndexName string
+		}
 		// GetStatus holds details about calls to the GetStatus method.
 		GetStatus []struct {
 			// Ctx is the ctx argument value.
@@ -79,6 +95,41 @@ type ElasticSearcherMock struct {
 			Request []byte
 		}
 	}
+}
+
+// CreateNewEmptyIndex calls CreateNewEmptyIndexFunc.
+func (mock *ElasticSearcherMock) CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error) {
+	if mock.CreateNewEmptyIndexFunc == nil {
+		panic("ElasticSearcherMock.CreateNewEmptyIndexFunc: method is nil but ElasticSearcher.CreateNewEmptyIndex was just called")
+	}
+	callInfo := struct {
+		Ctx       context.Context
+		IndexName string
+	}{
+		Ctx:       ctx,
+		IndexName: indexName,
+	}
+	lockElasticSearcherMockCreateNewEmptyIndex.Lock()
+	mock.calls.CreateNewEmptyIndex = append(mock.calls.CreateNewEmptyIndex, callInfo)
+	lockElasticSearcherMockCreateNewEmptyIndex.Unlock()
+	return mock.CreateNewEmptyIndexFunc(ctx, indexName)
+}
+
+// CreateNewEmptyIndexCalls gets all the calls that were made to CreateNewEmptyIndex.
+// Check the length with:
+//     len(mockedElasticSearcher.CreateNewEmptyIndexCalls())
+func (mock *ElasticSearcherMock) CreateNewEmptyIndexCalls() []struct {
+	Ctx       context.Context
+	IndexName string
+} {
+	var calls []struct {
+		Ctx       context.Context
+		IndexName string
+	}
+	lockElasticSearcherMockCreateNewEmptyIndex.RLock()
+	calls = mock.calls.CreateNewEmptyIndex
+	lockElasticSearcherMockCreateNewEmptyIndex.RUnlock()
+	return calls
 }
 
 // GetStatus calls GetStatusFunc.
@@ -379,5 +430,79 @@ func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	lockResponseTransformerMockTransformSearchResponse.RLock()
 	calls = mock.calls.TransformSearchResponse
 	lockResponseTransformerMockTransformSearchResponse.RUnlock()
+	return calls
+}
+
+var (
+	lockAuthHandlerMockRequire sync.RWMutex
+)
+
+// Ensure, that AuthHandlerMock does implement AuthHandler.
+// If this is not the case, regenerate this file with moq.
+var _ AuthHandler = &AuthHandlerMock{}
+
+// AuthHandlerMock is a mock implementation of AuthHandler.
+//
+//     func TestSomethingThatUsesAuthHandler(t *testing.T) {
+//
+//         // make and configure a mocked AuthHandler
+//         mockedAuthHandler := &AuthHandlerMock{
+//             RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+// 	               panic("mock out the Require method")
+//             },
+//         }
+//
+//         // use mockedAuthHandler in code that requires AuthHandler
+//         // and then make assertions.
+//
+//     }
+type AuthHandlerMock struct {
+	// RequireFunc mocks the Require method.
+	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Require holds details about calls to the Require method.
+		Require []struct {
+			// Required is the required argument value.
+			Required auth.Permissions
+			// Handler is the handler argument value.
+			Handler http.HandlerFunc
+		}
+	}
+}
+
+// Require calls RequireFunc.
+func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+	if mock.RequireFunc == nil {
+		panic("AuthHandlerMock.RequireFunc: method is nil but AuthHandler.Require was just called")
+	}
+	callInfo := struct {
+		Required auth.Permissions
+		Handler  http.HandlerFunc
+	}{
+		Required: required,
+		Handler:  handler,
+	}
+	lockAuthHandlerMockRequire.Lock()
+	mock.calls.Require = append(mock.calls.Require, callInfo)
+	lockAuthHandlerMockRequire.Unlock()
+	return mock.RequireFunc(required, handler)
+}
+
+// RequireCalls gets all the calls that were made to Require.
+// Check the length with:
+//     len(mockedAuthHandler.RequireCalls())
+func (mock *AuthHandlerMock) RequireCalls() []struct {
+	Required auth.Permissions
+	Handler  http.HandlerFunc
+} {
+	var calls []struct {
+		Required auth.Permissions
+		Handler  http.HandlerFunc
+	}
+	lockAuthHandlerMockRequire.RLock()
+	calls = mock.calls.Require
+	lockAuthHandlerMockRequire.RUnlock()
 	return calls
 }

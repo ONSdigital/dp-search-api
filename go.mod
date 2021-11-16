@@ -6,10 +6,12 @@ replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 
 require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.3.0
+	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.6.0
 	github.com/ONSdigital/dp-elasticsearch/v2 v2.2.1
 	github.com/ONSdigital/dp-healthcheck v1.1.3
 	github.com/ONSdigital/dp-net v1.2.0
+	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad
 	github.com/ONSdigital/log.go/v2 v2.0.9
 	github.com/aws/aws-sdk-go v1.38.65 // indirect
 	github.com/cucumber/godog v0.10.0
@@ -27,6 +29,7 @@ require (
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.41.1 // indirect
 	github.com/ONSdigital/dp-mongodb-in-memory v1.0.0 // indirect
+	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
 	github.com/ONSdigital/log.go v1.1.0 // indirect
 	github.com/cucumber/gherkin-go/v11 v11.0.0 // indirect
 	github.com/cucumber/messages-go/v10 v10.0.3 // indirect

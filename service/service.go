@@ -19,7 +19,7 @@ import (
 
 type Service struct {
 	api                 *api.SearchAPI
-	config              *config.Configuration
+	config              *config.Config
 	elasticSearchClient elasticsearch.Client
 	esSigner            *esauth.Signer
 	healthCheck         HealthChecker
@@ -61,7 +61,7 @@ func (svc *Service) SetTransformer(transformer transformer.Transformer) {
 }
 
 // Run the service
-func Run(ctx context.Context, cfg *config.Configuration, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
+func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
 	var esSigner *esauth.Signer
 	elasticHTTPClient := dphttp.NewClient()
 
@@ -77,8 +77,10 @@ func Run(ctx context.Context, cfg *config.Configuration, serviceList *ExternalSe
 		}
 	}
 
+	esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
+
 	// Initialse elasticSearchClient
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
+	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, esClient)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()
@@ -86,6 +88,9 @@ func Run(ctx context.Context, cfg *config.Configuration, serviceList *ExternalSe
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err
 	}
+
+	// Initialise authorisation handler
+	permissions := serviceList.GetAuthorisationHandlers(cfg)
 
 	//Get HealthCheck
 	healthCheck, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
@@ -105,7 +110,7 @@ func Run(ctx context.Context, cfg *config.Configuration, serviceList *ExternalSe
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
+	searchAPI, err := api.NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
@@ -178,7 +183,7 @@ func (svc *Service) Close(ctx context.Context) error {
 }
 
 func registerCheckers(ctx context.Context,
-	cfg config.Configuration,
+	cfg config.Config,
 	hc HealthChecker,
 	elasticHTTPClient dphttp.Clienter,
 	esSigner *esauth.Signer) (err error) {

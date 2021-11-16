@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
+	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/http"
+	api "github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 )
 
@@ -13,6 +15,7 @@ import (
 type ExternalServiceList struct {
 	HealthCheck bool
 	Init        Initialiser
+	Auth        bool
 }
 
 // NewServiceList creates a new service list with the provided initialiser
@@ -27,7 +30,7 @@ func NewServiceList(initialiser Initialiser) *ExternalServiceList {
 type Init struct{}
 
 // GetHealthCheck creates a healthcheck with versionInfo and sets the HealthCheck flag to true
-func (e *ExternalServiceList) GetHealthCheck(cfg *config.Configuration, buildTime, gitCommit, version string) (HealthChecker, error) {
+func (e *ExternalServiceList) GetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error) {
 	hc, err := e.Init.DoGetHealthCheck(cfg, buildTime, gitCommit, version)
 	if err != nil {
 		return nil, err
@@ -37,7 +40,7 @@ func (e *ExternalServiceList) GetHealthCheck(cfg *config.Configuration, buildTim
 }
 
 // DoGetHealthCheck creates a healthcheck with versionInfo
-func (e *Init) DoGetHealthCheck(cfg *config.Configuration, buildTime, gitCommit, version string) (HealthChecker, error) {
+func (e *Init) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error) {
 	versionInfo, err := healthcheck.NewVersionInfo(buildTime, gitCommit, version)
 	if err != nil {
 		return nil, err
@@ -67,4 +70,25 @@ func (e *Init) DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer 
 	s := dphttp.NewServer(bindAddr, router)
 	s.HandleOSSignals = false
 	return s
+}
+
+// GetAuthorisationHandlers creates an AuthHandler client and sets the Auth flag to true
+func (e *ExternalServiceList) GetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+
+	e.Auth = true
+	return e.Init.DoGetAuthorisationHandlers(cfg)
+}
+
+func (e *Init) DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+	authClient := auth.NewPermissionsClient(dphttp.NewClient())
+	authVerifier := auth.DefaultPermissionsVerifier()
+
+	// for checking caller permissions when we only have a user/service token
+	permissions := auth.NewHandler(
+		auth.NewPermissionsRequestBuilder(cfg.ZebedeeURL),
+		authClient,
+		authVerifier,
+	)
+
+	return permissions
 }
