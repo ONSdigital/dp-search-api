@@ -20,6 +20,10 @@ all: audit test build
 audit:
 	go list -m all | nancy sleuth
 
+.PHONY: lint
+lint:
+	exit
+
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)

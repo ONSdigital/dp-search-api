@@ -1,0 +1,15 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.17.2
+
+inputs:
+  - name: dp-search-api
+
+run:
+  path: dp-search-api/ci/scripts/component.sh
