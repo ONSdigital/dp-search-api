@@ -48,6 +48,9 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	ctx := context.Background()
 
+	// overwrite log namespace from library
+	log.Namespace = "dp-search-api-tests"
+
 	svcErrors := make(chan error, 1)
 
 	c.cfg, err = config.Get()
@@ -70,9 +73,6 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	// Setup responses from registered checkers for component
 	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
-
-	// overwrite log namespace from library
-	log.Namespace = "dp-search-api-tests"
 
 	c.svc, err = service.Run(ctx, c.cfg, serviceList, buildTime, gitCommitHash, appVersion, svcErrors)
 	if err != nil {

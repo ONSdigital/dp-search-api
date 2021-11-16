@@ -55,7 +55,7 @@ func (c *Component) successfullyReturnNoSearchResults() error {
 }
 
 func (c *Component) failureInternalServerError() error {
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 500, []byte{})
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 500, nil)
 
 	return nil
 }
