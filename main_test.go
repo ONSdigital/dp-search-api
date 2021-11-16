@@ -16,6 +16,7 @@ var componentFlag = flag.Bool("component", false, "perform component tests")
 
 func InitializeScenario(godogCtx *godog.ScenarioContext) {
 	ctx := context.Background()
+
 	apiComponent, err := steps.NewSearchAPIComponent()
 	if err != nil {
 		fmt.Println(ctx, "failed to create search api component - error: #{err}")

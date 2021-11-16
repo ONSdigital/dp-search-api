@@ -13,7 +13,6 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	mocks "github.com/ONSdigital/dp-search-api/service/mock"
-	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/maxcnunes/httpfake"
 )
 
@@ -48,9 +47,6 @@ func NewSearchAPIComponent() (c *Component, err error) {
 
 	ctx := context.Background()
 
-	// overwrite log namespace from library
-	log.Namespace = "dp-search-api-tests"
-
 	svcErrors := make(chan error, 1)
 
 	c.cfg, err = config.Get()
@@ -59,6 +55,9 @@ func NewSearchAPIComponent() (c *Component, err error) {
 	}
 
 	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
+
+	// Setup responses from registered checkers for component
+	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
 
 	c.cfg.HealthCheckInterval = 30 * time.Second
 	c.cfg.HealthCheckCriticalTimeout = 90 * time.Second
@@ -70,9 +69,6 @@ func NewSearchAPIComponent() (c *Component, err error) {
 	}
 
 	serviceList := service.NewServiceList(initFunctions)
-
-	// Setup responses from registered checkers for component
-	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
 
 	c.svc, err = service.Run(ctx, c.cfg, serviceList, buildTime, gitCommitHash, appVersion, svcErrors)
 	if err != nil {
