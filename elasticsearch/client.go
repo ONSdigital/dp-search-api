@@ -34,6 +34,7 @@ func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *es
 		client:       client,
 		signRequests: signRequests,
 		esClient:     esClient,
+		url:          url,
 	}
 }
 
