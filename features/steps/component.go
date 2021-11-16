@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
+	"github.com/ONSdigital/dp-authorisation/auth"
 	componentTest "github.com/ONSdigital/dp-component-test"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	mocks "github.com/ONSdigital/dp-search-api/service/mock"
@@ -25,6 +27,7 @@ const (
 // Component contains all the information to create a component test
 type Component struct {
 	APIFeature           *componentTest.APIFeature
+	AuthFeature          *componentTest.AuthorizationFeature
 	cfg                  *config.Config
 	ErrorFeature         componentTest.ErrorFeature
 	FakeElasticSearchAPI *FakeAPI
@@ -37,13 +40,11 @@ type Component struct {
 }
 
 // NewSearchAPIComponent creates a search api component
-func NewSearchAPIComponent() (c *Component, err error) {
+func NewSearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Component, err error) {
 	c = &Component{
 		HTTPServer: &http.Server{},
 		svcErrors:  make(chan error),
 	}
-
-	c.FakeElasticSearchAPI = NewFakeAPI(&c.ErrorFeature)
 
 	ctx := context.Background()
 
@@ -54,6 +55,10 @@ func NewSearchAPIComponent() (c *Component, err error) {
 		return nil, err
 	}
 
+	c.AuthFeature = authFeature
+	c.cfg.ZebedeeURL = c.AuthFeature.FakeAuthService.ResolveURL("")
+
+	c.FakeElasticSearchAPI = NewFakeAPI(&c.ErrorFeature)
 	c.cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
 
 	// Setup responses from registered checkers for component
@@ -63,9 +68,10 @@ func NewSearchAPIComponent() (c *Component, err error) {
 	c.cfg.HealthCheckCriticalTimeout = 90 * time.Second
 
 	initFunctions := &mocks.InitialiserMock{
-		DoGetHTTPServerFunc:   c.getHTTPServer,
-		DoGetHealthCheckFunc:  getHealthCheckOK,
-		DoGetHealthClientFunc: c.getHealthClient,
+		DoGetHTTPServerFunc:            c.getHTTPServer,
+		DoGetHealthCheckFunc:           getHealthCheckOK,
+		DoGetHealthClientFunc:          c.getHealthClient,
+		DoGetAuthorisationHandlersFunc: c.doGetAuthorisationHandlers,
 	}
 
 	serviceList := service.NewServiceList(initFunctions)
@@ -144,4 +150,19 @@ func (f *FakeAPI) getMockAPIHTTPClient() *dphttp.ClienterMock {
 			return f.fakeHTTP.Server.Client().Do(req)
 		},
 	}
+}
+
+// DoGetAuthorisationHandlers returns the mock AuthHandler that was created in the NewComponent function.
+func (c *Component) doGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+	authClient := auth.NewPermissionsClient(dphttp.NewClient())
+	authVerifier := auth.DefaultPermissionsVerifier()
+
+	// for checking caller permissions when we only have a user/service token
+	permissions := auth.NewHandler(
+		auth.NewPermissionsRequestBuilder(cfg.ZebedeeURL),
+		authClient,
+		authVerifier,
+	)
+
+	return permissions
 }
