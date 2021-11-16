@@ -17,18 +17,8 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.successfullyReturnSingleSearchResult)
 	ctx.Step(`^elasticsearch returns multiple items in search response$`, c.successfullyReturnMultipleSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.successfullyReturnNoSearchResults)
-	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponse)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.failureInternalServerError)
-}
-
-func (c *Component) successfullyReturnOneSearchResult() error {
-	body, err := ioutil.ReadFile("./features/testdata/single_search_result.json")
-	if err != nil {
-		return err
-	}
-
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
-	return nil
+	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponse)
 }
 
 func (c *Component) successfullyReturnMultipleSearchResults() error {
