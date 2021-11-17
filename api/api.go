@@ -1,20 +1,18 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer AuthHandler
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
-	"github.com/ONSdigital/go-ns/server"
-	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 var (
-	httpServer *server.Server
-	update     = auth.Permissions{Update: true}
+	update = auth.Permissions{Update: true}
 )
 
 //SearchAPI provides an API around elasticseach
@@ -50,7 +48,16 @@ type ResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) *SearchAPI {
+func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
+	errData := SetupData()
+	if errData != nil {
+		return nil, errors.Wrap(errData, "Failed to setup data templates")
+	}
+
+	errTimeseries := SetupTimeseries()
+	if errTimeseries != nil {
+		return nil, errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
+	}
 
 	api := &SearchAPI{
 		Router:        router,
@@ -63,17 +70,9 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
+
 	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.ElasticSearch))
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 
-	return api
-}
-
-// Close represents the graceful shutting down of the http server
-func Close(ctx context.Context) error {
-	if err := httpServer.Shutdown(ctx); err != nil {
-		return err
-	}
-	log.Info(ctx, "graceful shutdown of http server complete")
-	return nil
+	return api, nil
 }

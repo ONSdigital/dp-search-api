@@ -1,10 +1,13 @@
 package service
 
 import (
+	"net/http"
+
+	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	dpHTTP "github.com/ONSdigital/dp-net/http"
-	"github.com/ONSdigital/dp-search-api/api"
+	dphttp "github.com/ONSdigital/dp-net/http"
+	api "github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 )
 
@@ -46,14 +49,38 @@ func (e *Init) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, versio
 	return &hc, nil
 }
 
+// GetHealthClient returns a healthclient for the provided URL
+func (e *ExternalServiceList) GetHealthClient(name, url string) *health.Client {
+	return e.Init.DoGetHealthClient(name, url)
+}
+
+// DoGetHealthClient creates a new Health Client for the provided name and url
+func (e *Init) DoGetHealthClient(name, url string) *health.Client {
+	return health.NewClient(name, url)
+}
+
+// GetHTTPServer creates an http server
+func (e *ExternalServiceList) GetHTTPServer(bindAddr string, router http.Handler) HTTPServer {
+	s := e.Init.DoGetHTTPServer(bindAddr, router)
+	return s
+}
+
+// DoGetHTTPServer creates an HTTP Server with the provided bind address and router
+func (e *Init) DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer {
+	s := dphttp.NewServer(bindAddr, router)
+	s.HandleOSSignals = false
+	return s
+}
+
 // GetAuthorisationHandlers creates an AuthHandler client and sets the Auth flag to true
 func (e *ExternalServiceList) GetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+
 	e.Auth = true
 	return e.Init.DoGetAuthorisationHandlers(cfg)
 }
 
 func (e *Init) DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
-	authClient := auth.NewPermissionsClient(dpHTTP.NewClient())
+	authClient := auth.NewPermissionsClient(dphttp.NewClient())
 	authVerifier := auth.DefaultPermissionsVerifier()
 
 	// for checking caller permissions when we only have a user/service token

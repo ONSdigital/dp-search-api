@@ -11,11 +11,5 @@ image_resource:
 inputs:
   - name: dp-search-api
 
-outputs:
-  - name: build
-
-caches:
-  - path: go/
-
 run:
-  path: dp-search-api/ci/scripts/build.sh
+  path: dp-search-api/ci/scripts/component.sh

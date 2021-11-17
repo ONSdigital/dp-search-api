@@ -5,13 +5,11 @@ import (
 	"context"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
-	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -24,21 +22,19 @@ type Client struct {
 	url          string
 	client       dphttp.Clienter
 	signRequests bool
-	cfg          *config.Config
 	esClient     *elastic.Client
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, cfg *config.Config, esClient *elastic.Client) *Client {
+func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService string, awsRegion string, esClient *elastic.Client) *Client {
 	return &Client{
 		awsSDKSigner: awsSDKSigner,
 		awsRegion:    awsRegion,
 		awsService:   awsService,
-		url:          strings.TrimRight(url, "/"),
 		client:       client,
 		signRequests: signRequests,
-		cfg:          cfg,
 		esClient:     esClient,
+		url:          url,
 	}
 }
 
@@ -114,13 +110,15 @@ func (cli *Client) CreateNewEmptyIndex(ctx context.Context, indexName string) (b
 	indexCreated := false
 	status, err := cli.esClient.CreateIndex(ctx, indexName, GetSearchIndexSettings())
 	if err != nil {
-		log.Error(ctx, "error creating index. Make sure that ELASTIC_SEARCH_URL is set to the correct one - see README", err, log.Data{"ELASTIC_SEARCH_URL": cli.cfg.ElasticSearchAPIURL})
+		log.Error(ctx, "error creating index", err, log.Data{"response_status": status, "index_name": indexName})
 		return indexCreated, err
 	}
+
 	if status != http.StatusOK {
 		log.Error(ctx, "unexpected http status when creating index", err, log.Data{"response_status": status, "index_name": indexName})
 		return indexCreated, err
 	}
+
 	indexCreated = true
 	return indexCreated, err
 }

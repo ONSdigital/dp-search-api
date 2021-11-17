@@ -22,7 +22,7 @@ type Config struct {
 
 var cfg *Config
 
-// Get configures the application and returns the configuration
+// Get configures the application and returns the Config
 func Get() (*Config, error) {
 	if cfg != nil {
 		return cfg, nil

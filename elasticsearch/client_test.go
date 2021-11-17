@@ -3,14 +3,15 @@ package elasticsearch
 import (
 	"context"
 	"errors"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
-	dphttp "github.com/ONSdigital/dp-net/http"
-	"github.com/ONSdigital/dp-search-api/config"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-search-api/config"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -33,7 +34,7 @@ func TestSearch(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			res, err := client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldBeNil)
@@ -61,7 +62,7 @@ func TestSearch(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			_, err = client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
@@ -97,7 +98,7 @@ func TestMultiSearch(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			res, err := client.MultiSearch(context.Background(), "index", "doctype", []byte("multiSearch request"))
 			So(err, ShouldBeNil)
@@ -123,7 +124,7 @@ func TestMultiSearch(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			_, err = client.MultiSearch(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
@@ -158,7 +159,7 @@ func TestGetStatus(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			res, err := client.GetStatus(context.Background())
 			So(err, ShouldBeNil)
@@ -182,7 +183,7 @@ func TestGetStatus(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1", esClient)
 
 			_, err = client.GetStatus(context.Background())
 			So(err, ShouldNotBeNil)
@@ -207,7 +208,7 @@ func TestGetStatus(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
-			client := New("http://localhost:999", dphttpMock, true, testSigner, "es", "eu-west-1", cfg, esClient)
+			client := New("http://localhost:999", dphttpMock, true, testSigner, "es", "eu-west-1", esClient)
 
 			_, err = client.GetStatus(context.Background())
 			So(err, ShouldNotBeNil)

@@ -3,9 +3,10 @@ package transformer
 import (
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Transformer represents an instance of the ResponseTransformer interface
@@ -14,21 +15,21 @@ type Transformer struct {
 }
 
 // Structs representing the transformed response
-type searchResponse struct {
+type SearchResponse struct {
 	Count               int           `json:"count"`
 	Took                int           `json:"took"`
-	ContentTypes        []contentType `json:"content_types"`
-	Items               []contentItem `json:"items"`
+	ContentTypes        []ContentType `json:"content_types"`
+	Items               []ContentItem `json:"items"`
 	Suggestions         []string      `json:"suggestions,omitempty"`
 	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
 }
 
-type contentType struct {
+type ContentType struct {
 	Type  string `json:"type"`
 	Count int    `json:"count"`
 }
 
-type contentItem struct {
+type ContentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
@@ -63,28 +64,28 @@ type contact struct {
 
 // Structs representing the raw elastic search response
 
-type esResponse struct {
-	Responses []esResponseItem `json:"responses"`
+type ESResponse struct {
+	Responses []ESResponseItem `json:"responses"`
 }
 
-type esResponseItem struct {
+type ESResponseItem struct {
 	Took         int                    `json:"took"`
-	Hits         esResponseHits         `json:"hits"`
-	Aggregations esResponseAggregations `json:"aggregations"`
-	Suggest      esSuggest              `json:"suggest"`
+	Hits         ESResponseHits         `json:"hits"`
+	Aggregations ESResponseAggregations `json:"aggregations"`
+	Suggest      ESSuggest              `json:"suggest"`
 }
 
-type esResponseHits struct {
+type ESResponseHits struct {
 	Total int
-	Hits  []esResponseHit `json:"hits"`
+	Hits  []ESResponseHit `json:"hits"`
 }
 
-type esResponseHit struct {
-	Source    esSourceDocument `json:"_source"`
-	Highlight esHighlight      `json:"highlight"`
+type ESResponseHit struct {
+	Source    ESSourceDocument `json:"_source"`
+	Highlight ESHighlight      `json:"highlight"`
 }
 
-type esSourceDocument struct {
+type ESSourceDocument struct {
 	Description struct {
 		Summary           string    `json:"summary"`
 		NextRelease       string    `json:"nextRelease,omitempty"`
@@ -109,7 +110,7 @@ type esSourceDocument struct {
 	URI  string `json:"uri"`
 }
 
-type esHighlight struct {
+type ESHighlight struct {
 	DescriptionTitle     *[]string `json:"description.title"`
 	DescriptionEdition   *[]string `json:"description.edition"`
 	DescriptionSummary   *[]string `json:"description.summary"`
@@ -118,26 +119,26 @@ type esHighlight struct {
 	DescriptionDatasetID *[]string `json:"description.datasetId"`
 }
 
-type esResponseAggregations struct {
+type ESResponseAggregations struct {
 	DocCounts struct {
-		Buckets []esBucket `json:"buckets"`
+		Buckets []ESBucket `json:"buckets"`
 	} `json:"docCounts"`
 }
 
-type esBucket struct {
+type ESBucket struct {
 	Key   string `json:"key"`
 	Count int    `json:"doc_count"`
 }
 
-type esSuggest struct {
-	SearchSuggest []esSearchSuggest `json:"search_suggest"`
+type ESSuggest struct {
+	SearchSuggest []ESSearchSuggest `json:"search_suggest"`
 }
 
-type esSearchSuggest struct {
-	Options []esSearchSuggestOptions `json:"options"`
+type ESSearchSuggest struct {
+	Options []ESSearchSuggestOptions `json:"options"`
 }
 
-type esSearchSuggestOptions struct {
+type ESSearchSuggestOptions struct {
 	Text string `json:"text"`
 }
 
@@ -151,7 +152,7 @@ func New() *Transformer {
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
-	var source esResponse
+	var source ESResponse
 
 	err := json.Unmarshal(responseData, &source)
 	if err != nil {
@@ -176,11 +177,11 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func (t *Transformer) transform(source *esResponse, highlight bool) searchResponse {
-	sr := searchResponse{
+func (t *Transformer) transform(source *ESResponse, highlight bool) SearchResponse {
+	sr := SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
-		Items:        []contentItem{},
-		ContentTypes: []contentType{},
+		Items:        []ContentItem{},
+		ContentTypes: []ContentType{},
 	}
 	var took int = 0
 	for _, response := range source.Responses {
@@ -201,8 +202,8 @@ func (t *Transformer) transform(source *esResponse, highlight bool) searchRespon
 	return sr
 }
 
-func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) contentItem {
-	ci := contentItem{
+func (t *Transformer) buildContentItem(doc ESResponseHit, highlight bool) ContentItem {
+	ci := ContentItem{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
@@ -211,7 +212,7 @@ func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) conten
 	return ci
 }
 
-func (t *Transformer) buildDescription(doc esResponseHit, highlight bool) description {
+func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) description {
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
@@ -263,8 +264,8 @@ func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, h
 	return &overlaid
 }
 
-func buildContentTypes(bucket esBucket) contentType {
-	return contentType{
+func buildContentTypes(bucket ESBucket) ContentType {
+	return ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}

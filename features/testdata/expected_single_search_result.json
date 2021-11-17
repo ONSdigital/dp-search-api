@@ -1,0 +1,43 @@
+{
+    "count": 1,
+    "took": 96,
+    "content_types": [
+        {
+            "type": "article",
+            "count": 1
+        }
+    ],
+    "items": [
+        {
+            "description": {
+                "contact": {
+                    "email": "somebody@ons.gov.uk",
+                    "name": "Somebody's Name",
+                    "telephone": "+44 (0)1329 123456"
+                },
+                "dataset_id": "/peoplepopulationandcommunity/housing/articles/<em class=\"highlight\">house</em>pricestatisticsforsmallareasinenglandandwales/2015-02-17",
+                "edition": "1995 <em class=\"highlight\">to</em> 2013",
+                "keywords": [
+                    "regional <em class=\"highlight\">house</em> prices",
+                    "property prices",
+                    "area with cheapest <em class=\"highlight\">houses</em>",
+                    "area with most expensive <em class=\"highlight\">houses</em>"
+                ],
+                "latest_release": true,
+                "meta_description": "A brief overview of average (median) <em class=\"highlight\">house</em> prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
+                "national_statistic": false,
+                "release_date": "2015-02-17T00:00:00.000Z",
+                "source": "",
+                "summary": "regional <em class=\"highlight\">house</em> prices",
+                "title": "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales",
+                "unit": "number of people"
+            },
+            "type": "article",
+            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
+        }
+    ],
+    "suggestions": [
+        "home",
+        "tent"
+    ]
+}
