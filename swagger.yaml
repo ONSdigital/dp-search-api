@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   description: "Search API"
-  version: "1.0.1"
+  version: "1.0.0"
   title: "dp-search-api"
   license:
     name: "Open Government Licence v3.0"
@@ -10,17 +10,13 @@ basePath: "/v1"
 schemes:
   - "http"
 tags:
-  - name: "data"
-  - name: "department"
-  - name: "health"
-  - name: "search"
-  - name: "timeseries"
-
+  - name: "public"
+  - name: "private"
 paths:
   /data:
     get:
       tags:
-        - data
+        - public
       summary: "Data query API"
       description: "Data query API which returns matching links to department"
       parameters:
@@ -44,7 +40,7 @@ paths:
   /departments/search:
     get:
       tags:
-        - department
+        - public
       summary: "Department query API"
       description: "Department query API which returns matching links to other departments"
       parameters:
@@ -76,7 +72,7 @@ paths:
   /health:
     get:
       tags:
-        - health
+        - public
       summary: "Health check API"
       description: "API to query the app for current health status"
       responses:
@@ -90,7 +86,7 @@ paths:
   /search:
     get:
       tags:
-        - search
+        - public
       summary: "Default ONS query API"
       description: "Default ONS query API which combines the content with type counts"
       parameters:
@@ -140,7 +136,7 @@ paths:
           description: Internal server error
     post:
      tags:
-       - search
+       - private
      summary: "Create new empty ONS Elasticsearch index"
      description: "Request a new search index and receive the name of the new index created in response. Endpoint requires service or user authentication."
      responses:
@@ -154,7 +150,7 @@ paths:
   /timeseries:
     get:
       tags:
-        - timeseries
+        - public
       summary: "Query for timeseries data"
       description: "API to query the app for timeseries by id"
       parameters:
@@ -293,6 +289,8 @@ definitions:
             type: string
           edition:
             type: string
+          highlight:
+            $ref: "#/definitions/Highlight"
           headline1:
             type: string
           headline2:
@@ -339,6 +337,25 @@ definitions:
       - description
       - type
       - uri
+      
+  Highlight:
+    description: "Fields that contain at least 1 matching term from query 'q' parameter. The values contain the following embedded tags \"...<em class=\"highlight\">{matched term}</em>...\""
+    type: object
+    properties:
+      dataset_id:
+        type: string
+      edition:
+        type: string
+      keywords:
+        type: array
+        items:
+          type: string
+      meta_description:
+        type: string
+      summary:
+        type: string
+      title:
+        type: string
 
   DepartmentItem:
     type: object
