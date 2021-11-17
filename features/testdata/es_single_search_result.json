@@ -19,6 +19,7 @@
                         "_score":51.435966,
                         "_source":{
                             "description":{
+                                "datasetId": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
                                 "latestRelease":true,
                                 "unit":"number of people",
                                 "keywords":[
@@ -39,7 +40,8 @@
                                 "metaDescription":"A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
                                 "nationalStatistic":false,
                                 "_abstract":"A brief overview of average (median) house prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013. We look at the trends and features of average house prices paid over this period for 3 different geographies: local authorities, parliamentary constituencies and middle layer super output areas (MSOAs).",
-                                "preUnit":""
+                                "preUnit":"",
+                                "summary": "regional house prices"
                             },
                             "searchBoost":[
 
