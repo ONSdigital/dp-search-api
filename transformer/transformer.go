@@ -36,30 +36,40 @@ type ContentItem struct {
 }
 
 type description struct {
-	Contact           *contact  `json:"contact,omitempty"`
-	DatasetID         string    `json:"dataset_id,omitempty"`
-	Edition           string    `json:"edition,omitempty"`
-	Headline1         string    `json:"headline1,omitempty"`
-	Headline2         string    `json:"headline2,omitempty"`
-	Headline3         string    `json:"headline3,omitempty"`
-	Keywords          *[]string `json:"keywords,omitempty"`
-	LatestRelease     *bool     `json:"latest_release,omitempty"`
-	Language          string    `json:"language,omitempty"`
-	MetaDescription   string    `json:"meta_description,omitempty"`
-	NationalStatistic *bool     `json:"national_statistic,omitempty"`
-	NextRelease       string    `json:"next_release,omitempty"`
-	PreUnit           string    `json:"pre_unit,omitempty"`
-	ReleaseDate       string    `json:"release_date,omitempty"`
-	Source            string    `json:"source,omitempty"`
-	Summary           string    `json:"summary"`
-	Title             string    `json:"title"`
-	Unit              string    `json:"unit,omitempty"`
+	Contact           *contact      `json:"contact,omitempty"`
+	DatasetID         string        `json:"dataset_id,omitempty"`
+	Edition           string        `json:"edition,omitempty"`
+	Headline1         string        `json:"headline1,omitempty"`
+	Headline2         string        `json:"headline2,omitempty"`
+	Headline3         string        `json:"headline3,omitempty"`
+	Highlight         *highlightObj `json:"highlight,omitempty"`
+	Keywords          *[]string     `json:"keywords,omitempty"`
+	LatestRelease     *bool         `json:"latest_release,omitempty"`
+	Language          string        `json:"language,omitempty"`
+	MetaDescription   string        `json:"meta_description,omitempty"`
+	NationalStatistic *bool         `json:"national_statistic,omitempty"`
+	NextRelease       string        `json:"next_release,omitempty"`
+	PreUnit           string        `json:"pre_unit,omitempty"`
+	ReleaseDate       string        `json:"release_date,omitempty"`
+	Source            string        `json:"source,omitempty"`
+	Summary           string        `json:"summary"`
+	Title             string        `json:"title"`
+	Unit              string        `json:"unit,omitempty"`
 }
 
 type contact struct {
 	Name      string `json:"name"`
 	Telephone string `json:"telephone,omitempty"`
 	Email     string `json:"email"`
+}
+
+type highlightObj struct {
+	DatasetID       string    `json:"dataset_id,omitempty"`
+	Edition         string    `json:"edition,omitempty"`
+	Keywords        *[]string `json:"keywords,omitempty"`
+	MetaDescription string    `json:"meta_description,omitempty"`
+	Summary         string    `json:"summary,omitempty"`
+	Title           string    `json:"title,omitempty"`
 }
 
 // Structs representing the raw elastic search response
@@ -216,42 +226,58 @@ func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) descri
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
-	return description{
-		Summary:           t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
+	des := description{
+		Summary:           sd.Summary,
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
 		PreUnit:           sd.PreUnit,
-		Keywords:          t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
+		Keywords:          sd.Keywords,
 		ReleaseDate:       sd.ReleaseDate,
-		Edition:           t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
+		Edition:           sd.Edition,
 		LatestRelease:     sd.LatestRelease,
 		Language:          sd.Language,
 		Contact:           sd.Contact,
-		DatasetID:         t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
+		DatasetID:         sd.DatasetID,
 		Source:            sd.Source,
-		Title:             t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
-		MetaDescription:   t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
+		Title:             sd.Title,
+		MetaDescription:   sd.MetaDescription,
 		NationalStatistic: sd.NationalStatistic,
 		Headline1:         sd.Headline1,
 		Headline2:         sd.Headline2,
 		Headline3:         sd.Headline3,
 	}
+
+	if highlight {
+		des.Highlight = &highlightObj{
+			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
+			Edition:         t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
+			Keywords:        t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
+			MetaDescription: t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
+			Summary:         t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
+			Title:           t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
+		}
+	}
+
+	return des
 }
 
-func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) string {
-	overlaid := def
+func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
+
 	if highlight && hl != nil && len(*hl) > 0 {
 		overlaid = (*hl)[0]
 	}
-	return overlaid
+
+	return
 }
 
 func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, highlight bool) *[]string {
-	if defaultList == nil {
+	if defaultList == nil || hlList == nil {
 		return nil
 	}
-	overlaid := *defaultList
-	if highlight && hlList != nil {
+
+	overlaid := make([]string, len(*defaultList))
+	copy(overlaid, *defaultList)
+	if highlight {
 		for _, hl := range *hlList {
 			unformatted := t.higlightReplacer.Replace(hl)
 			for i, defItem := range overlaid {
@@ -261,6 +287,7 @@ func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, h
 			}
 		}
 	}
+
 	return &overlaid
 }
 
