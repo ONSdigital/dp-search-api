@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
 )
 
@@ -77,10 +77,10 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		}
 	}
 
-	esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
+	dpESClient := dpelastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
 
-	// Initialse elasticSearchClient
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, esClient)
+	// Initialise deprecatedESClient
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, dpESClient)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()
@@ -110,7 +110,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer, permissions)
+	searchAPI, err := api.NewSearchAPI(router, dpESClient, deprecatedESClient, queryBuilder, transformer, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
@@ -127,7 +127,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	return &Service{
 		api:                 searchAPI,
 		config:              cfg,
-		elasticSearchClient: *elasticSearchClient,
+		elasticSearchClient: *deprecatedESClient,
 		esSigner:            esSigner,
 		healthCheck:         healthCheck,
 		queryBuilder:        queryBuilder,
@@ -190,7 +190,7 @@ func registerCheckers(ctx context.Context,
 
 	hasErrors := false
 
-	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
+	elasticClient := dpelastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
 	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		hasErrors = true

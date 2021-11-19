@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
@@ -17,11 +18,12 @@ var (
 
 //SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	Router        *mux.Router
-	QueryBuilder  QueryBuilder
-	ElasticSearch ElasticSearcher
-	Transformer   ResponseTransformer
-	permissions   AuthHandler
+	Router             *mux.Router
+	QueryBuilder       QueryBuilder
+	dpESClient         *dpelastic.Client
+	deprecatedESClient ElasticSearcher
+	Transformer        ResponseTransformer
+	permissions        AuthHandler
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -29,7 +31,8 @@ type AuthHandler interface {
 	Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
 }
 
-// ElasticSearcher provides client methods for the elasticsearch package
+// ElasticSearcher provides client methods for the elasticsearch package - now deprecated, due to be replaced
+// with the methods in dp-elasticsearch
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
@@ -48,7 +51,7 @@ type ResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
+func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	errData := SetupData()
 	if errData != nil {
 		return nil, errors.Wrap(errData, "Failed to setup data templates")
@@ -60,18 +63,19 @@ func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilde
 	}
 
 	api := &SearchAPI{
-		Router:        router,
-		QueryBuilder:  queryBuilder,
-		ElasticSearch: elasticSearch,
-		Transformer:   transformer,
-		permissions:   permissions,
+		Router:             router,
+		QueryBuilder:       queryBuilder,
+		dpESClient:         dpESClient,
+		deprecatedESClient: deprecatedESClient,
+		Transformer:        transformer,
+		permissions:        permissions,
 	}
 
-	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
-	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
+	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
+	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
+	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 
-	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.ElasticSearch))
+	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.deprecatedESClient))
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 
 	return api, nil
