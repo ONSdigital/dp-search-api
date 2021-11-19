@@ -77,7 +77,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		}
 	}
 
-	dpESClient := dpelastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
+	dpESClient := dpelastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
 
 	// Initialise deprecatedESClient
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
@@ -99,7 +99,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, *cfg, healthCheck, elasticHTTPClient, esSigner); err != nil {
+	if err := registerCheckers(ctx, healthCheck, dpESClient); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -182,22 +182,16 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context,
-	cfg config.Config,
-	hc HealthChecker,
-	elasticHTTPClient dphttp.Clienter,
-	esSigner *esauth.Signer) (err error) {
-
+func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *dpelastic.Client) (err error) {
 	hasErrors := false
 
-	elasticClient := dpelastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
-	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
+	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		hasErrors = true
 	}
 
 	if hasErrors {
-		errors.New("Error(s) registering checkers for healthcheck")
+		errors.New("Error(s) registering checkers for health check")
 	}
 
 	return nil
