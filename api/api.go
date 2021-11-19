@@ -4,10 +4,10 @@ package api
 
 import (
 	"context"
-	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -37,7 +37,6 @@ type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	GetStatus(ctx context.Context) ([]byte, error)
-	CreateNewEmptyIndex(ctx context.Context, indexName string) (bool, error)
 }
 
 // QueryBuilder provides methods for the search package
@@ -75,7 +74,7 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 
-	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.deprecatedESClient))
+	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.dpESClient))
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 
 	return api, nil

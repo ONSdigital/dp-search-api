@@ -80,7 +80,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	dpESClient := dpelastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
 
 	// Initialise deprecatedESClient
-	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, dpESClient)
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()

@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -141,13 +143,24 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 	}
 }
 
-func CreateSearchIndexHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc {
+func CreateSearchIndexHandlerFunc(dpESClient *dpelastic.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		indexName := createIndexName("ons")
 		fmt.Printf("Index created: %s\n", indexName)
+		indexCreated := true
 
-		indexCreated, err := elasticSearchClient.CreateNewEmptyIndex(ctx, indexName)
+		status, err := dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
+		if err != nil {
+			log.Error(ctx, "error creating index", err, log.Data{"response_status": status, "index_name": indexName})
+			indexCreated = false
+		}
+
+		if status != http.StatusOK {
+			log.Error(ctx, "unexpected http status when creating index", err, log.Data{"response_status": status, "index_name": indexName})
+			indexCreated = false
+		}
+
 		if !indexCreated {
 			if err != nil {
 				log.Error(ctx, "creating index failed with this error", err)
