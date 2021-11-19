@@ -19,6 +19,7 @@
                     "name": "Somebody's Name",
                     "telephone": "+44 (0)1329 123456"
                 },
+                "dataset_id": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
                 "edition": "1995 to 2013",
                 "keywords": [
                     "regional house prices",
@@ -31,7 +32,7 @@
                 "national_statistic": false,
                 "release_date": "2015-02-17T00:00:00.000Z",
                 "source": "",
-                "summary": "",
+                "summary": "regional house prices",
                 "title": "House Price Statistics for Small Areas in England and Wales",
                 "unit": ""
             },
