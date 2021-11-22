@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	elastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	dphttp "github.com/ONSdigital/dp-net/http"
 )
 
@@ -77,10 +77,10 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		}
 	}
 
-	esClient := elastic.NewClient(cfg.ElasticSearchAPIURL, cfg.SignElasticsearchRequests, 5)
+	dpESClient := dpelastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
 
-	// Initialse elasticSearchClient
-	elasticSearchClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService, esClient)
+	// Initialise deprecatedESClient
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder()
@@ -99,7 +99,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, *cfg, healthCheck, elasticHTTPClient, esSigner); err != nil {
+	if err := registerCheckers(ctx, healthCheck, dpESClient); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -110,7 +110,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer, permissions)
+	searchAPI, err := api.NewSearchAPI(router, dpESClient, deprecatedESClient, queryBuilder, transformer, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
@@ -127,7 +127,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	return &Service{
 		api:                 searchAPI,
 		config:              cfg,
-		elasticSearchClient: *elasticSearchClient,
+		elasticSearchClient: *deprecatedESClient,
 		esSigner:            esSigner,
 		healthCheck:         healthCheck,
 		queryBuilder:        queryBuilder,
@@ -182,22 +182,16 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context,
-	cfg config.Config,
-	hc HealthChecker,
-	elasticHTTPClient dphttp.Clienter,
-	esSigner *esauth.Signer) (err error) {
-
+func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *dpelastic.Client) (err error) {
 	hasErrors := false
 
-	elasticClient := elastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
-	if err = hc.AddCheck("Elasticsearch", elasticClient.Checker); err != nil {
+	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		hasErrors = true
 	}
 
 	if hasErrors {
-		errors.New("Error(s) registering checkers for healthcheck")
+		errors.New("Error(s) registering checkers for health check")
 	}
 
 	return nil
