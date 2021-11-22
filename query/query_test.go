@@ -15,3 +15,12 @@ func TestSetupSearch(t *testing.T) {
 	})
 }
 
+func TestNewQueryBuilder(t *testing.T) {
+	Convey("Should return a Builder object", t, func() {
+		builderObejct, err := NewQueryBuilder()
+
+		So(builderObejct.searchTemplates, ShouldNotBeNil)
+		So(err, ShouldBeNil)
+
+	})
+}
