@@ -11,7 +11,7 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v2 v2.2.1
 	github.com/ONSdigital/dp-healthcheck v1.1.3
 	github.com/ONSdigital/dp-net v1.2.0
-	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad
+	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad // indirect
 	github.com/ONSdigital/log.go/v2 v2.0.9
 	github.com/aws/aws-sdk-go v1.38.65 // indirect
 	github.com/cucumber/godog v0.10.0

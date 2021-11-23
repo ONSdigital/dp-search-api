@@ -3,7 +3,6 @@ package steps
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
@@ -118,13 +117,11 @@ func (c *Component) InitialiseService() (http.Handler, error) {
 }
 
 func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {
-	componentBuildTime := strconv.Itoa(int(time.Now().Unix()))
-	versionInfo, err := healthcheck.NewVersionInfo(componentBuildTime, gitCommitHash, appVersion)
-	if err != nil {
-		return nil, err
-	}
-	hc := healthcheck.New(versionInfo, cfg.HealthCheckCriticalTimeout, cfg.HealthCheckInterval)
-	return &hc, nil
+	return &mocks.HealthCheckerMock{
+		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
+		StartFunc:    func(ctx context.Context) {},
+		StopFunc:     func() {},
+	}, nil
 }
 
 func (c *Component) getHealthClient(name string, url string) *health.Client {
