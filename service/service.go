@@ -17,6 +17,8 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/http"
 )
 
+const pathToTemplates = ""
+
 type Service struct {
 	api                 *api.SearchAPI
 	config              *config.Config
@@ -83,7 +85,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
 
 	// Initialise query builder
-	pathToTemplates := ""
 	queryBuilder, err := query.NewQueryBuilder(pathToTemplates)
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
