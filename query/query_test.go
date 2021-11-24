@@ -5,10 +5,12 @@ import (
 	"testing"
 )
 
+var testPathToTemplates = "../"
+
 func TestSetupSearch(t *testing.T) {
 	Convey("Should return templates and error should be nil", t, func() {
 
-		searchTemplates, err := SetupSearch("../")
+		searchTemplates, err := SetupSearch(testPathToTemplates)
 
 		So(err, ShouldBeNil)
 		So(searchTemplates, ShouldNotBeNil)
@@ -18,8 +20,7 @@ func TestSetupSearch(t *testing.T) {
 
 func TestNewQueryBuilder(t *testing.T) {
 	Convey("Should return a Builder object with templates", t, func() {
-		pathToTemplates := "../"
-		builderObject, err := NewQueryBuilder(pathToTemplates)
+		builderObject, err := NewQueryBuilder(testPathToTemplates)
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(err, ShouldBeNil)
