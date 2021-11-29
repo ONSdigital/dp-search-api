@@ -175,7 +175,8 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 
 	sr := t.transform(&source, highlight)
 
-	if sr.Count == 0 {
+	needAdditionalSuggestions := numberOfSearchTerms(query)
+	if needAdditionalSuggestions > 1 {
 		as := buildAdditionalSuggestionList(query)
 		sr.AdditionSuggestions = as
 	}
@@ -306,4 +307,9 @@ func buildAdditionalSuggestionList(query string) []string {
 		queryTerms = append(queryTerms, match[0])
 	}
 	return queryTerms
+}
+
+func numberOfSearchTerms(query string) int {
+	st := strings.Fields(query)
+	return len(st)
 }
