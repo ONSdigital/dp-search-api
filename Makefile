@@ -20,17 +20,25 @@ all: audit test build
 audit:
 	go list -m all | nancy sleuth
 
+.PHONY: lint
+lint:
+	exit
+
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
-	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) cmd/dp-search-api/main.go
+	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) main.go
 
 .PHONY: debug
 debug: build
-	HUMAN_LOG=1 go run $(LDFLAGS) -race cmd/$(MAIN)/main.go
+	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
 .PHONY: test
 test:
 	go test -cover -race ./...
+
+.PHONY: test-component
+test-component:
+	go test -cover -race -coverprofile="coverage.txt" -coverpkg=github.com/ONSdigital/$(MAIN)/... -component
 
 .PHONY: build debug test

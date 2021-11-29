@@ -17,11 +17,12 @@ type Config struct {
 	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
 var cfg *Config
 
-// Get configures the application and returns the configuration
+// Get configures the application and returns the Config
 func Get() (*Config, error) {
 	if cfg != nil {
 		return cfg, nil
@@ -30,12 +31,13 @@ func Get() (*Config, error) {
 	cfg = &Config{
 		AwsRegion:                  "eu-west-1",
 		AwsService:                 "es",
-		BindAddr:                  ":23900",
-		ElasticSearchAPIURL:       "http://localhost:9200",
-		GracefulShutdownTimeout:   5 * time.Second,
-		SignElasticsearchRequests: false,
-		HealthCheckCriticalTimeout:           90 * time.Second,
-		HealthCheckInterval:                  30 * time.Second,
+		BindAddr:                   ":23900",
+		ElasticSearchAPIURL:        "http://localhost:9200",
+		GracefulShutdownTimeout:    5 * time.Second,
+		SignElasticsearchRequests:  false,
+		HealthCheckCriticalTimeout: 90 * time.Second,
+		HealthCheckInterval:        30 * time.Second,
+		ZebedeeURL:                 "http://localhost:8082",
 	}
 
 	return cfg, envconfig.Process("", cfg)

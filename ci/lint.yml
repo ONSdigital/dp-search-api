@@ -6,16 +6,13 @@ image_resource:
   type: docker-image
   source:
     repository: golang
-    tag: 1.17.2
+    tag: latest
 
 inputs:
   - name: dp-search-api
-
-outputs:
-  - name: build
 
 caches:
   - path: go/
 
 run:
-  path: dp-search-api/ci/scripts/build.sh
+  path: dp-search-api/ci/scripts/lint.sh

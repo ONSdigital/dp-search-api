@@ -1,31 +1,38 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer AuthHandler
 
 import (
 	"context"
+	"net/http"
 
-	"github.com/ONSdigital/dp-search-api/config"
-	"github.com/ONSdigital/dp-search-api/service"
-
-	"github.com/ONSdigital/go-ns/server"
-	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/ONSdigital/dp-authorisation/auth"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
 
-var httpServer *server.Server
+var (
+	update = auth.Permissions{Update: true}
+)
 
 //SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	Router        *mux.Router
-	QueryBuilder  QueryBuilder
-	ElasticSearch ElasticSearcher
-	Transformer   ResponseTransformer
-	ServiceList   *service.ExternalServiceList
+	Router             *mux.Router
+	QueryBuilder       QueryBuilder
+	dpESClient         *dpelastic.Client
+	deprecatedESClient ElasticSearcher
+	Transformer        ResponseTransformer
+	permissions        AuthHandler
 }
 
-// ElasticSearcher provides client methods for the elasticsearch package
+// AuthHandler provides authorisation checks on requests
+type AuthHandler interface {
+	Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
+}
+
+// ElasticSearcher provides client methods for the elasticsearch package - now deprecated, due to be replaced
+// with the methods in dp-elasticsearch
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
@@ -42,72 +49,33 @@ type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
-// CreateAndInitialise initiates a new Search API
-func CreateAndInitialise(cfg *config.Config, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer, hc service.HealthChecker, errorChan chan error) error {
-
-	if elasticSearchClient == nil {
-		return errors.New("CreateAndInitialise called without a valid elasticsearch client")
-	}
-
-	if queryBuilder == nil {
-		return errors.New("CreateAndInitialise called without a valid query builder")
-	}
-	router := mux.NewRouter()
-
+// NewSearchAPI returns a new Search API struct after registering the routes
+func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	errData := SetupData()
 	if errData != nil {
-		return errors.Wrap(errData, "Failed to setup data templates")
+		return nil, errors.Wrap(errData, "Failed to setup data templates")
 	}
 
 	errTimeseries := SetupTimeseries()
 	if errTimeseries != nil {
-		return errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
+		return nil, errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
 	}
-
-	ctx := context.Background()
-	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
-	hc.Start(ctx)
-
-	api := NewSearchAPI(router, elasticSearchClient, queryBuilder, transformer)
-
-	httpServer = server.New(cfg.BindAddr, api.Router)
-
-	// Disable this here to allow service to manage graceful shutdown of the entire app.
-	httpServer.HandleOSSignals = false
-
-	go func() {
-		ctx := context.Background()
-		log.Info(ctx, "search api starting")
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Error(ctx, "search api http server returned error", err)
-			errorChan <- err
-		}
-	}()
-
-	return nil
-}
-
-// NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, elasticSearch ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
 
 	api := &SearchAPI{
-		Router:        router,
-		QueryBuilder:  queryBuilder,
-		ElasticSearch: elasticSearch,
-		Transformer:   transformer,
+		Router:             router,
+		QueryBuilder:       queryBuilder,
+		dpESClient:         dpESClient,
+		deprecatedESClient: deprecatedESClient,
+		Transformer:        transformer,
+		permissions:        permissions,
 	}
 
-	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.ElasticSearch, api.Transformer)).Methods("GET")
-	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	router.HandleFunc("/data", DataLookupHandlerFunc(api.ElasticSearch)).Methods("GET")
-	return api
-}
+	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
+	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
+	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 
-// Close represents the graceful shutting down of the http server
-func Close(ctx context.Context) error {
-	if err := httpServer.Shutdown(ctx); err != nil {
-		return err
-	}
-	log.Info(ctx, "graceful shutdown of http server complete")
-	return nil
+	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.dpESClient))
+	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
+
+	return api, nil
 }

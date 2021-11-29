@@ -1,13 +1,9 @@
 {
-    "count": 2,
+    "count": 1,
     "took": 96,
     "content_types": [
         {
             "type": "article",
-            "count": 1
-        },
-        {
-            "type": "product_page",
             "count": 1
         }
     ],
@@ -47,24 +43,10 @@
                 "source": "",
                 "summary": "regional house prices",
                 "title": "House Price Statistics for Small Areas in England and Wales",
-                "unit": ""
+                "unit": "number of people"
             },
             "type": "article",
             "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
-        },
-        {
-            "description": {
-                "highlight": {
-                    "title": "<em class=\"highlight\">Housing</em>"
-                },
-                "summary": "Data about property prices. These are an informal indicator of the confidence people feel in the UK economy. We collect the data from a sample of mortgage completions, so we do not include property sold to cash buyers.",
-                "title": "Housing",
-                "unit": "",
-                "source": "",
-                "pre_unit": ""
-            },
-            "type": "product_page",
-            "uri": "/peoplepopulationandcommunity/housing"
         }
     ],
     "suggestions": [

@@ -1,20 +1,34 @@
-Feature: Searching ONS website content
-  Scenario: When Searching for Retail Price Index I get the same results as RPI
-    When a user searches for the term(s) "Retail Price Index"
-    Then the user will receive the first page with documents only from this uri prefix /economy/inflationandpriceindices/bulletins/consumerpriceinflation
-    And the results with the same score are in date descending order
+Feature: Search endpoint should return data for requested search parameter
+    Scenario: When Searching for CPIH I get one result
+        Given elasticsearch returns one item in search response
+        When I GET "/search?q=CPIH"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_single_search_result.json"
 
-  Scenario: When Searching for RPI I get the same results as Retail Price Index
-    When a user searches for the term(s) "RPI"
-    Then the user will receive the first page with documents only from this uri prefix /economy/inflationandpriceindices/bulletins/consumerpriceinflation
-    And the results with the same score are in date descending order
+    Scenario: When Searching for CPI I get multiple results
+        Given elasticsearch returns multiple items in search response
+        When I GET "/search?q=CPI"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_multiple_search_results.json"
 
-  Scenario: When Searching for CPI I get the same results as Consumer Price Index
-    When a user searches for the term(s) "CPI"
-    Then the user will receive the first page with documents only from this uri prefix /economy/inflationandpriceindices/bulletins/consumerpriceinflation
-    And the results with the same score are in date descending order
+    Scenario: When Searching for CPIH and turn off highlighting
+        Given elasticsearch returns multiple items in search response
+        When I GET "/search?q=CPIH&highlight=false"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_search_results_without_highlight.json"
 
-  Scenario: When Searching for Consumer Price Index I get the same results as Consumer Price Index
-    When a user searches for the term(s) "Consumer Price Inflation"
-    Then the user will receive the first page with documents only from this uri prefix /economy/inflationandpriceindices/bulletins/consumerpriceinflation
-    And the results with the same score are in date descending order
+    Scenario: When Searching for RPI I get zero results
+        Given elasticsearch returns zero items in search response
+        When I GET "/search?q=RPI%20Consumers"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_zero_search_results.json"
+
+    Scenario: When Searching for CPI, I get internal server error
+        Given elasticsearch returns internal server error
+        When I GET "/search?q=CPI"
+        Then the HTTP status code should be "500"
+        And the response header "Content-Type" should be "text/plain; charset=utf-8"

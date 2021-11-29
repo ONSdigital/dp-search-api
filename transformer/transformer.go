@@ -3,9 +3,10 @@ package transformer
 import (
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Transformer represents an instance of the ResponseTransformer interface
@@ -14,45 +15,46 @@ type Transformer struct {
 }
 
 // Structs representing the transformed response
-type searchResponse struct {
+type SearchResponse struct {
 	Count               int           `json:"count"`
 	Took                int           `json:"took"`
-	ContentTypes        []contentType `json:"content_types"`
-	Items               []contentItem `json:"items"`
+	ContentTypes        []ContentType `json:"content_types"`
+	Items               []ContentItem `json:"items"`
 	Suggestions         []string      `json:"suggestions,omitempty"`
 	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
 }
 
-type contentType struct {
+type ContentType struct {
 	Type  string `json:"type"`
 	Count int    `json:"count"`
 }
 
-type contentItem struct {
+type ContentItem struct {
 	Description description `json:"description"`
 	Type        string      `json:"type"`
 	URI         string      `json:"uri"`
 }
 
 type description struct {
-	Contact           *contact  `json:"contact,omitempty"`
-	DatasetID         string    `json:"dataset_id,omitempty"`
-	Edition           string    `json:"edition,omitempty"`
-	Headline1         string    `json:"headline1,omitempty"`
-	Headline2         string    `json:"headline2,omitempty"`
-	Headline3         string    `json:"headline3,omitempty"`
-	Keywords          *[]string `json:"keywords,omitempty"`
-	LatestRelease     *bool     `json:"latest_release,omitempty"`
-	Language          string    `json:"language,omitempty"`
-	MetaDescription   string    `json:"meta_description,omitempty"`
-	NationalStatistic *bool     `json:"national_statistic,omitempty"`
-	NextRelease       string    `json:"next_release,omitempty"`
-	PreUnit           string    `json:"pre_unit,omitempty"`
-	ReleaseDate       string    `json:"release_date,omitempty"`
-	Source            string    `json:"source,omitempty"`
-	Summary           string    `json:"summary"`
-	Title             string    `json:"title"`
-	Unit              string    `json:"unit,omitempty"`
+	Contact           *contact      `json:"contact,omitempty"`
+	DatasetID         string        `json:"dataset_id,omitempty"`
+	Edition           string        `json:"edition,omitempty"`
+	Headline1         string        `json:"headline1,omitempty"`
+	Headline2         string        `json:"headline2,omitempty"`
+	Headline3         string        `json:"headline3,omitempty"`
+	Highlight         *highlightObj `json:"highlight,omitempty"`
+	Keywords          *[]string     `json:"keywords,omitempty"`
+	LatestRelease     *bool         `json:"latest_release,omitempty"`
+	Language          string        `json:"language,omitempty"`
+	MetaDescription   string        `json:"meta_description,omitempty"`
+	NationalStatistic *bool         `json:"national_statistic,omitempty"`
+	NextRelease       string        `json:"next_release,omitempty"`
+	PreUnit           string        `json:"pre_unit,omitempty"`
+	ReleaseDate       string        `json:"release_date,omitempty"`
+	Source            string        `json:"source,omitempty"`
+	Summary           string        `json:"summary"`
+	Title             string        `json:"title"`
+	Unit              string        `json:"unit,omitempty"`
 }
 
 type contact struct {
@@ -61,30 +63,39 @@ type contact struct {
 	Email     string `json:"email"`
 }
 
+type highlightObj struct {
+	DatasetID       string    `json:"dataset_id,omitempty"`
+	Edition         string    `json:"edition,omitempty"`
+	Keywords        *[]string `json:"keywords,omitempty"`
+	MetaDescription string    `json:"meta_description,omitempty"`
+	Summary         string    `json:"summary,omitempty"`
+	Title           string    `json:"title,omitempty"`
+}
+
 // Structs representing the raw elastic search response
 
-type esResponse struct {
-	Responses []esResponseItem `json:"responses"`
+type ESResponse struct {
+	Responses []ESResponseItem `json:"responses"`
 }
 
-type esResponseItem struct {
+type ESResponseItem struct {
 	Took         int                    `json:"took"`
-	Hits         esResponseHits         `json:"hits"`
-	Aggregations esResponseAggregations `json:"aggregations"`
-	Suggest      esSuggest              `json:"suggest"`
+	Hits         ESResponseHits         `json:"hits"`
+	Aggregations ESResponseAggregations `json:"aggregations"`
+	Suggest      ESSuggest              `json:"suggest"`
 }
 
-type esResponseHits struct {
+type ESResponseHits struct {
 	Total int
-	Hits  []esResponseHit `json:"hits"`
+	Hits  []ESResponseHit `json:"hits"`
 }
 
-type esResponseHit struct {
-	Source    esSourceDocument `json:"_source"`
-	Highlight esHighlight      `json:"highlight"`
+type ESResponseHit struct {
+	Source    ESSourceDocument `json:"_source"`
+	Highlight ESHighlight      `json:"highlight"`
 }
 
-type esSourceDocument struct {
+type ESSourceDocument struct {
 	Description struct {
 		Summary           string    `json:"summary"`
 		NextRelease       string    `json:"nextRelease,omitempty"`
@@ -109,7 +120,7 @@ type esSourceDocument struct {
 	URI  string `json:"uri"`
 }
 
-type esHighlight struct {
+type ESHighlight struct {
 	DescriptionTitle     *[]string `json:"description.title"`
 	DescriptionEdition   *[]string `json:"description.edition"`
 	DescriptionSummary   *[]string `json:"description.summary"`
@@ -118,26 +129,26 @@ type esHighlight struct {
 	DescriptionDatasetID *[]string `json:"description.datasetId"`
 }
 
-type esResponseAggregations struct {
+type ESResponseAggregations struct {
 	DocCounts struct {
-		Buckets []esBucket `json:"buckets"`
+		Buckets []ESBucket `json:"buckets"`
 	} `json:"docCounts"`
 }
 
-type esBucket struct {
+type ESBucket struct {
 	Key   string `json:"key"`
 	Count int    `json:"doc_count"`
 }
 
-type esSuggest struct {
-	SearchSuggest []esSearchSuggest `json:"search_suggest"`
+type ESSuggest struct {
+	SearchSuggest []ESSearchSuggest `json:"search_suggest"`
 }
 
-type esSearchSuggest struct {
-	Options []esSearchSuggestOptions `json:"options"`
+type ESSearchSuggest struct {
+	Options []ESSearchSuggestOptions `json:"options"`
 }
 
-type esSearchSuggestOptions struct {
+type ESSearchSuggestOptions struct {
 	Text string `json:"text"`
 }
 
@@ -151,7 +162,7 @@ func New() *Transformer {
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
-	var source esResponse
+	var source ESResponse
 
 	err := json.Unmarshal(responseData, &source)
 	if err != nil {
@@ -176,11 +187,11 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func (t *Transformer) transform(source *esResponse, highlight bool) searchResponse {
-	sr := searchResponse{
+func (t *Transformer) transform(source *ESResponse, highlight bool) SearchResponse {
+	sr := SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
-		Items:        []contentItem{},
-		ContentTypes: []contentType{},
+		Items:        []ContentItem{},
+		ContentTypes: []ContentType{},
 	}
 	var took int = 0
 	for _, response := range source.Responses {
@@ -201,8 +212,8 @@ func (t *Transformer) transform(source *esResponse, highlight bool) searchRespon
 	return sr
 }
 
-func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) contentItem {
-	ci := contentItem{
+func (t *Transformer) buildContentItem(doc ESResponseHit, highlight bool) ContentItem {
+	ci := ContentItem{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
@@ -211,46 +222,62 @@ func (t *Transformer) buildContentItem(doc esResponseHit, highlight bool) conten
 	return ci
 }
 
-func (t *Transformer) buildDescription(doc esResponseHit, highlight bool) description {
+func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) description {
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
-	return description{
-		Summary:           t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
+	des := description{
+		Summary:           sd.Summary,
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
 		PreUnit:           sd.PreUnit,
-		Keywords:          t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
+		Keywords:          sd.Keywords,
 		ReleaseDate:       sd.ReleaseDate,
-		Edition:           t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
+		Edition:           sd.Edition,
 		LatestRelease:     sd.LatestRelease,
 		Language:          sd.Language,
 		Contact:           sd.Contact,
-		DatasetID:         t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
+		DatasetID:         sd.DatasetID,
 		Source:            sd.Source,
-		Title:             t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
-		MetaDescription:   t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
+		Title:             sd.Title,
+		MetaDescription:   sd.MetaDescription,
 		NationalStatistic: sd.NationalStatistic,
 		Headline1:         sd.Headline1,
 		Headline2:         sd.Headline2,
 		Headline3:         sd.Headline3,
 	}
+
+	if highlight {
+		des.Highlight = &highlightObj{
+			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
+			Edition:         t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
+			Keywords:        t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
+			MetaDescription: t.overlaySingleItem(hl.DescriptionMeta, sd.MetaDescription, highlight),
+			Summary:         t.overlaySingleItem(hl.DescriptionSummary, sd.Summary, highlight),
+			Title:           t.overlaySingleItem(hl.DescriptionTitle, sd.Title, highlight),
+		}
+	}
+
+	return des
 }
 
-func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) string {
-	overlaid := def
+func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
+
 	if highlight && hl != nil && len(*hl) > 0 {
 		overlaid = (*hl)[0]
 	}
-	return overlaid
+
+	return
 }
 
 func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, highlight bool) *[]string {
-	if defaultList == nil {
+	if defaultList == nil || hlList == nil {
 		return nil
 	}
-	overlaid := *defaultList
-	if highlight && hlList != nil {
+
+	overlaid := make([]string, len(*defaultList))
+	copy(overlaid, *defaultList)
+	if highlight {
 		for _, hl := range *hlList {
 			unformatted := t.higlightReplacer.Replace(hl)
 			for i, defItem := range overlaid {
@@ -260,11 +287,12 @@ func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, h
 			}
 		}
 	}
+
 	return &overlaid
 }
 
-func buildContentTypes(bucket esBucket) contentType {
-	return contentType{
+func buildContentTypes(bucket ESBucket) ContentType {
+	return ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}

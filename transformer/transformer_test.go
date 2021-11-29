@@ -13,11 +13,11 @@ func TestTransform(t *testing.T) {
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
 		transformer := New()
 		Convey("Zero suggestions creates empty array", func() {
-			es := esResponse{
-				Responses: []esResponseItem{esResponseItem{
-					Suggest: esSuggest{
-						SearchSuggest: []esSearchSuggest{esSearchSuggest{
-							Options: []esSearchSuggestOptions{},
+			es := ESResponse{
+				Responses: []ESResponseItem{ESResponseItem{
+					Suggest: ESSuggest{
+						SearchSuggest: []ESSearchSuggest{ESSearchSuggest{
+							Options: []ESSearchSuggestOptions{},
 						}},
 					},
 				}},
@@ -27,12 +27,12 @@ func TestTransform(t *testing.T) {
 		})
 
 		Convey("One suggestion creates a populated array", func() {
-			es := esResponse{
-				Responses: []esResponseItem{esResponseItem{
-					Suggest: esSuggest{
-						SearchSuggest: []esSearchSuggest{esSearchSuggest{
-							Options: []esSearchSuggestOptions{
-								esSearchSuggestOptions{Text: "option1"},
+			es := ESResponse{
+				Responses: []ESResponseItem{ESResponseItem{
+					Suggest: ESSuggest{
+						SearchSuggest: []ESSearchSuggest{ESSearchSuggest{
+							Options: []ESSearchSuggestOptions{
+								ESSearchSuggestOptions{Text: "option1"},
 							},
 						}},
 					},
@@ -44,23 +44,23 @@ func TestTransform(t *testing.T) {
 			So(sr.Suggestions[0], ShouldResemble, "option1")
 		})
 		Convey("Multiple suggestions creates a populated array incorrect order", func() {
-			es := esResponse{
-				Responses: []esResponseItem{esResponseItem{
-					Suggest: esSuggest{
-						SearchSuggest: []esSearchSuggest{
-							esSearchSuggest{
-								Options: []esSearchSuggestOptions{
-									esSearchSuggestOptions{Text: "option1"},
+			es := ESResponse{
+				Responses: []ESResponseItem{ESResponseItem{
+					Suggest: ESSuggest{
+						SearchSuggest: []ESSearchSuggest{
+							ESSearchSuggest{
+								Options: []ESSearchSuggestOptions{
+									ESSearchSuggestOptions{Text: "option1"},
 								},
 							},
-							esSearchSuggest{
-								Options: []esSearchSuggestOptions{
-									esSearchSuggestOptions{Text: "option2"},
+							ESSearchSuggest{
+								Options: []ESSearchSuggestOptions{
+									ESSearchSuggestOptions{Text: "option2"},
 								},
 							},
-							esSearchSuggest{
-								Options: []esSearchSuggestOptions{
-									esSearchSuggestOptions{Text: "option3"},
+							ESSearchSuggest{
+								Options: []ESSearchSuggestOptions{
+									ESSearchSuggestOptions{Text: "option3"},
 								},
 							},
 						},
@@ -128,7 +128,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act searchResponse
+			var exp, act SearchResponse
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -143,7 +143,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act searchResponse
+			var exp, act SearchResponse
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -158,7 +158,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test query \"with quote marks\"", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act searchResponse
+			var exp, act SearchResponse
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)

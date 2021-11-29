@@ -3,13 +3,13 @@ package elasticsearch
 import (
 	"context"
 	"errors"
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	dphttp "github.com/ONSdigital/dp-net/http"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
