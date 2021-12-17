@@ -18,7 +18,10 @@ const defaultContentTypes string = "bulletin," +
 	"article," +
 	"article_download," +
 	"compendium_landing_page," +
+	"compendium_chapter," +
+	"compendium_data," +
 	"reference_tables," +
+	"dataset," +
 	"dataset_landing_page," +
 	"static_adhoc," +
 	"static_article," +
@@ -28,7 +31,11 @@ const defaultContentTypes string = "bulletin," +
 	"static_methodology_download," +
 	"static_page," +
 	"static_qmi," +
-	"timeseries"
+	"timeseries," +
+	"timeseries_dataset," +
+	"product_page," +
+	"release," +
+	"reference_tables"
 
 var serverErrorMessage = "internal server error"
 
