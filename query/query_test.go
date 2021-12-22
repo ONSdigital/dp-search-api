@@ -1,20 +1,19 @@
 package query
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var testPathToTemplates = "../"
 
 func TestSetupSearch(t *testing.T) {
 	Convey("Should return templates and error should be nil", t, func() {
-
 		searchTemplates, err := SetupSearch(testPathToTemplates)
 
 		So(err, ShouldBeNil)
 		So(searchTemplates, ShouldNotBeNil)
-
 	})
 }
 
@@ -24,6 +23,5 @@ func TestNewQueryBuilder(t *testing.T) {
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(err, ShouldBeNil)
-
 	})
 }

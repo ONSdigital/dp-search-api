@@ -16,7 +16,7 @@ var (
 	update = auth.Permissions{Update: true}
 )
 
-//SearchAPI provides an API around elasticseach
+// SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
 	QueryBuilder       QueryBuilder

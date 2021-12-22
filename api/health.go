@@ -47,7 +47,7 @@ func HealthCheckHandlerCreator(elasticSearchClient ElasticSearcher) func(http.Re
 		}
 
 		// return json
-		fmt.Fprintf(w, string(body))
+		fmt.Fprint(w, string(body))
 	}
 }
 

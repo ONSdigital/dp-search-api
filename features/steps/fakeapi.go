@@ -2,7 +2,7 @@ package steps
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -24,7 +24,7 @@ func NewFakeAPI(t testing.TB) *FakeAPI {
 
 	fa.collectOutboundRequestBodies = func(r *http.Request) error {
 		// inspect request
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return fmt.Errorf("error reading the outbound request body: %s", err.Error())
 		}

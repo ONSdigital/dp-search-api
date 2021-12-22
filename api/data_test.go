@@ -12,7 +12,6 @@ import (
 )
 
 func TestDataLookupHandlerFunc(t *testing.T) {
-
 	Convey("Should return InternalError for invalid template", t, func() {
 		setupDataTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{

@@ -61,8 +61,8 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 		}
 
 		responseData := dataLookupResponse{Responses: make([]interface{}, 1)}
-		if err := json.Unmarshal([]byte(responseString), &responseData.Responses[0]); err != nil {
-			log.Error(ctx, "failed to unmarshal response from elasticsearch for data query", err)
+		if unMarshalErr := json.Unmarshal(responseString, &responseData.Responses[0]); unMarshalErr != nil {
+			log.Error(ctx, "failed to unmarshal response from elasticsearch for data query", unMarshalErr)
 			http.Error(w, "Failed to process data query", http.StatusInternalServerError)
 			return
 		}
@@ -75,6 +75,8 @@ func DataLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.HandlerFunc
 		}
 
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
-		w.Write(dataWithResponse)
+		if _, err := w.Write(dataWithResponse); err != nil {
+			log.Error(ctx, "error occured while writing response data", err)
+		}
 	}
 }

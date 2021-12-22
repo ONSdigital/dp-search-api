@@ -24,7 +24,7 @@ type searchRequest struct {
 	FilterOnFirstLetter string
 	ReleasedAfter       string
 	ReleasedBefore      string
-	UriPrefix           string
+	URIPrefix           string
 	Topic               []string
 	TopicWildcard       []string
 	Upcoming            bool
@@ -34,8 +34,8 @@ type searchRequest struct {
 
 // SetupSearch loads templates for use by the search handler and should be done only once
 func SetupSearch(pathToTemplates string) (*template.Template, error) {
-	//Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
-	//the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
+	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
+	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
 
 	templates, err := template.ParseFiles(
 		pathToTemplates+"templates/search/search.tmpl",
@@ -73,7 +73,6 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error) {
-
 	reqParams := searchRequest{
 		Term:             q,
 		From:             offset,
@@ -96,7 +95,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}
 
-	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
+	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
 	formattedQuery, err := FormatMultiQuery(doc.Bytes())
 	if err != nil {
 		return nil, errors.Wrap(err, "formating of query for elasticsearch failed")

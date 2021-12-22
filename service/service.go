@@ -29,7 +29,7 @@ type Service struct {
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	transformer         transformer.Transformer
+	transformer         *transformer.Transformer
 }
 
 // SetServer sets the http server for a service
@@ -58,8 +58,8 @@ func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Cli
 }
 
 // SetTransformer sets the transformer for a service
-func (svc *Service) SetTransformer(transformer transformer.Transformer) {
-	svc.transformer = transformer
+func (svc *Service) SetTransformer(transformerClient *transformer.Transformer) {
+	svc.transformer = transformerClient
 }
 
 // Run the service
@@ -67,8 +67,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esSigner *esauth.Signer
 	elasticHTTPClient := dphttp.NewClient()
 
-	// Initialise transformer
-	transformer := transformer.New()
+	// Initialise transformerClient
+	transformerClient := transformer.New()
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
@@ -94,15 +94,15 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	// Initialise authorisation handler
 	permissions := serviceList.GetAuthorisationHandlers(cfg)
 
-	//Get HealthCheck
+	// Get HealthCheck
 	healthCheck, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 	if err != nil {
 		log.Fatal(ctx, "could not instantiate healthcheck", err)
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, healthCheck, dpESClient); err != nil {
-		return nil, errors.Wrap(err, "unable to register checkers")
+	if regErr := registerCheckers(ctx, healthCheck, dpESClient); regErr != nil {
+		return nil, errors.Wrap(regErr, "unable to register checkers")
 	}
 
 	router := mux.NewRouter()
@@ -112,7 +112,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, dpESClient, deprecatedESClient, queryBuilder, transformer, permissions)
+	searchAPI, err := api.NewSearchAPI(router, dpESClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
@@ -136,7 +136,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		router:              router,
 		server:              server,
 		serviceList:         serviceList,
-		transformer:         *transformer,
+		transformer:         transformerClient,
 	}, nil
 }
 
@@ -185,16 +185,9 @@ func (svc *Service) Close(ctx context.Context) error {
 }
 
 func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *dpelastic.Client) (err error) {
-	hasErrors := false
-
 	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
-		hasErrors = true
+		err = errors.New("Error(s) registering checkers for health check")
 	}
-
-	if hasErrors {
-		errors.New("Error(s) registering checkers for health check")
-	}
-
-	return nil
+	return err
 }

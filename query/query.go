@@ -28,7 +28,7 @@ func NewQueryBuilder(pathToTemplates string) (*Builder, error) {
 
 // FormatMultiQuery minifies and reformats an elasticsearch MultiQuery
 func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
-	//Is minify thread Safe? can I put this as a global?
+	// Is minify thread Safe? can I put this as a global?
 	m := minify.New()
 	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
 
@@ -37,7 +37,6 @@ func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	//Put new lines in for ElasticSearch to determine the headers and the queries are detected
+	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
 	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
-
 }

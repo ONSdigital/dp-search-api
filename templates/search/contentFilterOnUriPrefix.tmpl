@@ -1,7 +1,7 @@
 
-      {{if .UriPrefix}}
+      {{if .URIPrefix}}
           { "prefix" :
-                { "uri" : "{{.UriPrefix}}" }
+                { "uri" : "{{.URIPrefix}}" }
           }
         {{if or .Topic .TopicWildcard}},{{end}}
       {{end}}

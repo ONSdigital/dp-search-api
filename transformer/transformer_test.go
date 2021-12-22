@@ -3,7 +3,7 @@ package transformer
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -79,7 +79,6 @@ func TestTransform(t *testing.T) {
 
 func TestBuildAdditionalSuggestionsList(t *testing.T) {
 	Convey("buildAdditionalSuggestionList successfully", t, func() {
-
 		Convey("returns array of strings", func() {
 			query1 := buildAdditionalSuggestionList("test-query")
 			So(query1, ShouldHaveLength, 1)
@@ -120,9 +119,9 @@ func TestTransformSearchResponse(t *testing.T) {
 		})
 
 		Convey("Converts an example response with highlighting", func() {
-			sampleResponse, err := ioutil.ReadFile("testdata/search_example.json")
+			sampleResponse, err := os.ReadFile("testdata/search_example.json")
 			So(err, ShouldBeNil)
-			expected, err := ioutil.ReadFile("testdata/search_expected_highlighted.json")
+			expected, err := os.ReadFile("testdata/search_expected_highlighted.json")
 			So(err, ShouldBeNil)
 
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
@@ -135,9 +134,9 @@ func TestTransformSearchResponse(t *testing.T) {
 		})
 
 		Convey("Converts an example response without highlighting", func() {
-			sampleResponse, err := ioutil.ReadFile("testdata/search_example.json")
+			sampleResponse, err := os.ReadFile("testdata/search_example.json")
 			So(err, ShouldBeNil)
-			expected, err := ioutil.ReadFile("testdata/search_expected_plain.json")
+			expected, err := os.ReadFile("testdata/search_expected_plain.json")
 			So(err, ShouldBeNil)
 
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
@@ -150,9 +149,9 @@ func TestTransformSearchResponse(t *testing.T) {
 		})
 
 		Convey("Calls buildAdditionalSuggestionsList if zero search results", func() {
-			sampleResponse, err := ioutil.ReadFile("testdata/zero_search_example.json")
+			sampleResponse, err := os.ReadFile("testdata/zero_search_example.json")
 			So(err, ShouldBeNil)
-			expected, err := ioutil.ReadFile("testdata/zero_search_expected.json")
+			expected, err := os.ReadFile("testdata/zero_search_expected.json")
 			So(err, ShouldBeNil)
 
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test query \"with quote marks\"", false)
@@ -163,6 +162,5 @@ func TestTransformSearchResponse(t *testing.T) {
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
 		})
-
 	})
 }
