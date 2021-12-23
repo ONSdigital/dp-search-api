@@ -36,7 +36,6 @@ type AuthHandler interface {
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
-	GetStatus(ctx context.Context) ([]byte, error)
 }
 
 // QueryBuilder provides methods for the search package

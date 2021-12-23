@@ -44,34 +44,6 @@ func (cli *Client) MultiSearch(ctx context.Context, index, docType string, reque
 	return cli.post(ctx, index, docType, "_msearch", request)
 }
 
-// GetStatus makes status call for healthcheck purposes
-func (cli *Client) GetStatus(ctx context.Context) ([]byte, error) {
-	req, err := http.NewRequest("GET", cli.url+"/_cat/health", http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	if cli.signRequests {
-		reader := bytes.NewReader([]byte{})
-		if awsSignErr := cli.awsSDKSigner.Sign(req, reader, time.Now()); awsSignErr != nil {
-			return nil, awsSignErr
-		}
-	}
-
-	resp, err := cli.client.Do(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	response, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "elaticsearchClient error reading get status response body")
-	}
-
-	return response, err
-}
-
 func (cli *Client) post(ctx context.Context, index, docType, action string, request []byte) ([]byte, error) {
 	reader := bytes.NewReader(request)
 	req, err := http.NewRequest("POST", cli.url+"/"+buildContext(index, docType)+action, reader)
