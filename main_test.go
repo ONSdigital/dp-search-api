@@ -34,7 +34,7 @@ func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
 		apiFeature.Reset()
 		c.AuthFeature.Reset()
 		apiComponent.Reset()
-		return context.Background(), nil
+		return ctx, nil
 	})
 
 	godogCtx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
@@ -42,7 +42,7 @@ func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
 			fmt.Println(ctx, "error occurred while closing the api component - error: #{err}")
 			os.Exit(1)
 		}
-		return context.Background(), nil
+		return ctx, nil
 	})
 	apiComponent.RegisterSteps(godogCtx)
 	c.AuthFeature.RegisterSteps(godogCtx)

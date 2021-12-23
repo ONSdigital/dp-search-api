@@ -202,8 +202,8 @@ func (t *Transformer) transform(source *ESResponse, highlight bool) SearchRespon
 		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
 			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(response.Aggregations.DocCounts.Buckets[j]))
 		}
-		for z := 0; z < len(response.Suggest.SearchSuggest); z++ {
-			for _, option := range response.Suggest.SearchSuggest[z].Options {
+		for k := 0; k < len(response.Suggest.SearchSuggest); k++ {
+			for _, option := range response.Suggest.SearchSuggest[k].Options {
 				sr.Suggestions = append(sr.Suggestions, option.Text)
 			}
 		}
