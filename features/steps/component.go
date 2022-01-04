@@ -14,7 +14,6 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	mocks "github.com/ONSdigital/dp-search-api/service/mock"
-	"github.com/maxcnunes/httpfake"
 )
 
 const (
@@ -30,7 +29,6 @@ type Component struct {
 	cfg                  *config.Config
 	ErrorFeature         componentTest.ErrorFeature
 	FakeElasticSearchAPI *FakeAPI
-	fakeRequest          *httpfake.Request
 	HTTPServer           *http.Server
 	ServiceRunning       bool
 	svc                  *service.Service
@@ -95,7 +93,6 @@ func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 
 // Reset resets the search api component (should not reset Fake APIs)
 func (c *Component) Reset() *Component {
-
 	return c
 }
 
@@ -124,7 +121,7 @@ func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) 
 	}, nil
 }
 
-func (c *Component) getHealthClient(name string, url string) *health.Client {
+func (c *Component) getHealthClient(name, url string) *health.Client {
 	return &health.Client{
 		URL:    url,
 		Name:   "elasticsearch",

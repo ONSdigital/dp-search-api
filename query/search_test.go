@@ -10,9 +10,7 @@ import (
 
 func TestBuildSearchQuery(t *testing.T) {
 	Convey("Should return InternalError for invalid template", t, func() {
-
 		qb := createQueryBuilderForTemplate("dummy{{.Moo}}")
-
 		query, err := qb.BuildSearchQuery(context.Background(), "", "", "", 2, 1)
 
 		So(err, ShouldNotBeNil)
@@ -75,7 +73,6 @@ func TestHasQuery(t *testing.T) {
 
 		Convey("Should return false for excluded queries", func() {
 			So(sr.HasQuery("oink"), ShouldBeFalse)
-
 		})
 	})
 
@@ -84,6 +81,5 @@ func TestHasQuery(t *testing.T) {
 			Queries: []string{},
 		}
 		So(sr.HasQuery("oink"), ShouldBeFalse)
-
 	})
 }

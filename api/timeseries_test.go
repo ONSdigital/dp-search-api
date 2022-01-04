@@ -13,7 +13,6 @@ import (
 )
 
 func TestTimeseriesLookupHandlerFunc(t *testing.T) {
-
 	Convey("Should return InternalError for invalid template", t, func() {
 		setupTimeseriesTestTemplates("dummy{{.Moo}}")
 		esMock := &ElasticSearcherMock{

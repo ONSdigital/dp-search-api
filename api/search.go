@@ -124,7 +124,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 			return
 		}
 
-		if !json.Valid([]byte(responseData)) {
+		if !json.Valid(responseData) {
 			log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
 			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
 			return
@@ -146,7 +146,6 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
 			return
 		}
-
 	}
 }
 

@@ -3,12 +3,12 @@ package steps
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
-	"github.com/google/go-cmp/cmp"
+	"io"
+	"os"
 
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/cucumber/godog"
+	"github.com/google/go-cmp/cmp"
 )
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
@@ -22,7 +22,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 }
 
 func (c *Component) successfullyReturnMultipleSearchResults() error {
-	body, err := ioutil.ReadFile("./features/testdata/es_mulitple_search_results.json")
+	body, err := os.ReadFile("./features/testdata/es_mulitple_search_results.json")
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (c *Component) successfullyReturnMultipleSearchResults() error {
 }
 
 func (c *Component) successfullyReturnSingleSearchResult() error {
-	body, err := ioutil.ReadFile("./features/testdata/es_single_search_result.json")
+	body, err := os.ReadFile("./features/testdata/es_single_search_result.json")
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (c *Component) successfullyReturnSingleSearchResult() error {
 }
 
 func (c *Component) successfullyReturnNoSearchResults() error {
-	body, err := ioutil.ReadFile("./features/testdata/es_zero_search_results.json")
+	body, err := os.ReadFile("./features/testdata/es_zero_search_results.json")
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (c *Component) failureInternalServerError() error {
 func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
 	var searchResponse, expectedSearchResponse transformer.SearchResponse
 
-	responseBody, err := ioutil.ReadAll(c.APIFeature.HttpResponse.Body)
+	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response of search api component - error: %v", err)
 	}
@@ -72,7 +72,7 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile st
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal response of search api component - error: %v", err)
 	}
-	expectedSearchResults, err := ioutil.ReadFile(expectedJSONFile)
+	expectedSearchResults, err := os.ReadFile(expectedJSONFile)
 	if err != nil {
 		return fmt.Errorf("failed to read file of expected results - error: %v", err)
 	}
@@ -83,7 +83,7 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile st
 	}
 
 	if diff := cmp.Diff(expectedSearchResponse, searchResponse); diff != "" {
-		return fmt.Errorf("Expected response mismatch (-expected +actual):\n%s", diff)
+		return fmt.Errorf("expected response mismatch (-expected +actual):\n%s", diff)
 	}
 
 	return c.ErrorFeature.StepError()

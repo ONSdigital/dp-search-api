@@ -5,14 +5,14 @@ package api
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-authorisation/auth"
 	"net/http"
 	"sync"
+
+	"github.com/ONSdigital/dp-authorisation/auth"
 )
 
 var (
 	lockElasticSearcherMockCreateNewEmptyIndex sync.RWMutex
-	lockElasticSearcherMockGetStatus           sync.RWMutex
 	lockElasticSearcherMockMultiSearch         sync.RWMutex
 	lockElasticSearcherMockSearch              sync.RWMutex
 )
@@ -21,36 +21,9 @@ var (
 // If this is not the case, regenerate this file with moq.
 var _ ElasticSearcher = &ElasticSearcherMock{}
 
-// ElasticSearcherMock is a mock implementation of ElasticSearcher.
-//
-//     func TestSomethingThatUsesElasticSearcher(t *testing.T) {
-//
-//         // make and configure a mocked ElasticSearcher
-//         mockedElasticSearcher := &ElasticSearcherMock{
-//             CreateNewEmptyIndexFunc: func(ctx context.Context, indexName string) (bool, error) {
-// 	               panic("mock out the CreateNewEmptyIndex method")
-//             },
-//             GetStatusFunc: func(ctx context.Context) ([]byte, error) {
-// 	               panic("mock out the GetStatus method")
-//             },
-//             MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 	               panic("mock out the MultiSearch method")
-//             },
-//             SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 	               panic("mock out the Search method")
-//             },
-//         }
-//
-//         // use mockedElasticSearcher in code that requires ElasticSearcher
-//         // and then make assertions.
-//
-//     }
 type ElasticSearcherMock struct {
 	// CreateNewEmptyIndexFunc mocks the CreateNewEmptyIndex method.
 	CreateNewEmptyIndexFunc func(ctx context.Context, indexName string) (bool, error)
-
-	// GetStatusFunc mocks the GetStatus method.
-	GetStatusFunc func(ctx context.Context) ([]byte, error)
 
 	// MultiSearchFunc mocks the MultiSearch method.
 	MultiSearchFunc func(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
@@ -66,11 +39,6 @@ type ElasticSearcherMock struct {
 			Ctx context.Context
 			// IndexName is the indexName argument value.
 			IndexName string
-		}
-		// GetStatus holds details about calls to the GetStatus method.
-		GetStatus []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
 		}
 		// MultiSearch holds details about calls to the MultiSearch method.
 		MultiSearch []struct {
@@ -129,37 +97,6 @@ func (mock *ElasticSearcherMock) CreateNewEmptyIndexCalls() []struct {
 	lockElasticSearcherMockCreateNewEmptyIndex.RLock()
 	calls = mock.calls.CreateNewEmptyIndex
 	lockElasticSearcherMockCreateNewEmptyIndex.RUnlock()
-	return calls
-}
-
-// GetStatus calls GetStatusFunc.
-func (mock *ElasticSearcherMock) GetStatus(ctx context.Context) ([]byte, error) {
-	if mock.GetStatusFunc == nil {
-		panic("ElasticSearcherMock.GetStatusFunc: method is nil but ElasticSearcher.GetStatus was just called")
-	}
-	callInfo := struct {
-		Ctx context.Context
-	}{
-		Ctx: ctx,
-	}
-	lockElasticSearcherMockGetStatus.Lock()
-	mock.calls.GetStatus = append(mock.calls.GetStatus, callInfo)
-	lockElasticSearcherMockGetStatus.Unlock()
-	return mock.GetStatusFunc(ctx)
-}
-
-// GetStatusCalls gets all the calls that were made to GetStatus.
-// Check the length with:
-//     len(mockedElasticSearcher.GetStatusCalls())
-func (mock *ElasticSearcherMock) GetStatusCalls() []struct {
-	Ctx context.Context
-} {
-	var calls []struct {
-		Ctx context.Context
-	}
-	lockElasticSearcherMockGetStatus.RLock()
-	calls = mock.calls.GetStatus
-	lockElasticSearcherMockGetStatus.RUnlock()
 	return calls
 }
 

@@ -1,12 +1,12 @@
-{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .UriPrefix .Topic .TopicWildcard .Upcoming .Published}}
+{{ if or .FilterOnLatest .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .URIPrefix .Topic .TopicWildcard .Upcoming .Published}}
 ,
 "filter" : [
 {{ template "contentFilterOnLatest.tmpl" . }}
 {{ template "contentFilterOnFirstLetter.tmpl" . }}
-{{if or .UriPrefix .Topic .TopicWildcard}}
+{{if or .URIPrefix .Topic .TopicWildcard}}
   { "bool": { "should": [
 
-  {{ template "contentFilterOnUriPrefix.tmpl" . }}
+  {{ template "contentFilterOnURIPrefix.tmpl" . }}
   {{ template "contentFilterOnTopic.tmpl" . }}
   {{ template "contentFilterOnTopicWildcard.tmpl" . }}
 

@@ -16,7 +16,6 @@ const validESResponse string = `{"raw":"response"}`
 const validTransformedResponse string = `{"transformed":"response"}`
 
 func TestSearchHandlerFunc(t *testing.T) {
-
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
 		qbMock := newQueryBuilderMock(nil, nil)
 		esMock := newElasticSearcherMock(nil, nil)
