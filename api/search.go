@@ -14,12 +14,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-const defaultContentTypes string = "bulletin," +
-	"article," +
+const defaultContentTypes string = "article," +
 	"article_download," +
+	"bulletin," +
 	"compendium_landing_page," +
-	"reference_tables," +
+	"compendium_chapter," +
+	"compendium_data," +
+	"dataset," +
 	"dataset_landing_page," +
+	"product_page," +
+	"reference_tables," +
+	"release," +
 	"static_adhoc," +
 	"static_article," +
 	"static_foi," +
@@ -28,7 +33,8 @@ const defaultContentTypes string = "bulletin," +
 	"static_methodology_download," +
 	"static_page," +
 	"static_qmi," +
-	"timeseries"
+	"timeseries," +
+	"timeseries_dataset"
 
 var serverErrorMessage = "internal server error"
 
