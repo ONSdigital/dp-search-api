@@ -74,7 +74,6 @@ func (e *Init) DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer 
 
 // GetAuthorisationHandlers creates an AuthHandler client and sets the Auth flag to true
 func (e *ExternalServiceList) GetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
-
 	e.Auth = true
 	return e.Init.DoGetAuthorisationHandlers(cfg)
 }

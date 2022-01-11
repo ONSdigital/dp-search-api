@@ -12,13 +12,10 @@ import (
 func TestSpec(t *testing.T) {
 	Convey("Given an environment with no environment variables set", t, func() {
 		cfg, err := config.Get()
-
 		Convey("When the config values are retrieved", func() {
-
 			Convey("There should be no error returned", func() {
 				So(err, ShouldBeNil)
 			})
-
 			Convey("The values should be set to the expected defaults", func() {
 				So(cfg.AwsRegion, ShouldEqual, "eu-west-1")
 				So(cfg.AwsService, ShouldEqual, "es")

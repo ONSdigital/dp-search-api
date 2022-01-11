@@ -48,13 +48,15 @@ func TimeseriesLookupHandlerFunc(elasticSearchClient ElasticSearcher) http.Handl
 			return
 		}
 
-		if !json.Valid([]byte(responseData)) {
+		if !json.Valid(responseData) {
 			log.Error(ctx, "elastic search returned invalid JSON for timeseries query", errors.New("elastic search returned invalid JSON for timeseries query"))
 			http.Error(w, "Failed to process timeseries query", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
-		w.Write(responseData)
+		if _, err := w.Write(responseData); err != nil {
+			log.Error(ctx, "error occured while writing response data", err)
+		}
 	}
 }

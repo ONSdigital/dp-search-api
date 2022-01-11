@@ -9,10 +9,10 @@
                   {{- end}}
              }
         {{- template "countFilterLatest.tmpl" .}}
-        {{-  if .UriPrefix }}
+        {{-  if .URIPrefix }}
           ,"filter": [{
 	        "prefix": {
-                    "uri": "{{.UriPrefix}}"
+                    "uri": "{{.URIPrefix}}"
                 }}
                 {{- if or .ReleasedBefore .ReleasedAfter}}, {{- end}}
                 {{ template "contentFilterOnReleaseDate.tmpl" .}}
