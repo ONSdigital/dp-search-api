@@ -11,7 +11,7 @@ import (
 
 // Transformer represents an instance of the ResponseTransformer interface
 type Transformer struct {
-	higlightReplacer strings.Replacer
+	higlightReplacer *strings.Replacer
 }
 
 // Structs representing the transformed response
@@ -156,7 +156,7 @@ type ESSearchSuggestOptions struct {
 func New() *Transformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
 	return &Transformer{
-		higlightReplacer: *highlightReplacer,
+		higlightReplacer: highlightReplacer,
 	}
 }
 
@@ -194,16 +194,16 @@ func (t *Transformer) transform(source *ESResponse, highlight bool) SearchRespon
 		Items:        []ContentItem{},
 		ContentTypes: []ContentType{},
 	}
-	var took int = 0
+	var took int
 	for _, response := range source.Responses {
-		for _, doc := range response.Hits.Hits {
-			sr.Items = append(sr.Items, t.buildContentItem(doc, highlight))
+		for i := 0; i < len(response.Hits.Hits); i++ {
+			sr.Items = append(sr.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
-		for _, bucket := range response.Aggregations.DocCounts.Buckets {
-			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(bucket))
+		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
+			sr.ContentTypes = append(sr.ContentTypes, buildContentTypes(response.Aggregations.DocCounts.Buckets[j]))
 		}
-		for _, suggest := range response.Suggest.SearchSuggest {
-			for _, option := range suggest.Options {
+		for k := 0; k < len(response.Suggest.SearchSuggest); k++ {
+			for _, option := range response.Suggest.SearchSuggest[k].Options {
 				sr.Suggestions = append(sr.Suggestions, option.Text)
 			}
 		}
@@ -263,15 +263,13 @@ func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) descri
 }
 
 func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
-
 	if highlight && hl != nil && len(*hl) > 0 {
 		overlaid = (*hl)[0]
 	}
-
 	return
 }
 
-func (t *Transformer) overlayItemList(hlList *[]string, defaultList *[]string, highlight bool) *[]string {
+func (t *Transformer) overlayItemList(hlList, defaultList *[]string, highlight bool) *[]string {
 	if defaultList == nil || hlList == nil {
 		return nil
 	}

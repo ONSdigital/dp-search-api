@@ -30,19 +30,20 @@ func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
 
 	apiFeature := apiComponent.InitAPIFeature()
 
-	godogCtx.BeforeScenario(func(*godog.Scenario) {
+	godogCtx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		apiFeature.Reset()
 		c.AuthFeature.Reset()
 		apiComponent.Reset()
+		return ctx, nil
 	})
 
-	godogCtx.AfterScenario(func(*godog.Scenario, error) {
+	godogCtx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		if err := apiComponent.Close(); err != nil {
 			fmt.Println(ctx, "error occurred while closing the api component - error: #{err}")
 			os.Exit(1)
 		}
+		return ctx, nil
 	})
-
 	apiComponent.RegisterSteps(godogCtx)
 	c.AuthFeature.RegisterSteps(godogCtx)
 }

@@ -16,7 +16,7 @@ var (
 	update = auth.Permissions{Update: true}
 )
 
-//SearchAPI provides an API around elasticseach
+// SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
 	QueryBuilder       QueryBuilder
@@ -36,7 +36,6 @@ type AuthHandler interface {
 type ElasticSearcher interface {
 	Search(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
-	GetStatus(ctx context.Context) ([]byte, error)
 }
 
 // QueryBuilder provides methods for the search package
