@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v3/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"

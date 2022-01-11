@@ -8,9 +8,9 @@ require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.4.4
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.6.3
-	github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0
-	github.com/ONSdigital/dp-healthcheck v1.2.1
-	github.com/ONSdigital/dp-net v1.2.0
+	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha
+	github.com/ONSdigital/dp-healthcheck v1.2.3
+	github.com/ONSdigital/dp-net v1.4.0
 	github.com/ONSdigital/log.go/v2 v2.0.9
 	github.com/cucumber/godog v0.12.2
 	github.com/google/go-cmp v0.5.6
@@ -27,7 +27,7 @@ require (
 	github.com/ONSdigital/dp-mongodb-in-memory v1.1.0 // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad // indirect
-	github.com/aws/aws-sdk-go v1.38.15 // indirect
+	github.com/aws/aws-sdk-go v1.42.30 // indirect
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -59,7 +59,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.mongodb.org/mongo-driver v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	golang.org/x/text v0.3.7 // indirect

@@ -26,12 +26,16 @@ github.com/ONSdigital/dp-component-test v0.6.3 h1:WxaKaMZGdTUAb9DNp1K+PH+Xfc8ATI
 github.com/ONSdigital/dp-component-test v0.6.3/go.mod h1:CfpOujIEqZS5qON7sWn0LRyiP0V+5l12+2XWHB7S/oo=
 github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0 h1:RPGEjjpnJQrbEEFY/uPf2yb4ewhRlDk9AJOc7LZfWW4=
 github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0/go.mod h1:B+WXR1PRVgrU1/tS3UygATLVTnX+5Sp+M0w5i3LROac=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha h1:I4+FtE9OwofikJFnzToWob63HIljVnvCq4TLkjlTOJ4=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha/go.mod h1:lc9XONnHQuL9SjHpFDnVEqUcGYN9uzVKD87jd9dwJ+0=
 github.com/ONSdigital/dp-frontend-models v1.1.0/go.mod h1:TT96P7Mi69N3Tc/jFNdbjiwG4GAaMjP26HLotFQ6BPw=
 github.com/ONSdigital/dp-healthcheck v0.0.0-20200131122546-9db6d3f0494e/go.mod h1:zighxZ/0m5u7zo0eAr8XFlA+Dz2ic7A1vna6YXvhCjQ=
 github.com/ONSdigital/dp-healthcheck v1.0.5/go.mod h1:2wbVAUHMl9+4tWhUlxYUuA1dnf2+NrwzC+So5f5BMLk=
 github.com/ONSdigital/dp-healthcheck v1.1.0/go.mod h1:vZwyjMJiCHjp/sJ2R1ZEqzZT0rJ0+uHVGwxqdP4J5vg=
 github.com/ONSdigital/dp-healthcheck v1.2.1 h1:HL0zHV5FI2Ym31gdMVNW9VLWiEJ0nrwXkVKX1MMPNr4=
 github.com/ONSdigital/dp-healthcheck v1.2.1/go.mod h1:XUhXoDIWPCdletDtpDOoXhmDFcc9b/kbedx96jN75aI=
+github.com/ONSdigital/dp-healthcheck v1.2.3 h1:8/qTe0TjXouQWW0jgrtDGMFl+fUWigfyntL+q96GUSY=
+github.com/ONSdigital/dp-healthcheck v1.2.3/go.mod h1:XUhXoDIWPCdletDtpDOoXhmDFcc9b/kbedx96jN75aI=
 github.com/ONSdigital/dp-mocking v0.0.0-20190905163309-fee2702ad1b9/go.mod h1:BcIRgitUju//qgNePRBmNjATarTtynAgc0yV29VpLEk=
 github.com/ONSdigital/dp-mongodb-in-memory v1.1.0 h1:EjUU1zpIU1LElhiTMAG7qxy7Rq9+VTUtt3/lyA+K7jI=
 github.com/ONSdigital/dp-mongodb-in-memory v1.1.0/go.mod h1:AQaNcbSS18WtldA4iWUlHQDn9FCLB2K6ff68QnvZBqM=
@@ -42,6 +46,8 @@ github.com/ONSdigital/dp-net v1.0.7/go.mod h1:1QFzx32FwPKD2lgZI6MtcsUXritsBdJihl
 github.com/ONSdigital/dp-net v1.0.12/go.mod h1:2lvIKOlD4T3BjWQwjHhBUO2UNWDk82u/+mHRn0R3C9A=
 github.com/ONSdigital/dp-net v1.2.0 h1:gP9pBt/J8gktYeKsb7hq6uOC2xx1tfvTorUBNXp6pX0=
 github.com/ONSdigital/dp-net v1.2.0/go.mod h1:NinlaqcsPbIR+X7j5PXCl3UI5G2zCL041SDF6WIiiO4=
+github.com/ONSdigital/dp-net v1.4.0 h1:pCdQwH//U95rBNQpcPqQjaXqAyKuToufRMmP7wZNUk8=
+github.com/ONSdigital/dp-net v1.4.0/go.mod h1:VK8dah+G0TeVO/Os/w17Rk4WM6hIGmdUXrm8fBWyC+g=
 github.com/ONSdigital/dp-rchttp v0.0.0-20190919143000-bb5699e6fd59/go.mod h1:KkW68U3FPuivW4ogi9L8CPKNj9ZxGko4qcUY7KoAAkQ=
 github.com/ONSdigital/dp-rchttp v0.0.0-20200114090501-463a529590e8/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
 github.com/ONSdigital/dp-rchttp v1.0.0 h1:K/1/gDtfMZCX1Mbmq80nZxzDirzneqA1c89ea26FqP4=
@@ -67,6 +73,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aws/aws-sdk-go v1.38.15 h1:usaPeqoxFUzy0FfBLZLZHya5Kv2cpURjb1jqCa7+odA=
 github.com/aws/aws-sdk-go v1.38.15/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
+github.com/aws/aws-sdk-go v1.42.30 h1:GvzWHwAdE5ZQ9UOcq0lX+PTzVJ4+sm1DjYrk6nUSTgA=
+github.com/aws/aws-sdk-go v1.42.30/go.mod h1:OGr6lGMAKGlG9CVrYnWYDKIyb829c6EVBRjxqjmPepc=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
@@ -372,6 +380,8 @@ golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v
 golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 h1:CIJ76btIcR3eFI5EgSo6k1qKw9KJexJuRLI9G7Hp5wE=
 golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
+golang.org/x/net v0.0.0-20211216030914-fe4d6282115f h1:hEYJvxw1lSnWIl8X9ofsYMklzaDs90JI2az5YMd4fPM=
+golang.org/x/net v0.0.0-20211216030914-fe4d6282115f/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=

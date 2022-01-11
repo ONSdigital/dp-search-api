@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -23,9 +22,7 @@ func TestSearch(t *testing.T) {
 				},
 			}
 
-			var testSigner *esauth.Signer
-
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1")
+			client := New("http://localhost:999", dphttpMock, "es", "eu-west-1")
 
 			res, err := client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldBeNil)
@@ -46,9 +43,7 @@ func TestSearch(t *testing.T) {
 				},
 			}
 
-			var testSigner *esauth.Signer
-
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1")
+			client := New("http://localhost:999", dphttpMock, "es", "eu-west-1")
 
 			_, err := client.Search(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
@@ -73,9 +68,7 @@ func TestMultiSearch(t *testing.T) {
 				},
 			}
 
-			var testSigner *esauth.Signer
-
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1")
+			client := New("http://localhost:999", dphttpMock, "es", "eu-west-1")
 
 			res, err := client.MultiSearch(context.Background(), "index", "doctype", []byte("multiSearch request"))
 			So(err, ShouldBeNil)
@@ -95,9 +88,8 @@ func TestMultiSearch(t *testing.T) {
 					return nil, errors.New("http error")
 				},
 			}
-			var testSigner *esauth.Signer
 
-			client := New("http://localhost:999", dphttpMock, false, testSigner, "es", "eu-west-1")
+			client := New("http://localhost:999", dphttpMock, "es", "eu-west-1")
 
 			_, err := client.MultiSearch(context.Background(), "index", "doctype", []byte("search request"))
 			So(err, ShouldNotBeNil)
