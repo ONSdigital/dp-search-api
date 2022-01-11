@@ -98,10 +98,7 @@ paths:
         - in: query
           name: content_type
           description: "Comma separated list of content types to be returned."
-          type: array
-          uniqueItems: true
-          items:
-            type: string
+          type: string
           collectionFormat: csv
           required: false
         - in: query
