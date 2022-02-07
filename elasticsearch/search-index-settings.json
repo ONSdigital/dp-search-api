@@ -255,6 +255,11 @@
       "releaseDate":{
         "type":"date"
       },
+      "topics":{
+        "type":"text",
+        "analyzer":"ons_synonym_stem",
+        "search_analyzer":"ons_stem"
+      },
       "searchBoost":{
         "type":"text",
         "analyzer":"ons_synonym_stem",
