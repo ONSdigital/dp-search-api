@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	dphttp "github.com/ONSdigital/dp-net/http"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/pkg/errors"
 )
 

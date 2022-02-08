@@ -13,7 +13,8 @@ import (
 	"github.com/pkg/errors"
 
 	dpelastic "github.com/ONSdigital/dp-elasticsearch/v3/elasticsearch"
-	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-net/v2/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
 )
 
 const pathToTemplates = ""
@@ -64,11 +65,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
-		elasticHTTPClient, err = dphttp.NewClientWithAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
+		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper("", "", cfg.AwsRegion, cfg.AwsService)
 		if err != nil {
-			log.Error(ctx, "failed to create aws v4 signer", err)
+			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
 		}
+
+		elasticHTTPClient = dphttp.NewClientWithTransport(awsSignerRT)
 	}
 
 	dpESClient := dpelastic.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
