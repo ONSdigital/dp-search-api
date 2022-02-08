@@ -12,10 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	update = auth.Permissions{Update: true}
-)
-
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
