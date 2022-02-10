@@ -9,6 +9,8 @@ import (
 
 // Config is the search API handler config
 type Config struct {
+	AwsFilename                string        `envconfig:"AWS_FILENAME"`
+	AwsProfile                 string        `envconfig:"AWS_PROFILE"`
 	AwsRegion                  string        `envconfig:"AWS_REGION"`
 	AwsService                 string        `envconfig:"AWS_SERVICE"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
@@ -29,6 +31,8 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
+		AwsFilename:                "",
+		AwsProfile:                 "",
 		AwsRegion:                  "eu-west-1",
 		AwsService:                 "es",
 		BindAddr:                   ":23900",

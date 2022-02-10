@@ -65,7 +65,10 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
-		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper("", "", cfg.AwsRegion, cfg.AwsService)
+		var awsSignerRT *awsauth.AwsSignerRoundTripper
+
+		// TODO set configuration for AWS File and AWS Profile <- This should be wrapped with flag
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AwsFilename, cfg.AwsProfile, cfg.AwsRegion, cfg.AwsService)
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
