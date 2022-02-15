@@ -12,6 +12,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	update = auth.Permissions{Update: true}
+)
+
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
@@ -69,6 +73,10 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/search", api.CreateSearchIndexHandlerFunc).Methods("POST")
+	//TODO: This is just a temporary endpoint to debug the authentication bug in develop. This will be removed once
+	// the bug is debugged
+	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
+	router.HandleFunc("/searchbugtemp", createSearchIndexHandler).Methods("POST")
 
 	return api, nil
 }
