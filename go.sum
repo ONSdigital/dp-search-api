@@ -26,6 +26,8 @@ github.com/ONSdigital/dp-authorisation v0.2.0 h1:QVjTUSR3c1swZwP7lMbvnBsh4Je9oc5
 github.com/ONSdigital/dp-authorisation v0.2.0/go.mod h1:Tg3BiohT3+bRv4vr4aid/1Rf+S3eXLUI8oHbOLFqFpQ=
 github.com/ONSdigital/dp-authorisation v0.2.1-0.20220215142537-7f3ad5dc3962 h1:vVaQ9Po/Lx1GUwSA7aC6NMpu3frOqmy0M6gX9AsR+Sw=
 github.com/ONSdigital/dp-authorisation v0.2.1-0.20220215142537-7f3ad5dc3962/go.mod h1:Y43b8WMEUV/bL5K+eNhl8UxpI2PNzmh8LdTCgzTA0pQ=
+github.com/ONSdigital/dp-authorisation v0.2.1-0.20220216122812-b7a4926697fb h1:u/xbrsrPlxoTq/2oqY4eYzcb5iTLsw7mmNHC/lX34DQ=
+github.com/ONSdigital/dp-authorisation v0.2.1-0.20220216122812-b7a4926697fb/go.mod h1:Y43b8WMEUV/bL5K+eNhl8UxpI2PNzmh8LdTCgzTA0pQ=
 github.com/ONSdigital/dp-component-test v0.6.3 h1:WxaKaMZGdTUAb9DNp1K+PH+Xfc8ATIXpJ3lhcUW3myk=
 github.com/ONSdigital/dp-component-test v0.6.3/go.mod h1:CfpOujIEqZS5qON7sWn0LRyiP0V+5l12+2XWHB7S/oo=
 github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0 h1:RPGEjjpnJQrbEEFY/uPf2yb4ewhRlDk9AJOc7LZfWW4=
