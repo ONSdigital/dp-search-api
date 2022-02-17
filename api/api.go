@@ -72,11 +72,7 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-	router.HandleFunc("/search", api.CreateSearchIndexHandlerFunc).Methods("POST")
-	//TODO: This is just a temporary endpoint to debug the authentication bug in develop. This will be removed once
-	// the bug is debugged
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
-	router.HandleFunc("/searchbugtemp", createSearchIndexHandler).Methods("POST")
-
+	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil
 }
