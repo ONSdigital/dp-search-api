@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
-	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
+	dpelastic "github.com/ONSdigital/dp-elasticsearch/v3/elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -72,9 +72,7 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-
-	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.dpESClient))
+	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
-
 	return api, nil
 }
