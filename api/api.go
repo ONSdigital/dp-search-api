@@ -12,6 +12,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	update = auth.Permissions{Update: true}
+)
+
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
@@ -68,7 +72,7 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-	router.HandleFunc("/search", api.CreateSearchIndexHandlerFunc).Methods("POST")
-
+	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
+	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil
 }
