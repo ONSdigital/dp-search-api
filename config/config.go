@@ -9,10 +9,7 @@ import (
 
 // Config is the search API handler config
 type Config struct {
-	AwsFilename                string        `envconfig:"AWS_FILENAME"`
-	AwsProfile                 string        `envconfig:"AWS_PROFILE"`
-	AwsRegion                  string        `envconfig:"AWS_REGION"`
-	AwsService                 string        `envconfig:"AWS_SERVICE"`
+	Aws                        AWS
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
@@ -20,6 +17,14 @@ type Config struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
+}
+
+type AWS struct {
+	Filename              string `envconfig:"AWS_FILENAME"`
+	Profile               string `envconfig:"AWS_PROFILE"`
+	Region                string `envconfig:"AWS_REGION"`
+	Service               string `envconfig:"AWS_SERVICE"`
+	TlsInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
 var cfg *Config
@@ -31,17 +36,21 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
-		AwsFilename:                "",
-		AwsProfile:                 "",
-		AwsRegion:                  "eu-west-1",
-		AwsService:                 "es",
 		BindAddr:                   ":23900",
-		ElasticSearchAPIURL:        "http://localhost:9200",
+		ElasticSearchAPIURL:        "https://localhost:9200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		SignElasticsearchRequests:  false,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		ZebedeeURL:                 "http://localhost:8082",
+	}
+
+	cfg.Aws = AWS{
+		Filename:              "",
+		Profile:               "",
+		Region:                "eu-west-1",
+		Service:               "es",
+		TlsInsecureSkipVerify: false,
 	}
 
 	return cfg, envconfig.Process("", cfg)

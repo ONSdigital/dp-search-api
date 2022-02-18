@@ -11,7 +11,7 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha
 	github.com/ONSdigital/dp-healthcheck v1.2.3
-	github.com/ONSdigital/dp-net/v2 v2.2.0-beta.0.20220208180625-0458b1c50ed1
+	github.com/ONSdigital/dp-net/v2 v2.0.0
 	github.com/ONSdigital/log.go/v2 v2.1.0
 	github.com/cucumber/godog v0.12.2
 	github.com/google/go-cmp v0.5.6

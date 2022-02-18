@@ -67,8 +67,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	if cfg.SignElasticsearchRequests {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
-		// TODO set configuration for AWS File and AWS Profile <- This should be wrapped with flag
-		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AwsFilename, cfg.AwsProfile, cfg.AwsRegion, cfg.AwsService)
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.Aws.Filename, cfg.Aws.Profile, cfg.Aws.Region, cfg.Aws.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.Aws.TlsInsecureSkipVerify})
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
@@ -80,7 +79,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	dpESClient := dpelastic.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
 
 	// Initialise deprecatedESClient
-	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AwsRegion, cfg.AwsService)
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.Aws.Region, cfg.Aws.Service)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder(pathToTemplates)
