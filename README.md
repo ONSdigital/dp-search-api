@@ -43,15 +43,40 @@ environment variables, or with a link to a configuration guide.
 
 | Environment variable | Default | Description
 | -------------------- | ------- | -----------
-| AWS_REGION                  | eu-west-1               | The AWS region to use when signing requests with AWS SDK
-| AWS_SERVICE                 | "es"                    | The aws service that the AWS SDK signing mechanism needs to sign a request
-| BIND_ADDR                   | :23900                  | The host and port to bind to
-| ELASTIC_SEARCH_URL	      | "http://localhost:9200" | Http url of the ElasticSearch server. For Site Wide ElasticSearch this needs to be set to "http://localhost:11200".
-| GRACEFUL_SHUTDOWN_TIMEOUT   | 5s                      | The graceful shutdown timeout in seconds (`time.Duration` format)
-| SIGN_ELASTICSEARCH_REQUESTS | false                   | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
-| HEALTHCHECK_CRITICAL_TIMEOUT| 90s                     | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
-| HEALTHCHECK_INTERVAL        | 30s                     | Time between self-healthchecks (`time.Duration` format)
-| ZEBEDEE_URL                 | http://localhost:8082   | The URL to Zebedee (for authorisation)
+| AWS_FILENAME                 | ""                       | The AWS file location for finding credentials to sign AWS http requests
+| AWS_PROFILE                  | ""                       | The AWS profile to use from credentials file to sign AWS http requests
+| AWS_REGION                   | eu-west-1                | The AWS region to use when signing requests with AWS SDK
+| AWS_SERVICE                  | "es"                     | The aws service that the AWS SDK signing mechanism needs to sign a request
+| AWS_TLS_INSECURE_SKIP_VERIFY | false                    | This should never be set to true, as it disables SSL certificate verification. Used only for development
+| BIND_ADDR                    | :23900                   | The host and port to bind to
+| ELASTIC_SEARCH_URL	       | "http://localhost:9200"  | Http url of the ElasticSearch server. For Site Wide ElasticSearch this needs to be set to "http://localhost:11200".
+| GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)
+| SIGN_ELASTICSEARCH_REQUESTS  | false                    | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
+| HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
+| HEALTHCHECK_INTERVAL         | 30s                      | Time between self-healthchecks (`time.Duration` format)
+| ZEBEDEE_URL                  | http://localhost:8082    | The URL to Zebedee (for authorisation)
+
+
+### Connecting to AWS Elasticsearch cluster (dev only)
+
+#### Prerequisites
+
+- You will need an user account for the aws account you are trying to connect to
+- You will need to be given a policy to allow read and write access to the AWS Elasticsearch cluster
+
+#### Connecting
+
+To connect to managed Elasticsearch cluster in AWS, you will want to port forward 9200 to the domain endpoint. Using the dp tool, one can do this like so:
+
+```
+  dp ssh develop <ip of aws box> -p 9200:<elasticsearch cluster domain endpoint e.g. "<unique identifier>" + "eu-west-1.es.amazonaws.com:443"
+```
+
+Once connected, run the following make target:
+
+```
+  make local
+```
 
 ### Contributing
 
