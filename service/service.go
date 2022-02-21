@@ -67,7 +67,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	if cfg.SignElasticsearchRequests {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
-		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.Aws.Filename, cfg.Aws.Profile, cfg.Aws.Region, cfg.Aws.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.Aws.TlsInsecureSkipVerify})
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.Aws.Filename, cfg.Aws.Profile, cfg.Aws.Region, cfg.Aws.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.Aws.TLSInsecureSkipVerify})
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err

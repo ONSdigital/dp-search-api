@@ -24,7 +24,7 @@ type AWS struct {
 	Profile               string `envconfig:"AWS_PROFILE"`
 	Region                string `envconfig:"AWS_REGION"`
 	Service               string `envconfig:"AWS_SERVICE"`
-	TlsInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
+	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
 var cfg *Config
@@ -50,7 +50,7 @@ func Get() (*Config, error) {
 		Profile:               "",
 		Region:                "eu-west-1",
 		Service:               "es",
-		TlsInsecureSkipVerify: false,
+		TLSInsecureSkipVerify: false,
 	}
 
 	return cfg, envconfig.Process("", cfg)
