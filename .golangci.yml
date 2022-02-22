@@ -83,7 +83,7 @@ issues:
         - errcheck
         - dupl
         - gosec
-  new: true
+  new: false
 
 # golangci.com configuration
 # https://github.com/golangci/golangci/wiki/Configuration
