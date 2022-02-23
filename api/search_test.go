@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"errors"
+	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-authorisation/auth"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -316,6 +318,14 @@ func newElasticSearcherMock(response []byte, err error) *ElasticSearcherMock {
 	}
 }
 
+func newDpElasticSearcherMock(status int, err error) *DpElasticSearcherMock {
+	return &DpElasticSearcherMock{
+		CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) (int, error) {
+			return status, err
+		},
+	}
+}
+
 func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
 	return &QueryBuilderMock{
 		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error) {
@@ -330,4 +340,35 @@ func newResponseTransformerMock(response []byte, err error) *ResponseTransformer
 			return response, err
 		},
 	}
+}
+
+func newAuthHandlerMock() *AuthHandlerMock {
+	return &AuthHandlerMock{
+		RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+			return handler
+		},
+	}
+}
+
+func TestCreateSearchIndexHandlerFunc(t *testing.T) {
+	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
+		//cfg, err := config.Get()
+		//So(err, ShouldBeNil)
+
+		//cfg.ElasticSearchAPIURL := "http://localhost:11200"
+
+		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		apiInstance, err := NewSearchAPI(mux.NewRouter(), newDpElasticSearcherMock(200, nil), esMock, qbMock, trMock, newAuthHandlerMock() )
+		So(err, ShouldBeNil)
+
+		Convey("When a new reindex job is created and stored", func() {
+			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			resp := httptest.NewRecorder()
+
+			apiInstance.CreateSearchIndexHandlerFunc(resp, req)
+		})
+	})
 }
