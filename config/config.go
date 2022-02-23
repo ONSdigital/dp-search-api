@@ -9,7 +9,7 @@ import (
 
 // Config is the search API handler config
 type Config struct {
-	Aws                        AWS
+	AWS                        AWS
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
@@ -45,7 +45,7 @@ func Get() (*Config, error) {
 		ZebedeeURL:                 "http://localhost:8082",
 	}
 
-	cfg.Aws = AWS{
+	cfg.AWS = AWS{
 		Filename:              "",
 		Profile:               "",
 		Region:                "eu-west-1",
