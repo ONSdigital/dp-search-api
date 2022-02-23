@@ -27,7 +27,12 @@ lint:
 
 .PHONY: local
 local:
-	export ELASTIC_SEARCH_URL=https://localhost:9200; export AWS_TLS_INSECURE_SKIP_VERIFY=true; export SIGN_ELASTICSEARCH_REQUESTS=true; export AWS_PROFILE=development; export AWS_FILENAME=$(HOME)/.aws/credentials; HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
+	export ELASTIC_SEARCH_URL=https://localhost:9200; \
+	export AWS_TLS_INSECURE_SKIP_VERIFY=true; \
+	export SIGN_ELASTICSEARCH_REQUESTS=true; \
+	export AWS_PROFILE=development; \
+	export AWS_FILENAME=$(HOME)/.aws/credentials; \
+	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
 .PHONY: build
 build:
@@ -35,7 +40,7 @@ build:
 	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) main.go
 
 .PHONY: debug
-debug: build
+debug: 
 	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
 .PHONY: test
