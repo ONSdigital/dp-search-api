@@ -46,7 +46,7 @@ environment variables, or with a link to a configuration guide.
 | AWS_FILENAME                 | ""                       | The AWS file location for finding credentials to sign AWS http requests
 | AWS_PROFILE                  | ""                       | The AWS profile to use from credentials file to sign AWS http requests
 | AWS_REGION                   | eu-west-1                | The AWS region to use when signing requests with AWS SDK
-| AWS_SERVICE                  | "es"                     | The aws service that the AWS SDK signing mechanism needs to sign a request
+| AWS_SERVICE                  | "es"                     | The AWS service that the AWS SDK signing mechanism needs to sign a request
 | AWS_TLS_INSECURE_SKIP_VERIFY | false                    | This should never be set to true, as it disables SSL certificate verification. Used only for development
 | BIND_ADDR                    | :23900                   | The host and port to bind to
 | ELASTIC_SEARCH_URL	       | "http://localhost:9200"  | Http url of the ElasticSearch server. For Site Wide ElasticSearch this needs to be set to "http://localhost:11200".
@@ -84,6 +84,6 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### License
 
-Copyright © 2016-2021, Office for National Statistics (https://www.ons.gov.uk)
+Copyright © 2016-2022, Office for National Statistics (https://www.ons.gov.uk)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.
