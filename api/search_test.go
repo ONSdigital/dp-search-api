@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -354,21 +353,23 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
 		//cfg, err := config.Get()
 		//So(err, ShouldBeNil)
-
+		//
 		//cfg.ElasticSearchAPIURL := "http://localhost:11200"
 
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
-		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
-		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+		dpESClient := newDpElasticSearcherMock(200, nil)
+		permissions := newAuthHandlerMock()
 
-		apiInstance, err := NewSearchAPI(mux.NewRouter(), newDpElasticSearcherMock(200, nil), esMock, qbMock, trMock, newAuthHandlerMock() )
-		So(err, ShouldBeNil)
+		searchAPI := &SearchAPI{dpESClient: dpESClient, permissions: permissions}
 
 		Convey("When a new reindex job is created and stored", func() {
 			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			//req, err := http.NewRequest(http.MethodPost, "http://localhost:23900/search", http.NoBody)
+			//So(err, ShouldBeNil)
+
 			resp := httptest.NewRecorder()
 
-			apiInstance.CreateSearchIndexHandlerFunc(resp, req)
+			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+		
 		})
 	})
 }
