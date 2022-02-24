@@ -309,6 +309,31 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 }
 
+func TestCreateSearchIndexHandlerFunc(t *testing.T) {
+	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
+		//cfg, err := config.Get()
+		//So(err, ShouldBeNil)
+		//
+		//cfg.ElasticSearchAPIURL := "http://localhost:11200"
+
+		dpESClient := newDpElasticSearcherMock(200, nil)
+		permissions := newAuthHandlerMock()
+
+		searchAPI := &SearchAPI{dpESClient: dpESClient, permissions: permissions}
+
+		Convey("When a new reindex job is created and stored", func() {
+			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			//req, err := http.NewRequest(http.MethodPost, "http://localhost:23900/search", http.NoBody)
+			//So(err, ShouldBeNil)
+
+			resp := httptest.NewRecorder()
+
+			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+
+		})
+	})
+}
+
 func newElasticSearcherMock(response []byte, err error) *ElasticSearcherMock {
 	return &ElasticSearcherMock{
 		MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
@@ -347,29 +372,4 @@ func newAuthHandlerMock() *AuthHandlerMock {
 			return handler
 		},
 	}
-}
-
-func TestCreateSearchIndexHandlerFunc(t *testing.T) {
-	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
-		//cfg, err := config.Get()
-		//So(err, ShouldBeNil)
-		//
-		//cfg.ElasticSearchAPIURL := "http://localhost:11200"
-
-		dpESClient := newDpElasticSearcherMock(200, nil)
-		permissions := newAuthHandlerMock()
-
-		searchAPI := &SearchAPI{dpESClient: dpESClient, permissions: permissions}
-
-		Convey("When a new reindex job is created and stored", func() {
-			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
-			//req, err := http.NewRequest(http.MethodPost, "http://localhost:23900/search", http.NoBody)
-			//So(err, ShouldBeNil)
-
-			resp := httptest.NewRecorder()
-
-			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
-		
-		})
-	})
 }
