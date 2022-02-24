@@ -255,20 +255,15 @@
       "releaseDate":{
         "type":"date"
       },
-      "topics":{
+      "topics": {
         "type": "nested",
-           "properties": {
-            "topic_name": {
-              "type": "keyword",
-              "fields": {
-                 "topics_raw": {
-                  "type": "text",
-                  "analyzer":"ons_synonym_stem",
-                  "search_analyzer":"ons_stem"
-                }
-              }
-            }
+        "analyzer":"ons_synonym_stem",
+        "search_analyzer":"ons_stem",
+        "properties": {
+          "topic_raw": {
+            "type": "text"
           }
+        }
       },
       "searchBoost":{
         "type":"text",
