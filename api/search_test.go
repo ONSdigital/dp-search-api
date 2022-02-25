@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
@@ -313,7 +314,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
-
 		dpESClient := newDpElasticSearcherMock(200, nil)
 		permissions := newAuthHandlerMock()
 
@@ -334,7 +334,9 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("And the index name has the expected name format", func() {
-
+					re := regexp.MustCompile(`(ons)(\d*)`)
+					wordWithExpectedPattern := re.FindString(indexCreated.IndexName)
+					So(wordWithExpectedPattern, ShouldEqual, indexCreated.IndexName)
 				})
 			})
 
