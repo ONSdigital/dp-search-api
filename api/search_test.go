@@ -335,8 +335,10 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 
 				Convey("And the index name has the expected name format", func() {
 					re := regexp.MustCompile(`(ons)(\d*)`)
-					wordWithExpectedPattern := re.FindString(indexCreated.IndexName)
-					So(wordWithExpectedPattern, ShouldEqual, indexCreated.IndexName)
+					indexName := indexCreated.IndexName
+					So(indexName, ShouldNotBeNil)
+					wordWithExpectedPattern := re.FindString(indexName)
+					So(wordWithExpectedPattern, ShouldEqual, indexName)
 				})
 			})
 
