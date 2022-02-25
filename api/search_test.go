@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -311,24 +313,30 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
-		//cfg, err := config.Get()
-		//So(err, ShouldBeNil)
-		//
-		//cfg.ElasticSearchAPIURL := "http://localhost:11200"
 
 		dpESClient := newDpElasticSearcherMock(200, nil)
 		permissions := newAuthHandlerMock()
 
 		searchAPI := &SearchAPI{dpESClient: dpESClient, permissions: permissions}
 
-		Convey("When a new reindex job is created and stored", func() {
+		Convey("When a new elastic search index is created", func() {
 			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
-			//req, err := http.NewRequest(http.MethodPost, "http://localhost:23900/search", http.NoBody)
-			//So(err, ShouldBeNil)
-
 			resp := httptest.NewRecorder()
 
 			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+
+			Convey("Then the newly created search index name is returned with status code 201", func() {
+				So(resp.Code, ShouldEqual, http.StatusCreated)
+				payload, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+				indexCreated := CreateIndexResponse{}
+				err = json.Unmarshal(payload, &indexCreated)
+				So(err, ShouldBeNil)
+
+				Convey("And the index name has the expected name format", func() {
+
+				})
+			})
 
 		})
 	})
