@@ -96,6 +96,7 @@ paths:
           type: string
           required: true
         - in: query
+        
           name: content_type
           description: "Comma separated list of content types to be returned."
           type: array
@@ -105,6 +106,17 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
+        
+          name: topics
+          description: "Comma separated topics to be returned."
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          collectionFormat: csv
+          required: false
+        - in: query
+
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
           type: boolean
@@ -204,6 +216,11 @@ definitions:
         description: "List of content types included in results"
         items:
           $ref: "#/definitions/ContentType"
+      topics:
+        type: array
+        description: "List of topics included in results"
+        items:
+          $ref: "#/definitions/Topics"
       items:
         type: array
         description: "List of matching content items for the current page"
@@ -257,6 +274,17 @@ definitions:
       - took
 
   ContentType:
+    type: object
+    properties:
+      type:
+        type: string
+      count:
+        type: integer
+    required:
+      - "type"
+      - "count"
+
+  Topics:
     type: object
     properties:
       type:
@@ -326,6 +354,10 @@ definitions:
             type: string
           unit:
             type: string
+          topics:
+            type: array
+            items:
+              type: string
         required:
           - summary
           - title
@@ -356,6 +388,10 @@ definitions:
         type: string
       title:
         type: string
+      topics:
+        type: array
+        items:
+          type: string
 
   DepartmentItem:
     type: object
