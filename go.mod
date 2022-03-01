@@ -25,7 +25,6 @@ require (
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.43.0 // indirect
 	github.com/ONSdigital/dp-mongodb-in-memory v1.1.0 // indirect
-	github.com/ONSdigital/dp-net/v2 v2.4.0-beta // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20210916104633-ac1c1c52327e // indirect
 	github.com/aws/aws-sdk-go v1.42.30 // indirect
@@ -45,6 +44,7 @@ require (
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/justinas/alice v1.2.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

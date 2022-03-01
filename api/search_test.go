@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-authorisation/auth"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -18,6 +18,7 @@ const validQueryParam string = "a"
 const validQueryDoc string = `{"valid":"elastic search query"}`
 const validESResponse string = `{"raw":"response"}`
 const validTransformedResponse string = `{"transformed":"response"}`
+const internalServerErrMsg = "internal server error"
 
 func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
@@ -315,9 +316,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
 		dpESClient := newDpElasticSearcherMock(200, nil)
-		permissions := newAuthHandlerMock()
 
-		searchAPI := &SearchAPI{dpESClient: dpESClient, permissions: permissions}
+		searchAPI := &SearchAPI{dpESClient: dpESClient}
 
 		Convey("When a new elastic search index is created", func() {
 			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
@@ -341,7 +341,25 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 					So(wordWithExpectedPattern, ShouldEqual, indexName)
 				})
 			})
+		})
+	})
 
+	Convey("Given a Search API that is pointing to the old version of Elastic Search", t, func() {
+		// The new ES client will return an error if the Search API config is pointing at the old version of ES
+		dpESClient := newDpElasticSearcherMock(500, errors.New("unexpected status code from api"))
+
+		searchAPI := &SearchAPI{dpESClient: dpESClient}
+
+		Convey("When a new elastic search index is created", func() {
+			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			resp := httptest.NewRecorder()
+
+			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+
+			Convey("Then an internal server error is returned with status code 500", func() {
+				So(resp.Code, ShouldEqual, http.StatusInternalServerError)
+				So(strings.Trim(resp.Body.String(), "\n"), ShouldResemble, internalServerErrMsg)
+			})
 		})
 	})
 }
@@ -374,14 +392,6 @@ func newResponseTransformerMock(response []byte, err error) *ResponseTransformer
 	return &ResponseTransformerMock{
 		TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 			return response, err
-		},
-	}
-}
-
-func newAuthHandlerMock() *AuthHandlerMock {
-	return &AuthHandlerMock{
-		RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-			return handler
 		},
 	}
 }
