@@ -108,7 +108,7 @@ paths:
         - in: query
         
           name: topics
-          description: "Comma separated topics to be returned."
+          description: "Comma separated list of topics to be returned."
           type: array
           uniqueItems: true
           items:
