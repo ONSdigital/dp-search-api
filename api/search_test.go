@@ -14,11 +14,13 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-const validQueryParam string = "a"
-const validQueryDoc string = `{"valid":"elastic search query"}`
-const validESResponse string = `{"raw":"response"}`
-const validTransformedResponse string = `{"transformed":"response"}`
-const internalServerErrMsg = "internal server error"
+const (
+	validQueryParam          string = "a"
+	validQueryDoc            string = `{"valid":"elastic search query"}`
+	validESResponse          string = `{"raw":"response"}`
+	validTransformedResponse string = `{"transformed":"response"}`
+	internalServerErrMsg            = "internal server error"
+)
 
 func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
