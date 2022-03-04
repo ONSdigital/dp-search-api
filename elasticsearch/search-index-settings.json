@@ -255,6 +255,21 @@
       "releaseDate":{
         "type":"date"
       },
+      "topics":{
+        "type": "nested",
+           "properties": {
+            "topic_name": {
+              "type": "keyword",
+              "fields": {
+                 "topics_raw": {
+                  "type": "text",
+                  "analyzer":"ons_synonym_stem",
+                  "search_analyzer":"ons_stem"
+                }
+              }
+            }
+          }
+      },
       "searchBoost":{
         "type":"text",
         "analyzer":"ons_synonym_stem",
