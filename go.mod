@@ -8,7 +8,6 @@ require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.92.2
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.6.3
-	github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha
 	github.com/ONSdigital/dp-healthcheck v1.2.3
 	github.com/ONSdigital/dp-net/v2 v2.0.0
@@ -46,6 +45,7 @@ require (
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/justinas/alice v1.2.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
