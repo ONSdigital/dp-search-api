@@ -28,8 +28,8 @@ func getConfig(ctx context.Context) cliConfig {
 			service:               "es",
 			tlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify,
 		},
-		esURL:        cfg.ElasticSearchAPIURL,
-		signRequests: cfg.SignElasticsearchRequests,
+		esURL:        "http://localhost:9092",
+		signRequests: false,
 		zebedeeURL:   "http://localhost:8082",
 	}
 }

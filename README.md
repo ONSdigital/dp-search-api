@@ -78,6 +78,37 @@ Once connected, run the following make target:
   make local
 ```
 
+### Running Bulk Indexer
+
+#### Locally
+
+Build the bulk indexer by running the following command
+```
+  make reindex
+```
+Then run the executable  
+```
+  ./reindex
+```
+Please make sure your elasticsearch server is running locally on localhost:9092 and version of the server is 7.10, which is the current supported version.
+
+#### Develop
+
+Navigate to ```cmd/reindex/aws.go``` and update esurl to correct elastic search 7.10 url in develop and then build the bulk indexer by running the following command
+```
+  make build-reindex
+```
+Then copy to your develop build directory  by running the following command
+```
+dp scp develop publishing 2 ./reindex /home/$USERNAME/build
+```
+Then run the executable
+```
+  ./build/reindex
+```
+
+
+
 ### Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details.
