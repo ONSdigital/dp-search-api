@@ -29,7 +29,7 @@ require (
 	github.com/ONSdigital/dp-mongodb-in-memory v1.1.0 // indirect
 	github.com/ONSdigital/dp-net v1.4.0 // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
-	github.com/ONSdigital/dp-search-data-extractor v0.8.0 // indirect
+	github.com/ONSdigital/dp-search-data-extractor v0.9.0 // indirect
 	github.com/ONSdigital/dp-search-data-importer v0.5.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad // indirect
 	github.com/Shopify/sarama v1.29.1 // indirect
