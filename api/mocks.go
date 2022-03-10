@@ -164,7 +164,7 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 //
 // 		// make and configure a mocked DpElasticSearcher
 // 		mockedDpElasticSearcher := &DpElasticSearcherMock{
-// 			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) (int, error) {
+// 			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
 // 				panic("mock out the CreateIndex method")
 // 			},
 // 		}
@@ -175,7 +175,7 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 // 	}
 type DpElasticSearcherMock struct {
 	// CreateIndexFunc mocks the CreateIndex method.
-	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) (int, error)
+	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -193,7 +193,7 @@ type DpElasticSearcherMock struct {
 }
 
 // CreateIndex calls CreateIndexFunc.
-func (mock *DpElasticSearcherMock) CreateIndex(ctx context.Context, indexName string, indexSettings []byte) (int, error) {
+func (mock *DpElasticSearcherMock) CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error {
 	if mock.CreateIndexFunc == nil {
 		panic("DpElasticSearcherMock.CreateIndexFunc: method is nil but DpElasticSearcher.CreateIndex was just called")
 	}

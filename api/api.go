@@ -39,7 +39,7 @@ type ElasticSearcher interface {
 
 // DpElasticSearcher provides an interface for the dp-elasticsearch functionality
 type DpElasticSearcher interface {
-	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) (int, error)
+	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
 }
 
 // QueryBuilder provides methods for the search package

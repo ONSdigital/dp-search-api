@@ -317,7 +317,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
-		dpESClient := newDpElasticSearcherMock(200, nil)
+		dpESClient := newDpElasticSearcherMock(nil)
 
 		searchAPI := &SearchAPI{dpESClient: dpESClient}
 
@@ -348,7 +348,7 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 
 	Convey("Given a Search API that is pointing to the old version of Elastic Search", t, func() {
 		// The new ES client will return an error if the Search API config is pointing at the old version of ES
-		dpESClient := newDpElasticSearcherMock(500, errors.New("unexpected status code from api"))
+		dpESClient := newDpElasticSearcherMock(errors.New("unexpected status code from api"))
 
 		searchAPI := &SearchAPI{dpESClient: dpESClient}
 
@@ -374,10 +374,10 @@ func newElasticSearcherMock(response []byte, err error) *ElasticSearcherMock {
 	}
 }
 
-func newDpElasticSearcherMock(status int, err error) *DpElasticSearcherMock {
+func newDpElasticSearcherMock(err error) *DpElasticSearcherMock {
 	return &DpElasticSearcherMock{
-		CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) (int, error) {
-			return status, err
+		CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
+			return err
 		},
 	}
 }

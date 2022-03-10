@@ -153,14 +153,9 @@ func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http
 	fmt.Printf("Index created: %s\n", indexName)
 	indexCreated := true
 
-	status, err := a.dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
+	err := a.dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 	if err != nil {
-		log.Error(ctx, "error creating index", err, log.Data{"response_status": status, "index_name": indexName})
-		indexCreated = false
-	}
-
-	if status != http.StatusOK {
-		log.Error(ctx, "unexpected http status when creating index", err, log.Data{"response_status": status, "index_name": indexName})
+		log.Error(ctx, "error creating index", err, log.Data{"index_name": indexName})
 		indexCreated = false
 	}
 
