@@ -26,9 +26,9 @@ func getConfig(ctx context.Context) cliConfig {
 			profile:               cfg.AWS.Profile,
 			region:                cfg.AWS.Region,
 			service:               "es",
-			tlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify,
+			tlsInsecureSkipVerify: true,
 		},
-		esURL:        "http://localhost:9092",
+		esURL:        "http://localhost:9200",
 		signRequests: false,
 		zebedeeURL:   "http://localhost:8082",
 	}
