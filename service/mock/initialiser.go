@@ -6,6 +6,7 @@ package mocks
 import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	api "github.com/ONSdigital/dp-search-api/api"
+	"github.com/ONSdigital/dp-search-api/clients"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	"net/http"
@@ -44,6 +45,9 @@ type InitialiserMock struct {
 	// DoGetAuthorisationHandlersFunc mocks the DoGetAuthorisationHandlers method.
 	DoGetAuthorisationHandlersFunc func(cfg *config.Config) api.AuthHandler
 
+	// DoGetDatasetClientFunc mocks the DoGetDatasetClient method.
+	DoGetDatasetClientFunc func(cfg *config.Config) clients.DatasetAPIClient
+
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
 
@@ -57,6 +61,11 @@ type InitialiserMock struct {
 	calls struct {
 		// DoGetAuthorisationHandlers holds details about calls to the DoGetAuthorisationHandlers method.
 		DoGetAuthorisationHandlers []struct {
+			// Cfg is the cfg argument value.
+			Cfg *config.Config
+		}
+		// DoGetDatasetClient holds details about calls to the DoGetDatasetClient method.
+		DoGetDatasetClient []struct {
 			// Cfg is the cfg argument value.
 			Cfg *config.Config
 		}
@@ -87,6 +96,7 @@ type InitialiserMock struct {
 		}
 	}
 	lockDoGetAuthorisationHandlers sync.RWMutex
+	lockDoGetDatasetClient         sync.RWMutex
 	lockDoGetHTTPServer            sync.RWMutex
 	lockDoGetHealthCheck           sync.RWMutex
 	lockDoGetHealthClient          sync.RWMutex
@@ -120,6 +130,38 @@ func (mock *InitialiserMock) DoGetAuthorisationHandlersCalls() []struct {
 	mock.lockDoGetAuthorisationHandlers.RLock()
 	calls = mock.calls.DoGetAuthorisationHandlers
 	mock.lockDoGetAuthorisationHandlers.RUnlock()
+	mock.lockDoGetAuthorisationHandlers.RUnlock()
+	return calls
+}
+
+// DoGetDatasetClient calls DoGetDatasetClientFunc.
+func (mock *InitialiserMock) DoGetDatasetClient(cfg *config.Config) clients.DatasetAPIClient {
+	if mock.DoGetDatasetClientFunc == nil {
+		panic("InitialiserMock.DoGetDatasetClientFunc: method is nil but Initialiser.DoGetDatasetClient was just called")
+	}
+	callInfo := struct {
+		Cfg *config.Config
+	}{
+		Cfg: cfg,
+	}
+	mock.lockDoGetDatasetClient.Lock()
+	mock.calls.DoGetDatasetClient = append(mock.calls.DoGetDatasetClient, callInfo)
+	mock.lockDoGetDatasetClient.Unlock()
+	return mock.DoGetDatasetClientFunc(cfg)
+}
+
+// DoGetDatasetClientCalls gets all the calls that were made to DoGetDatasetClient.
+// Check the length with:
+//     len(mockedInitialiser.DoGetDatasetClientCalls())
+func (mock *InitialiserMock) DoGetDatasetClientCalls() []struct {
+	Cfg *config.Config
+} {
+	var calls []struct {
+		Cfg *config.Config
+	}
+	mock.lockDoGetDatasetClient.RLock()
+	calls = mock.calls.DoGetDatasetClient
+	mock.lockDoGetDatasetClient.RUnlock()
 	return calls
 }
 

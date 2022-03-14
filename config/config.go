@@ -17,6 +17,8 @@ type Config struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
+	DatasetAPIURL              string        `envconfig:"DATASET_API_URL"`
+	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
 }
 
 type AWS struct {
@@ -43,6 +45,8 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		ZebedeeURL:                 "http://localhost:8082",
+		DatasetAPIURL:              "http://localhost:22000",
+		ServiceAuthToken:           "",
 	}
 
 	cfg.AWS = AWS{

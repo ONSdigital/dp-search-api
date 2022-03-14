@@ -14,8 +14,10 @@ func getConfig(ctx context.Context) cliConfig {
 			service:               "es",
 			tlsInsecureSkipVerify: false,
 		},
-		zebedeeURL:   "http://localhost:10050",
-		esURL:        "ES_URL_Replaceme",
-		signRequests: true,
+		zebedeeURL:       "http://localhost:10050",
+		esURL:            "ES_URL_Replaceme",
+		signRequests:     true,
+		datasetURL:       "http://localhost:10400",
+		ServiceAuthToken: "SAuthToken_Replaceme",
 	}
 }

@@ -9,13 +9,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	v710 "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v710"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp2 "github.com/ONSdigital/dp-net/v2/http"
+	"github.com/ONSdigital/dp-search-api/clients"
+	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/service"
 	extractorModels "github.com/ONSdigital/dp-search-data-extractor/models"
 	importerModels "github.com/ONSdigital/dp-search-data-importer/models"
 	"github.com/ONSdigital/dp-search-data-importer/transform"
@@ -24,13 +28,16 @@ import (
 var (
 	maxConcurrentExtractions = 20
 	maxConcurrentIndexings   = 30
+	DefaultPaginationLimit   = 500
 )
 
 type cliConfig struct {
-	aws          AWSConfig
-	zebedeeURL   string
-	esURL        string
-	signRequests bool
+	aws              AWSConfig
+	zebedeeURL       string
+	datasetURL       string
+	esURL            string
+	signRequests     bool
+	ServiceAuthToken string
 }
 
 type AWSConfig struct {
@@ -39,6 +46,12 @@ type AWSConfig struct {
 	region                string
 	service               string
 	tlsInsecureSkipVerify bool
+}
+
+type DatasetEditionMetadata struct {
+	id        string
+	editionID string
+	version   string
 }
 
 type zebedeeClient interface {
@@ -81,6 +94,11 @@ func main() {
 		esHTTPClient = dphttp2.NewClientWithTransport(awsSignerRT)
 	}
 
+	svcList := service.NewServiceList(&service.Init{})
+	datasetClient := svcList.GetDatasetClient(&config.Config{
+		DatasetAPIURL: cfg.datasetURL,
+	})
+
 	esClient, esClientErr := dpEs.NewClient(dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.esURL,
@@ -93,10 +111,12 @@ func main() {
 	if err := esClient.NewBulkIndexer(ctx); err != nil {
 		log.Fatal(ctx, "Failed to create new bulk indexer")
 	}
-
+	datasetChan := extractDatasets(ctx, datasetClient, cfg.ServiceAuthToken)
+	editionChan := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
+	metadataChan := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
 	urisChan := uriProducer(ctx, zebClient)
 	extractedChan, extractionFailuresChan := docExtractor(ctx, zebClient, urisChan, maxConcurrentExtractions)
-	transformedChan := docTransformer(extractedChan)
+	transformedChan := docTransformer(extractedChan, metadataChan)
 	indexedChan := docIndexer(ctx, esClient, transformedChan, maxConcurrentIndexings)
 
 	summarize(indexedChan, extractionFailuresChan)
@@ -162,47 +182,90 @@ func extractDoc(ctx context.Context, z zebedeeClient, uriChan <-chan string, ext
 	}
 }
 
-func docTransformer(extractedChan <-chan Document) chan Document {
+func docTransformer(extractedChan chan Document, metadataChan chan dataset.Metadata) chan Document {
 	transformedChan := make(chan Document)
 	go func() {
-		defer close(transformedChan)
 		var wg sync.WaitGroup
-
-		for extractedDoc := range extractedChan {
-			wg.Add(1)
-			go func(doc Document) {
-				defer wg.Done()
-				transformDoc(doc, transformedChan)
-			}(extractedDoc)
+		for i := 0; i < maxConcurrentExtractions; i++ {
+			wg.Add(2)
+			go func(wg *sync.WaitGroup) {
+				transformZebedeeDoc(extractedChan, transformedChan, wg)
+				transformMetadataDoc(metadataChan, transformedChan, wg)
+			}(&wg)
 		}
 		wg.Wait()
+		close(transformedChan)
 		fmt.Println("Finished transforming docs")
 	}()
 	return transformedChan
 }
 
-func transformDoc(extractedDoc Document, transformedChan chan<- Document) {
-	var zebedeeData extractorModels.ZebedeeData
-	err := json.Unmarshal(extractedDoc.Body, &zebedeeData)
-	if err != nil {
-		log.Fatal("error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
-	}
-	exporterEventData := extractorModels.MapZebedeeDataToSearchDataImport(zebedeeData, -1)
-	importerEventData := importerModels.SearchDataImportModel(exporterEventData)
-	esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
+func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Document, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var wg2 sync.WaitGroup
+	for extractedDoc := range extractedChan {
+		wg2.Add(1)
+		go func(extractedDoc Document) {
+			defer wg2.Done()
+			var zebedeeData extractorModels.ZebedeeData
+			err := json.Unmarshal(extractedDoc.Body, &zebedeeData)
+			if err != nil {
+				log.Fatal("error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
+			}
+			exporterEventData := extractorModels.MapZebedeeDataToSearchDataImport(zebedeeData, -1)
+			importerEventData := importerModels.SearchDataImportModel(exporterEventData)
+			esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
 
-	body, err := json.Marshal(esModel)
-	if err != nil {
-		log.Fatal("error marshal to json", err) // TODO error handling
-		return
-	}
+			body, err := json.Marshal(esModel)
+			if err != nil {
+				log.Fatal("error marshal to json", err) // TODO error handling
+				return
+			}
 
-	transformedDoc := Document{
-		ID:   exporterEventData.UID,
-		URI:  extractedDoc.URI,
-		Body: body,
+			transformedDoc := Document{
+				ID:   exporterEventData.UID,
+				URI:  extractedDoc.URI,
+				Body: body,
+			}
+			transformedChan <- transformedDoc
+		}(extractedDoc)
 	}
-	transformedChan <- transformedDoc
+	wg2.Wait()
+}
+
+func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
+	for metadata := range metadataChan {
+		cmdData := extractorModels.CMDData{
+			UID: metadata.DatasetDetails.ID,
+			VersionDetails: extractorModels.VersionDetails{
+				ReleaseDate: metadata.Version.ReleaseDate,
+			},
+			DatasetDetails: extractorModels.DatasetDetails{
+				Title:       metadata.DatasetDetails.Title,
+				Description: metadata.DatasetDetails.Description,
+			},
+		}
+		if metadata.DatasetDetails.Keywords != nil {
+			cmdData.DatasetDetails.Keywords = *metadata.DatasetDetails.Keywords
+		}
+		exporterEventData := extractorModels.MapVersionMetadataToSearchDataImport(cmdData)
+		importerEventData := importerModels.SearchDataImportModel(exporterEventData)
+		esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
+		body, err := json.Marshal(esModel)
+		if err != nil {
+			wg.Done()
+			log.Fatal("error marshal to json", err) // TODO error handling
+			return
+		}
+
+		transformedDoc := Document{
+			ID:   exporterEventData.UID,
+			URI:  metadata.URI,
+			Body: body,
+		}
+		transformedChan <- transformedDoc
+	}
+	wg.Done()
 }
 
 func docIndexer(ctx context.Context, dpEsIndexClient dpEsClient.Client, transformedChan chan Document, maxIndexings int) chan bool {
@@ -316,4 +379,90 @@ func deleteIndicies(ctx context.Context, dpEsIndexClient dpEsClient.Client, indi
 		log.Fatalf("Error: Indices.GetAlias: %s", err)
 	}
 	fmt.Printf("Deleted Indicies: %s\n", strings.Join(indicies, ","))
+}
+
+func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient, serviceAuthToken string) chan dataset.Dataset {
+	datasetChan := make(chan dataset.Dataset)
+	go func() {
+		defer close(datasetChan)
+		var list dataset.List
+		var err error
+		var offset = 0
+		for {
+			list, err = datasetClient.GetDatasets(ctx, "", serviceAuthToken, "", &dataset.QueryParams{
+				Offset: offset,
+				Limit:  DefaultPaginationLimit,
+			})
+			if err != nil {
+				log.Fatalf("Error: retrieving dataset clients: %v", err)
+			}
+			if len(list.Items) == 0 {
+				break
+			}
+			for i := 0; i < len(list.Items); i++ {
+				datasetChan <- list.Items[i]
+			}
+			offset += DefaultPaginationLimit
+		}
+	}()
+	return datasetChan
+}
+
+func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetAPIClient, datasetChan chan dataset.Dataset, serviceAuthToken string) chan DatasetEditionMetadata {
+	editionMetadataChan := make(chan DatasetEditionMetadata)
+	var wg sync.WaitGroup
+	go func() {
+		defer close(editionMetadataChan)
+		for i := 0; i < maxConcurrentExtractions; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for dataset := range datasetChan {
+					if dataset.Current == nil {
+						continue
+					}
+					editions, err := datasetClient.GetFullEditionsDetails(ctx, "", serviceAuthToken, dataset.CollectionID, dataset.Current.ID)
+					if err != nil {
+						log.Printf("error retrieving editions with dataset id: %v", dataset.ID)
+					} else {
+						for i := 0; i < len(editions); i++ {
+							if editions[i].ID == "" || editions[i].Current.Links.LatestVersion.ID == "" {
+								continue
+							}
+							editionMetadataChan <- DatasetEditionMetadata{
+								id:        dataset.Current.ID,
+								editionID: editions[i].Current.Edition,
+								version:   editions[i].Current.Links.LatestVersion.ID,
+							}
+						}
+					}
+				}
+			}()
+		}
+		wg.Wait()
+	}()
+	return editionMetadataChan
+}
+
+func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAPIClient, editionMetadata chan DatasetEditionMetadata, serviceAuthToken string) chan dataset.Metadata {
+	metadataChan := make(chan dataset.Metadata)
+	var wg sync.WaitGroup
+	go func() {
+		defer close(metadataChan)
+		for i := 0; i < maxConcurrentExtractions; i++ {
+			wg.Add(1)
+			go func() {
+				for metadata := range editionMetadata {
+					metadata, err := datasetClient.GetVersionMetadata(ctx, "", serviceAuthToken, "", metadata.id, metadata.editionID, metadata.version)
+					if err != nil {
+						continue
+					}
+					metadataChan <- metadata
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}()
+	return metadataChan
 }
