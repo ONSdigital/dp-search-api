@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -48,6 +47,7 @@ type zebedeeClient interface {
 }
 
 type Document struct {
+	ID   string
 	URI  string
 	Body []byte
 }
@@ -59,9 +59,15 @@ func main() {
 	cfg := getConfig(ctx)
 
 	hcClienter := dphttp2.NewClient()
+	if hcClienter == nil {
+		log.Fatal("failed to create dp http client")
+	}
 	hcClienter.SetMaxRetries(2)
 	hcClienter.SetTimeout(30 * time.Second) // Published Index takes about 10s to return so add a bit more
 	zebClient := zebedee.NewClientWithClienter(cfg.zebedeeURL, hcClienter)
+	if zebClient == nil {
+		log.Fatal("failed to create zebedee client")
+	}
 
 	esHTTPClient := hcClienter
 	if cfg.signRequests {
@@ -113,7 +119,6 @@ func uriProducer(ctx context.Context, z zebedeeClient) chan string {
 func getPublishedURIs(ctx context.Context, z zebedeeClient) []zebedee.PublishedIndexItem {
 	index, err := z.GetPublishedIndex(ctx, &zebedee.PublishedIndexRequestParams{})
 	if err != nil {
-		// TODO error handling
 		log.Fatalf("Fatal error getting index from zebedee: %s", err)
 	}
 	fmt.Printf("Fetched %d uris from zebedee\n", index.Count)
@@ -193,6 +198,7 @@ func transformDoc(extractedDoc Document, transformedChan chan<- Document) {
 	}
 
 	transformedDoc := Document{
+		ID:   exporterEventData.UID,
 		URI:  extractedDoc.URI,
 		Body: body,
 	}
@@ -238,9 +244,8 @@ func createIndexName(s string) string {
 
 func indexDoc(ctx context.Context, esClient dpEsClient.Client, transformedChan <-chan Document, indexedChan chan bool, indexName string) {
 	for transformedDoc := range transformedChan {
-		id := url.PathEscape(transformedDoc.URI) // TODO this isn't right, the client should url-escape the id
 		indexed := true
-		err := esClient.BulkIndexAdd(ctx, v710.Create, indexName, id, transformedDoc.Body)
+		err := esClient.BulkIndexAdd(ctx, v710.Create, indexName, transformedDoc.ID, transformedDoc.Body)
 		if err != nil {
 			indexed = false
 		}
