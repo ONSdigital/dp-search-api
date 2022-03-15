@@ -57,7 +57,7 @@ func (c *ComponentTest) InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	})
 }
 
-func TestMain(t *testing.T) {
+func TestComponent(t *testing.T) {
 	if *componentFlag {
 		status := 0
 
