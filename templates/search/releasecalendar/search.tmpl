@@ -1,0 +1,52 @@
+{{- /*gotype:github.com/ONSdigital/dp-search-api/query.ReleaseSearchRequest*/ -}}
+{
+    "from": {{.From}},
+    "size": {{.Size}},
+    "sort": [
+        {{if .Term}} {"_score": "desc"}, {{- .SortBy.ESString -}}
+        {{else}} {{- .SortBy.ESString -}}
+        {{end}}
+    ],
+    "query": {
+        "bool": {
+            "must": {
+                {{if .Term}}
+                    {{- template "query.tmpl" . }}
+                {{else}}  "match_all": {}
+                {{end}}
+            },
+            "filter": [
+                {
+                    "range": {
+                         "description.releaseDate": {
+                            "from": {{.ReleasedAfter.ESString}},
+                            "to":  {{.ReleasedBefore.ESString}},
+                            "include_lower": true,
+                            "include_upper": true
+                        }
+                    }
+                }
+                {{if .Upcoming}}
+                    ,{{- template "upcoming.tmpl" . }}
+                {{else if .Published}}
+                    ,{{- template "published.tmpl" . }}
+                {{end}}
+            ]
+        }
+    }
+    {{if .Highlight}}
+        ,"highlight":{
+            "pre_tags":["<em class=\"ons-highlight\">"],
+            "post_tags":["</em>"],
+            "fields":{
+                "description.title":{"fragment_size":0,"number_of_fragments":0},
+                "description.summary":{"fragment_size":0,"number_of_fragments":0},
+                "description.edition":{"fragment_size":0,"number_of_fragments":0},
+                "description.metaDescription":{"fragment_size":0,"number_of_fragments":0},
+                "description.keywords":{"fragment_size":0,"number_of_fragments":0},
+                "description.datasetId":{"fragment_size":0,"number_of_fragments":0},
+                "description.cdid":{"fragment_size":0,"number_of_fragments":0}
+            }
+        }
+    {{end}}
+}
