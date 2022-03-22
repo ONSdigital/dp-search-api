@@ -13,6 +13,7 @@ import (
 var validators = NewReleaseQueryParamValidator()
 
 func TestLimit(t *testing.T) {
+	t.Parallel()
 	Convey("given a limit validator, and a set of limits as strings", t, func() {
 		validator := validators["limit"]
 		limits := []struct {
@@ -37,6 +38,7 @@ func TestLimit(t *testing.T) {
 }
 
 func TestOffset(t *testing.T) {
+	t.Parallel()
 	Convey("given an offset validator, and a set of offsets as strings", t, func() {
 		validator := validators["offset"]
 		offsets := []struct {
@@ -61,6 +63,7 @@ func TestOffset(t *testing.T) {
 }
 
 func TestDates(t *testing.T) {
+	t.Parallel()
 	Convey("given a date validator, and a set of erroneous date strings", t, func() {
 		validator := validators["date"]
 		badDates := []string{"XXX", "Jan 21", "30/12/2021", "2021-13-31", "2021-12-32", "2021-02-29", "2300-12-31"}
@@ -85,6 +88,7 @@ func TestDates(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
+	t.Parallel()
 	Convey("given a sort validator, and a set of erroneous sort string options", t, func() {
 		validator := validators["sort"]
 		badSortOptions := []string{"dont sort", "sort-by-date", "date-ascending"}
@@ -120,6 +124,7 @@ func TestSort(t *testing.T) {
 }
 
 func TestBuildSearchReleaseQuery(t *testing.T) {
+	t.Parallel()
 	Convey("Should return InternalError for invalid template", t, func() {
 		qb := createReleaseQueryBuilderForTemplate("dummy{{.Moo}}")
 		query, err := qb.BuildSearchQuery(context.Background(), ReleaseSearchRequest{})

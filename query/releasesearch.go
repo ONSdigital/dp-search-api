@@ -76,9 +76,9 @@ func ParseDate(date string) (Date, error) {
 	if date == "" {
 		return Date{}, nil
 	}
-	d, e := time.Parse(dateFormat, date)
-	if e != nil {
-		return Date{}, e
+	d, err := time.Parse(dateFormat, date)
+	if err != nil {
+		return Date{}, err
 	}
 
 	if d.Before(time.Date(1800, 1, 1, 0, 0, 0, 0, time.UTC)) {
@@ -93,8 +93,8 @@ func ParseDate(date string) (Date, error) {
 }
 
 func MustParseDate(date string) Date {
-	d, e := ParseDate(date)
-	if e != nil {
+	d, err := ParseDate(date)
+	if err != nil {
 		panic("invalid date string: " + date)
 	}
 
@@ -136,8 +136,8 @@ func ParseSort(sort string) (Sort, error) {
 }
 
 func MustParseSort(sort string) Sort {
-	s, e := ParseSort(sort)
-	if e != nil {
+	s, err := ParseSort(sort)
+	if err != nil {
 		panic("invalid sort string: " + sort)
 	}
 
@@ -195,9 +195,9 @@ type ReleaseSearchRequest struct {
 }
 
 func (sr *ReleaseSearchRequest) String() string {
-	s, e := json.MarshalIndent(sr, "", "  ")
-	if e != nil {
-		panic("couldn't marshal the searchRequest: " + e.Error())
+	s, err := json.MarshalIndent(sr, "", "  ")
+	if err != nil {
+		panic("couldn't marshal the searchRequest: " + err.Error())
 	}
 
 	return string(s)
@@ -205,9 +205,9 @@ func (sr *ReleaseSearchRequest) String() string {
 
 func (sr *ReleaseSearchRequest) Set(value string) error {
 	var sr2 ReleaseSearchRequest
-	e := json.Unmarshal([]byte(value), &sr2)
-	if e != nil {
-		return e
+	err := json.Unmarshal([]byte(value), &sr2)
+	if err != nil {
+		return err
 	}
 
 	*sr = sr2
