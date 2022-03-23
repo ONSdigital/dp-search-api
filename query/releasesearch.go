@@ -14,7 +14,7 @@ import (
 
 type ParamValidator map[paramName]validator
 
-func (qpv ParamValidator) Validate(name, value string) (interface{}, error) {
+func (qpv ParamValidator) Validate(_ context.Context, name, value string) (interface{}, error) {
 	if v, ok := qpv[paramName(name)]; ok {
 		return v(value)
 	}

@@ -3,18 +3,19 @@ package service
 import (
 	"context"
 
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
+
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
-	"github.com/ONSdigital/log.go/v2/log"
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 
 	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 const pathToTemplates = ""
@@ -114,6 +115,15 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
 	}
+
+	// Create the interfaces needed, and add route for the new search releases api
+	builder, err := query.NewReleaseBuilder(pathToTemplates)
+	if err != nil {
+		log.Fatal(ctx, "error initialising release query builder", err)
+		return nil, err
+	}
+
+	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, deprecatedESClient, transformer.NewReleaseTransformer())
 
 	go func() {
 		log.Info(ctx, "search api starting")
