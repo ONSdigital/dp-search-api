@@ -15,8 +15,11 @@ import (
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.successfullyReturnSingleSearchResult)
+	ctx.Step(`^elasticsearch returns one item in search/release response$`, c.successfullyReturnSingleSearchReleaseResult)
 	ctx.Step(`^elasticsearch returns multiple items in search response$`, c.successfullyReturnMultipleSearchResults)
+	ctx.Step(`^elasticsearch returns multiple items in search/release response$`, c.successfullyReturnMultipleSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.successfullyReturnNoSearchResults)
+	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.failureInternalServerError)
 	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponse)
 }
@@ -32,6 +35,17 @@ func (c *Component) successfullyReturnMultipleSearchResults() error {
 	return nil
 }
 
+func (c *Component) successfullyReturnMultipleSearchReleaseResults() error {
+	body, err := os.ReadFile("./features/testdata/es_mulitple_search_release_results.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+
+	return nil
+}
+
 func (c *Component) successfullyReturnSingleSearchResult() error {
 	body, err := os.ReadFile("./features/testdata/es_single_search_result.json")
 	if err != nil {
@@ -43,6 +57,17 @@ func (c *Component) successfullyReturnSingleSearchResult() error {
 	return nil
 }
 
+func (c *Component) successfullyReturnSingleSearchReleaseResult() error {
+	body, err := os.ReadFile("./features/testdata/es_single_search_release_result.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+
+	return nil
+}
+
 func (c *Component) successfullyReturnNoSearchResults() error {
 	body, err := os.ReadFile("./features/testdata/es_zero_search_results.json")
 	if err != nil {
@@ -50,6 +75,17 @@ func (c *Component) successfullyReturnNoSearchResults() error {
 	}
 
 	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
+
+	return nil
+}
+
+func (c *Component) successfullyReturnNoSearchReleaseResults() error {
+	body, err := os.ReadFile("./features/testdata/es_zero_search_release_results.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
 
 	return nil
 }

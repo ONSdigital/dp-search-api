@@ -1,0 +1,58 @@
+{
+  "took":8,
+  "timed_out":false,
+  "_shards":{
+    "total":3,
+    "successful":3,
+    "failed":0
+  },
+  "hits":{
+    "total":1,
+    "max_score":null,
+    "hits":[
+      {
+        "_index":"ons1646652430467",
+        "_type":"release",
+        "_id":"/releases/estimatingsuicideamonghighereducationstudentsenglandandwales",
+        "_score":0.2374177,
+        "_source":{
+          "uri":"/releases/estimatingsuicideamonghighereducationstudentsenglandandwales",
+          "type":"release",
+          "description":{
+            "finalised":true,
+            "title":"Estimating suicide among higher education students, England and Wales: Experimental Statistics",
+            "summary":"Estimates of suicides among higher education students by sex, age and ethnicity. Analysis based on mortality records linked to Higher Education Statistics Agency (HESA) Student records. ",
+            "nationalStatistic":false,
+            "contact":{
+              "email":"mortality@ons.gov.uk",
+              "name":"Sarah Caul",
+              "telephone":"+44 (0)1633 456490"
+            },
+            "releaseDate":"2018-06-25T08:30:00.000Z",
+            "nextRelease":"",
+            "unit":"",
+            "preUnit":"",
+            "source":"",
+            "cancelled":false,
+            "cancellationNotice":[],
+            "published":true,
+            "provisionalDate":""
+          },
+          "searchBoost":[]
+        },
+        "highlight":{
+          "description.summary":[
+            "Estimates of suicides among higher <em class=\"ons-highlight\">education</em> students by sex, age and ethnicity. Analysis based on mortality records linked to Higher <em class=\"ons-highlight\">Education</em> Statistics Agency (HESA) Student records. "
+          ],
+          "description.title":[
+            "Estimating suicide among higher <em class=\"ons-highlight\">education</em> students, England and <em class=\"ons-highlight\">Wales</em>: Experimental Statistics"
+          ]
+        },
+        "sort":[
+          0.2374177,
+          1529915400000
+        ]
+      }
+    ]
+  }
+}
