@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -104,7 +103,6 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			http.Error(w, "Failed to process search release query", http.StatusInternalServerError)
 			return
 		}
-		fmt.Printf("\nresponse is:\n%s", responseData)
 
 		if !paramGetBool(params, "raw", false) {
 			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
@@ -113,7 +111,6 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
 				return
 			}
-			fmt.Printf("\nprocessed response is:\n%s", responseData)
 		}
 
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")

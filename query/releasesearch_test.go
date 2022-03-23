@@ -23,9 +23,9 @@ func TestLimit(t *testing.T) {
 		}{
 			{given: "XXX", exValue: 0, exError: errors.New("limit search parameter provided with non numeric characters")},
 			{given: "-1", exValue: 0, exError: errors.New("limit search parameter provided with negative value")},
-			{given: "5001", exValue: 0, exError: fmt.Errorf("limit search parameter provided with a value that is too high")},
+			{given: "1001", exValue: 0, exError: fmt.Errorf("limit search parameter provided with a value that is too high")},
 			{given: "0", exValue: 0, exError: nil},
-			{given: "5000", exValue: 5000, exError: nil},
+			{given: "1000", exValue: 1000, exError: nil},
 		}
 
 		for _, ls := range limits {

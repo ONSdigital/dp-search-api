@@ -159,6 +159,66 @@ paths:
        500:
          description: Internal server error
 
+  /search/releases:
+    get:
+      tags:
+        - public
+      summary: "ONS query API for published or upcoming releases"
+      description: "ONS query API specifically targeting already Published (or Cancelled) Releases, or upcoming Release Calendar Entries"
+      parameters:
+        - in: query
+          name: limit
+          description: "The number of Resources requested, defaulted to 10 and limited to 1000."
+          type: integer
+          required: false
+          default: 10
+        - in: query
+          name: offset
+          description: "The offset into the complete ordered set of Resources which satisfy the query, which specifies the first Resource to return (starting at 0). Use this parameter as a pagination mechanism along with the limit parameter."
+          type: integer
+          required: false
+          default: 0
+        - in: query
+          name: sort
+          description: "The sort order of the returned set of Releases"
+          type: string
+          required: false
+          default: "release_date_asc"
+        - in: query
+          name: q
+          description: "Query keywords"
+          type: string
+          required: false
+        - in: query
+          name: dateFrom
+          description: "Specifies candidate Releases by their ReleaseDate, which must be on or after the dateFrom"
+          type: string
+          required: false
+        - in: query
+          name: dateTo
+          description: "Specifies candidate Releases by their ReleaseDate, which must be on or before the dateTo"
+          type: string
+          required: false
+        - in: query
+          name: upcoming
+          description: "Determines whether to return Upcoming Release Calendar Entries or Published Releases"
+          type: boolean
+          required: false
+          default: false
+        - in: query
+          name: highlight
+          description: "Determines whether to return HTML highlighted fields."
+          type: boolean
+          required: false
+          default: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/SearchReleaseResponse"
+        500:
+          description: Internal server error
+
   /timeseries:
     get:
       tags:
@@ -252,6 +312,72 @@ definitions:
         example: "ons1636458168532"
     required:
       - index_name
+
+  SearchReleaseResponse:
+    type: object
+    properties:
+      took:
+        type: number
+        description: "Time taken to execute query in milliseconds"
+        example: 530
+      limit:
+        type: number
+        description: "The number of Releases returned in the payload"
+        example: 10
+      offset:
+        type: number
+        description: "The offset of the first Release in the releases payload from the first Release in the complete ordered set of Releases which match the query"
+        example: 130
+      breakdwon:
+        type: object
+        description: "Breakdown of the total number of Releases into defined categories"
+        items:
+          $ref: "#/definitions/Breakdown"
+      releases:
+          type: array
+          description: "List of matching Releases"
+          items:
+            $ref: "#/definitions/Release"
+    required:
+      - took
+      - limit
+      - offset
+      - breakdwon
+      - releases
+
+  Breakdown:
+    type: object
+    properties:
+      total:
+        type: number
+        description: "Total number of Releases which match query"
+        example: 80
+      provisional:
+        type: number
+        description: "Number of provisional Releases"
+        example: 5
+      confirmed:
+        type: number
+        description: "Number of confirmed Releases"
+        example: 5
+      postponed:
+        type: number
+        description: "Number of postponed Releases"
+        example: 5
+      published:
+        type: number
+        description: "Number of published Releases"
+        example: 5
+      cancelled:
+        type: number
+        description: "Number of cancelled Releases"
+        example: 5
+      census:
+        type: number
+        description: "Number of Releases that are related to Census"
+        example: 5
+    required:
+      - total
 
   DepartmentResponse:
     type: object
@@ -369,7 +495,88 @@ definitions:
       - description
       - type
       - uri
-      
+
+  Release:
+    type: object
+    properties:
+      description:
+        type: object
+        properties:
+          cancelled:
+            type: boolean
+          cancellation_notice:
+            type: array
+            items:
+              type: string
+          census:
+            type: boolean
+          contact:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              telephone:
+                type: string
+            required:
+              - name
+              - email
+          dataset_id:
+            type: string
+          edition:
+            type: string
+          finalised:
+              type: boolean
+          keywords:
+            type: array
+            items:
+              type: string
+          latest_release:
+            type: boolean
+          language:
+            type: string
+            example: "English"
+          meta_description:
+            type: string
+          national_statistic:
+            type: boolean
+          next_release:
+            type: string
+            example: "14 August 2015"
+          postponed:
+            type: boolean
+          provisional_date:
+            type: string
+            format: date-time
+          published:
+            type: boolean
+          release_date:
+            type: string
+            format: date-time
+          source:
+            type: string
+          summary:
+            type: string
+          title:
+            type: string
+        required:
+          - cancelled
+          - census
+          - finalised
+          - postponed
+          - published
+          - release_date
+          - summary
+          - title
+      highlight:
+        $ref: "#/definitions/Highlight"
+      uri:
+        type: string
+    required:
+      - description
+      - uri
+
   Highlight:
     description: "Fields that contain at least 1 matching term from query 'q' parameter. The values contain the following embedded tags \"...<em class=\"highlight\">{matched term}</em>...\""
     type: object

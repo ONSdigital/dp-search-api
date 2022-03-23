@@ -35,7 +35,7 @@ func NewReleaseQueryParamValidator() ParamValidator {
 			if value < 0 {
 				return 0, errors.New("limit search parameter provided with negative value")
 			}
-			if value > 5000 {
+			if value > 1000 {
 				return 0, errors.New("limit search parameter provided with a value that is too high")
 			}
 
