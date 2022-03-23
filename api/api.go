@@ -1,14 +1,16 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher DpElasticSearcher QueryBuilder ResponseTransformer AuthHandler
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher DpElasticSearcher QueryParamValidator QueryBuilder ReleaseQueryBuilder ResponseTransformer AuthHandler
 
 import (
 	"context"
 	"net/http"
 
-	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+
+	"github.com/ONSdigital/dp-authorisation/auth"
+	"github.com/ONSdigital/dp-search-api/query"
 )
 
 var (
@@ -42,9 +44,19 @@ type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
 }
 
+// QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
+type QueryParamValidator interface {
+	Validate(ctx context.Context, name, value string) (interface{}, error)
+}
+
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
 	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error)
+}
+
+// ReleaseQueryBuilder provides an interface to build a search query for the Release content type
+type ReleaseQueryBuilder interface {
+	BuildSearchQuery(ctx context.Context, request query.ReleaseSearchRequest) ([]byte, error)
 }
 
 // ResponseTransformer provides methods for the transform package
@@ -79,4 +91,10 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil
+}
+
+func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
+
+	return a
 }

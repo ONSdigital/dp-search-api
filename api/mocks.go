@@ -6,6 +6,7 @@ package api
 import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
+	"github.com/ONSdigital/dp-search-api/query"
 	"net/http"
 	"sync"
 )
@@ -231,6 +232,83 @@ func (mock *DpElasticSearcherMock) CreateIndexCalls() []struct {
 	return calls
 }
 
+// Ensure, that QueryParamValidatorMock does implement QueryParamValidator.
+// If this is not the case, regenerate this file with moq.
+var _ QueryParamValidator = &QueryParamValidatorMock{}
+
+// QueryParamValidatorMock is a mock implementation of QueryParamValidator.
+//
+// 	func TestSomethingThatUsesQueryParamValidator(t *testing.T) {
+//
+// 		// make and configure a mocked QueryParamValidator
+// 		mockedQueryParamValidator := &QueryParamValidatorMock{
+// 			ValidateFunc: func(ctx context.Context, name string, value string) (interface{}, error) {
+// 				panic("mock out the Validate method")
+// 			},
+// 		}
+//
+// 		// use mockedQueryParamValidator in code that requires QueryParamValidator
+// 		// and then make assertions.
+//
+// 	}
+type QueryParamValidatorMock struct {
+	// ValidateFunc mocks the Validate method.
+	ValidateFunc func(ctx context.Context, name string, value string) (interface{}, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Validate holds details about calls to the Validate method.
+		Validate []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Name is the name argument value.
+			Name string
+			// Value is the value argument value.
+			Value string
+		}
+	}
+	lockValidate sync.RWMutex
+}
+
+// Validate calls ValidateFunc.
+func (mock *QueryParamValidatorMock) Validate(ctx context.Context, name string, value string) (interface{}, error) {
+	if mock.ValidateFunc == nil {
+		panic("QueryParamValidatorMock.ValidateFunc: method is nil but QueryParamValidator.Validate was just called")
+	}
+	callInfo := struct {
+		Ctx   context.Context
+		Name  string
+		Value string
+	}{
+		Ctx:   ctx,
+		Name:  name,
+		Value: value,
+	}
+	mock.lockValidate.Lock()
+	mock.calls.Validate = append(mock.calls.Validate, callInfo)
+	mock.lockValidate.Unlock()
+	return mock.ValidateFunc(ctx, name, value)
+}
+
+// ValidateCalls gets all the calls that were made to Validate.
+// Check the length with:
+//     len(mockedQueryParamValidator.ValidateCalls())
+func (mock *QueryParamValidatorMock) ValidateCalls() []struct {
+	Ctx   context.Context
+	Name  string
+	Value string
+} {
+	var calls []struct {
+		Ctx   context.Context
+		Name  string
+		Value string
+	}
+	mock.lockValidate.RLock()
+	calls = mock.calls.Validate
+	mock.lockValidate.RUnlock()
+	return calls
+}
+
 // Ensure, that QueryBuilderMock does implement QueryBuilder.
 // If this is not the case, regenerate this file with moq.
 var _ QueryBuilder = &QueryBuilderMock{}
@@ -326,6 +404,77 @@ func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 	return calls
 }
 
+// Ensure, that ReleaseQueryBuilderMock does implement ReleaseQueryBuilder.
+// If this is not the case, regenerate this file with moq.
+var _ ReleaseQueryBuilder = &ReleaseQueryBuilderMock{}
+
+// ReleaseQueryBuilderMock is a mock implementation of ReleaseQueryBuilder.
+//
+// 	func TestSomethingThatUsesReleaseQueryBuilder(t *testing.T) {
+//
+// 		// make and configure a mocked ReleaseQueryBuilder
+// 		mockedReleaseQueryBuilder := &ReleaseQueryBuilderMock{
+// 			BuildSearchQueryFunc: func(ctx context.Context, request query.ReleaseSearchRequest) ([]byte, error) {
+// 				panic("mock out the BuildSearchQuery method")
+// 			},
+// 		}
+//
+// 		// use mockedReleaseQueryBuilder in code that requires ReleaseQueryBuilder
+// 		// and then make assertions.
+//
+// 	}
+type ReleaseQueryBuilderMock struct {
+	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
+	BuildSearchQueryFunc func(ctx context.Context, request query.ReleaseSearchRequest) ([]byte, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// BuildSearchQuery holds details about calls to the BuildSearchQuery method.
+		BuildSearchQuery []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Request is the request argument value.
+			Request query.ReleaseSearchRequest
+		}
+	}
+	lockBuildSearchQuery sync.RWMutex
+}
+
+// BuildSearchQuery calls BuildSearchQueryFunc.
+func (mock *ReleaseQueryBuilderMock) BuildSearchQuery(ctx context.Context, request query.ReleaseSearchRequest) ([]byte, error) {
+	if mock.BuildSearchQueryFunc == nil {
+		panic("ReleaseQueryBuilderMock.BuildSearchQueryFunc: method is nil but ReleaseQueryBuilder.BuildSearchQuery was just called")
+	}
+	callInfo := struct {
+		Ctx     context.Context
+		Request query.ReleaseSearchRequest
+	}{
+		Ctx:     ctx,
+		Request: request,
+	}
+	mock.lockBuildSearchQuery.Lock()
+	mock.calls.BuildSearchQuery = append(mock.calls.BuildSearchQuery, callInfo)
+	mock.lockBuildSearchQuery.Unlock()
+	return mock.BuildSearchQueryFunc(ctx, request)
+}
+
+// BuildSearchQueryCalls gets all the calls that were made to BuildSearchQuery.
+// Check the length with:
+//     len(mockedReleaseQueryBuilder.BuildSearchQueryCalls())
+func (mock *ReleaseQueryBuilderMock) BuildSearchQueryCalls() []struct {
+	Ctx     context.Context
+	Request query.ReleaseSearchRequest
+} {
+	var calls []struct {
+		Ctx     context.Context
+		Request query.ReleaseSearchRequest
+	}
+	mock.lockBuildSearchQuery.RLock()
+	calls = mock.calls.BuildSearchQuery
+	mock.lockBuildSearchQuery.RUnlock()
+	return calls
+}
+
 // Ensure, that ResponseTransformerMock does implement ResponseTransformer.
 // If this is not the case, regenerate this file with moq.
 var _ ResponseTransformer = &ResponseTransformerMock{}
@@ -336,7 +485,7 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 //
 // 		// make and configure a mocked ResponseTransformer
 // 		mockedResponseTransformer := &ResponseTransformerMock{
-// 			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+// 			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error) {
 // 				panic("mock out the TransformSearchResponse method")
 // 			},
 // 		}
@@ -347,7 +496,7 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 // 	}
 type ResponseTransformerMock struct {
 	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
-	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -357,8 +506,8 @@ type ResponseTransformerMock struct {
 			Ctx context.Context
 			// ResponseData is the responseData argument value.
 			ResponseData []byte
-			// Query is the query argument value.
-			Query string
+			// QueryMoqParam is the queryMoqParam argument value.
+			QueryMoqParam string
 			// Highlight is the highlight argument value.
 			Highlight bool
 		}
@@ -367,41 +516,41 @@ type ResponseTransformerMock struct {
 }
 
 // TransformSearchResponse calls TransformSearchResponseFunc.
-func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error) {
 	if mock.TransformSearchResponseFunc == nil {
 		panic("ResponseTransformerMock.TransformSearchResponseFunc: method is nil but ResponseTransformer.TransformSearchResponse was just called")
 	}
 	callInfo := struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Query        string
-		Highlight    bool
+		Ctx           context.Context
+		ResponseData  []byte
+		QueryMoqParam string
+		Highlight     bool
 	}{
-		Ctx:          ctx,
-		ResponseData: responseData,
-		Query:        query,
-		Highlight:    highlight,
+		Ctx:           ctx,
+		ResponseData:  responseData,
+		QueryMoqParam: queryMoqParam,
+		Highlight:     highlight,
 	}
 	mock.lockTransformSearchResponse.Lock()
 	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
 	mock.lockTransformSearchResponse.Unlock()
-	return mock.TransformSearchResponseFunc(ctx, responseData, query, highlight)
+	return mock.TransformSearchResponseFunc(ctx, responseData, queryMoqParam, highlight)
 }
 
 // TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
 // Check the length with:
 //     len(mockedResponseTransformer.TransformSearchResponseCalls())
 func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
-	Ctx          context.Context
-	ResponseData []byte
-	Query        string
-	Highlight    bool
+	Ctx           context.Context
+	ResponseData  []byte
+	QueryMoqParam string
+	Highlight     bool
 } {
 	var calls []struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Query        string
-		Highlight    bool
+		Ctx           context.Context
+		ResponseData  []byte
+		QueryMoqParam string
+		Highlight     bool
 	}
 	mock.lockTransformSearchResponse.RLock()
 	calls = mock.calls.TransformSearchResponse
