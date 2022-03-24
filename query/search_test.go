@@ -11,7 +11,7 @@ import (
 func TestBuildSearchQuery(t *testing.T) {
 	Convey("Should return InternalError for invalid template", t, func() {
 		qb := createQueryBuilderForTemplate("dummy{{.Moo}}")
-		query, err := qb.BuildSearchQuery(context.Background(), "", "", "", 2, 1)
+		query, err := qb.BuildSearchQuery(context.Background(), "", "", "", nil, 2, 1)
 
 		So(err, ShouldNotBeNil)
 		So(query, ShouldBeNil)
@@ -23,6 +23,7 @@ func TestBuildSearchQuery(t *testing.T) {
 			"From={{.From}};" +
 			"Size={{.Size}};" +
 			"Types={{.Types}};" +
+			"Topic={{.Topic}};" +
 			"Queries={{.Queries}};" +
 			"SortBy={{.SortBy}};" +
 			"AggregationField={{.AggregationField}};" +
@@ -32,12 +33,13 @@ func TestBuildSearchQuery(t *testing.T) {
 			"Published={{.Published}};" +
 			"Now={{.Now}}")
 
-		query, err := qb.BuildSearchQuery(context.Background(), "a", "ta,tb", "relevance", 2, 1)
+		query, err := qb.BuildSearchQuery(context.Background(), "a", "ta,tb", "relevance", []string{"test"}, 2, 1)
 
 		So(err, ShouldBeNil)
 		So(query, ShouldNotBeNil)
 		queryString := string(query)
 		So(queryString, ShouldContainSubstring, "Term=a")
+		So(queryString, ShouldContainSubstring, "Topic=[test]")
 		So(queryString, ShouldContainSubstring, "From=1")
 		So(queryString, ShouldContainSubstring, "Size=2")
 		So(queryString, ShouldContainSubstring, "Types=[ta tb]")

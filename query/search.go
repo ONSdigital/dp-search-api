@@ -57,7 +57,7 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/contentFilterOnLatest.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnFirstLetter.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnReleaseDate.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnUriPrefix.tmpl",
+		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopic.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopicWildcard.tmpl",
 		pathToTemplates+"templates/search/sortByTitle.tmpl",
@@ -72,12 +72,13 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error) {
+func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
 	reqParams := searchRequest{
 		Term:             q,
 		From:             offset,
 		Size:             limit,
 		Types:            strings.Split(contentTypes, ","),
+		Topic:            topics,
 		SortBy:           sort,
 		Queries:          []string{"search", "counts"},
 		AggregationField: "_type",

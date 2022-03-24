@@ -384,7 +384,7 @@ func newDpElasticSearcherMock(err error) *DpElasticSearcherMock {
 
 func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
 	return &QueryBuilderMock{
-		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error) {
+		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
 			return query, err
 		},
 	}
