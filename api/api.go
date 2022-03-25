@@ -1,13 +1,12 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher QueryBuilder ResponseTransformer AuthHandler
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher DpElasticSearcher QueryBuilder ResponseTransformer AuthHandler
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
-	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -20,7 +19,7 @@ var (
 type SearchAPI struct {
 	Router             *mux.Router
 	QueryBuilder       QueryBuilder
-	dpESClient         *dpelastic.Client
+	dpESClient         DpElasticSearcher
 	deprecatedESClient ElasticSearcher
 	Transformer        ResponseTransformer
 	permissions        AuthHandler
@@ -38,6 +37,11 @@ type ElasticSearcher interface {
 	MultiSearch(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
 }
 
+// DpElasticSearcher provides an interface for the dp-elasticsearch functionality
+type DpElasticSearcher interface {
+	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
+}
+
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
 	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, limit, offset int) ([]byte, error)
@@ -49,7 +53,7 @@ type ResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	errData := SetupData()
 	if errData != nil {
 		return nil, errors.Wrap(errData, "Failed to setup data templates")
@@ -72,9 +76,7 @@ func NewSearchAPI(router *mux.Router, dpESClient *dpelastic.Client, deprecatedES
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-
-	createSearchIndexHandler := permissions.Require(update, CreateSearchIndexHandlerFunc(api.dpESClient))
+	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
-
 	return api, nil
 }

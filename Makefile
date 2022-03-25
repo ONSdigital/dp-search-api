@@ -25,13 +25,26 @@ lint:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
 	golangci-lint run ./...
 
+.PHONY: fmt
+fmt:
+	go fmt ./...
+	
+.PHONY: local
+local:
+	export ELASTIC_SEARCH_URL=https://localhost:9200; \
+	export AWS_TLS_INSECURE_SKIP_VERIFY=true; \
+	export SIGN_ELASTICSEARCH_REQUESTS=true; \
+	export AWS_PROFILE=development; \
+	export AWS_FILENAME=$(HOME)/.aws/credentials; \
+	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
+
 .PHONY: build
 build:
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
 	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) main.go
 
 .PHONY: debug
-debug: build
+debug: 
 	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
 .PHONY: test
@@ -43,3 +56,12 @@ test-component:
 	go test -cover -race -coverprofile="coverage.txt" -coverpkg=github.com/ONSdigital/$(MAIN)/... -component
 
 .PHONY: build debug test
+
+.PHONY: build-reindex
+build-reindex:
+	@mkdir -p $(BUILD)
+	GOOS=linux GOARCH=amd64 go build -tags=aws -ldflags "-w -s" -o $(BUILD)/reindex cmd/reindex/main.go cmd/reindex/aws.go
+
+.PHONY: reindex
+reindex:
+	HUMAN_LOG=1 go run -ldflags "-w -s" cmd/reindex/main.go cmd/reindex/local.go

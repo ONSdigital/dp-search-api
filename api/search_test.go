@@ -2,18 +2,25 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
+	"strings"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-const validQueryParam string = "a"
-const validQueryDoc string = `{"valid":"elastic search query"}`
-const validESResponse string = `{"raw":"response"}`
-const validTransformedResponse string = `{"transformed":"response"}`
+const (
+	validQueryParam          string = "a"
+	validQueryDoc            string = `{"valid":"elastic search query"}`
+	validESResponse          string = `{"raw":"response"}`
+	validTransformedResponse string = `{"transformed":"response"}`
+	internalServerErrMsg            = "internal server error"
+)
 
 func TestSearchHandlerFunc(t *testing.T) {
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
@@ -308,10 +315,69 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 }
 
+func TestCreateSearchIndexHandlerFunc(t *testing.T) {
+	Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
+		dpESClient := newDpElasticSearcherMock(nil)
+
+		searchAPI := &SearchAPI{dpESClient: dpESClient}
+
+		Convey("When a new elastic search index is created", func() {
+			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			resp := httptest.NewRecorder()
+
+			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+
+			Convey("Then the newly created search index name is returned with status code 201", func() {
+				So(resp.Code, ShouldEqual, http.StatusCreated)
+				payload, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+				indexCreated := CreateIndexResponse{}
+				err = json.Unmarshal(payload, &indexCreated)
+				So(err, ShouldBeNil)
+
+				Convey("And the index name has the expected name format", func() {
+					re := regexp.MustCompile(`(ons)(\d*)`)
+					indexName := indexCreated.IndexName
+					So(indexName, ShouldNotBeNil)
+					wordWithExpectedPattern := re.FindString(indexName)
+					So(wordWithExpectedPattern, ShouldEqual, indexName)
+				})
+			})
+		})
+	})
+
+	Convey("Given a Search API that is pointing to the old version of Elastic Search", t, func() {
+		// The new ES client will return an error if the Search API config is pointing at the old version of ES
+		dpESClient := newDpElasticSearcherMock(errors.New("unexpected status code from api"))
+
+		searchAPI := &SearchAPI{dpESClient: dpESClient}
+
+		Convey("When a new elastic search index is created", func() {
+			req := httptest.NewRequest("POST", "http://localhost:23900/search", nil)
+			resp := httptest.NewRecorder()
+
+			searchAPI.CreateSearchIndexHandlerFunc(resp, req)
+
+			Convey("Then an internal server error is returned with status code 500", func() {
+				So(resp.Code, ShouldEqual, http.StatusInternalServerError)
+				So(strings.Trim(resp.Body.String(), "\n"), ShouldResemble, internalServerErrMsg)
+			})
+		})
+	})
+}
+
 func newElasticSearcherMock(response []byte, err error) *ElasticSearcherMock {
 	return &ElasticSearcherMock{
 		MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
 			return response, err
+		},
+	}
+}
+
+func newDpElasticSearcherMock(err error) *DpElasticSearcherMock {
+	return &DpElasticSearcherMock{
+		CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
+			return err
 		},
 	}
 }

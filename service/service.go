@@ -12,9 +12,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	dpelastic "github.com/ONSdigital/dp-elasticsearch/v2/elasticsearch"
-	dphttp "github.com/ONSdigital/dp-net/http"
+	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
+	"github.com/ONSdigital/dp-net/v2/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
 )
 
 const pathToTemplates = ""
@@ -23,7 +23,6 @@ type Service struct {
 	api                 *api.SearchAPI
 	config              *config.Config
 	elasticSearchClient elasticsearch.Client
-	esSigner            *esauth.Signer
 	healthCheck         HealthChecker
 	queryBuilder        api.QueryBuilder
 	router              *mux.Router
@@ -47,11 +46,6 @@ func (svc *Service) SetQueryBuilder(queryBuilder api.QueryBuilder) {
 	svc.queryBuilder = queryBuilder
 }
 
-// SetEsSigner sets the AWS signer for a service
-func (svc *Service) SetEsSigner(esSigner *esauth.Signer) {
-	svc.esSigner = esSigner
-}
-
 // SetElasticSearchClient sets the new instance of elasticsearch for a service
 func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Client) {
 	svc.elasticSearchClient = elasticSearchClient
@@ -64,7 +58,6 @@ func (svc *Service) SetTransformer(transformerClient *transformer.Transformer) {
 
 // Run the service
 func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
-	var esSigner *esauth.Signer
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise transformerClient
@@ -72,17 +65,21 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
-		esSigner, err = esauth.NewAwsSigner("", "", cfg.AwsRegion, cfg.AwsService)
+		var awsSignerRT *awsauth.AwsSignerRoundTripper
+
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
 		if err != nil {
-			log.Error(ctx, "failed to create aws v4 signer", err)
+			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
 		}
+
+		elasticHTTPClient = dphttp.NewClientWithTransport(awsSignerRT)
 	}
 
-	dpESClient := dpelastic.NewClientWithHTTPClientAndAwsSigner(cfg.ElasticSearchAPIURL, esSigner, cfg.SignElasticsearchRequests, elasticHTTPClient)
+	dpESClient := legacyESClient.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
 
 	// Initialise deprecatedESClient
-	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.SignElasticsearchRequests, esSigner, cfg.AwsRegion, cfg.AwsService)
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder(pathToTemplates)
@@ -130,7 +127,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		api:                 searchAPI,
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
-		esSigner:            esSigner,
 		healthCheck:         healthCheck,
 		queryBuilder:        queryBuilder,
 		router:              router,
@@ -184,7 +180,7 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *dpelastic.Client) (err error) {
+func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *legacyESClient.Client) (err error) {
 	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		err = errors.New("Error(s) registering checkers for health check")

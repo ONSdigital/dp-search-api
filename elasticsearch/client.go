@@ -5,32 +5,26 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"time"
 
-	esauth "github.com/ONSdigital/dp-elasticsearch/v2/awsauth"
-	dphttp "github.com/ONSdigital/dp-net/http"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/pkg/errors"
 )
 
 // Client represents an instance of the elasticsearch client - now deprecated
 type Client struct {
-	awsRegion    string
-	awsSDKSigner *esauth.Signer
-	awsService   string
-	url          string
-	client       dphttp.Clienter
-	signRequests bool
+	awsRegion  string
+	awsService string
+	url        string
+	client     dphttp.Clienter
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(url string, client dphttp.Clienter, signRequests bool, awsSDKSigner *esauth.Signer, awsService, awsRegion string) *Client {
+func New(url string, client dphttp.Clienter, awsService, awsRegion string) *Client {
 	return &Client{
-		awsSDKSigner: awsSDKSigner,
-		awsRegion:    awsRegion,
-		awsService:   awsService,
-		client:       client,
-		signRequests: signRequests,
-		url:          url,
+		awsRegion:  awsRegion,
+		awsService: awsService,
+		client:     client,
+		url:        url,
 	}
 }
 
@@ -49,12 +43,6 @@ func (cli *Client) post(ctx context.Context, index, docType, action string, requ
 	req, err := http.NewRequest("POST", cli.url+"/"+buildContext(index, docType)+action, reader)
 	if err != nil {
 		return nil, err
-	}
-
-	if cli.signRequests {
-		if awsSignErr := cli.awsSDKSigner.Sign(req, reader, time.Now()); awsSignErr != nil {
-			return nil, awsSignErr
-		}
 	}
 
 	resp, err := cli.client.Do(ctx, req)

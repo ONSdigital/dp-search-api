@@ -1,0 +1,51 @@
+{
+  "took":8,
+  "limit":10,
+  "offset":0,
+  "breakdown":{
+    "total":2
+  },
+  "releases":[
+    {
+      "uri":"/releases/estimatingsuicideamonghighereducationstudentsenglandandwales",
+      "description":{
+        "title":"Estimating suicide among higher education students, England and Wales: Experimental Statistics",
+        "summary":"Estimates of suicides among higher education students by sex, age and ethnicity. Analysis based on mortality records linked to Higher Education Statistics Agency (HESA) Student records. ",
+        "release_date":"2018-06-25T08:30:00.000Z",
+        "published":true,
+        "cancelled":false,
+        "finalised":true,
+        "postponed":false,
+        "census":false,
+        "national_statistic":false,
+        "latest_release":false,
+        "contact":{
+          "name":"Sarah Caul",
+          "telephone":"+44 (0)1633 456490",
+          "email":"mortality@ons.gov.uk"
+        }
+      }
+    },
+    {
+      "uri":"/releases/youngpeoplenotineducationemploymentortrainingneetukaugust2018",
+      "description":{
+        "title":"Young people not in education, employment or training (NEET), UK: August 2018",
+        "summary":"Estimates of young people (aged 16 to 24) who are not in education, employment or training, by age and sex.",
+        "release_date":"2018-08-23T08:30:00.000Z",
+        "published":true,
+        "cancelled":false,
+        "finalised":true,
+        "postponed":false,
+        "census":false,
+        "national_statistic":true,
+        "next_release":"22 November 2018",
+        "latest_release":false,
+        "contact":{
+          "name":"Yanitsa Petkova ",
+          "telephone":"+44 (0)1633 651599 ",
+          "email":"yanitsa.petkova@ons.gov.uk"
+        }
+      }
+    }
+  ]
+}
