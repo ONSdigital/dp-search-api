@@ -56,3 +56,12 @@ test-component:
 	go test -cover -race -coverprofile="coverage.txt" -coverpkg=github.com/ONSdigital/$(MAIN)/... -component
 
 .PHONY: build debug test
+
+.PHONY: build-reindex
+build-reindex:
+	@mkdir -p $(BUILD)
+	GOOS=linux GOARCH=amd64 go build -tags=aws -ldflags "-w -s" -o $(BUILD)/reindex cmd/reindex/main.go cmd/reindex/aws.go
+
+.PHONY: reindex
+reindex:
+	HUMAN_LOG=1 go run -ldflags "-w -s" cmd/reindex/main.go cmd/reindex/local.go

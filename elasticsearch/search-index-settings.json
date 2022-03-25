@@ -255,20 +255,40 @@
       "releaseDate":{
         "type":"date"
       },
+      "published":{
+        "type":"bool"
+      },
+      "cancelled":{
+        "type":"bool"
+      },
+      "finalised":{
+        "type":"bool"
+      },
+      "dateChanges":{
+        "type":"nested",
+        "properties":{
+          "previousDate":{
+            "type":"date"
+          },
+          "changeNotice":{
+            "type":"text"
+          }
+        }
+      },
       "topics":{
-        "type": "nested",
-           "properties": {
-            "topic_name": {
-              "type": "keyword",
-              "fields": {
-                 "topics_raw": {
-                  "type": "text",
-                  "analyzer":"ons_synonym_stem",
-                  "search_analyzer":"ons_stem"
-                }
+        "type":"nested",
+        "properties":{
+          "topic_name":{
+            "type":"keyword",
+            "fields":{
+              "topics_raw":{
+                "type":"text",
+                "analyzer":"ons_synonym_stem",
+                "search_analyzer":"ons_stem"
               }
             }
           }
+        }
       },
       "searchBoost":{
         "type":"text",

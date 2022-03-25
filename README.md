@@ -78,6 +78,49 @@ Once connected, run the following make target:
   make local
 ```
 
+### Running Bulk Indexer
+
+#### Locally
+
+Build the bulk indexer by running the following command
+```
+  make reindex
+```
+Then run the executable  
+```
+  ./reindex
+```
+Please make sure your elasticsearch server is running locally on localhost:9200 and version of the server is 7.10, which is the current supported version.
+
+#### Remote Environment
+
+###### Prerequisites
+
+Before attempting the following steps please make sure you have dp tool setup locally.For more info on setting up the dp tool: https://github.com/ONSdigital/dp-cli#build-and-run
+
+###### Steps
+
+Navigate to ```cmd/reindex/aws.go``` and update esurl to correct elastic search 7.10 url in environment and then build the bulk indexer by running the following command
+```
+  make build-reindex
+```
+Then copy to your environment build directory  by running the following command
+```
+dp scp <environment> publishing <box> ./build/reindex <location on publishing box>
+```
+For example
+```
+dp scp develop publishing 2 ./build/reindex .
+```
+Then ssh into the box as follows
+```
+dp ssh <environment> publishing <box>
+```
+Then run the executable
+```
+  ./build/reindex
+```
+
 ### Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details.
