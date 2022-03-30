@@ -256,13 +256,13 @@
         "type":"date"
       },
       "published":{
-        "type":"bool"
+        "type":"boolean"
       },
       "cancelled":{
-        "type":"bool"
+        "type":"boolean"
       },
       "finalised":{
-        "type":"bool"
+        "type":"boolean"
       },
       "dateChanges":{
         "type":"nested",
