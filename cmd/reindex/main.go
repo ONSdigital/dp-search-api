@@ -17,9 +17,7 @@ import (
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp2 "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/clients"
-	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
-	"github.com/ONSdigital/dp-search-api/service"
 	extractorModels "github.com/ONSdigital/dp-search-data-extractor/models"
 	importerModels "github.com/ONSdigital/dp-search-data-importer/models"
 	"github.com/ONSdigital/dp-search-data-importer/transform"
@@ -52,11 +50,6 @@ type DatasetEditionMetadata struct {
 	id        string
 	editionID string
 	version   string
-}
-
-type zebedeeClient interface {
-	GetPublishedIndex(ctx context.Context, piRequest *zebedee.PublishedIndexRequestParams) (zebedee.PublishedIndex, error)
-	GetPublishedData(ctx context.Context, uriString string) ([]byte, error)
 }
 
 type Document struct {
@@ -94,11 +87,7 @@ func main() {
 		esHTTPClient = dphttp2.NewClientWithTransport(awsSignerRT)
 	}
 
-	svcList := service.NewServiceList(&service.Init{})
-	datasetClient := svcList.GetDatasetClient(&config.Config{
-		DatasetAPIURL: cfg.datasetURL,
-	})
-
+	datasetClient := dataset.NewAPIClient(cfg.datasetURL)
 	esClient, esClientErr := dpEs.NewClient(dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.esURL,
@@ -123,7 +112,7 @@ func main() {
 	cleanOldIndices(ctx, esClient)
 }
 
-func uriProducer(ctx context.Context, z zebedeeClient) chan string {
+func uriProducer(ctx context.Context, z clients.ZebedeeClient) chan string {
 	uriChan := make(chan string)
 	go func() {
 		defer close(uriChan)
@@ -136,7 +125,7 @@ func uriProducer(ctx context.Context, z zebedeeClient) chan string {
 	return uriChan
 }
 
-func getPublishedURIs(ctx context.Context, z zebedeeClient) []zebedee.PublishedIndexItem {
+func getPublishedURIs(ctx context.Context, z clients.ZebedeeClient) []zebedee.PublishedIndexItem {
 	index, err := z.GetPublishedIndex(ctx, &zebedee.PublishedIndexRequestParams{})
 	if err != nil {
 		log.Fatalf("Fatal error getting index from zebedee: %s", err)
@@ -145,7 +134,7 @@ func getPublishedURIs(ctx context.Context, z zebedeeClient) []zebedee.PublishedI
 	return index.Items
 }
 
-func docExtractor(ctx context.Context, z zebedeeClient, uriChan chan string, maxExtractions int) (extractedChan chan Document, extractionFailuresChan chan string) {
+func docExtractor(ctx context.Context, z clients.ZebedeeClient, uriChan chan string, maxExtractions int) (extractedChan chan Document, extractionFailuresChan chan string) {
 	extractedChan = make(chan Document)
 	extractionFailuresChan = make(chan string)
 	go func() {
@@ -167,7 +156,7 @@ func docExtractor(ctx context.Context, z zebedeeClient, uriChan chan string, max
 	return
 }
 
-func extractDoc(ctx context.Context, z zebedeeClient, uriChan <-chan string, extractedChan chan Document, extractionFailuresChan chan string) {
+func extractDoc(ctx context.Context, z clients.ZebedeeClient, uriChan <-chan string, extractedChan chan Document, extractionFailuresChan chan string) {
 	for uri := range uriChan {
 		body, err := z.GetPublishedData(ctx, uri)
 		if err != nil {

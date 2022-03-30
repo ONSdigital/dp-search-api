@@ -3,13 +3,11 @@ package service
 import (
 	"net/http"
 
-	"github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	api "github.com/ONSdigital/dp-search-api/api"
-	"github.com/ONSdigital/dp-search-api/clients"
 	"github.com/ONSdigital/dp-search-api/config"
 )
 
@@ -94,17 +92,4 @@ func (e *Init) DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
 	)
 
 	return permissions
-}
-
-// GetDatasetClient return DatasetAPI client
-func (e *ExternalServiceList) GetDatasetClient(cfg *config.Config) clients.DatasetAPIClient {
-	datasetAPIClient := e.Init.DoGetDatasetClient(cfg)
-	e.DatasetClient = true
-	return datasetAPIClient
-}
-
-// DoGetZebedeeClient gets and initialises the Zebedee Client
-func (e *Init) DoGetDatasetClient(cfg *config.Config) clients.DatasetAPIClient {
-	datasetClient := dataset.NewAPIClient(cfg.DatasetAPIURL)
-	return datasetClient
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/api"
-	"github.com/ONSdigital/dp-search-api/clients"
 	"github.com/ONSdigital/dp-search-api/config"
 )
 
@@ -21,7 +20,6 @@ type Initialiser interface {
 	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
 	DoGetHealthClient(name, url string) *health.Client
 	DoGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler
-	DoGetDatasetClient(cfg *config.Config) clients.DatasetAPIClient
 }
 
 // HealthChecker defines the required methods from Healthcheck
