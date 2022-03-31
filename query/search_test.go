@@ -23,7 +23,6 @@ func TestBuildSearchQuery(t *testing.T) {
 			"From={{.From}};" +
 			"Size={{.Size}};" +
 			"Types={{.Types}};" +
-			"Topic={{.Topic}};" +
 			"Queries={{.Queries}};" +
 			"SortBy={{.SortBy}};" +
 			"AggregationField={{.AggregationField}};" +
@@ -39,7 +38,6 @@ func TestBuildSearchQuery(t *testing.T) {
 		So(query, ShouldNotBeNil)
 		queryString := string(query)
 		So(queryString, ShouldContainSubstring, "Term=a")
-		So(queryString, ShouldContainSubstring, "Topic=[test]")
 		So(queryString, ShouldContainSubstring, "From=1")
 		So(queryString, ShouldContainSubstring, "Size=2")
 		So(queryString, ShouldContainSubstring, "Types=[ta tb]")

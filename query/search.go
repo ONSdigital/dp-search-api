@@ -74,11 +74,11 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
 	reqParams := searchRequest{
-		Term:             q,
-		From:             offset,
-		Size:             limit,
-		Types:            strings.Split(contentTypes, ","),
-		Topic:            topics,
+		Term:  q,
+		From:  offset,
+		Size:  limit,
+		Types: strings.Split(contentTypes, ","),
+		//Topic:            topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
 		SortBy:           sort,
 		Queries:          []string{"search", "counts"},
 		AggregationField: "_type",
