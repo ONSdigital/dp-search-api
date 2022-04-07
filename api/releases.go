@@ -64,9 +64,9 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			return
 		}
 
-		if time.Time(fromDate.(query.Date)).After(time.Time(toDate.(query.Date))) {
+		if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
 			log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
-			http.Error(w, "Invalid date parameters", http.StatusBadRequest)
+			http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
 			return
 		}
 
@@ -127,4 +127,12 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			return
 		}
 	}
+}
+
+func fromAfterTo(from, to query.Date) bool {
+	if !time.Time(from).IsZero() && !time.Time(to).IsZero() && time.Time(from).After(time.Time(to)) {
+		return true
+	}
+
+	return false
 }
