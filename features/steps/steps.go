@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/ONSdigital/dp-search-api/transformer"
+	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/cucumber/godog"
 	"github.com/google/go-cmp/cmp"
 )
@@ -97,7 +97,7 @@ func (c *Component) failureInternalServerError() error {
 }
 
 func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
-	var searchResponse, expectedSearchResponse transformer.SearchResponse
+	var searchResponse, expectedSearchResponse models.SearchResponse
 
 	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {

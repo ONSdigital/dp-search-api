@@ -6,150 +6,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/pkg/errors"
 )
 
 // Transformer represents an instance of the ResponseTransformer interface
 type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
-}
-
-// Structs representing the transformed response
-type SearchResponse struct {
-	Count               int           `json:"count"`
-	Took                int           `json:"took"`
-	ContentTypes        []ContentType `json:"content_types"`
-	Items               []ContentItem `json:"items"`
-	Suggestions         []string      `json:"suggestions,omitempty"`
-	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
-}
-
-type ContentType struct {
-	Type  string `json:"type"`
-	Count int    `json:"count"`
-}
-
-type ContentItem struct {
-	Description description `json:"description"`
-	Type        string      `json:"type"`
-	URI         string      `json:"uri"`
-}
-
-type description struct {
-	Contact           *contact      `json:"contact,omitempty"`
-	DatasetID         string        `json:"dataset_id,omitempty"`
-	Edition           string        `json:"edition,omitempty"`
-	Headline1         string        `json:"headline1,omitempty"`
-	Headline2         string        `json:"headline2,omitempty"`
-	Headline3         string        `json:"headline3,omitempty"`
-	Highlight         *highlightObj `json:"highlight,omitempty"`
-	Keywords          *[]string     `json:"keywords,omitempty"`
-	LatestRelease     *bool         `json:"latest_release,omitempty"`
-	Language          string        `json:"language,omitempty"`
-	MetaDescription   string        `json:"meta_description,omitempty"`
-	NationalStatistic *bool         `json:"national_statistic,omitempty"`
-	NextRelease       string        `json:"next_release,omitempty"`
-	PreUnit           string        `json:"pre_unit,omitempty"`
-	ReleaseDate       string        `json:"release_date,omitempty"`
-	Source            string        `json:"source,omitempty"`
-	Summary           string        `json:"summary"`
-	Title             string        `json:"title"`
-	Unit              string        `json:"unit,omitempty"`
-}
-
-type contact struct {
-	Name      string `json:"name"`
-	Telephone string `json:"telephone,omitempty"`
-	Email     string `json:"email"`
-}
-
-type highlightObj struct {
-	DatasetID       string    `json:"dataset_id,omitempty"`
-	Edition         string    `json:"edition,omitempty"`
-	Keywords        *[]string `json:"keywords,omitempty"`
-	MetaDescription string    `json:"meta_description,omitempty"`
-	Summary         string    `json:"summary,omitempty"`
-	Title           string    `json:"title,omitempty"`
-}
-
-// Structs representing the raw elastic search response
-
-type ESResponse struct {
-	Responses []ESResponseItem `json:"responses"`
-}
-
-type ESResponseItem struct {
-	Took         int                    `json:"took"`
-	Hits         ESResponseHits         `json:"hits"`
-	Aggregations ESResponseAggregations `json:"aggregations"`
-	Suggest      ESSuggest              `json:"suggest"`
-}
-
-type ESResponseHits struct {
-	Total int
-	Hits  []ESResponseHit `json:"hits"`
-}
-
-type ESResponseHit struct {
-	Source    ESSourceDocument `json:"_source"`
-	Highlight ESHighlight      `json:"highlight"`
-}
-
-type ESSourceDocument struct {
-	Description struct {
-		Summary           string    `json:"summary"`
-		NextRelease       string    `json:"nextRelease,omitempty"`
-		Unit              string    `json:"unit,omitempty"`
-		Keywords          *[]string `json:"keywords,omitempty"`
-		ReleaseDate       string    `json:"releaseDate,omitempty"`
-		Edition           string    `json:"edition,omitempty"`
-		LatestRelease     *bool     `json:"latestRelease,omitempty"`
-		Language          string    `json:"language,omitempty"`
-		Contact           *contact  `json:"contact,omitempty"`
-		DatasetID         string    `json:"datasetId,omitempty"`
-		Source            string    `json:"source,omitempty"`
-		Title             string    `json:"title"`
-		MetaDescription   string    `json:"metaDescription,omitempty"`
-		NationalStatistic *bool     `json:"nationalStatistic,omitempty"`
-		PreUnit           string    `json:"preUnit,omitempty"`
-		Headline1         string    `json:"headline1,omitempty"`
-		Headline2         string    `json:"headline2,omitempty"`
-		Headline3         string    `json:"headline3,omitempty"`
-	} `json:"description"`
-	Type string `json:"type"`
-	URI  string `json:"uri"`
-}
-
-type ESHighlight struct {
-	DescriptionTitle     *[]string `json:"description.title"`
-	DescriptionEdition   *[]string `json:"description.edition"`
-	DescriptionSummary   *[]string `json:"description.summary"`
-	DescriptionMeta      *[]string `json:"description.metaDescription"`
-	DescriptionKeywords  *[]string `json:"description.keywords"`
-	DescriptionDatasetID *[]string `json:"description.datasetId"`
-}
-
-type ESResponseAggregations struct {
-	DocCounts struct {
-		Buckets []ESBucket `json:"buckets"`
-	} `json:"docCounts"`
-}
-
-type ESBucket struct {
-	Key   string `json:"key"`
-	Count int    `json:"doc_count"`
-}
-
-type ESSuggest struct {
-	SearchSuggest []ESSearchSuggest `json:"search_suggest"`
-}
-
-type ESSearchSuggest struct {
-	Options []ESSearchSuggestOptions `json:"options"`
-}
-
-type ESSearchSuggestOptions struct {
-	Text string `json:"text"`
 }
 
 // New returns a new instance of Transformer
@@ -162,7 +25,7 @@ func New() *LegacyTransformer {
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
-	var source ESResponse
+	var source models.ESResponse
 
 	err := json.Unmarshal(responseData, &source)
 	if err != nil {
@@ -188,11 +51,11 @@ func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, respons
 	return transformedData, nil
 }
 
-func (t *LegacyTransformer) transform(source *ESResponse, highlight bool) SearchResponse {
-	sr := SearchResponse{
+func (t *LegacyTransformer) transform(source *models.ESResponse, highlight bool) models.SearchResponse {
+	sr := models.SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
-		Items:        []ContentItem{},
-		ContentTypes: []ContentType{},
+		Items:        []models.ContentItem{},
+		ContentTypes: []models.ContentType{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -213,8 +76,8 @@ func (t *LegacyTransformer) transform(source *ESResponse, highlight bool) Search
 	return sr
 }
 
-func (t *LegacyTransformer) buildContentItem(doc ESResponseHit, highlight bool) ContentItem {
-	ci := ContentItem{
+func (t *LegacyTransformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ContentItem {
+	ci := models.ContentItem{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
@@ -223,11 +86,11 @@ func (t *LegacyTransformer) buildContentItem(doc ESResponseHit, highlight bool) 
 	return ci
 }
 
-func (t *LegacyTransformer) buildDescription(doc ESResponseHit, highlight bool) description {
+func (t *LegacyTransformer) buildDescription(doc models.ESResponseHit, highlight bool) models.Description {
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
-	des := description{
+	des := models.Description{
 		Summary:           sd.Summary,
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
@@ -249,7 +112,7 @@ func (t *LegacyTransformer) buildDescription(doc ESResponseHit, highlight bool) 
 	}
 
 	if highlight {
-		des.Highlight = &highlightObj{
+		des.Highlight = &models.HighlightObj{
 			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
 			Edition:         t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
 			Keywords:        t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
@@ -290,8 +153,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList *[]string, highl
 	return &overlaid
 }
 
-func buildContentTypes(bucket ESBucket) ContentType {
-	return ContentType{
+func buildContentTypes(bucket models.ESBucket) models.ContentType {
+	return models.ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}

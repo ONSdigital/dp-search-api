@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ONSdigital/dp-search-api/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -47,7 +48,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act SearchResponse
+			var exp, act models.SearchResponse
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
