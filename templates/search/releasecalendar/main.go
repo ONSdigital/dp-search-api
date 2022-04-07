@@ -12,7 +12,6 @@ import (
 	"time"
 
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
-	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
@@ -33,12 +32,11 @@ func main() {
 		builder             *query.ReleaseBuilder
 		q, uq, responseData []byte
 		err                 error
-		ctx                                         = context.Background()
-		multi                                       = flag.Bool("multi", false, "use the multi query format when sending the query to ES")
-		file                                        = flag.String("file", "", "a file containing the actual query to be sent to ES (in json format)")
-		esClient                                    = elasticsearch.New("http://localhost:9200", dphttp.NewClient(), "eu-west-1", "es")
-		esSearch                                    = esClient.Search
-		esTransformer       api.ResponseTransformer = transformer.NewReleaseTransformer()
+		ctx                 = context.Background()
+		multi               = flag.Bool("multi", false, "use the multi query format when sending the query to ES")
+		file                = flag.String("file", "", "a file containing the actual query to be sent to ES (in json format)")
+		esClient            = elasticsearch.New("http://localhost:9200", dphttp.NewClient(), "eu-west-1", "es")
+		esSearch            = esClient.Search
 	)
 
 	flag.Var(&sr, "sr", "a searchRequest object in json format")
@@ -83,7 +81,6 @@ func main() {
 			log.Fatalf("failed to format multi query: %s", err)
 		}
 		esSearch = esClient.MultiSearch
-		esTransformer = transformer.New()
 	}
 
 	fmt.Printf("\nformatted query is:\n%s", q)
@@ -97,7 +94,11 @@ func main() {
 	}
 	fmt.Printf("\nresponse is:\n%s", responseData)
 
-	responseData, err = esTransformer.TransformSearchResponse(ctx, responseData, sr.Term, sr.Highlight)
+	if *multi {
+		responseData, err = transformer.New().TransformSearchResponse(ctx, responseData, sr.Term, sr.Highlight)
+	} else {
+		responseData, err = transformer.NewReleaseTransformer().TransformSearchResponse(ctx, responseData, sr, sr.Highlight)
+	}
 	if err != nil {
 		log.Fatalf("transformation of response data failed: %s", err)
 	}

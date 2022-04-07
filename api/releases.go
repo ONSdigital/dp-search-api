@@ -12,12 +12,12 @@ import (
 )
 
 // SearchReleasesHandlerFunc returns a http handler function handling release calendar search api requests.
-func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ReleaseResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q, err := url.QueryUnescape(params.Get("query"))
+		queryString, err := url.QueryUnescape(params.Get("query"))
 		if err != nil {
 			log.Warn(ctx, err.Error(), log.Data{"param": "query", "value": params.Get("query")})
 			http.Error(w, "Bad url encoding of the query parameter", http.StatusBadRequest)
@@ -79,20 +79,21 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		}
 		highlight := paramGetBool(params, "highlight", true)
 
-		formattedQuery, err := builder.BuildSearchQuery(ctx,
-			query.ReleaseSearchRequest{
-				Term:           q,
-				From:           offset.(int),
-				Size:           limit.(int),
-				SortBy:         sort.(query.Sort),
-				ReleasedAfter:  fromDate.(query.Date),
-				ReleasedBefore: toDate.(query.Date),
-				Type:           relType.(query.ReleaseType),
-				Highlight:      highlight,
-				Now:            query.Date(time.Now()),
-			})
+		searchReq := query.ReleaseSearchRequest{
+			Term:           queryString,
+			From:           offset.(int),
+			Size:           limit.(int),
+			SortBy:         sort.(query.Sort),
+			ReleasedAfter:  fromDate.(query.Date),
+			ReleasedBefore: toDate.(query.Date),
+			Type:           relType.(query.ReleaseType),
+			Highlight:      highlight,
+			Now:            query.Date(time.Now()),
+		}
+
+		formattedQuery, err := builder.BuildSearchQuery(ctx, searchReq)
 		if err != nil {
-			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
+			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search release query", http.StatusInternalServerError)
 			return
 		}
@@ -111,7 +112,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, searchReq, highlight)
 			if err != nil {
 				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
