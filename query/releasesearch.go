@@ -127,10 +127,11 @@ const (
 	RelDateDesc
 	TitleAsc
 	TitleDesc
+	Relevance
 )
 
-var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Invalid: "invalid"}
-var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title": "asc"}`, TitleDesc: `{"description.title": "desc"}`, Invalid: "invalid"}
+var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
+var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title": "asc"}`, TitleDesc: `{"description.title": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
 
 func ParseSort(sort string) (Sort, error) {
 	for s, sn := range sortNames {
@@ -244,6 +245,22 @@ func (sr *ReleaseSearchRequest) String() string {
 
 	return string(s)
 }
+
+func (sr ReleaseSearchRequest) Sort() string {
+	if sr.SortBy == Relevance {
+		switch sr.Type {
+		case Upcoming:
+			return fmt.Sprintf("%s, %s", esSortNames[Relevance], esSortNames[RelDateAsc])
+		case Published:
+			return fmt.Sprintf("%s, %s", esSortNames[Relevance], esSortNames[RelDateDesc])
+		case Cancelled:
+			return esSortNames[Relevance]
+		}
+	}
+
+	return sr.SortBy.ESString()
+}
+
 func (sr ReleaseSearchRequest) ReleaseType() string {
 	switch sr.Type {
 	case Upcoming:

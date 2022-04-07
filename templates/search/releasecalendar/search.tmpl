@@ -2,11 +2,7 @@
 {
     "from": {{.From}},
     "size": {{.Size}},
-    "sort": [
-        {{if .Term}} {"_score": "desc"}, {{- .SortBy.ESString -}}
-        {{else}} {{- .SortBy.ESString -}}
-        {{end}}
-    ],
+    "sort": [{{.Sort}}],
     "query": {
         "bool": {
             "must": {
