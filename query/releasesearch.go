@@ -200,9 +200,7 @@ type ReleaseBuilder struct {
 func NewReleaseBuilder(pathToTemplates string) (*ReleaseBuilder, error) {
 	searchTemplate, err := template.ParseFiles(
 		pathToTemplates+"templates/search/releasecalendar/search.tmpl",
-		pathToTemplates+"templates/search/releasecalendar/query.tmpl",
-		pathToTemplates+"templates/search/releasecalendar/upcoming.tmpl",
-		pathToTemplates+"templates/search/releasecalendar/published.tmpl")
+		pathToTemplates+"templates/search/releasecalendar/query.tmpl")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
 	}

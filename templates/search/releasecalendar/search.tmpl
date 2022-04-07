@@ -25,13 +25,9 @@
                             "include_upper": true
                         }
                     }
-                }
-                {{if .Upcoming}}
-                    ,{{- template "upcoming.tmpl" . }}
-                {{else if .Published}}
-                    ,{{- template "published.tmpl" . }}
-                {{end}}
-            ]
+                },
+                {{.ReleaseType}}
+             ]
         }
     }
     {{if .Highlight}}
