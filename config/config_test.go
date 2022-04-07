@@ -23,7 +23,7 @@ func TestSpec(t *testing.T) {
 				So(cfg.AWS.Service, ShouldEqual, "es")
 				So(cfg.AWS.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.BindAddr, ShouldEqual, ":23900")
-				So(cfg.ElasticSearchAPIURL, ShouldEqual, "http://localhost:11200")
+				So(cfg.ElasticSearchAPIURL, ShouldEqual, "http://localhost:9200")
 				So(cfg.GracefulShutdownTimeout, ShouldEqual, 5*time.Second)
 				So(cfg.SignElasticsearchRequests, ShouldEqual, false)
 				So(cfg.HealthCheckCriticalTimeout, ShouldEqual, 90*time.Second)

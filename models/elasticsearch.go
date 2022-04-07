@@ -1,7 +1,7 @@
 package models
 
 // *************************************************************
-// Part 1 : structs representing the raw elastic search response
+// structs representing the raw elastic search response
 // *************************************************************
 
 // Es7xResponse holds a response slice from ES
@@ -48,7 +48,7 @@ type ES7xHighlight struct {
 }
 
 // ********************************************************
-// Part 2 :  Structs representing the transformed response
+// Structs representing the transformed response
 // ********************************************************
 
 type Search7xResponse struct {
