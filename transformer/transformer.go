@@ -188,11 +188,10 @@ func numberOfSearchTerms(query string) int {
 	return len(st)
 }
 
-// TransformSearchResponse transforms an elastic search 7.x response 
+// TransformSearchResponse transforms an elastic search 7.x response
 func (t *Transformer) TransformSearchResponse(
 	ctx context.Context, responseData []byte,
 	query string, highlight bool) ([]byte, error) {
-
 	var esResponse models.Es7xResponse
 
 	err := json.Unmarshal(responseData, &esResponse)
@@ -221,10 +220,8 @@ func (t *Transformer) TransformSearchResponse(
 
 // Transform the raw ES to search response
 func (t *Transformer) transform(es7xresponse *models.Es7xResponse, highlight bool) models.Search7xResponse {
-
 	var search7xResponse = models.Search7xResponse{
 		Took: es7xresponse.Responses[0].Took,
 	}
 	return search7xResponse
 }
-

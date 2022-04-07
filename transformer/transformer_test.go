@@ -184,7 +184,6 @@ func TestTransform(t *testing.T) {
 
 // Prepare mock ES response
 func prepareESMockResponse() models.Es7xResponse {
-
 	esDocument := models.ES7xSourceDocument{
 		DataType:        "anyDataType2",
 		JobID:           "",
