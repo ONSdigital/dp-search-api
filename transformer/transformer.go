@@ -49,7 +49,7 @@ func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, respons
 		return nil, errors.New("Response to be transformed contained 0 items")
 	}
 
-	sr := t.transform(&source, highlight)
+	sr := t.legayTransform(&source, highlight)
 
 	needAdditionalSuggestions := numberOfSearchTerms(query)
 	if needAdditionalSuggestions > 1 {
@@ -64,7 +64,7 @@ func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, respons
 	return transformedData, nil
 }
 
-func (t *LegacyTransformer) transform(source *models.ESResponse, highlight bool) models.SearchResponse {
+func (t *LegacyTransformer) legayTransform(source *models.ESResponse, highlight bool) models.SearchResponse {
 	sr := models.SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItem{},
@@ -221,7 +221,9 @@ func (t *Transformer) TransformSearchResponse(
 // Transform the raw ES to search response
 func (t *Transformer) transform(es7xresponse *models.Es7xResponse, highlight bool) models.Search7xResponse {
 	var search7xResponse = models.Search7xResponse{
-		Took: es7xresponse.Responses[0].Took,
+		Took:        es7xresponse.Responses[0].Took,
+		Items:       es7xresponse.Responses[0].Hits.Hits[0].Source,
+		Suggestions: es7xresponse.Responses[0].Suggest,
 	}
 	return search7xResponse
 }

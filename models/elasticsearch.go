@@ -10,8 +10,10 @@ type Es7xResponse struct {
 }
 
 type EsResponse7x struct {
-	Took int              `json:"took"`
-	Hits ES7xResponseHits `json:"hits"`
+	Took         int                      `json:"took"`
+	Hits         ES7xResponseHits         `json:"hits"`
+	Aggregations ES7xResponseAggregations `json:"aggregations"`
+	Suggest      []string                 `json:"suggest"`
 }
 
 type ES7xResponseHits struct {
@@ -20,8 +22,21 @@ type ES7xResponseHits struct {
 }
 
 type ES7xResponseHit struct {
-	Source    ES7xSourceDocument `json:"_source"`
-	Highlight ES7xHighlight      `json:"highlight"`
+	Source    []ES7xSourceDocument `json:"_source"`
+	Highlight ES7xHighlight        `json:"highlight"`
+}
+
+type ES7xResponseAggregations struct {
+	Doccounts ES7xDocCounts `json:"docCounts"`
+}
+
+type ES7xDocCounts struct {
+	Buckets []ES7xBucket `json:"buckets"`
+}
+
+type ES7xBucket struct {
+	Key   string `json:"key"`
+	Count int    `json:"doc_count"`
 }
 
 type ES7xSourceDocument struct {

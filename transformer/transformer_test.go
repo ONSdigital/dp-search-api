@@ -23,7 +23,7 @@ func TestLegacyTransformer(t *testing.T) {
 					},
 				}},
 			}
-			sr := transformer.transform(&es, false)
+			sr := transformer.legayTransform(&es, false)
 			So(sr.Suggestions, ShouldBeEmpty)
 		})
 
@@ -39,7 +39,7 @@ func TestLegacyTransformer(t *testing.T) {
 					},
 				}},
 			}
-			sr := transformer.transform(&es, true)
+			sr := transformer.legayTransform(&es, true)
 			So(sr.Suggestions, ShouldNotBeEmpty)
 			So(len(sr.Suggestions), ShouldEqual, 1)
 			So(sr.Suggestions[0], ShouldResemble, "option1")
@@ -68,7 +68,7 @@ func TestLegacyTransformer(t *testing.T) {
 					},
 				}},
 			}
-			sr := transformer.transform(&es, true)
+			sr := transformer.legayTransform(&es, true)
 			So(sr.Suggestions, ShouldNotBeEmpty)
 			So(len(sr.Suggestions), ShouldEqual, 3)
 			So(sr.Suggestions[0], ShouldResemble, "option1")
@@ -167,6 +167,31 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 }
 
 func TestTransform(t *testing.T) {
+	expectedESDocument1 := models.ES7xSourceDocument{
+		DataType:        "anyDataType1",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword1"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic1"},
+	}
+	expectedESDocument2 := models.ES7xSourceDocument{
+		DataType:        "anyDataType2",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword2"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic2"},
+	}
+
 	Convey("Given a new instance of Transformer7x with search responses successfully", t, func() {
 		transformer := New()
 		esResponse := prepareESMockResponse()
@@ -177,6 +202,10 @@ func TestTransform(t *testing.T) {
 			Convey("Then transforms unmarshalled search responses successfully", func() {
 				So(transformedResponse, ShouldNotBeNil)
 				So(transformedResponse.Took, ShouldEqual, 10)
+				So(len(transformedResponse.Items), ShouldEqual, 2)
+				So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
+				So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
+				So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
 			})
 		})
 	})
@@ -184,8 +213,8 @@ func TestTransform(t *testing.T) {
 
 // Prepare mock ES response
 func prepareESMockResponse() models.Es7xResponse {
-	esDocument := models.ES7xSourceDocument{
-		DataType:        "anyDataType2",
+	esDocument1 := models.ES7xSourceDocument{
+		DataType:        "anyDataType1",
 		JobID:           "",
 		CDID:            "",
 		DatasetID:       "",
@@ -197,9 +226,38 @@ func prepareESMockResponse() models.Es7xResponse {
 		Topics:          []string{"anyTopic1"},
 	}
 
+	esDocument2 := models.ES7xSourceDocument{
+		DataType:        "anyDataType2",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword2"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic2"},
+	}
+
+	esDocuments := []models.ES7xSourceDocument{esDocument1, esDocument2}
+
 	hit7x := models.ES7xResponseHit{
-		Source:    esDocument,
+		Source:    esDocuments,
 		Highlight: models.ES7xHighlight{},
+	}
+
+	bucket1 := models.ES7xBucket{
+		Key:   "article",
+		Count: 1,
+	}
+	bucket2 := models.ES7xBucket{
+		Key:   "product_page",
+		Count: 1,
+	}
+	buckets := []models.ES7xBucket{bucket1, bucket2}
+
+	es7xDoccount := models.ES7xDocCounts{
+		Buckets: buckets,
 	}
 
 	esResponse7x1 := models.EsResponse7x{
@@ -210,6 +268,10 @@ func prepareESMockResponse() models.Es7xResponse {
 				hit7x,
 			},
 		},
+		Aggregations: models.ES7xResponseAggregations{
+			Doccounts: es7xDoccount,
+		},
+		Suggest: []string{"testSuggestion"},
 	}
 
 	// Preparing ES response array
