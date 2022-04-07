@@ -6,7 +6,6 @@ package service
 
 import (
 	"context"
-
 	"net/http"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"

@@ -5,12 +5,14 @@ go 1.17
 replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.92.2
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.103.0
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.6.3
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.2
 	github.com/ONSdigital/dp-healthcheck v1.2.3
 	github.com/ONSdigital/dp-net/v2 v2.0.0
+	github.com/ONSdigital/dp-search-data-extractor v0.9.0
+	github.com/ONSdigital/dp-search-data-importer v0.5.0
 	github.com/ONSdigital/log.go/v2 v2.1.0
 	github.com/cucumber/godog v0.12.2
 	github.com/google/go-cmp v0.5.6
@@ -29,8 +31,6 @@ require (
 	github.com/ONSdigital/dp-mongodb-in-memory v1.1.0 // indirect
 	github.com/ONSdigital/dp-net v1.4.0 // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
-	github.com/ONSdigital/dp-search-data-extractor v0.9.0 // indirect
-	github.com/ONSdigital/dp-search-data-importer v0.5.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad // indirect
 	github.com/Shopify/sarama v1.29.1 // indirect
 	github.com/aws/aws-sdk-go v1.42.47 // indirect

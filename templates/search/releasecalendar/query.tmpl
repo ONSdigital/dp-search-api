@@ -1,0 +1,89 @@
+"dis_max": {
+    "queries": [
+        {
+            "bool": {
+                "should": [
+                    {
+                        "match": {
+                            "description.title.title_no_dates": {
+                                "query": "{{.Term}}",
+                                "type": "boolean",
+                                "boost": 10.0,
+                                "minimum_should_match": "1<-2 3<80% 5<60%"
+                            }
+                        }
+                    },
+                    {
+                        "match": {
+                            "description.title.title_no_stem": {
+                                "query": "{{.Term}}",
+                                "type": "boolean",
+                                "boost": 10.0,
+                                "minimum_should_match": "1<-2 3<80% 5<60%"
+                            }
+                        }
+                    },
+                    {
+                        "multi_match": {
+                            "query": "{{.Term}}",
+                            "fields": [
+                                "description.title^10",
+                                "description.edition"
+                           ],
+                            "type": "cross_fields",
+                            "minimum_should_match": "3<80% 5<60%"
+                         }
+                    },
+                    {
+                        "match": {
+                            "description.title.title_no_synonym_no_stem": {
+                                "query": "{{.Term}}",
+                                "type": "phrase_prefix",
+                                "max_expansions": 10
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "multi_match": {
+                "query": "{{.Term}}",
+                "fields": [
+                    "description.summary",
+                    "description.metaDescription"
+                ],
+                "type": "best_fields",
+                "minimum_should_match": "75%"
+            }
+        },
+        {
+            "match": {
+                "description.keywords": {
+                    "query": "{{.Term}}",
+                    "type": "boolean",
+                    "operator": "AND"
+                }
+            }
+        },
+        {
+            "multi_match": {
+                "query": "{{.Term}}",
+                "fields": [
+                    "description.cdid",
+                    "description.datasetId"
+                ]
+            }
+        },
+        {
+            "match": {
+                "searchBoost": {
+                    "query": "{{.Term}}",
+                    "type": "boolean",
+                    "operator": "AND",
+                    "boost": 100.0
+                }
+            }
+        }
+    ]
+}

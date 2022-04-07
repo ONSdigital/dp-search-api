@@ -1,0 +1,55 @@
+{
+  "bool": {
+    "should": [
+      {
+        "bool": {
+          "must": [
+            {
+              "bool": {
+                "must_not": {
+                  "term": {
+                    "description.published": true
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "must_not": {
+                  "term": {
+                    "description.cancelled": true
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "description.cancelled": true
+              }
+            },
+            {
+              "bool": {
+                "must_not": {
+                  "range": {
+                    "description.releaseDate": {
+                      "from": null,
+                      "to": {{.Now.ESString}},
+                      "include_lower": true,
+                      "include_upper": true
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

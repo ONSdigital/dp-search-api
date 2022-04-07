@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -67,7 +68,12 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 		sort := paramGet(params, "sort", "relevance")
 
 		highlight := paramGetBool(params, "highlight", true)
-
+		topics := paramGet(params, "topics", "")
+		topicSlice := sanitiseURLParams(topics)
+		log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
+			"param": "topics",
+			"value": topicSlice,
+		})
 		limitParam := paramGet(params, "limit", "10")
 		limit, err := strconv.Atoi(limitParam)
 		if err != nil {
@@ -108,7 +114,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient ElasticSea
 
 		typesParam := paramGet(params, "content_type", defaultContentTypes)
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, limit, offset)
+		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset)
 		if err != nil {
 			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
@@ -183,4 +189,8 @@ func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http
 func createIndexName(s string) string {
 	now := time.Now()
 	return fmt.Sprintf("%s%d", s, now.UnixMicro())
+}
+
+func sanitiseURLParams(str string) []string {
+	return strings.Split(strings.ReplaceAll(str, " ", ""), ",")
 }

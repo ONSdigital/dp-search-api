@@ -13,16 +13,18 @@ import (
 
 // ExternalServiceList holds the initialiser and initialisation state of external services.
 type ExternalServiceList struct {
-	HealthCheck bool
-	Init        Initialiser
-	Auth        bool
+	HealthCheck   bool
+	Init          Initialiser
+	Auth          bool
+	DatasetClient bool
 }
 
 // NewServiceList creates a new service list with the provided initialiser
 func NewServiceList(initialiser Initialiser) *ExternalServiceList {
 	return &ExternalServiceList{
-		HealthCheck: false,
-		Init:        initialiser,
+		HealthCheck:   false,
+		Init:          initialiser,
+		DatasetClient: false,
 	}
 }
 
