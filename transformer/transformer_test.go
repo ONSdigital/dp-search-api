@@ -78,7 +78,7 @@ func TestLegacyTransformer(t *testing.T) {
 	})
 }
 
-func TestBuildAdditionalSuggestionsList(t *testing.T) {
+func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
 	Convey("buildAdditionalSuggestionList successfully", t, func() {
 		Convey("returns array of strings", func() {
 			query1 := buildAdditionalSuggestionList("test-query")
@@ -99,7 +99,7 @@ func TestBuildAdditionalSuggestionsList(t *testing.T) {
 	})
 }
 
-func TestTransformSearchResponse(t *testing.T) {
+func TestLegacyTransformSearchResponse(t *testing.T) {
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
 		transformer := NewLegacy()
@@ -164,4 +164,61 @@ func TestTransformSearchResponse(t *testing.T) {
 			So(act, ShouldResemble, exp)
 		})
 	})
+}
+
+func TestTransform(t *testing.T) {
+	Convey("Given a new instance of Transformer7x with search responses successfully", t, func() {
+		transformer := New()
+		esResponse := prepareESMockResponse()
+
+		Convey("When calling a transformer", func() {
+			transformedResponse := transformer.transform(&esResponse, true)
+
+			Convey("Then transforms unmarshalled search responses successfully", func() {
+				So(transformedResponse, ShouldNotBeNil)
+				So(transformedResponse.Took, ShouldEqual, 10)
+			})
+		})
+	})
+}
+
+// Prepare mock ES response
+func prepareESMockResponse() models.Es7xResponse {
+
+	esDocument := models.ES7xSourceDocument{
+		DataType:        "anyDataType2",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword1"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic1"},
+	}
+
+	hit7x := models.ES7xResponseHit{
+		Source:    esDocument,
+		Highlight: models.ES7xHighlight{},
+	}
+
+	esResponse7x1 := models.EsResponse7x{
+		Took: 10,
+		Hits: models.ES7xResponseHits{
+			Total: 1,
+			Hits: []models.ES7xResponseHit{
+				hit7x,
+			},
+		},
+	}
+
+	// Preparing ES response array
+	es7xResponse := models.Es7xResponse{
+		Responses: []models.EsResponse7x{
+			esResponse7x1,
+		},
+	}
+
+	return es7xResponse
 }

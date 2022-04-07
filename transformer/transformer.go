@@ -23,6 +23,19 @@ func NewLegacy() *LegacyTransformer {
 	}
 }
 
+// Transformer represents an instance of the ResponseTransformer interface for ES7x
+type Transformer struct {
+	higlightReplacer *strings.Replacer
+}
+
+// New7x returns a new instance of Transformer7x
+func New() *Transformer {
+	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
+	return &Transformer{
+		higlightReplacer: highlightReplacer,
+	}
+}
+
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source models.ESResponse
@@ -174,3 +187,44 @@ func numberOfSearchTerms(query string) int {
 	st := strings.Fields(query)
 	return len(st)
 }
+
+// TransformSearchResponse transforms an elastic search 7.x response 
+func (t *Transformer) TransformSearchResponse(
+	ctx context.Context, responseData []byte,
+	query string, highlight bool) ([]byte, error) {
+
+	var esResponse models.Es7xResponse
+
+	err := json.Unmarshal(responseData, &esResponse)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to decode elastic search 7x response")
+	}
+
+	if len(esResponse.Responses) < 1 {
+		return nil, errors.New("Response to be 7x transformed contained 0 items")
+	}
+
+	sr := t.transform(&esResponse, highlight)
+
+	needAdditionalSuggestions := numberOfSearchTerms(query)
+	if needAdditionalSuggestions > 1 {
+		as := buildAdditionalSuggestionList(query)
+		sr.AdditionSuggestions = as
+	}
+
+	transformedData, err := json.Marshal(sr)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to encode transformed response")
+	}
+	return transformedData, nil
+}
+
+// Transform the raw ES to search response
+func (t *Transformer) transform(es7xresponse *models.Es7xResponse, highlight bool) models.Search7xResponse {
+
+	var search7xResponse = models.Search7xResponse{
+		Took: es7xresponse.Responses[0].Took,
+	}
+	return search7xResponse
+}
+

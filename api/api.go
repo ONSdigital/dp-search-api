@@ -88,8 +88,8 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
 	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
-	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
+	// createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
+	router.HandleFunc("/search", api.CreateSearchIndexHandlerFunc).Methods("POST")
 	return api, nil
 }
 
