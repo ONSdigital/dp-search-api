@@ -69,7 +69,14 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			http.Error(w, "Invalid date parameters", http.StatusBadRequest)
 			return
 		}
-		upcoming := paramGetBool(params, "type-upcoming", false)
+
+		relTypeParam := paramGet(params, "release-type", query.Published.String())
+		relType, err := validator.Validate(ctx, "release-type", relTypeParam)
+		if err != nil {
+			log.Warn(ctx, err.Error(), log.Data{"param": "release-type", "value": relTypeParam})
+			http.Error(w, "Invalid release-type parameter", http.StatusBadRequest)
+			return
+		}
 		highlight := paramGetBool(params, "highlight", true)
 
 		formattedQuery, err := builder.BuildSearchQuery(ctx,
@@ -80,8 +87,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 				SortBy:         sort.(query.Sort),
 				ReleasedAfter:  fromDate.(query.Date),
 				ReleasedBefore: toDate.(query.Date),
-				Upcoming:       upcoming,
-				Published:      !upcoming,
+				Type:           relType.(query.ReleaseType),
 				Highlight:      highlight,
 				Now:            query.Date(time.Now()),
 			})

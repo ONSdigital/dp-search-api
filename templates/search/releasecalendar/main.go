@@ -26,7 +26,7 @@ func main() {
 			Term:           "Education in Wales",
 			ReleasedAfter:  query.MustParseDate("2018-01-01"),
 			ReleasedBefore: query.MustParseDate("2018-12-31"),
-			Published:      true,
+			Type:           query.Published,
 			Highlight:      false,
 			Now:            query.Date(time.Now()),
 		}

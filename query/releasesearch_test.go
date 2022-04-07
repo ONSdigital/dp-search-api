@@ -176,8 +176,7 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			"SortBy={{.SortBy.ESString}};" +
 			"ReleasedAfter={{.ReleasedAfter.ESString}};" +
 			"ReleasedBefore={{.ReleasedBefore.ESString}};" +
-			"Upcoming={{.Upcoming}};" +
-			"Published={{.Published}};" +
+			"Type={{.Type.String}};" +
 			"Highlight={{.Highlight}};" +
 			"Now={{.Now}};" +
 			"NowES={{.Now.ESString}}")
@@ -189,8 +188,7 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			SortBy:         TitleAsc,
 			ReleasedAfter:  Date{},
 			ReleasedBefore: MustParseDate("2020-12-31"),
-			Upcoming:       true,
-			Published:      false,
+			Type:           Published,
 			Highlight:      true,
 			Now:            MustParseDate("2001-01-01"),
 		})
@@ -204,8 +202,7 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, `SortBy={"description.title": "asc"}`)
 		So(queryString, ShouldContainSubstring, "ReleasedAfter=null")
 		So(queryString, ShouldContainSubstring, `ReleasedBefore="2020-12-31"`)
-		So(queryString, ShouldContainSubstring, "Upcoming=true")
-		So(queryString, ShouldContainSubstring, "Published=false")
+		So(queryString, ShouldContainSubstring, "Type=type-published")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
 		So(queryString, ShouldContainSubstring, `Now=2001-01-01`)
 		So(queryString, ShouldContainSubstring, `NowES="2001-01-01"`)

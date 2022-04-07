@@ -229,8 +229,11 @@ type ReleaseSearchRequest struct {
 	SortBy         Sort
 	ReleasedAfter  Date
 	ReleasedBefore Date
-	Upcoming       bool
-	Published      bool
+	Type           ReleaseType
+	Provisional    bool
+	Confirmed      bool
+	Postponed      bool
+	Census         bool
 	Highlight      bool
 	Now            Date
 }
@@ -242,6 +245,17 @@ func (sr *ReleaseSearchRequest) String() string {
 	}
 
 	return string(s)
+}
+func (sr ReleaseSearchRequest) ReleaseType() string {
+	switch sr.Type {
+	case Upcoming:
+		return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
+			fmt.Sprintf(`{"range": {"description.release_date": {"gte": %q}}}`, time.Now().Format(dateFormat)))
+	case Published:
+		return fmt.Sprintf("%s, %s", `{"term": {"description.published": true}}`, `{"term": {"description.cancelled": false}}`)
+	default:
+		return fmt.Sprintf("%s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": true}}`)
+	}
 }
 
 func (sr *ReleaseSearchRequest) Set(value string) error {
