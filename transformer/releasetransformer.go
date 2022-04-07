@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+
+	"github.com/ONSdigital/dp-search-api/query"
 )
 
 type ReleaseTransformer struct {
@@ -114,15 +116,29 @@ func NewReleaseTransformer() *ReleaseTransformer {
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, responseData []byte, _ string, highlight bool) ([]byte, error) {
-	var source ESReleaseResponse
+func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
+	var (
+		source      ESReleaseResponse
+		highlighter *strings.Replacer
+	)
 
 	err := json.Unmarshal(responseData, &source)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to decode elastic search response")
 	}
 
-	sr := t.transform(&source, highlight)
+	sr := SearchReleaseResponse{
+		Took:      source.Took,
+		Breakdown: breakdown(&source, req),
+		Releases:  []Release{},
+	}
+
+	if highlight {
+		highlighter = t.higlightReplacer
+	}
+	for i := range source.Hits.Hits {
+		sr.Releases = append(sr.Releases, buildRelease(source.Hits.Hits[i], highlighter))
+	}
 
 	transformedData, err := json.Marshal(sr)
 	if err != nil {
@@ -132,21 +148,23 @@ func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, response
 	return transformedData, nil
 }
 
-func (t *ReleaseTransformer) transform(source *ESReleaseResponse, highlight bool) SearchReleaseResponse {
-	sr := SearchReleaseResponse{
-		Took:      source.Took,
-		Breakdown: Breakdown{Total: source.Hits.Total},
-		Releases:  []Release{},
+func breakdown(source *ESReleaseResponse, req query.ReleaseSearchRequest) Breakdown {
+	b := Breakdown{}
+
+	b.Total = source.Hits.Total
+	switch req.Type {
+	case query.Upcoming:
+		b.Confirmed = b.Total
+	case query.Published:
+		b.Published = b.Total
+	case query.Cancelled:
+		b.Cancelled = b.Total
 	}
 
-	for i := range source.Hits.Hits {
-		sr.Releases = append(sr.Releases, t.buildRelease(source.Hits.Hits[i], highlight))
-	}
-
-	return sr
+	return b
 }
 
-func (t *ReleaseTransformer) buildRelease(hit ESReleaseResponseHit, highlightOn bool) Release {
+func buildRelease(hit ESReleaseResponseHit, highlighter *strings.Replacer) Release {
 	sd := hit.Source.Description
 	hl := hit.Highlight
 
@@ -166,11 +184,11 @@ func (t *ReleaseTransformer) buildRelease(hit ESReleaseResponseHit, highlightOn 
 		},
 	}
 
-	if highlightOn {
+	if highlighter != nil {
 		r.Highlight = &highlight{
-			Keywords: t.overlayList(hl.DescriptionKeywords, sd.Keywords, highlightOn),
-			Summary:  t.overlayItem(hl.DescriptionSummary, sd.Summary, highlightOn),
-			Title:    t.overlayItem(hl.DescriptionTitle, sd.Title, highlightOn),
+			Keywords: overlayList(hl.DescriptionKeywords, sd.Keywords, highlighter),
+			Summary:  overlayItem(hl.DescriptionSummary, sd.Summary, highlighter),
+			Title:    overlayItem(hl.DescriptionTitle, sd.Title, highlighter),
 		}
 	}
 
@@ -181,24 +199,24 @@ func isPostponed(release ESReleaseSourceDocument) bool {
 	return release.Description.Finalised && len(release.DateChanges) > 0
 }
 
-func (t *ReleaseTransformer) overlayItem(hl []string, def string, highlight bool) string {
-	if highlight && len(hl) > 0 {
+func overlayItem(hl []string, def string, highlighter *strings.Replacer) string {
+	if highlighter != nil && len(hl) > 0 {
 		return hl[0]
 	}
 
 	return def
 }
 
-func (t *ReleaseTransformer) overlayList(hlList, defaultList []string, highlight bool) []string {
+func overlayList(hlList, defaultList []string, highlighter *strings.Replacer) []string {
 	if defaultList == nil || hlList == nil {
 		return nil
 	}
 
 	overlaid := make([]string, len(defaultList))
 	copy(overlaid, defaultList)
-	if highlight {
+	if highlighter != nil {
 		for _, hl := range hlList {
-			unformatted := t.higlightReplacer.Replace(hl)
+			unformatted := highlighter.Replace(hl)
 			for i, defItem := range overlaid {
 				if defItem == unformatted {
 					overlaid[i] = hl

@@ -3,7 +3,8 @@
   "limit":10,
   "offset":0,
   "breakdown":{
-    "total":2
+    "total":2,
+    "published": 2
   },
   "releases":[
     {
