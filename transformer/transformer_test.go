@@ -12,7 +12,7 @@ import (
 
 func TestLegacyTransformer(t *testing.T) {
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
-		transformer := New()
+		transformer := NewLegacy()
 		Convey("Zero suggestions creates empty array", func() {
 			es := models.ESResponse{
 				Responses: []models.ESResponseItem{models.ESResponseItem{
@@ -102,7 +102,7 @@ func TestBuildAdditionalSuggestionsList(t *testing.T) {
 func TestTransformSearchResponse(t *testing.T) {
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
-		transformer := New()
+		transformer := NewLegacy()
 		So(t, ShouldNotBeNil)
 
 		Convey("Throws error on invalid JSON", func() {

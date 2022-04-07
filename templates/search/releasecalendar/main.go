@@ -83,7 +83,7 @@ func main() {
 			log.Fatalf("failed to format multi query: %s", err)
 		}
 		esSearch = esClient.MultiSearch
-		esTransformer = transformer.New()
+		esTransformer = transformer.NewLegacy()
 	}
 
 	fmt.Printf("\nformatted query is:\n%s", q)

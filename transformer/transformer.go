@@ -10,13 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Transformer represents an instance of the ResponseTransformer interface
+// LegacyTransformer represents an instance of the ResponseTransformer interface
 type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
 }
 
-// New returns a new instance of Transformer
-func New() *LegacyTransformer {
+// NewLegacy returns a new instance of Transformer
+func NewLegacy() *LegacyTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
 	return &LegacyTransformer{
 		higlightReplacer: highlightReplacer,

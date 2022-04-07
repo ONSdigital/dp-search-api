@@ -62,7 +62,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise transformerClient
-	transformerClient := transformer.New()
+	transformerClient := transformer.NewLegacy()
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
