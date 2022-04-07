@@ -65,6 +65,13 @@ func NewReleaseQueryParamValidator() ParamValidator {
 			}
 			return value, nil
 		},
+		"release-type": func(param string) (interface{}, error) {
+			value, err := ParseReleaseType(param)
+			if err != nil {
+				return nil, fmt.Errorf("release-type parameter provided is invalid: %w", err)
+			}
+			return value, nil
+		},
 	}
 }
 
@@ -150,6 +157,40 @@ func (s Sort) String() string {
 
 func (s Sort) ESString() string {
 	return esSortNames[s]
+}
+
+type ReleaseType int
+
+const (
+	InvalidReleaseType ReleaseType = iota
+	Upcoming
+	Published
+	Cancelled
+)
+
+var relTypeNames = map[ReleaseType]string{Upcoming: "type-upcoming", Published: "type-published", Cancelled: "type-cancelled", InvalidReleaseType: "Invalid"}
+
+func ParseReleaseType(s string) (ReleaseType, error) {
+	for rt, rtn := range relTypeNames {
+		if strings.EqualFold(s, rtn) {
+			return rt, nil
+		}
+	}
+
+	return InvalidReleaseType, errors.New("invalid release type string")
+}
+
+func MustParseReleaseType(s string) ReleaseType {
+	rt, err := ParseReleaseType(s)
+	if err != nil {
+		panic("invalid release type string: " + s)
+	}
+
+	return rt
+}
+
+func (rt ReleaseType) String() string {
+	return relTypeNames[rt]
 }
 
 type ReleaseBuilder struct {

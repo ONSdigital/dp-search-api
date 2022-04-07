@@ -123,6 +123,41 @@ func TestSort(t *testing.T) {
 	})
 }
 
+func TestReleaseType(t *testing.T) {
+	t.Parallel()
+	Convey("given a release-type validator, and a set of erroneous release-type option strings", t, func() {
+		validator := validators["release-type"]
+		badReleaseTypes := []string{"coming-up", "finished", "done"}
+
+		Convey("errors are generated, and zero values returned on validation", func() {
+			for _, rt := range badReleaseTypes {
+				v, e := validator(rt)
+
+				So(v, ShouldBeNil)
+				So(e, ShouldNotBeNil)
+			}
+		})
+
+		Convey("but a good release-type option string is validated without error, and the appropriate ReleaseType returned", func() {
+			goodReleaseTypes := []struct {
+				given   string
+				exValue ReleaseType
+			}{
+				{given: "type-upcoming", exValue: Upcoming},
+				{given: "type-published", exValue: Published},
+				{given: "type-cancelled", exValue: Cancelled},
+			}
+
+			for _, grt := range goodReleaseTypes {
+				v, e := validator(grt.given)
+
+				So(v, ShouldEqual, grt.exValue)
+				So(e, ShouldBeNil)
+			}
+		})
+	})
+}
+
 func TestBuildSearchReleaseQuery(t *testing.T) {
 	t.Parallel()
 	Convey("Should return InternalError for invalid template", t, func() {
