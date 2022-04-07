@@ -10,7 +10,7 @@ import (
 )
 
 // Transformer represents an instance of the ResponseTransformer interface
-type Transformer struct {
+type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
 }
 
@@ -153,15 +153,15 @@ type ESSearchSuggestOptions struct {
 }
 
 // New returns a new instance of Transformer
-func New() *Transformer {
+func New() *LegacyTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	return &Transformer{
+	return &LegacyTransformer{
 		higlightReplacer: highlightReplacer,
 	}
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source ESResponse
 
 	err := json.Unmarshal(responseData, &source)
@@ -188,7 +188,7 @@ func (t *Transformer) TransformSearchResponse(ctx context.Context, responseData 
 	return transformedData, nil
 }
 
-func (t *Transformer) transform(source *ESResponse, highlight bool) SearchResponse {
+func (t *LegacyTransformer) transform(source *ESResponse, highlight bool) SearchResponse {
 	sr := SearchResponse{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []ContentItem{},
@@ -213,7 +213,7 @@ func (t *Transformer) transform(source *ESResponse, highlight bool) SearchRespon
 	return sr
 }
 
-func (t *Transformer) buildContentItem(doc ESResponseHit, highlight bool) ContentItem {
+func (t *LegacyTransformer) buildContentItem(doc ESResponseHit, highlight bool) ContentItem {
 	ci := ContentItem{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
@@ -223,7 +223,7 @@ func (t *Transformer) buildContentItem(doc ESResponseHit, highlight bool) Conten
 	return ci
 }
 
-func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) description {
+func (t *LegacyTransformer) buildDescription(doc ESResponseHit, highlight bool) description {
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
@@ -262,14 +262,14 @@ func (t *Transformer) buildDescription(doc ESResponseHit, highlight bool) descri
 	return des
 }
 
-func (t *Transformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
+func (t *LegacyTransformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
 	if highlight && hl != nil && len(*hl) > 0 {
 		overlaid = (*hl)[0]
 	}
 	return
 }
 
-func (t *Transformer) overlayItemList(hlList, defaultList *[]string, highlight bool) *[]string {
+func (t *LegacyTransformer) overlayItemList(hlList, defaultList *[]string, highlight bool) *[]string {
 	if defaultList == nil || hlList == nil {
 		return nil
 	}

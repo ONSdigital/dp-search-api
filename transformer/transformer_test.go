@@ -9,7 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestTransform(t *testing.T) {
+func TestLegacyTransformer(t *testing.T) {
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
 		transformer := New()
 		Convey("Zero suggestions creates empty array", func() {

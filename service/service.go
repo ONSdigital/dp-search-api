@@ -29,7 +29,7 @@ type Service struct {
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	transformer         *transformer.Transformer
+	transformer         *transformer.LegacyTransformer
 }
 
 // SetServer sets the http server for a service
@@ -53,7 +53,7 @@ func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Cli
 }
 
 // SetTransformer sets the transformer for a service
-func (svc *Service) SetTransformer(transformerClient *transformer.Transformer) {
+func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransformer) {
 	svc.transformer = transformerClient
 }
 
