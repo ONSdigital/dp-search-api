@@ -10,6 +10,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type ParamValidator map[paramName]validator
@@ -79,21 +81,29 @@ type Date time.Time
 
 const dateFormat = "2006-01-02"
 
+type InvalidDateString struct {
+	value, err string
+}
+
+func (ids InvalidDateString) Error() string {
+	return fmt.Sprintf("invalid date string (%q): %s", ids.value, ids.err)
+}
+
 func ParseDate(date string) (Date, error) {
 	if date == "" {
 		return Date{}, nil
 	}
 	d, err := time.Parse(dateFormat, date)
 	if err != nil {
-		return Date{}, err
+		return Date{}, InvalidDateString{date, err.Error()}
 	}
 
 	if d.Before(time.Date(1800, 1, 1, 0, 0, 0, 0, time.UTC)) {
-		return Date{}, errors.New("date too far in past")
+		return Date{}, InvalidDateString{value: date, err: "date too far in past"}
 	}
 
 	if d.After(time.Date(2200, 1, 1, 0, 0, 0, 0, time.UTC)) {
-		return Date{}, errors.New("date too far in future")
+		return Date{}, InvalidDateString{value: date, err: "date too far in future"}
 	}
 
 	return Date(d), nil
@@ -102,7 +112,7 @@ func ParseDate(date string) (Date, error) {
 func MustParseDate(date string) Date {
 	d, err := ParseDate(date)
 	if err != nil {
-		panic("invalid date string: " + date)
+		log.Fatal(context.Background(), "MustParseDate", InvalidDateString{value: date})
 	}
 
 	return d
@@ -133,6 +143,12 @@ const (
 var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
 var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title": "asc"}`, TitleDesc: `{"description.title": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
 
+type InvalidSortString string
+
+func (iss InvalidSortString) Error() string {
+	return fmt.Sprintf("invalid sort string: %q", string(iss))
+}
+
 func ParseSort(sort string) (Sort, error) {
 	for s, sn := range sortNames {
 		if strings.EqualFold(sort, sn) {
@@ -140,13 +156,13 @@ func ParseSort(sort string) (Sort, error) {
 		}
 	}
 
-	return Invalid, errors.New("invalid sort option string")
+	return Invalid, InvalidSortString(sort)
 }
 
 func MustParseSort(sort string) Sort {
 	s, err := ParseSort(sort)
 	if err != nil {
-		panic("invalid sort string: " + sort)
+		log.Fatal(context.Background(), "MustParseSort", InvalidSortString(sort))
 	}
 
 	return s
@@ -171,6 +187,12 @@ const (
 
 var relTypeNames = map[ReleaseType]string{Upcoming: "type-upcoming", Published: "type-published", Cancelled: "type-cancelled", InvalidReleaseType: "Invalid"}
 
+type InvalidReleaseTypeString string
+
+func (irts InvalidReleaseTypeString) Error() string {
+	return fmt.Sprintf("invalid ReleaseType string: %q", string(irts))
+}
+
 func ParseReleaseType(s string) (ReleaseType, error) {
 	for rt, rtn := range relTypeNames {
 		if strings.EqualFold(s, rtn) {
@@ -178,13 +200,13 @@ func ParseReleaseType(s string) (ReleaseType, error) {
 		}
 	}
 
-	return InvalidReleaseType, errors.New("invalid release type string")
+	return InvalidReleaseType, InvalidReleaseTypeString(s)
 }
 
 func MustParseReleaseType(s string) ReleaseType {
 	rt, err := ParseReleaseType(s)
 	if err != nil {
-		panic("invalid release type string: " + s)
+		log.Fatal(context.Background(), "MustParseReleaseType", InvalidReleaseTypeString(s))
 	}
 
 	return rt
