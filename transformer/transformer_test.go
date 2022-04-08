@@ -167,7 +167,7 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 }
 
 func TestTransform(t *testing.T) {
-	expectedESDocument1 := models.ES7xSourceDocument{
+	expectedESDocument1 := models.ESSourceDocument{
 		DataType:        "anyDataType1",
 		JobID:           "",
 		CDID:            "",
@@ -179,7 +179,7 @@ func TestTransform(t *testing.T) {
 		Title:           "anyTitle2",
 		Topics:          []string{"anyTopic1"},
 	}
-	expectedESDocument2 := models.ES7xSourceDocument{
+	expectedESDocument2 := models.ESSourceDocument{
 		DataType:        "anyDataType2",
 		JobID:           "",
 		CDID:            "",
@@ -192,7 +192,7 @@ func TestTransform(t *testing.T) {
 		Topics:          []string{"anyTopic2"},
 	}
 
-	Convey("Given a new instance of Transformer7x with search responses successfully", t, func() {
+	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
 		transformer := New()
 		esResponse := prepareESMockResponse()
 
@@ -212,8 +212,8 @@ func TestTransform(t *testing.T) {
 }
 
 // Prepare mock ES response
-func prepareESMockResponse() models.Es7xResponse {
-	esDocument1 := models.ES7xSourceDocument{
+func prepareESMockResponse() models.EsResponses {
+	esDocument1 := models.ESSourceDocument{
 		DataType:        "anyDataType1",
 		JobID:           "",
 		CDID:            "",
@@ -226,7 +226,7 @@ func prepareESMockResponse() models.Es7xResponse {
 		Topics:          []string{"anyTopic1"},
 	}
 
-	esDocument2 := models.ES7xSourceDocument{
+	esDocument2 := models.ESSourceDocument{
 		DataType:        "anyDataType2",
 		JobID:           "",
 		CDID:            "",
@@ -239,47 +239,47 @@ func prepareESMockResponse() models.Es7xResponse {
 		Topics:          []string{"anyTopic2"},
 	}
 
-	esDocuments := []models.ES7xSourceDocument{esDocument1, esDocument2}
+	esDocuments := []models.ESSourceDocument{esDocument1, esDocument2}
 
-	hit7x := models.ES7xResponseHit{
+	hit := models.ESResponseHit{
 		Source:    esDocuments,
-		Highlight: models.ES7xHighlight{},
+		Highlight: models.ESHighlight{},
 	}
 
-	bucket1 := models.ES7xBucket{
+	bucket1 := models.ESBucket{
 		Key:   "article",
 		Count: 1,
 	}
-	bucket2 := models.ES7xBucket{
+	bucket2 := models.ESBucket{
 		Key:   "product_page",
 		Count: 1,
 	}
-	buckets := []models.ES7xBucket{bucket1, bucket2}
+	buckets := []models.ESBucket{bucket1, bucket2}
 
-	es7xDoccount := models.ES7xDocCounts{
+	esDoccount := models.ESDocCounts{
 		Buckets: buckets,
 	}
 
-	esResponse7x1 := models.EsResponse7x{
+	esResponse1 := models.EsResponse{
 		Took: 10,
-		Hits: models.ES7xResponseHits{
+		Hits: models.ESResponseHits{
 			Total: 1,
-			Hits: []models.ES7xResponseHit{
-				hit7x,
+			Hits: []models.ESResponseHit{
+				hit,
 			},
 		},
-		Aggregations: models.ES7xResponseAggregations{
-			Doccounts: es7xDoccount,
+		Aggregations: models.ESResponseAggregations{
+			Doccounts: esDoccount,
 		},
 		Suggest: []string{"testSuggestion"},
 	}
 
 	// Preparing ES response array
-	es7xResponse := models.Es7xResponse{
-		Responses: []models.EsResponse7x{
-			esResponse7x1,
+	esResponse := models.EsResponses{
+		Responses: []models.EsResponse{
+			esResponse1,
 		},
 	}
 
-	return es7xResponse
+	return esResponse
 }

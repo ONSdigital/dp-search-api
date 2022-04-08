@@ -28,7 +28,7 @@ type Transformer struct {
 	higlightReplacer *strings.Replacer
 }
 
-// New7x returns a new instance of Transformer7x
+// New returns a new instance of Transformer ES7x
 func New() *Transformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
 	return &Transformer{
@@ -192,7 +192,7 @@ func numberOfSearchTerms(query string) int {
 func (t *Transformer) TransformSearchResponse(
 	ctx context.Context, responseData []byte,
 	query string, highlight bool) ([]byte, error) {
-	var esResponse models.Es7xResponse
+	var esResponse models.EsResponses
 
 	err := json.Unmarshal(responseData, &esResponse)
 	if err != nil {
@@ -219,11 +219,11 @@ func (t *Transformer) TransformSearchResponse(
 }
 
 // Transform the raw ES to search response
-func (t *Transformer) transform(es7xresponse *models.Es7xResponse, highlight bool) models.Search7xResponse {
-	var search7xResponse = models.Search7xResponse{
-		Took:        es7xresponse.Responses[0].Took,
-		Items:       es7xresponse.Responses[0].Hits.Hits[0].Source,
-		Suggestions: es7xresponse.Responses[0].Suggest,
+func (t *Transformer) transform(esresponse *models.EsResponses, highlight bool) models.SearchResponse {
+	var search7xResponse = models.SearchResponse{
+		Took:        esresponse.Responses[0].Took,
+		Items:       esresponse.Responses[0].Hits.Hits[0].Source,
+		Suggestions: esresponse.Responses[0].Suggest,
 	}
 	return search7xResponse
 }
