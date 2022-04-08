@@ -38,7 +38,7 @@ func New() *Transformer {
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
-	var source models.ESResponse
+	var source models.ESResponseLegacy
 
 	err := json.Unmarshal(responseData, &source)
 	if err != nil {
@@ -64,11 +64,11 @@ func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, respons
 	return transformedData, nil
 }
 
-func (t *LegacyTransformer) legayTransform(source *models.ESResponse, highlight bool) models.SearchResponse {
-	sr := models.SearchResponse{
+func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, highlight bool) models.SearchResponseLegacy {
+	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
-		Items:        []models.ContentItem{},
-		ContentTypes: []models.ContentType{},
+		Items:        []models.ContentItemLegacy{},
+		ContentTypes: []models.ContentTypeLegacy{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -89,8 +89,8 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponse, highlight 
 	return sr
 }
 
-func (t *LegacyTransformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ContentItem {
-	ci := models.ContentItem{
+func (t *LegacyTransformer) buildContentItem(doc models.ESResponseHitLegacy, highlight bool) models.ContentItemLegacy {
+	ci := models.ContentItemLegacy{
 		Description: t.buildDescription(doc, highlight),
 		Type:        doc.Source.Type,
 		URI:         doc.Source.URI,
@@ -99,11 +99,11 @@ func (t *LegacyTransformer) buildContentItem(doc models.ESResponseHit, highlight
 	return ci
 }
 
-func (t *LegacyTransformer) buildDescription(doc models.ESResponseHit, highlight bool) models.Description {
+func (t *LegacyTransformer) buildDescription(doc models.ESResponseHitLegacy, highlight bool) models.DescriptionLegacy {
 	sd := doc.Source.Description
 	hl := doc.Highlight
 
-	des := models.Description{
+	des := models.DescriptionLegacy{
 		Summary:           sd.Summary,
 		NextRelease:       sd.NextRelease,
 		Unit:              sd.Unit,
@@ -125,7 +125,7 @@ func (t *LegacyTransformer) buildDescription(doc models.ESResponseHit, highlight
 	}
 
 	if highlight {
-		des.Highlight = &models.HighlightObj{
+		des.Highlight = &models.HighlightObjLegacy{
 			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, sd.DatasetID, highlight),
 			Edition:         t.overlaySingleItem(hl.DescriptionEdition, sd.Edition, highlight),
 			Keywords:        t.overlayItemList(hl.DescriptionKeywords, sd.Keywords, highlight),
@@ -166,8 +166,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList *[]string, highl
 	return &overlaid
 }
 
-func buildContentTypes(bucket models.ESBucket) models.ContentType {
-	return models.ContentType{
+func buildContentTypes(bucket models.ESBucketLegacy) models.ContentTypeLegacy {
+	return models.ContentTypeLegacy{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}

@@ -14,11 +14,11 @@ func TestLegacyTransformer(t *testing.T) {
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
 		transformer := NewLegacy()
 		Convey("Zero suggestions creates empty array", func() {
-			es := models.ESResponse{
-				Responses: []models.ESResponseItem{models.ESResponseItem{
-					Suggest: models.ESSuggest{
-						SearchSuggest: []models.ESSearchSuggest{models.ESSearchSuggest{
-							Options: []models.ESSearchSuggestOptions{},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{models.ESSearchSuggestLegacy{
+							Options: []models.ESSearchSuggestOptionsLegacy{},
 						}},
 					},
 				}},
@@ -28,12 +28,12 @@ func TestLegacyTransformer(t *testing.T) {
 		})
 
 		Convey("One suggestion creates a populated array", func() {
-			es := models.ESResponse{
-				Responses: []models.ESResponseItem{models.ESResponseItem{
-					Suggest: models.ESSuggest{
-						SearchSuggest: []models.ESSearchSuggest{models.ESSearchSuggest{
-							Options: []models.ESSearchSuggestOptions{
-								models.ESSearchSuggestOptions{Text: "option1"},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{models.ESSearchSuggestLegacy{
+							Options: []models.ESSearchSuggestOptionsLegacy{
+								models.ESSearchSuggestOptionsLegacy{Text: "option1"},
 							},
 						}},
 					},
@@ -45,23 +45,23 @@ func TestLegacyTransformer(t *testing.T) {
 			So(sr.Suggestions[0], ShouldResemble, "option1")
 		})
 		Convey("Multiple suggestions creates a populated array incorrect order", func() {
-			es := models.ESResponse{
-				Responses: []models.ESResponseItem{models.ESResponseItem{
-					Suggest: models.ESSuggest{
-						SearchSuggest: []models.ESSearchSuggest{
-							models.ESSearchSuggest{
-								Options: []models.ESSearchSuggestOptions{
-									models.ESSearchSuggestOptions{Text: "option1"},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option1"},
 								},
 							},
-							models.ESSearchSuggest{
-								Options: []models.ESSearchSuggestOptions{
-									models.ESSearchSuggestOptions{Text: "option2"},
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option2"},
 								},
 							},
-							models.ESSearchSuggest{
-								Options: []models.ESSearchSuggestOptions{
-									models.ESSearchSuggestOptions{Text: "option3"},
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option3"},
 								},
 							},
 						},
@@ -128,7 +128,7 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act models.SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -143,7 +143,7 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act models.SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -158,7 +158,7 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test query \"with quote marks\"", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act models.SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)

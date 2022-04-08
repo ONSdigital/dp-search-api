@@ -97,7 +97,7 @@ func (c *Component) failureInternalServerError() error {
 }
 
 func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
-	var searchResponse, expectedSearchResponse models.SearchResponse
+	var searchResponse, expectedSearchResponse models.SearchResponseLegacy
 
 	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {

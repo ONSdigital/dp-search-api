@@ -48,7 +48,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act models.SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
