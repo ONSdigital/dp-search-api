@@ -71,6 +71,20 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 	return templates, err
 }
 
+// SetupV710Search loads v710 templates for use by the search handler and should be done only once
+func SetupV710Search(pathToTemplates string) (*template.Template, error) {
+	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
+	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
+
+	templates, err := template.ParseFiles(
+		pathToTemplates+"templates/search/v710/search.tmpl",
+		pathToTemplates+"templates/search/v710/contentQuery.tmpl",
+		pathToTemplates+"templates/search/v710/contentHeader.tmpl",
+	)
+
+	return templates, err
+}
+
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
 	reqParams := searchRequest{
