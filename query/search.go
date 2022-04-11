@@ -71,7 +71,7 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 	return templates, err
 }
 
-// SetupSearch loads templates for use by the search handler and should be done only once
+// SetupV710Search loads v710 templates for use by the search handler and should be done only once
 func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.

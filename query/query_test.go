@@ -30,6 +30,8 @@ func TestNewQueryBuilder(t *testing.T) {
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "search.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentQuery.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentHeader.tmpl")
 		So(err, ShouldBeNil)
 	})
 }
