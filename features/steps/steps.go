@@ -41,7 +41,7 @@ func (c *Component) successfullyReturnMultipleSearchReleaseResults() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
@@ -63,7 +63,7 @@ func (c *Component) successfullyReturnSingleSearchReleaseResult() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
@@ -85,7 +85,7 @@ func (c *Component) successfullyReturnNoSearchReleaseResults() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
