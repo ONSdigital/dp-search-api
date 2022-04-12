@@ -20,7 +20,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 
 		Convey("Throws error on invalid JSON", func() {
 			sampleResponse := []byte(`{"invalid":"json"`)
-			_, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "test-query", Type: query.Published}, true)
+			_, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, true)
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "Failed to decode elastic search response: unexpected end of JSON input")
 		})
@@ -31,7 +31,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			expected, err := os.ReadFile("testdata/search_release_expected_highlighted.json")
 			So(err, ShouldBeNil)
 
-			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "test-query", Type: query.Published}, true)
+			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, true)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
 			var exp, act SearchReleaseResponse
@@ -46,7 +46,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			expected, err := os.ReadFile("testdata/search_release_expected_plain.json")
 			So(err, ShouldBeNil)
 
-			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "test-query", Type: query.Published}, false)
+			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
 			var exp, act SearchResponse

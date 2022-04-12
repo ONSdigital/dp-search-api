@@ -1,22 +1,24 @@
 {
-  "took":8,
-  "limit":10,
-  "offset":0,
+  "took":11,
   "breakdown":{
-    "total":2,
-    "published": 2
+    "total":16,
+    "provisional": 15,
+    "postponed": 1,
+    "published": 2466,
+    "cancelled": 45
   },
   "releases":[
     {
       "uri":"/releases/estimatingsuicideamonghighereducationstudentsenglandandwales",
+      "date_changes":  [{"previous_date": "2018-06-01", "change_notice": "changed it"}],
       "description":{
         "title":"Estimating suicide among higher education students, England and Wales: Experimental Statistics",
         "summary":"Estimates of suicides among higher education students by sex, age and ethnicity. Analysis based on mortality records linked to Higher Education Statistics Agency (HESA) Student records. ",
         "release_date":"2018-06-25T08:30:00.000Z",
-        "published":true,
+        "published":false,
         "cancelled":false,
         "finalised":true,
-        "postponed":false,
+        "postponed":true,
         "census":false,
         "national_statistic":false,
         "latest_release":false,
@@ -37,9 +39,9 @@
         "title":"Young people not in education, employment or training (NEET), UK: August 2018",
         "summary":"Estimates of young people (aged 16 to 24) who are not in education, employment or training, by age and sex.",
         "release_date":"2018-08-23T08:30:00.000Z",
-        "published":true,
+        "published":false,
         "cancelled":false,
-        "finalised":true,
+        "finalised":false,
         "postponed":false,
         "census":false,
         "national_statistic":true,

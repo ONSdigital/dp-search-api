@@ -65,9 +65,14 @@ type highlight struct {
 // Structs representing the raw elastic search response
 
 type ESReleaseResponse struct {
-	Took     int                      `json:"took"`
-	TimedOut bool                     `json:"timed_out"`
-	Hits     ESReleaseResponseSummary `json:"hits"`
+	Responses []ESReleaseResponseItem `json:"responses"`
+}
+
+type ESReleaseResponseItem struct {
+	Took         int                           `json:"took"`
+	TimedOut     bool                          `json:"timed_out"`
+	Hits         ESReleaseResponseSummary      `json:"hits"`
+	Aggregations ESReleaseResponseAggregations `json:"aggregations"`
 }
 
 type ESReleaseResponseSummary struct {
@@ -108,6 +113,19 @@ type ESReleaseHighlight struct {
 	DescriptionKeywords []string `json:"description.keywords"`
 }
 
+type aggName string
+type ESReleaseResponseAggregations map[aggName]aggregation
+
+type bucketName string
+type aggregation struct {
+	Buckets map[bucketName]bucketContents `json:"buckets"`
+}
+
+type bucketContents struct {
+	Count     int         `json:"doc_count"`
+	Breakdown aggregation `json:"breakdown"`
+}
+
 func NewReleaseTransformer() *ReleaseTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
 	return &ReleaseTransformer{
@@ -115,7 +133,7 @@ func NewReleaseTransformer() *ReleaseTransformer {
 	}
 }
 
-// TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
+// TransformSearchResponse transforms an elastic search response to a release query into a serialised ReleaseResponse
 func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
 	var (
 		source      ESReleaseResponse
@@ -127,17 +145,20 @@ func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, response
 		return nil, errors.Wrap(err, "Failed to decode elastic search response")
 	}
 
+	if len(source.Responses) != 2 {
+		return nil, errors.New("invalid number of responses from ElasticSearch query")
+	}
+
 	sr := SearchReleaseResponse{
-		Took:      source.Took,
-		Breakdown: breakdown(&source, req),
-		Releases:  []Release{},
+		Took:      source.Responses[0].Took + source.Responses[1].Took,
+		Breakdown: breakdown(source, req),
 	}
 
 	if highlight {
 		highlighter = t.higlightReplacer
 	}
-	for i := range source.Hits.Hits {
-		sr.Releases = append(sr.Releases, buildRelease(source.Hits.Hits[i], highlighter))
+	for i := 0; i < len(source.Responses[0].Hits.Hits); i++ {
+		sr.Releases = append(sr.Releases, buildRelease(source.Responses[0].Hits.Hits[i], highlighter))
 	}
 
 	transformedData, err := json.Marshal(sr)
@@ -148,18 +169,34 @@ func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, response
 	return transformedData, nil
 }
 
-func breakdown(source *ESReleaseResponse, req query.ReleaseSearchRequest) Breakdown {
-	b := Breakdown{}
+func breakdown(source ESReleaseResponse, req query.ReleaseSearchRequest) Breakdown {
+	b := Breakdown{Total: source.Responses[0].Hits.Total}
 
-	b.Total = source.Hits.Total
 	switch req.Type {
 	case query.Upcoming:
-		b.Confirmed = b.Total
+		b.Provisional = source.Responses[0].Aggregations["breakdown"].Buckets["provisional"].Count
+		b.Confirmed = source.Responses[0].Aggregations["breakdown"].Buckets["confirmed"].Count
+		b.Postponed = source.Responses[0].Aggregations["breakdown"].Buckets["postponed"].Count
+
+		b.Published = source.Responses[1].Aggregations["release_types"].Buckets["published"].Count
+		b.Cancelled = source.Responses[1].Aggregations["release_types"].Buckets["cancelled"].Count
 	case query.Published:
-		b.Published = b.Total
+		b.Published = source.Responses[0].Hits.Total
+		b.Cancelled = source.Responses[1].Aggregations["release_types"].Buckets["cancelled"].Count
+
+		b.Provisional = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["provisional"].Count
+		b.Confirmed = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["confirmed"].Count
+		b.Postponed = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["postponed"].Count
 	case query.Cancelled:
-		b.Cancelled = b.Total
+		b.Cancelled = source.Responses[0].Hits.Total
+		b.Published = source.Responses[1].Aggregations["release_types"].Buckets["published"].Count
+
+		b.Provisional = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["provisional"].Count
+		b.Confirmed = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["confirmed"].Count
+		b.Postponed = source.Responses[1].Aggregations["release_types"].Buckets["upcoming"].Breakdown.Buckets["postponed"].Count
 	}
+
+	b.Census = source.Responses[0].Aggregations["census"].Buckets["census"].Count
 
 	return b
 }
@@ -182,6 +219,10 @@ func buildRelease(hit ESReleaseResponseHit, highlighter *strings.Replacer) Relea
 			Keywords:    sd.Keywords,
 			Language:    sd.Language,
 		},
+	}
+
+	for _, dc := range hit.Source.DateChanges {
+		r.DateChanges = append(r.DateChanges, ReleaseDateChange{Date: dc.PreviousDate, ChangeNotice: dc.ChangeNotice})
 	}
 
 	if highlighter != nil {
