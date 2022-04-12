@@ -240,7 +240,12 @@ func (sb *ReleaseBuilder) BuildSearchQuery(_ context.Context, sr ReleaseSearchRe
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
 	}
 
-	return doc.Bytes(), nil
+	formattedQuery, err := FormatMultiQuery(doc.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("formating of query for elasticsearch failed: %w", err)
+	}
+
+	return formattedQuery, nil
 }
 
 type ReleaseSearchRequest struct {
@@ -256,7 +261,6 @@ type ReleaseSearchRequest struct {
 	Postponed      bool
 	Census         bool
 	Highlight      bool
-	Now            Date
 }
 
 func (sr *ReleaseSearchRequest) String() string {
@@ -268,7 +272,11 @@ func (sr *ReleaseSearchRequest) String() string {
 	return string(s)
 }
 
-func (sr ReleaseSearchRequest) Sort() string {
+func (sr ReleaseSearchRequest) Now() string {
+	return fmt.Sprintf("%q", time.Now().Format(dateFormat))
+}
+
+func (sr ReleaseSearchRequest) SortClause() string {
 	if sr.SortBy == Relevance {
 		switch sr.Type {
 		case Upcoming:
@@ -283,16 +291,50 @@ func (sr ReleaseSearchRequest) Sort() string {
 	return sr.SortBy.ESString()
 }
 
-func (sr ReleaseSearchRequest) ReleaseType() string {
+// ReleaseTypeClause returns the query clause to select the type of release
+// Note that it is possible for a Release to have both its Published and Cancelled flags true (yes indeed!)
+// In this case it is deemed cancelled
+func (sr ReleaseSearchRequest) ReleaseTypeClause() string {
 	switch sr.Type {
 	case Upcoming:
-		return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
-			fmt.Sprintf(`{"range": {"description.release_date": {"gte": %q}}}`, time.Now().Format(dateFormat)))
+		var buf bytes.Buffer
+		buf.WriteString(mainUpcomingClause(time.Now()))
+		if secondary := supplementaryUpcomingClause(sr); secondary != "" {
+			buf.WriteString(Separator + secondary)
+		}
+		return buf.String()
 	case Published:
-		return fmt.Sprintf("%s, %s", `{"term": {"description.published": true}}`, `{"term": {"description.cancelled": false}}`)
+		return fmt.Sprintf("%s, %s",
+			`{"term": {"description.published": true}}`, `{"term": {"description.cancelled": false}}`)
 	default:
-		return fmt.Sprintf("%s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": true}}`)
+		return `{"term": {"description.cancelled": true}}`
 	}
+}
+
+func (sr ReleaseSearchRequest) CensusClause() string {
+	if sr.Census {
+		return `{"term": {"census":  true}}`
+	}
+
+	return `{}`
+}
+
+func (sr ReleaseSearchRequest) HighlightClause() string {
+	if sr.Census {
+		return `
+			"highlight":{
+				"pre_tags":["<em class=\"ons-highlight\">"],
+				"post_tags":["</em>"],
+				"fields":{
+					"description.title":{"fragment_size":0,"number_of_fragments":0},
+					"description.summary":{"fragment_size":0,"number_of_fragments":0},
+					"description.keywords":{"fragment_size":0,"number_of_fragments":0}
+				}
+			}
+`
+	}
+
+	return `"highlight":{}`
 }
 
 func (sr *ReleaseSearchRequest) Set(value string) error {

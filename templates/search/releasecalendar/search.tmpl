@@ -1,8 +1,9 @@
 {{- /*gotype:github.com/ONSdigital/dp-search-api/query.ReleaseSearchRequest*/ -}}
+{"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
 {
     "from": {{.From}},
     "size": {{.Size}},
-    "sort": [{{.Sort}}],
+    "sort": [{{.SortClause}}],
     "query": {
         "bool": {
             "must": {
@@ -22,19 +23,93 @@
                         }
                     }
                 },
-                {{.ReleaseType}}
+                {{.ReleaseTypeClause}},
+                {{.CensusClause}}
              ]
         }
-    }
-    {{if .Highlight}}
-        ,"highlight":{
-            "pre_tags":["<em class=\"ons-highlight\">"],
-            "post_tags":["</em>"],
-            "fields":{
-                "description.title":{"fragment_size":0,"number_of_fragments":0},
-                "description.summary":{"fragment_size":0,"number_of_fragments":0},
-                "description.keywords":{"fragment_size":0,"number_of_fragments":0}
+    },
+    {{.HighlightClause}},
+    "aggs":{
+        "breakdown":{
+            "filters":{
+                "filters":{
+                    "provisional":{"term":{"description.finalised":false}},
+                    "confirmed":{"term":{"description.finalised":true}},
+                    "postponed":{
+                        "bool":{
+                            "must":[
+                                {"term":{"description.finalised":true}},
+                                {"exists":{"field":"dateChanges"}}
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "census" : {
+            "filters":{
+                "filters":{
+                    "census" : { "term": { "census": "true" } }
+                }
             }
         }
-    {{end}}
+    }
 }
+{"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
+{
+    "size":0,
+    "query":{"match_all":{}},
+    "aggs":{
+        "release_types":{
+            "filters":{
+                "filters":{
+                    "upcoming":{
+                        "bool":{
+                            "must":[
+                                {"term":{"description.published":false}},
+                                {"term":{"description.cancelled":false}},
+                                {"range":{"description.releaseDate":{"gte":{{.Now}}}}}
+                            ]
+                        }
+                    },
+                    "outdated":{
+                        "bool":{
+                            "must":[
+                                {"term":{"description.published":false}},
+                                {"term":{"description.cancelled":false}},
+                                {"range":{"description.releaseDate":{"lt":{{.Now}}}}}
+                            ]
+                        }
+                    },
+                    "published":{
+                        "bool":{
+                            "must":[
+                                {"term":{"description.published":true}},
+                                {"term":{"description.cancelled":false}}
+                            ]
+                        }
+                    },
+                    "cancelled":{"term":{"description.cancelled":true}}
+                }
+            },
+            "aggs":{
+                "breakdown":{
+                    "filters":{
+                        "other_bucket_key":"confirmed",
+                        "filters":{
+                            "provisional":{"term":{"description.finalised":false}},
+                            "postponed":{
+                                "bool":{
+                                    "must":[
+                                        {"term":{"description.finalised":true}},
+                                        {"exists":{"field":"dateChanges"}}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}$$

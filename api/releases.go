@@ -88,7 +88,6 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			ReleasedBefore: toDate.(query.Date),
 			Type:           relType.(query.ReleaseType),
 			Highlight:      highlight,
-			Now:            query.Date(time.Now()),
 		}
 
 		formattedQuery, err := builder.BuildSearchQuery(ctx, searchReq)
@@ -98,7 +97,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			return
 		}
 
-		responseData, err := searcher.Search(ctx, "ons", "", formattedQuery)
+		responseData, err := searcher.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
 			log.Error(ctx, "elasticsearch release query failed", err)
 			http.Error(w, "Failed to run search release query", http.StatusInternalServerError)
