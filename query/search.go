@@ -79,7 +79,27 @@ func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 	templates, err := template.ParseFiles(
 		pathToTemplates+"templates/search/v710/search.tmpl",
 		pathToTemplates+"templates/search/v710/contentQuery.tmpl",
+		pathToTemplates+"templates/search/v710/matchAll.tmpl",
 		pathToTemplates+"templates/search/v710/contentHeader.tmpl",
+		pathToTemplates+"templates/search/v710/countHeader.tmpl",
+		pathToTemplates+"templates/search/v710/countQuery.tmpl",
+		pathToTemplates+"templates/search/v710/coreQuery.tmpl",
+		pathToTemplates+"templates/search/v710/weightedQuery.tmpl",
+		pathToTemplates+"templates/search/v710/countFilterLatest.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterUpcoming.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterPublished.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnLatest.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnFirstLetter.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnReleaseDate.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnTopic.tmpl",
+		pathToTemplates+"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
+		pathToTemplates+"templates/search/v710/sortByTitle.tmpl",
+		pathToTemplates+"templates/search/v710/sortByRelevance.tmpl",
+		pathToTemplates+"templates/search/v710/sortByReleaseDate.tmpl",
+		pathToTemplates+"templates/search/v710/sortByReleaseDateAsc.tmpl",
+		pathToTemplates+"templates/search/v710/sortByFirstLetter.tmpl",
 	)
 
 	return templates, err

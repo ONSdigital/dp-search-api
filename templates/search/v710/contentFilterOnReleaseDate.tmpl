@@ -1,0 +1,15 @@
+{{- if or .ReleasedBefore .ReleasedAfter }}
+    {
+    "range": {
+         "description.releaseDate": {
+             {{- if .ReleasedAfter}}
+             "from": "{{.ReleasedAfter}}"
+             {{- end}}
+             {{- if and .ReleasedBefore .ReleasedAfter }},{{- end}}
+             {{- if .ReleasedBefore}}
+             "to": "{{.ReleasedBefore}}"
+             {{- end}}
+         }
+     }
+   }
+ {{- end}}

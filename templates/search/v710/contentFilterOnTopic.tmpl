@@ -1,0 +1,12 @@
+{{if .Topic}}
+     { "terms" :
+        { "topic" : [
+                    {{range $i,$e := .Topic}}
+                            {{if $i}},{{end}}
+                            "{{.}}"
+                    {{end}}
+                    ]
+         }
+    }
+    {{if .TopicWildcard}},{{end}}
+{{end}}

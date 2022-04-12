@@ -1,0 +1,36 @@
+{
+  "bool": {
+    "should":[
+          {
+            "bool": {
+              "must_not": {
+                "term": {
+                  "description.cancelled": true
+                }
+              },
+              "must": {
+                "range": {
+                  "description.releaseDate": {
+                    "lte": "{{.Now}}"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "bool": {
+              "must": {
+                "term": {
+                  "description.published": true
+                }
+              },
+              "must_not": {
+                "term": {
+                  "description.cancelled": true
+                }
+              }
+            }
+          }
+        ]
+    }
+}

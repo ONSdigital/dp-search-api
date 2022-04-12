@@ -3,3 +3,7 @@
     {{- template "contentHeader.tmpl" .}}$$
     {{- template "contentQuery.tmpl" .}}$$
 {{- end}}
+{{- if .HasQuery "counts" }}
+    {{- template "countHeader.tmpl" .}}$$
+    {{- template "countQuery.tmpl" .}}$$
+{{- end}}
