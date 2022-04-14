@@ -5,7 +5,7 @@
             "should": [
               {
                 "match": {
-                  "description.title.title_no_dates": {
+                  "title.title_no_dates": {
                     "query": "{{.Term}}",
                     "type": "boolean",
                     "boost": 10.0,
@@ -15,7 +15,7 @@
               },
               {
                 "match": {
-                  "description.title.title_no_stem": {
+                  "title.title_no_stem": {
                     "query": "{{.Term}}",
                     "type": "boolean",
                     "boost": 10.0,
@@ -27,8 +27,8 @@
                 "multi_match": {
                   "query": "{{.Term}}",
                   "fields": [
-                    "description.title^10",
-                    "description.edition",
+                    "title^10",
+                    "edition",
                     "downloads.content^1"
                   ],
                   "type": "cross_fields",
@@ -39,13 +39,13 @@
                 "multi_match": {
                   "query": "{{.Term}}",
                   "fields": [
-                    "description.title^10",
-                    "description.summary",
-                    "description.metaDescription",
-                    "description.edition",
+                    "title^10",
+                    "summary",
+                    "metaDescription",
+                    "edition",
                     "downloads.content^1",
                     "pageData^1",
-                    "description.keywords"
+                    "keywords"
                   ],
                   "type": "phrase",
                   "boost": 10.0,
@@ -59,11 +59,11 @@
           "multi_match": {
             "query": "{{.Term}}",
             "fields": [
-              "description.summary",
-              "description.metaDescription",
+              "summary",
+              "metaDescription",
               "downloads.content^1",
               "pageData^1",
-              "description.keywords"
+              "keywords"
             ],
             "type": "best_fields",
             "minimum_should_match": "75%"
@@ -71,7 +71,7 @@
         },
         {
           "match": {
-            "description.keywords": {
+            "keywords": {
               "query": "{{.Term}}",
               "type": "boolean",
               "operator": "AND",
@@ -83,8 +83,8 @@
           "multi_match": {
             "query": "{{.Term}}",
             "fields": [
-              "description.cdid",
-              "description.datasetId"
+              "cdid",
+              "datasetId"
             ]
           }
         },

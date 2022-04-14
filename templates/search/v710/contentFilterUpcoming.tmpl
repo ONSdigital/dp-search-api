@@ -6,17 +6,17 @@
           "must_not": [
             {
               "term": {
-                "description.published": true
+                "published": true
               }
             },
             {
               "term": {
-                "description.cancelled": true
+                "cancelled": true
               }
             },
             {
               "range": {
-                "description.releaseDate": {
+                "releaseDate": {
                   "lte": "{{.Now}}"
                 }
               }

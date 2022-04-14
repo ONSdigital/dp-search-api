@@ -19,7 +19,7 @@
  "suggest":{
  	"search_suggest":{
  		"text":"{{.Term}}",
- 		"phrase":{"field":"description.title.title_no_synonym_no_stem"}}
+ 		"phrase":{"field":"title.title_no_synonym_no_stem"}}
  },
  "_source":{
  			"includes":[],
@@ -29,13 +29,13 @@
  			"pre_tags":["<em class=\"ons-highlight\">"],
  			"post_tags":["</em>"],
  			"fields":{"terms":{"fragment_size":0,"number_of_fragments":0},
- 			"description.title":{"fragment_size":0,"number_of_fragments":0},
- 			"description.edition":{"fragment_size":0,"number_of_fragments":0},
- 			"description.summary":{"fragment_size":0,"number_of_fragments":0},
- 			"description.metaDescription":{"fragment_size":0,"number_of_fragments":0},
- 			"description.keywords":{"fragment_size":0,"number_of_fragments":0},
- 			"description.cdid":{"fragment_size":0,"number_of_fragments":0},
- 			"description.datasetId":{"fragment_size":0,"number_of_fragments":0},
+ 			"title":{"fragment_size":0,"number_of_fragments":0},
+ 			"edition":{"fragment_size":0,"number_of_fragments":0},
+ 			"summary":{"fragment_size":0,"number_of_fragments":0},
+ 			"metaDescription":{"fragment_size":0,"number_of_fragments":0},
+ 			"keywords":{"fragment_size":0,"number_of_fragments":0},
+ 			"cdid":{"fragment_size":0,"number_of_fragments":0},
+ 			"datasetId":{"fragment_size":0,"number_of_fragments":0},
 			"downloads.content":{"fragment_size": 45,"number_of_fragments": 5},
 			"pageData":{"fragment_size": 45,"number_of_fragments": 5}
 		    }
