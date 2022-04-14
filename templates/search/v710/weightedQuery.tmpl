@@ -5,7 +5,7 @@
         {
           "filter": {
             "term": {
-              "_type": "bulletin"
+              "type": "bulletin"
             }
           },
           "weight": 100
@@ -13,7 +13,7 @@
         {
           "filter": {
             "term": {
-              "_type": "dataset_landing_page"
+              "type": "dataset_landing_page"
             }
           },
           "weight": 70
@@ -21,7 +21,7 @@
         {
           "filter": {
             "terms": {
-              "_type": ["article",
+              "type": ["article",
                             "compendium_landing_page",
                             "article_download"]
             }
@@ -31,7 +31,7 @@
         {
           "filter": {
             "term": {
-              "_type": "static_adhoc"
+              "type": "static_adhoc"
             }
           },
           "weight": 30
@@ -39,7 +39,7 @@
         {
           "filter": {
             "term": {
-              "_type": "timeseries"
+              "type": "timeseries"
             }
           },
           "weight": 10

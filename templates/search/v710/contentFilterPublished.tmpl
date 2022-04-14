@@ -5,12 +5,12 @@
             "bool": {
               "must_not": {
                 "term": {
-                  "description.cancelled": true
+                  "cancelled": true
                 }
               },
               "must": {
                 "range": {
-                  "description.releaseDate": {
+                  "releaseDate": {
                     "lte": "{{.Now}}"
                   }
                 }
@@ -21,12 +21,12 @@
             "bool": {
               "must": {
                 "term": {
-                  "description.published": true
+                  "published": true
                 }
               },
               "must_not": {
                 "term": {
-                  "description.cancelled": true
+                  "cancelled": true
                 }
               }
             }
