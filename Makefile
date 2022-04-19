@@ -22,7 +22,7 @@ audit:
 
 .PHONY: lint
 lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
 	golangci-lint run ./...
 
 .PHONY: fmt

@@ -56,7 +56,6 @@ func mainUpcomingClause(now time.Time) string {
 		fmt.Sprintf(`{"range": {"description.release_date": {"gte": %q}}}`, now.Format(dateFormat)))
 }
 
-//gocyclo:ignore
 func supplementaryUpcomingClause(sr ReleaseSearchRequest) string {
 	switch {
 	case !sr.Provisional && !sr.Confirmed && sr.Postponed:

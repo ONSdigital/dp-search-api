@@ -133,6 +133,8 @@ func NewReleaseTransformer() *ReleaseTransformer {
 	}
 }
 
+const numberOfReleaseQueries = 2
+
 // TransformSearchResponse transforms an elastic search response to a release query into a serialised ReleaseResponse
 func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
 	var (
@@ -145,7 +147,7 @@ func (t *ReleaseTransformer) TransformSearchResponse(_ context.Context, response
 		return nil, errors.Wrap(err, "Failed to decode elastic search response")
 	}
 
-	if len(source.Responses) != 2 {
+	if len(source.Responses) != numberOfReleaseQueries {
 		return nil, errors.New("invalid number of responses from ElasticSearch query")
 	}
 
