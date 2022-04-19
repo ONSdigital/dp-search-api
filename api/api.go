@@ -64,6 +64,10 @@ type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 }
 
+type ReleaseResponseTransformer interface {
+	TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
+}
+
 // NewSearchAPI returns a new Search API struct after registering the routes
 func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	errData := SetupData()
@@ -93,7 +97,7 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	return api, nil
 }
 
-func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
 
 	return a

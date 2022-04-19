@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 	"text/template"
+	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -178,8 +179,7 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			"ReleasedBefore={{.ReleasedBefore.ESString}};" +
 			"Type={{.Type.String}};" +
 			"Highlight={{.Highlight}};" +
-			"Now={{.Now}};" +
-			"NowES={{.Now.ESString}}")
+			"Now={{.Now}}")
 
 		query, err := qb.BuildSearchQuery(context.Background(), ReleaseSearchRequest{
 			Term:           "query+term",
@@ -190,7 +190,6 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			ReleasedBefore: MustParseDate("2020-12-31"),
 			Type:           Published,
 			Highlight:      true,
-			Now:            MustParseDate("2001-01-01"),
 		})
 
 		So(err, ShouldBeNil)
@@ -199,13 +198,12 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Term=query+term")
 		So(queryString, ShouldContainSubstring, "From=0")
 		So(queryString, ShouldContainSubstring, "Size=25")
-		So(queryString, ShouldContainSubstring, `SortBy={"description.title": "asc"}`)
+		So(queryString, ShouldContainSubstring, `SortBy={"description.title":"asc"}`)
 		So(queryString, ShouldContainSubstring, "ReleasedAfter=null")
 		So(queryString, ShouldContainSubstring, `ReleasedBefore="2020-12-31"`)
 		So(queryString, ShouldContainSubstring, "Type=type-published")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
-		So(queryString, ShouldContainSubstring, `Now=2001-01-01`)
-		So(queryString, ShouldContainSubstring, `NowES="2001-01-01"`)
+		So(queryString, ShouldContainSubstring, fmt.Sprintf(`Now=%q`, time.Now().Format(dateFormat)))
 	})
 }
 

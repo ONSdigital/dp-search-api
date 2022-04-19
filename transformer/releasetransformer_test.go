@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/ONSdigital/dp-search-api/query"
 )
 
 func TestTransformSearchReleaseResponse(t *testing.T) {
@@ -18,7 +20,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 
 		Convey("Throws error on invalid JSON", func() {
 			sampleResponse := []byte(`{"invalid":"json"`)
-			_, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
+			_, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, true)
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldResemble, "Failed to decode elastic search response: unexpected end of JSON input")
 		})
@@ -29,7 +31,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			expected, err := os.ReadFile("testdata/search_release_expected_highlighted.json")
 			So(err, ShouldBeNil)
 
-			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
+			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, true)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
 			var exp, act SearchReleaseResponse
@@ -44,7 +46,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 			expected, err := os.ReadFile("testdata/search_release_expected_plain.json")
 			So(err, ShouldBeNil)
 
-			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
+			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, query.ReleaseSearchRequest{Term: "Education in Wales", Type: query.Upcoming, Size: 2, Provisional: true, Postponed: true}, false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
 			var exp, act SearchResponse
