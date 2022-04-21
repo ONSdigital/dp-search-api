@@ -6,11 +6,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
-
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-search-api/query"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -70,16 +68,6 @@ type ReleaseResponseTransformer interface {
 
 // NewSearchAPI returns a new Search API struct after registering the routes
 func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
-	errData := SetupData()
-	if errData != nil {
-		return nil, errors.Wrap(errData, "Failed to setup data templates")
-	}
-
-	errTimeseries := SetupTimeseries()
-	if errTimeseries != nil {
-		return nil, errors.Wrap(errTimeseries, "Failed to setup timeseries templates")
-	}
-
 	api := &SearchAPI{
 		Router:             router,
 		QueryBuilder:       queryBuilder,
@@ -90,8 +78,6 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	}
 
 	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
-	router.HandleFunc("/timeseries/{cdid}", TimeseriesLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
-	router.HandleFunc("/data", DataLookupHandlerFunc(api.deprecatedESClient)).Methods("GET")
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil

@@ -13,30 +13,6 @@ tags:
   - name: "public"
   - name: "private"
 paths:
-  /data:
-    get:
-      tags:
-        - public
-      summary: "Data query API"
-      description: "Data query API which returns matching links to department"
-      parameters:
-        - in: query
-          name: uris
-          type: string
-          required: true
-        - in: query
-          name: types
-          description: "Type of data returned"
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/DataResponse"
-        500:
-          description: Internal server error
-
   /departments/search:
     get:
       tags:
@@ -219,46 +195,7 @@ paths:
         500:
           description: Internal server error
 
-  /timeseries:
-    get:
-      tags:
-        - public
-      summary: "Query for timeseries data"
-      description: "API to query the app for timeseries by id"
-      parameters:
-        - in: query
-          name: cdid
-          description: "The timeseries id."
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/TimeseriesResponse"
-        500:
-          description: Internal server error
-
 definitions:
-
-  DataResponse:
-    type: object
-    properties:
-      responses:
-        type: array
-        description: "A json list containing data associated with a particular dataset"
-        items:
-          type: object
-          properties:
-            _shards:
-              $ref: "#/definitions/ShardsItem"
-            hits:
-              $ref: "#/definitions/HitsObject"
-            timed_out:
-              type: boolean
-            took:
-              description: "Time taken to execute query in milliseconds"
-              type: integer
 
   GetSearchResponse:
     type: object
@@ -631,86 +568,3 @@ definitions:
       dp_fasttext:
         type: string
         example: available
-
-  ShardsItem:
-    type: object
-    properties:
-      failed:
-        type: integer
-      successful:
-        type: integer
-      total:
-        type: integer
-
-  HitsObject:
-    type: object
-    properties:
-      hits:
-        type: array
-        items:
-          $ref: "#/definitions/HitsItem"
-      max_score:
-        type: integer
-      total:
-        type: integer
-
-  HitsItem:
-    type: object
-    properties:
-      _id:
-        type: string
-      _index:
-        type: string
-      _score:
-        type: integer
-      _source:
-        type: object
-        properties:
-          code:
-            type: string
-          name:
-            type: string
-          terms:
-            type: array
-            items:
-              type: string
-          url:
-            type: string
-      _type:
-        type: string
-
-  TimeseriesResponse:
-    type: object
-    properties:
-      took:
-        type: integer
-        description: "Time taken to execute query in milliseconds"
-        example: 530
-      timed_out:
-        type: boolean
-      _shards:
-        items:
-          $ref: "#/definitions/ShardsItem"
-      hits:
-        type: array
-        items:
-          type: object
-          properties:
-            _index:
-              type: string
-            _type:
-              type: string
-              example: "timeseries"
-            _id:
-              type: string
-            _score:
-              type: string
-            _source:
-              type: object
-              properties:
-                uri:
-                  type: string
-      sort:
-        type: array
-        items:
-          type: integer
