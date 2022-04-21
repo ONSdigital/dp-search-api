@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 	"text/template"
+	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -123,6 +124,41 @@ func TestSort(t *testing.T) {
 	})
 }
 
+func TestReleaseType(t *testing.T) {
+	t.Parallel()
+	Convey("given a release-type validator, and a set of erroneous release-type option strings", t, func() {
+		validator := validators["release-type"]
+		badReleaseTypes := []string{"coming-up", "finished", "done"}
+
+		Convey("errors are generated, and zero values returned on validation", func() {
+			for _, rt := range badReleaseTypes {
+				v, e := validator(rt)
+
+				So(v, ShouldBeNil)
+				So(e, ShouldNotBeNil)
+			}
+		})
+
+		Convey("but a good release-type option string is validated without error, and the appropriate ReleaseType returned", func() {
+			goodReleaseTypes := []struct {
+				given   string
+				exValue ReleaseType
+			}{
+				{given: "type-upcoming", exValue: Upcoming},
+				{given: "type-published", exValue: Published},
+				{given: "type-cancelled", exValue: Cancelled},
+			}
+
+			for _, grt := range goodReleaseTypes {
+				v, e := validator(grt.given)
+
+				So(v, ShouldEqual, grt.exValue)
+				So(e, ShouldBeNil)
+			}
+		})
+	})
+}
+
 func TestBuildSearchReleaseQuery(t *testing.T) {
 	t.Parallel()
 	Convey("Should return InternalError for invalid template", t, func() {
@@ -141,11 +177,9 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			"SortBy={{.SortBy.ESString}};" +
 			"ReleasedAfter={{.ReleasedAfter.ESString}};" +
 			"ReleasedBefore={{.ReleasedBefore.ESString}};" +
-			"Upcoming={{.Upcoming}};" +
-			"Published={{.Published}};" +
+			"Type={{.Type.String}};" +
 			"Highlight={{.Highlight}};" +
-			"Now={{.Now}};" +
-			"NowES={{.Now.ESString}}")
+			"Now={{.Now}}")
 
 		query, err := qb.BuildSearchQuery(context.Background(), ReleaseSearchRequest{
 			Term:           "query+term",
@@ -154,10 +188,8 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 			SortBy:         TitleAsc,
 			ReleasedAfter:  Date{},
 			ReleasedBefore: MustParseDate("2020-12-31"),
-			Upcoming:       true,
-			Published:      false,
+			Type:           Published,
 			Highlight:      true,
-			Now:            MustParseDate("2001-01-01"),
 		})
 
 		So(err, ShouldBeNil)
@@ -166,14 +198,12 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Term=query+term")
 		So(queryString, ShouldContainSubstring, "From=0")
 		So(queryString, ShouldContainSubstring, "Size=25")
-		So(queryString, ShouldContainSubstring, `SortBy={"description.title": "asc"}`)
+		So(queryString, ShouldContainSubstring, `SortBy={"description.title":"asc"}`)
 		So(queryString, ShouldContainSubstring, "ReleasedAfter=null")
 		So(queryString, ShouldContainSubstring, `ReleasedBefore="2020-12-31"`)
-		So(queryString, ShouldContainSubstring, "Upcoming=true")
-		So(queryString, ShouldContainSubstring, "Published=false")
+		So(queryString, ShouldContainSubstring, "Type=type-published")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
-		So(queryString, ShouldContainSubstring, `Now=2001-01-01`)
-		So(queryString, ShouldContainSubstring, `NowES="2001-01-01"`)
+		So(queryString, ShouldContainSubstring, fmt.Sprintf(`Now=%q`, time.Now().Format(dateFormat)))
 	})
 }
 

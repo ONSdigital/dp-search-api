@@ -1,0 +1,1 @@
+{ /* content query */{{if .Index}} "index":"{{.Index}}"{{if .Types}},{{end}}{{else}} "index":"ons"{{if .Types}},{{end}} {{end}}{{if .Types}} "type" : [{{range $i,$e := .Types}}{{if $i}},{{end}}"{{.}}"{{end}}]{{end}} }

@@ -1,0 +1,48 @@
+"function_score": {
+"query": {  {{template "coreQuery.tmpl" .}} },
+
+      "functions": [
+        {
+          "filter": {
+            "term": {
+              "type": "bulletin"
+            }
+          },
+          "weight": 100
+        },
+        {
+          "filter": {
+            "term": {
+              "type": "dataset_landing_page"
+            }
+          },
+          "weight": 70
+        },
+        {
+          "filter": {
+            "terms": {
+              "type": ["article",
+                            "compendium_landing_page",
+                            "article_download"]
+            }
+          },
+          "weight": 50
+        },
+        {
+          "filter": {
+            "term": {
+              "type": "static_adhoc"
+            }
+          },
+          "weight": 30
+        },
+        {
+          "filter": {
+            "term": {
+              "type": "timeseries"
+            }
+          },
+          "weight": 10
+        }
+      ]
+  }

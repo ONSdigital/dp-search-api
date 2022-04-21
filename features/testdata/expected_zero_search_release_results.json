@@ -1,7 +1,5 @@
 {
-  "took":8,
-  "limit":10,
-  "offset":0,
+  "took":11,
   "breakdown":{
     "total":0
   },
