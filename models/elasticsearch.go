@@ -54,12 +54,12 @@ type ESSourceDocument struct {
 }
 
 type ESHighlight struct {
-	DescriptionTitle     *[]string `json:"description.title"`
-	DescriptionEdition   *[]string `json:"description.edition"`
-	DescriptionSummary   *[]string `json:"description.summary"`
-	DescriptionMeta      *[]string `json:"description.metaDescription"`
-	DescriptionKeywords  *[]string `json:"description.keywords"`
-	DescriptionDatasetID *[]string `json:"description.datasetId"`
+	DescriptionTitle     []*string `json:"description.title"`
+	DescriptionEdition   []*string `json:"description.edition"`
+	DescriptionSummary   []*string `json:"description.summary"`
+	DescriptionMeta      []*string `json:"description.metaDescription"`
+	DescriptionKeywords  []*string `json:"description.keywords"`
+	DescriptionDatasetID []*string `json:"description.datasetId"`
 }
 
 // ********************************************************

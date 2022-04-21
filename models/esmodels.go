@@ -29,7 +29,7 @@ type DescriptionLegacy struct {
 	Headline2         string              `json:"headline2,omitempty"`
 	Headline3         string              `json:"headline3,omitempty"`
 	Highlight         *HighlightObjLegacy `json:"highlight,omitempty"`
-	Keywords          *[]string           `json:"keywords,omitempty"`
+	Keywords          []*string           `json:"keywords,omitempty"`
 	LatestRelease     *bool               `json:"latest_release,omitempty"`
 	Language          string              `json:"language,omitempty"`
 	MetaDescription   string              `json:"meta_description,omitempty"`
@@ -52,7 +52,7 @@ type contactLegacy struct {
 type HighlightObjLegacy struct {
 	DatasetID       string    `json:"dataset_id,omitempty"`
 	Edition         string    `json:"edition,omitempty"`
-	Keywords        *[]string `json:"keywords,omitempty"`
+	Keywords        []*string `json:"keywords,omitempty"`
 	MetaDescription string    `json:"meta_description,omitempty"`
 	Summary         string    `json:"summary,omitempty"`
 	Title           string    `json:"title,omitempty"`
@@ -86,7 +86,7 @@ type ESSourceDocumentLegacy struct {
 		Summary           string         `json:"summary"`
 		NextRelease       string         `json:"nextRelease,omitempty"`
 		Unit              string         `json:"unit,omitempty"`
-		Keywords          *[]string      `json:"keywords,omitempty"`
+		Keywords          []*string      `json:"keywords,omitempty"`
 		ReleaseDate       string         `json:"releaseDate,omitempty"`
 		Edition           string         `json:"edition,omitempty"`
 		LatestRelease     *bool          `json:"latestRelease,omitempty"`
@@ -107,12 +107,12 @@ type ESSourceDocumentLegacy struct {
 }
 
 type ESHighlightLegacy struct {
-	DescriptionTitle     *[]string `json:"description.title"`
-	DescriptionEdition   *[]string `json:"description.edition"`
-	DescriptionSummary   *[]string `json:"description.summary"`
-	DescriptionMeta      *[]string `json:"description.metaDescription"`
-	DescriptionKeywords  *[]string `json:"description.keywords"`
-	DescriptionDatasetID *[]string `json:"description.datasetId"`
+	DescriptionTitle     []*string `json:"description.title"`
+	DescriptionEdition   []*string `json:"description.edition"`
+	DescriptionSummary   []*string `json:"description.summary"`
+	DescriptionMeta      []*string `json:"description.metaDescription"`
+	DescriptionKeywords  []*string `json:"description.keywords"`
+	DescriptionDatasetID []*string `json:"description.datasetId"`
 }
 
 type ESResponseAggregationsLegacy struct {

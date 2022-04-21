@@ -11,6 +11,7 @@ import (
 )
 
 func TestLegacyTransformer(t *testing.T) {
+	t.Parallel()
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
 		transformer := NewLegacy()
 		Convey("Zero suggestions creates empty array", func() {
@@ -79,6 +80,7 @@ func TestLegacyTransformer(t *testing.T) {
 }
 
 func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
+	t.Parallel()
 	Convey("buildAdditionalSuggestionList successfully", t, func() {
 		Convey("returns array of strings", func() {
 			query1 := buildAdditionalSuggestionList("test-query")
@@ -100,6 +102,7 @@ func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
 }
 
 func TestLegacyTransformSearchResponse(t *testing.T) {
+	t.Parallel()
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
 		transformer := NewLegacy()
@@ -167,6 +170,7 @@ func TestLegacyTransformSearchResponse(t *testing.T) {
 }
 
 func TestTransform(t *testing.T) {
+	t.Parallel()
 	expectedESDocument1 := models.ESSourceDocument{
 		DataType:        "anyDataType1",
 		JobID:           "",

@@ -138,32 +138,32 @@ func (t *LegacyTransformer) buildDescription(doc models.ESResponseHitLegacy, hig
 	return des
 }
 
-func (t *LegacyTransformer) overlaySingleItem(hl *[]string, def string, highlight bool) (overlaid string) {
-	if highlight && hl != nil && len(*hl) > 0 {
-		overlaid = (*hl)[0]
+func (t *LegacyTransformer) overlaySingleItem(hl []*string, def string, highlight bool) (overlaid string) {
+	if highlight && hl != nil && len(hl) > 0 {
+		overlaid = *(hl)[0]
 	}
 	return
 }
 
-func (t *LegacyTransformer) overlayItemList(hlList, defaultList *[]string, highlight bool) *[]string {
+func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highlight bool) []*string {
 	if defaultList == nil || hlList == nil {
 		return nil
 	}
 
-	overlaid := make([]string, len(*defaultList))
-	copy(overlaid, *defaultList)
+	overlaid := make([]*string, len(defaultList))
+	copy(overlaid, defaultList)
 	if highlight {
-		for _, hl := range *hlList {
-			unformatted := t.higlightReplacer.Replace(hl)
+		for _, hl := range hlList {
+			unformatted := t.higlightReplacer.Replace(*hl)
 			for i, defItem := range overlaid {
-				if defItem == unformatted {
+				if *defItem == unformatted {
 					overlaid[i] = hl
 				}
 			}
 		}
 	}
 
-	return &overlaid
+	return overlaid
 }
 
 func buildContentTypes(bucket models.ESBucketLegacy) models.ContentTypeLegacy {
