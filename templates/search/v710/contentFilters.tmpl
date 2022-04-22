@@ -1,7 +1,6 @@
-{{ if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .URIPrefix .Topic .TopicWildcard .Upcoming .Published}}
+{{ if or .ReleasedBefore .ReleasedAfter .URIPrefix .Topic .TopicWildcard .Upcoming .Published}}
 ,
 "filter" : [
-{{ template "contentFilterOnFirstLetter.tmpl" . }}
 {{if or .URIPrefix .Topic .TopicWildcard}}
   { "bool": { "should": [
 

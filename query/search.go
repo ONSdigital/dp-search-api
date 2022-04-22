@@ -11,24 +11,23 @@ import (
 )
 
 type searchRequest struct {
-	Term                string
-	From                int
-	Size                int
-	Types               []string
-	Index               string
-	Queries             []string
-	SortBy              string
-	AggregationField    string
-	Highlight           bool
-	FilterOnFirstLetter string
-	ReleasedAfter       string
-	ReleasedBefore      string
-	URIPrefix           string
-	Topic               []string
-	TopicWildcard       []string
-	Upcoming            bool
-	Published           bool
-	Now                 string
+	Term             string
+	From             int
+	Size             int
+	Types            []string
+	Index            string
+	Queries          []string
+	SortBy           string
+	AggregationField string
+	Highlight        bool
+	ReleasedAfter    string
+	ReleasedBefore   string
+	URIPrefix        string
+	Topic            []string
+	TopicWildcard    []string
+	Upcoming         bool
+	Published        bool
+	Now              string
 }
 
 // SetupSearch loads templates for use by the search handler and should be done only once
@@ -48,7 +47,6 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/contentFilters.tmpl",
 		pathToTemplates+"templates/search/contentFilterUpcoming.tmpl",
 		pathToTemplates+"templates/search/contentFilterPublished.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnFirstLetter.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopic.tmpl",
@@ -81,7 +79,6 @@ func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterUpcoming.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterPublished.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnFirstLetter.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnTopic.tmpl",
