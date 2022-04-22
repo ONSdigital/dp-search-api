@@ -23,7 +23,6 @@ func TestBuildSearchQuery(t *testing.T) {
 			"From={{.From}};" +
 			"Size={{.Size}};" +
 			"Types={{.Types}};" +
-			"Queries={{.Queries}};" +
 			"SortBy={{.SortBy}};" +
 			"AggregationField={{.AggregationField}};" +
 			"Highlight={{.Highlight}};" +
@@ -39,7 +38,6 @@ func TestBuildSearchQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Size=2")
 		So(queryString, ShouldContainSubstring, "Types=[ta tb]")
 		So(queryString, ShouldContainSubstring, "SortBy=relevance")
-		So(queryString, ShouldContainSubstring, "Queries=[search counts]")
 		So(queryString, ShouldContainSubstring, "AggregationField=_type")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
 		So(queryString, ShouldContainSubstring, "Now=20")
@@ -52,28 +50,4 @@ func createQueryBuilderForTemplate(rawTemplate string) *Builder {
 	return &Builder{
 		searchTemplates: temp,
 	}
-}
-
-func TestHasQuery(t *testing.T) {
-	Convey("When called with multiple query values", t, func() {
-		sr := searchRequest{
-			Queries: []string{"moo", "quack"},
-		}
-
-		Convey("Should return true for included queries", func() {
-			So(sr.HasQuery("moo"), ShouldBeTrue)
-			So(sr.HasQuery("quack"), ShouldBeTrue)
-		})
-
-		Convey("Should return false for excluded queries", func() {
-			So(sr.HasQuery("oink"), ShouldBeFalse)
-		})
-	})
-
-	Convey("Should return false when called with zero query values", t, func() {
-		sr := searchRequest{
-			Queries: []string{},
-		}
-		So(sr.HasQuery("oink"), ShouldBeFalse)
-	})
 }

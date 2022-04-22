@@ -16,7 +16,6 @@ type searchRequest struct {
 	Size             int
 	Types            []string
 	Index            string
-	Queries          []string
 	SortBy           string
 	AggregationField string
 	Highlight        bool
@@ -92,7 +91,6 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		Types: strings.Split(contentTypes, ","),
 		//Topic:            topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
 		SortBy:           sort,
-		Queries:          []string{"search", "counts"},
 		AggregationField: "_type",
 		Highlight:        true,
 		Now:              time.Now().UTC().Format(time.RFC3339),
@@ -112,14 +110,4 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 	}
 
 	return formattedQuery, nil
-}
-
-// HasQuery is a helper method used by certain templates
-func (sr searchRequest) HasQuery(query string) bool {
-	for _, q := range sr.Queries {
-		if q == query {
-			return true
-		}
-	}
-	return false
 }
