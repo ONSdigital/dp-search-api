@@ -1,8 +1,0 @@
-{{ if .FilterOnLatest }}
-   {
-        "term" : {
-            "latestRelease" : true
-        }
-    }
-    {{if or .FilterOnFirstLetter .ReleasedBefore .ReleasedAfter .URIPrefix .Topic .TopicWildcard .Upcoming .Published}},{{end}}
-{{end}}

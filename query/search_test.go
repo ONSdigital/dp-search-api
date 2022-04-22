@@ -27,7 +27,6 @@ func TestBuildSearchQuery(t *testing.T) {
 			"SortBy={{.SortBy}};" +
 			"AggregationField={{.AggregationField}};" +
 			"Highlight={{.Highlight}};" +
-			"FilterOnLatest={{.FilterOnLatest}};" +
 			"Upcoming={{.Upcoming}};" +
 			"Published={{.Published}};" +
 			"Now={{.Now}}")
@@ -45,7 +44,6 @@ func TestBuildSearchQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Queries=[search counts]")
 		So(queryString, ShouldContainSubstring, "AggregationField=_type")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
-		So(queryString, ShouldContainSubstring, "FilterOnLatest=false")
 		So(queryString, ShouldContainSubstring, "Upcoming=false")
 		So(queryString, ShouldContainSubstring, "Published=false")
 		So(queryString, ShouldContainSubstring, "Now=20")

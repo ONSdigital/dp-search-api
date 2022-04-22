@@ -20,7 +20,6 @@ type searchRequest struct {
 	SortBy              string
 	AggregationField    string
 	Highlight           bool
-	FilterOnLatest      bool
 	FilterOnFirstLetter string
 	ReleasedAfter       string
 	ReleasedBefore      string
@@ -46,11 +45,9 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/countQuery.tmpl",
 		pathToTemplates+"templates/search/coreQuery.tmpl",
 		pathToTemplates+"templates/search/weightedQuery.tmpl",
-		pathToTemplates+"templates/search/countFilterLatest.tmpl",
 		pathToTemplates+"templates/search/contentFilters.tmpl",
 		pathToTemplates+"templates/search/contentFilterUpcoming.tmpl",
 		pathToTemplates+"templates/search/contentFilterPublished.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnLatest.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnFirstLetter.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
@@ -81,11 +78,9 @@ func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/v710/countQuery.tmpl",
 		pathToTemplates+"templates/search/v710/coreQuery.tmpl",
 		pathToTemplates+"templates/search/v710/weightedQuery.tmpl",
-		pathToTemplates+"templates/search/v710/countFilterLatest.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterUpcoming.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterPublished.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnLatest.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnFirstLetter.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
@@ -113,7 +108,6 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		Queries:          []string{"search", "counts"},
 		AggregationField: "_type",
 		Highlight:        true,
-		FilterOnLatest:   false,
 		Upcoming:         false,
 		Published:        false,
 		Now:              time.Now().UTC().Format(time.RFC3339),
