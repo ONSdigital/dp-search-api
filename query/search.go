@@ -25,8 +25,6 @@ type searchRequest struct {
 	URIPrefix        string
 	Topic            []string
 	TopicWildcard    []string
-	Upcoming         bool
-	Published        bool
 	Now              string
 }
 
@@ -45,8 +43,6 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/coreQuery.tmpl",
 		pathToTemplates+"templates/search/weightedQuery.tmpl",
 		pathToTemplates+"templates/search/contentFilters.tmpl",
-		pathToTemplates+"templates/search/contentFilterUpcoming.tmpl",
-		pathToTemplates+"templates/search/contentFilterPublished.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopic.tmpl",
@@ -77,8 +73,6 @@ func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/v710/coreQuery.tmpl",
 		pathToTemplates+"templates/search/v710/weightedQuery.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterUpcoming.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterPublished.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnTopic.tmpl",
@@ -105,8 +99,6 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		Queries:          []string{"search", "counts"},
 		AggregationField: "_type",
 		Highlight:        true,
-		Upcoming:         false,
-		Published:        false,
 		Now:              time.Now().UTC().Format(time.RFC3339),
 	}
 
