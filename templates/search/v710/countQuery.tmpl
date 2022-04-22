@@ -13,8 +13,6 @@
 	        "prefix": {
                     "uri": "{{.URIPrefix}}"
                 }}
-                {{- if or .ReleasedBefore .ReleasedAfter}}, {{- end}}
-                {{ template "contentFilterOnReleaseDate.tmpl" .}}
                 ]
 	      {{end}}
       }

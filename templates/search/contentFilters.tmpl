@@ -1,4 +1,4 @@
-{{ if or .ReleasedBefore .ReleasedAfter .URIPrefix .Topic .TopicWildcard}}
+{{ if or  .URIPrefix .Topic .TopicWildcard}}
 ,
 "filter" : [
 {{if or .URIPrefix .Topic .TopicWildcard}}
@@ -8,9 +8,6 @@
   {{ template "contentFilterOnTopic.tmpl" . }}
   {{ template "contentFilterOnTopicWildcard.tmpl" . }}
 
-    ],
-    "must":[
-      {{ template "contentFilterOnReleaseDate.tmpl" .}}
     ]}
   }
  {{end}}

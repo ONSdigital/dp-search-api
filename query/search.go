@@ -20,8 +20,6 @@ type searchRequest struct {
 	SortBy           string
 	AggregationField string
 	Highlight        bool
-	ReleasedAfter    string
-	ReleasedBefore   string
 	URIPrefix        string
 	Topic            []string
 	TopicWildcard    []string
@@ -43,7 +41,6 @@ func SetupSearch(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/coreQuery.tmpl",
 		pathToTemplates+"templates/search/weightedQuery.tmpl",
 		pathToTemplates+"templates/search/contentFilters.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopic.tmpl",
 		pathToTemplates+"templates/search/contentFilterOnTopicWildcard.tmpl",
@@ -73,7 +70,6 @@ func SetupV710Search(pathToTemplates string) (*template.Template, error) {
 		pathToTemplates+"templates/search/v710/coreQuery.tmpl",
 		pathToTemplates+"templates/search/v710/weightedQuery.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnReleaseDate.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnTopic.tmpl",
 		pathToTemplates+"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
