@@ -6,68 +6,70 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ONSdigital/dp-search-api/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestTransform(t *testing.T) {
+func TestLegacyTransformer(t *testing.T) {
+	t.Parallel()
 	Convey("Transforms unmarshalled search responses successfully", t, func() {
-		transformer := New()
+		transformer := NewLegacy()
 		Convey("Zero suggestions creates empty array", func() {
-			es := ESResponse{
-				Responses: []ESResponseItem{ESResponseItem{
-					Suggest: ESSuggest{
-						SearchSuggest: []ESSearchSuggest{ESSearchSuggest{
-							Options: []ESSearchSuggestOptions{},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{models.ESSearchSuggestLegacy{
+							Options: []models.ESSearchSuggestOptionsLegacy{},
 						}},
 					},
 				}},
 			}
-			sr := transformer.transform(&es, false)
+			sr := transformer.legayTransform(&es, false)
 			So(sr.Suggestions, ShouldBeEmpty)
 		})
 
 		Convey("One suggestion creates a populated array", func() {
-			es := ESResponse{
-				Responses: []ESResponseItem{ESResponseItem{
-					Suggest: ESSuggest{
-						SearchSuggest: []ESSearchSuggest{ESSearchSuggest{
-							Options: []ESSearchSuggestOptions{
-								ESSearchSuggestOptions{Text: "option1"},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{models.ESSearchSuggestLegacy{
+							Options: []models.ESSearchSuggestOptionsLegacy{
+								models.ESSearchSuggestOptionsLegacy{Text: "option1"},
 							},
 						}},
 					},
 				}},
 			}
-			sr := transformer.transform(&es, true)
+			sr := transformer.legayTransform(&es, true)
 			So(sr.Suggestions, ShouldNotBeEmpty)
 			So(len(sr.Suggestions), ShouldEqual, 1)
 			So(sr.Suggestions[0], ShouldResemble, "option1")
 		})
 		Convey("Multiple suggestions creates a populated array incorrect order", func() {
-			es := ESResponse{
-				Responses: []ESResponseItem{ESResponseItem{
-					Suggest: ESSuggest{
-						SearchSuggest: []ESSearchSuggest{
-							ESSearchSuggest{
-								Options: []ESSearchSuggestOptions{
-									ESSearchSuggestOptions{Text: "option1"},
+			es := models.ESResponseLegacy{
+				Responses: []models.ESResponseItemLegacy{models.ESResponseItemLegacy{
+					Suggest: models.ESSuggestLegacy{
+						SearchSuggest: []models.ESSearchSuggestLegacy{
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option1"},
 								},
 							},
-							ESSearchSuggest{
-								Options: []ESSearchSuggestOptions{
-									ESSearchSuggestOptions{Text: "option2"},
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option2"},
 								},
 							},
-							ESSearchSuggest{
-								Options: []ESSearchSuggestOptions{
-									ESSearchSuggestOptions{Text: "option3"},
+							models.ESSearchSuggestLegacy{
+								Options: []models.ESSearchSuggestOptionsLegacy{
+									models.ESSearchSuggestOptionsLegacy{Text: "option3"},
 								},
 							},
 						},
 					},
 				}},
 			}
-			sr := transformer.transform(&es, true)
+			sr := transformer.legayTransform(&es, true)
 			So(sr.Suggestions, ShouldNotBeEmpty)
 			So(len(sr.Suggestions), ShouldEqual, 3)
 			So(sr.Suggestions[0], ShouldResemble, "option1")
@@ -77,7 +79,8 @@ func TestTransform(t *testing.T) {
 	})
 }
 
-func TestBuildAdditionalSuggestionsList(t *testing.T) {
+func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
+	t.Parallel()
 	Convey("buildAdditionalSuggestionList successfully", t, func() {
 		Convey("returns array of strings", func() {
 			query1 := buildAdditionalSuggestionList("test-query")
@@ -98,10 +101,11 @@ func TestBuildAdditionalSuggestionsList(t *testing.T) {
 	})
 }
 
-func TestTransformSearchResponse(t *testing.T) {
+func TestLegacyTransformSearchResponse(t *testing.T) {
+	t.Parallel()
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
-		transformer := New()
+		transformer := NewLegacy()
 		So(t, ShouldNotBeNil)
 
 		Convey("Throws error on invalid JSON", func() {
@@ -127,7 +131,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", true)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -142,7 +146,7 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test-query", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
@@ -157,10 +161,129 @@ func TestTransformSearchResponse(t *testing.T) {
 			actual, err := transformer.TransformSearchResponse(ctx, sampleResponse, "test query \"with quote marks\"", false)
 			So(err, ShouldBeNil)
 			So(actual, ShouldNotBeEmpty)
-			var exp, act SearchResponse
+			var exp, act models.SearchResponseLegacy
 			So(json.Unmarshal(expected, &exp), ShouldBeNil)
 			So(json.Unmarshal(actual, &act), ShouldBeNil)
 			So(act, ShouldResemble, exp)
 		})
 	})
+}
+
+func TestTransform(t *testing.T) {
+	t.Parallel()
+	expectedESDocument1 := models.ESSourceDocument{
+		DataType:        "anyDataType1",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword1"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic1"},
+	}
+	expectedESDocument2 := models.ESSourceDocument{
+		DataType:        "anyDataType2",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword2"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic2"},
+	}
+
+	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
+		transformer := New()
+		esResponse := prepareESMockResponse()
+
+		Convey("When calling a transformer", func() {
+			transformedResponse := transformer.transform(&esResponse, true)
+
+			Convey("Then transforms unmarshalled search responses successfully", func() {
+				So(transformedResponse, ShouldNotBeNil)
+				So(transformedResponse.Took, ShouldEqual, 10)
+				So(len(transformedResponse.Items), ShouldEqual, 2)
+				So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
+				So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
+				So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
+			})
+		})
+	})
+}
+
+// Prepare mock ES response
+func prepareESMockResponse() models.EsResponses {
+	esDocument1 := models.ESSourceDocument{
+		DataType:        "anyDataType1",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword1"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic1"},
+	}
+
+	esDocument2 := models.ESSourceDocument{
+		DataType:        "anyDataType2",
+		JobID:           "",
+		CDID:            "",
+		DatasetID:       "",
+		Keywords:        []string{"anykeyword2"},
+		MetaDescription: "",
+		Summary:         "",
+		ReleaseDate:     "",
+		Title:           "anyTitle2",
+		Topics:          []string{"anyTopic2"},
+	}
+
+	esDocuments := []models.ESSourceDocument{esDocument1, esDocument2}
+
+	hit := models.ESResponseHit{
+		Source:    esDocuments,
+		Highlight: models.ESHighlight{},
+	}
+
+	bucket1 := models.ESBucket{
+		Key:   "article",
+		Count: 1,
+	}
+	bucket2 := models.ESBucket{
+		Key:   "product_page",
+		Count: 1,
+	}
+	buckets := []models.ESBucket{bucket1, bucket2}
+
+	esDoccount := models.ESDocCounts{
+		Buckets: buckets,
+	}
+
+	esResponse1 := models.EsResponse{
+		Took: 10,
+		Hits: models.ESResponseHits{
+			Total: 1,
+			Hits: []models.ESResponseHit{
+				hit,
+			},
+		},
+		Aggregations: models.ESResponseAggregations{
+			Doccounts: esDoccount,
+		},
+		Suggest: []string{"testSuggestion"},
+	}
+
+	// Preparing ES response array
+	esResponse := models.EsResponses{
+		Responses: []models.EsResponse{
+			esResponse1,
+		},
+	}
+
+	return esResponse
 }

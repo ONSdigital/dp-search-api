@@ -1,0 +1,32 @@
+{ {{/* count query */}}
+"query" : {
+    "bool" : {
+      "must" : {
+                 {{- if .Term}}
+                     {{- template "coreQuery.tmpl" .}}
+                  {{- else}}
+                     {{- template "matchAll.tmpl" .}}
+                  {{- end}}
+             }
+        {{- template "countFilterLatest.tmpl" .}}
+        {{-  if .URIPrefix }}
+          ,"filter": [{
+	        "prefix": {
+                    "uri": "{{.URIPrefix}}"
+                }}
+                {{- if or .ReleasedBefore .ReleasedAfter}}, {{- end}}
+                {{ template "contentFilterOnReleaseDate.tmpl" .}}
+                ]
+	      {{end}}
+      }
+   },
+  "size": 0,
+  "aggregations": {
+  		"docCounts": {
+  				"terms": {
+  					"size": 1000,
+  					"field":"{{.AggregationField}}"
+			}
+  		}
+	}
+}

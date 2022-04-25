@@ -3,19 +3,17 @@ package service
 import (
 	"context"
 
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
-
+	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
+	"github.com/ONSdigital/dp-net/v2/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
-
-	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
-	"github.com/ONSdigital/dp-net/v2/awsauth"
-	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 const pathToTemplates = ""
@@ -29,7 +27,7 @@ type Service struct {
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	transformer         *transformer.Transformer
+	transformer         *transformer.LegacyTransformer
 }
 
 // SetServer sets the http server for a service
@@ -53,7 +51,7 @@ func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Cli
 }
 
 // SetTransformer sets the transformer for a service
-func (svc *Service) SetTransformer(transformerClient *transformer.Transformer) {
+func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransformer) {
 	svc.transformer = transformerClient
 }
 
@@ -62,7 +60,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise transformerClient
-	transformerClient := transformer.New()
+	transformerClient := transformer.NewLegacy()
 
 	// Initialse AWS signer
 	if cfg.SignElasticsearchRequests {
@@ -83,7 +81,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise query builder
-	queryBuilder, err := query.NewQueryBuilder(pathToTemplates)
+	queryBuilder, err := query.NewQueryBuilder(pathToTemplates, cfg.ElasticVersion710)
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err

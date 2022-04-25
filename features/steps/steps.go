@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/ONSdigital/dp-search-api/transformer"
+	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/cucumber/godog"
 	"github.com/google/go-cmp/cmp"
 )
@@ -41,7 +41,7 @@ func (c *Component) successfullyReturnMultipleSearchReleaseResults() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
@@ -63,7 +63,7 @@ func (c *Component) successfullyReturnSingleSearchReleaseResult() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
@@ -85,7 +85,7 @@ func (c *Component) successfullyReturnNoSearchReleaseResults() error {
 		return err
 	}
 
-	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_search", 200, body)
+	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 200, body)
 
 	return nil
 }
@@ -97,7 +97,7 @@ func (c *Component) failureInternalServerError() error {
 }
 
 func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
-	var searchResponse, expectedSearchResponse transformer.SearchResponse
+	var searchResponse, expectedSearchResponse models.SearchResponseLegacy
 
 	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {

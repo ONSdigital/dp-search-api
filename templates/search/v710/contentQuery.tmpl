@@ -1,0 +1,55 @@
+{
+{{/* content query */}}
+ {{- if .From -}}
+ 	"from" : {{- .From}},
+ {{- end}}
+ "size" : {{.Size}},
+ "query" : {
+     "bool" : {
+       "must" : {
+                  {{- if .Term}}
+                      {{- template "weightedQuery.tmpl" .}}
+                   {{- else}}
+                      {{- template "matchAll.tmpl" .}}
+                   {{- end}}
+              }
+         {{template "contentFilters.tmpl" .}}
+         }
+    },
+ "suggest":{
+ 	"search_suggest":{
+ 		"text":"{{.Term}}",
+ 		"phrase":{"field":"title.title_no_synonym_no_stem"}}
+ },
+ "_source":{
+ 			"includes":[],
+ 			"excludes":["downloads.content","downloads*","pageData"]},
+ 	{{if .Highlight}}
+ 		"highlight":{
+ 			"pre_tags":["<em class=\"ons-highlight\">"],
+ 			"post_tags":["</em>"],
+ 			"fields":{"terms":{"fragment_size":0,"number_of_fragments":0},
+ 			"title":{"fragment_size":0,"number_of_fragments":0},
+ 			"edition":{"fragment_size":0,"number_of_fragments":0},
+ 			"summary":{"fragment_size":0,"number_of_fragments":0},
+ 			"metaDescription":{"fragment_size":0,"number_of_fragments":0},
+ 			"keywords":{"fragment_size":0,"number_of_fragments":0},
+ 			"cdid":{"fragment_size":0,"number_of_fragments":0},
+ 			"datasetId":{"fragment_size":0,"number_of_fragments":0},
+			"downloads.content":{"fragment_size": 45,"number_of_fragments": 5},
+			"pageData":{"fragment_size": 45,"number_of_fragments": 5}
+		    }
+        },
+        {{end}}
+ {{ if eq .SortBy "release_date" }}
+    {{ template "sortByReleaseDate.tmpl" }}
+ {{ else if eq .SortBy "release_date_asc" }}
+    {{template "sortByReleaseDateAsc.tmpl" }}
+ {{ else if eq .SortBy "title" }}
+    {{ template "sortByTitle.tmpl" }}
+ {{ else if eq .SortBy "first_letter" }}
+    {{ template "sortByFirstLetter.tmpl" }}
+ {{ else }}
+    {{template "sortByRelevance.tmpl" }}
+ {{ end }}
+}
