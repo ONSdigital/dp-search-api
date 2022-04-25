@@ -3,12 +3,17 @@ package query
 import (
 	"bytes"
 	"context"
+	"embed"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/pkg/errors"
 )
+
+//go:embed templates/search/*.tmpl
+//go:embed templates/search/v710/*.tmpl
+var searchFS embed.FS
 
 type searchRequest struct {
 	Term             string
@@ -26,57 +31,57 @@ type searchRequest struct {
 }
 
 // SetupSearch loads templates for use by the search handler and should be done only once
-func SetupSearch(pathToTemplates string) (*template.Template, error) {
+func SetupSearch() (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
 
-	templates, err := template.ParseFiles(
-		pathToTemplates+"templates/search/search.tmpl",
-		pathToTemplates+"templates/search/contentQuery.tmpl",
-		pathToTemplates+"templates/search/matchAll.tmpl",
-		pathToTemplates+"templates/search/contentHeader.tmpl",
-		pathToTemplates+"templates/search/countHeader.tmpl",
-		pathToTemplates+"templates/search/countQuery.tmpl",
-		pathToTemplates+"templates/search/coreQuery.tmpl",
-		pathToTemplates+"templates/search/weightedQuery.tmpl",
-		pathToTemplates+"templates/search/contentFilters.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnURIPrefix.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnTopic.tmpl",
-		pathToTemplates+"templates/search/contentFilterOnTopicWildcard.tmpl",
-		pathToTemplates+"templates/search/sortByTitle.tmpl",
-		pathToTemplates+"templates/search/sortByRelevance.tmpl",
-		pathToTemplates+"templates/search/sortByReleaseDate.tmpl",
-		pathToTemplates+"templates/search/sortByReleaseDateAsc.tmpl",
-		pathToTemplates+"templates/search/sortByReleaseDateAsc.tmpl",
-		pathToTemplates+"templates/search/sortByFirstLetter.tmpl",
+	templates, err := template.ParseFS(searchFS,
+		"templates/search/search.tmpl",
+		"templates/search/contentQuery.tmpl",
+		"templates/search/matchAll.tmpl",
+		"templates/search/contentHeader.tmpl",
+		"templates/search/countHeader.tmpl",
+		"templates/search/countQuery.tmpl",
+		"templates/search/coreQuery.tmpl",
+		"templates/search/weightedQuery.tmpl",
+		"templates/search/contentFilters.tmpl",
+		"templates/search/contentFilterOnURIPrefix.tmpl",
+		"templates/search/contentFilterOnTopic.tmpl",
+		"templates/search/contentFilterOnTopicWildcard.tmpl",
+		"templates/search/sortByTitle.tmpl",
+		"templates/search/sortByRelevance.tmpl",
+		"templates/search/sortByReleaseDate.tmpl",
+		"templates/search/sortByReleaseDateAsc.tmpl",
+		"templates/search/sortByReleaseDateAsc.tmpl",
+		"templates/search/sortByFirstLetter.tmpl",
 	)
 
 	return templates, err
 }
 
 // SetupV710Search loads v710 templates for use by the search handler and should be done only once
-func SetupV710Search(pathToTemplates string) (*template.Template, error) {
+func SetupV710Search() (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
 
-	templates, err := template.ParseFiles(
-		pathToTemplates+"templates/search/v710/search.tmpl",
-		pathToTemplates+"templates/search/v710/contentQuery.tmpl",
-		pathToTemplates+"templates/search/v710/matchAll.tmpl",
-		pathToTemplates+"templates/search/v710/contentHeader.tmpl",
-		pathToTemplates+"templates/search/v710/countHeader.tmpl",
-		pathToTemplates+"templates/search/v710/countQuery.tmpl",
-		pathToTemplates+"templates/search/v710/coreQuery.tmpl",
-		pathToTemplates+"templates/search/v710/weightedQuery.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilters.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnURIPrefix.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnTopic.tmpl",
-		pathToTemplates+"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
-		pathToTemplates+"templates/search/v710/sortByTitle.tmpl",
-		pathToTemplates+"templates/search/v710/sortByRelevance.tmpl",
-		pathToTemplates+"templates/search/v710/sortByReleaseDate.tmpl",
-		pathToTemplates+"templates/search/v710/sortByReleaseDateAsc.tmpl",
-		pathToTemplates+"templates/search/v710/sortByFirstLetter.tmpl",
+	templates, err := template.ParseFS(searchFS,
+		"templates/search/v710/search.tmpl",
+		"templates/search/v710/contentQuery.tmpl",
+		"templates/search/v710/matchAll.tmpl",
+		"templates/search/v710/contentHeader.tmpl",
+		"templates/search/v710/countHeader.tmpl",
+		"templates/search/v710/countQuery.tmpl",
+		"templates/search/v710/coreQuery.tmpl",
+		"templates/search/v710/weightedQuery.tmpl",
+		"templates/search/v710/contentFilters.tmpl",
+		"templates/search/v710/contentFilterOnURIPrefix.tmpl",
+		"templates/search/v710/contentFilterOnTopic.tmpl",
+		"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
+		"templates/search/v710/sortByTitle.tmpl",
+		"templates/search/v710/sortByRelevance.tmpl",
+		"templates/search/v710/sortByReleaseDate.tmpl",
+		"templates/search/v710/sortByReleaseDateAsc.tmpl",
+		"templates/search/v710/sortByFirstLetter.tmpl",
 	)
 
 	return templates, err

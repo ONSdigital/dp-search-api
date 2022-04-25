@@ -51,7 +51,7 @@ func main() {
 			log.Fatalf("failed to read query from file: %s", err)
 		}
 	} else {
-		builder, err = query.NewReleaseBuilder("../../../")
+		builder, err = query.NewReleaseBuilder()
 		if err != nil {
 			log.Fatalf("failed to create builder: %s", err)
 		}
