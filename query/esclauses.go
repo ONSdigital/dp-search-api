@@ -53,7 +53,7 @@ const (
 
 func mainUpcomingClause(now time.Time) string {
 	return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
-		fmt.Sprintf(`{"range": {"description.release_date": {"gte": %q}}}`, now.Format(dateFormat)))
+		fmt.Sprintf(`{"range": {"description.releaseDate": {"gte": %q}}}`, now.Format(dateFormat)))
 }
 
 func supplementaryUpcomingClause(sr ReleaseSearchRequest) string {
