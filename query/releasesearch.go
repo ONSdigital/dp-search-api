@@ -324,7 +324,7 @@ func (sr ReleaseSearchRequest) CensusClause() string {
 }
 
 func (sr ReleaseSearchRequest) HighlightClause() string {
-	if sr.Census {
+	if sr.Highlight {
 		return `
 			"highlight":{
 				"pre_tags":["<em class=\"ons-highlight\">"],
