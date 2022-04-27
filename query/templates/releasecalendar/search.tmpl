@@ -58,7 +58,29 @@
 {"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
 {
     "size":0,
-    "query":{"match_all":{}},
+    "query": {
+        "bool": {
+            "must": {
+                {{if .Term}}
+                    {{- template "query.tmpl" . }}
+                {{else}}  "match_all": {}
+                {{end}}
+            },
+            "filter": [
+                {
+                    "range": {
+                        "description.releaseDate": {
+                            "from": {{.ReleasedAfter.ESString}},
+                            "to":  {{.ReleasedBefore.ESString}},
+                            "include_lower": true,
+                            "include_upper": true
+                        }
+                    }
+                },
+                {{.CensusClause}}
+            ]
+        }
+    },
     "aggs":{
         "release_types":{
             "filters":{
