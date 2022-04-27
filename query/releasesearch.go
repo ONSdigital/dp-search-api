@@ -145,7 +145,7 @@ const (
 )
 
 var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
-var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title": "asc"}`, TitleDesc: `{"description.title": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title.title_raw": "asc"}`, TitleDesc: `{"description.title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
 
 type InvalidSortString string
 
