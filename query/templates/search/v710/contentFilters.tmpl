@@ -1,0 +1,15 @@
+{{ if or .URIPrefix .Topic .TopicWildcard}}
+,
+"filter" : [
+{{if or .URIPrefix .Topic .TopicWildcard}}
+  { "bool": { "should": [
+
+  {{ template "contentFilterOnURIPrefix.tmpl" . }}
+  {{ template "contentFilterOnTopic.tmpl" . }}
+  {{ template "contentFilterOnTopicWildcard.tmpl" . }}
+
+    ]}
+  }
+ {{end}}
+]
+{{end}}

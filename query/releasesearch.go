@@ -3,6 +3,7 @@ package query
 import (
 	"bytes"
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,9 @@ import (
 
 	"github.com/ONSdigital/log.go/v2/log"
 )
+
+//go:embed templates/releasecalendar/*.tmpl
+var releaseFS embed.FS
 
 type ParamValidator map[paramName]validator
 
@@ -220,10 +224,10 @@ type ReleaseBuilder struct {
 	searchTemplates *template.Template
 }
 
-func NewReleaseBuilder(pathToTemplates string) (*ReleaseBuilder, error) {
-	searchTemplate, err := template.ParseFiles(
-		pathToTemplates+"templates/search/releasecalendar/search.tmpl",
-		pathToTemplates+"templates/search/releasecalendar/query.tmpl")
+func NewReleaseBuilder() (*ReleaseBuilder, error) {
+	searchTemplate, err := template.ParseFS(releaseFS,
+		"templates/releasecalendar/search.tmpl",
+		"templates/releasecalendar/query.tmpl")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
 	}

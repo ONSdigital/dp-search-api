@@ -1,0 +1,14 @@
+{{/* title(
+            get(Field.title_raw, SortOrder.ASC),
+            get(Field.releaseDate, SortOrder.DESC)
+    )*/}}
+"sort" : [
+    {
+        "title.title_raw" : {
+            "order" : "asc"
+            }
+    }, {
+        "releaseDate" : {
+            "order" : "desc"
+        }
+    }]

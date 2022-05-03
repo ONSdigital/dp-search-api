@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -224,8 +225,14 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 
 func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
 	for metadata := range metadataChan {
+		uri := metadata.DatasetLinks.LatestVersion.URL
+		parsedURI, err := url.Parse(uri)
+		if err != nil {
+			log.Fatalf("error occured while parsing url: %v", err)
+		}
 		cmdData := extractorModels.CMDData{
 			UID: metadata.DatasetDetails.ID,
+			URI: parsedURI.Path,
 			VersionDetails: extractorModels.VersionDetails{
 				ReleaseDate: metadata.Version.ReleaseDate,
 			},
@@ -249,7 +256,7 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 
 		transformedDoc := Document{
 			ID:   exporterEventData.UID,
-			URI:  metadata.URI,
+			URI:  parsedURI.Path,
 			Body: body,
 		}
 		transformedChan <- transformedDoc
@@ -441,8 +448,8 @@ func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAP
 		for i := 0; i < maxConcurrentExtractions; i++ {
 			wg.Add(1)
 			go func() {
-				for metadata := range editionMetadata {
-					metadata, err := datasetClient.GetVersionMetadata(ctx, "", serviceAuthToken, "", metadata.id, metadata.editionID, metadata.version)
+				for edMetadata := range editionMetadata {
+					metadata, err := datasetClient.GetVersionMetadata(ctx, "", serviceAuthToken, "", edMetadata.id, edMetadata.editionID, edMetadata.version)
 					if err != nil {
 						continue
 					}

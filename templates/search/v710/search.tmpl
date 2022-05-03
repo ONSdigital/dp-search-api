@@ -1,9 +1,0 @@
-{{/* $$ indicates newline, each header and query MUST be on its own line - with a blank line at the end */}}
-{{- if .HasQuery "search" }}
-    {{- template "contentHeader.tmpl" .}}$$
-    {{- template "contentQuery.tmpl" .}}$$
-{{- end}}
-{{- if .HasQuery "counts" }}
-    {{- template "countHeader.tmpl" .}}$$
-    {{- template "countQuery.tmpl" .}}$$
-{{- end}}

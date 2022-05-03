@@ -16,8 +16,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const pathToTemplates = ""
-
 type Service struct {
 	api                 *api.SearchAPI
 	config              *config.Config
@@ -81,7 +79,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise query builder
-	queryBuilder, err := query.NewQueryBuilder(pathToTemplates, cfg.ElasticVersion710)
+	queryBuilder, err := query.NewQueryBuilder(cfg.ElasticVersion710)
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err
@@ -115,7 +113,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	// Create the interfaces needed, and add route for the new search releases api
-	builder, err := query.NewReleaseBuilder(pathToTemplates)
+	builder, err := query.NewReleaseBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising release query builder", err)
 		return nil, err
