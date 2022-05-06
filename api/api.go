@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
@@ -40,6 +41,7 @@ type ElasticSearcher interface {
 // DpElasticSearcher provides an interface for the dp-elasticsearch functionality
 type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
+	MultiSearch(ctx context.Context, searches []client.Search) ([]byte, error)
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
@@ -67,7 +69,7 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler, elasticVersion710 bool) (*SearchAPI, error) {
 	api := &SearchAPI{
 		Router:             router,
 		QueryBuilder:       queryBuilder,
@@ -77,7 +79,11 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 		permissions:        permissions,
 	}
 
-	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
+	if elasticVersion710 {
+		router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
+	} else {
+		router.HandleFunc("/search", LegacySearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
+	}
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil
