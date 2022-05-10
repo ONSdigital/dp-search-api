@@ -67,7 +67,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise transformerClient
-	transformerClient = transformer.NewLegacy()
+	transformerClient = transformer.New(cfg.ElasticVersion710)
 
 	// Initialse AWS signer
 	if cfg.ElasticVersion710 {
@@ -88,7 +88,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
 			return nil, err
 		}
-		transformerClient = transformer.New()
 	}
 
 	// Initialise query builder

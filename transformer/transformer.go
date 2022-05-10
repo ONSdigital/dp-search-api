@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/pkg/errors"
 )
@@ -15,23 +16,20 @@ type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
 }
 
-// NewLegacy returns a new instance of Transformer
-func NewLegacy() *LegacyTransformer {
-	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	return &LegacyTransformer{
-		higlightReplacer: highlightReplacer,
-	}
-}
-
 // Transformer represents an instance of the ResponseTransformer interface for ES7x
 type Transformer struct {
 	higlightReplacer *strings.Replacer
 }
 
 // New returns a new instance of Transformer ES7x
-func New() *Transformer {
+func New(esVersion710 bool) api.ResponseTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	return &Transformer{
+	if esVersion710 {
+		return &Transformer{
+			higlightReplacer: highlightReplacer,
+		}
+	}
+	return &LegacyTransformer{
 		higlightReplacer: highlightReplacer,
 	}
 }
