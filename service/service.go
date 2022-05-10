@@ -85,7 +85,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 			Transport: awsSignerRT,
 		})
 		if esClientErr != nil {
-			log.Fatal(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+			return nil, err
 		}
 		transformerClient = transformer.New()
 	}
