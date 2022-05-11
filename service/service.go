@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
@@ -25,7 +27,7 @@ type Service struct {
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	transformer         *transformer.LegacyTransformer
+	transformer         api.ResponseTransformer
 }
 
 // SetServer sets the http server for a service
@@ -55,13 +57,20 @@ func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransfor
 
 // Run the service
 func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
+	var esClientErr error
+	var esClient dpEsClient.Client
+	var transformerClient api.ResponseTransformer
+
 	elasticHTTPClient := dphttp.NewClient()
+	esClient = legacyESClient.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
+	// Initialise deprecatedESClient
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise transformerClient
-	transformerClient := transformer.NewLegacy()
+	transformerClient = transformer.New(cfg.ElasticVersion710)
 
 	// Initialse AWS signer
-	if cfg.SignElasticsearchRequests {
+	if cfg.ElasticVersion710 {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
 		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
@@ -70,13 +79,16 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 			return nil, err
 		}
 
-		elasticHTTPClient = dphttp.NewClientWithTransport(awsSignerRT)
+		esClient, esClientErr = dpEs.NewClient(dpEsClient.Config{
+			ClientLib: dpEsClient.GoElasticV710,
+			Address:   cfg.ElasticSearchAPIURL,
+			Transport: awsSignerRT,
+		})
+		if esClientErr != nil {
+			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+			return nil, err
+		}
 	}
-
-	dpESClient := legacyESClient.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
-
-	// Initialise deprecatedESClient
-	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise query builder
 	queryBuilder, err := query.NewQueryBuilder(cfg.ElasticVersion710)
@@ -95,7 +107,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	if regErr := registerCheckers(ctx, healthCheck, dpESClient); regErr != nil {
+	if regErr := registerCheckers(ctx, healthCheck, esClient); regErr != nil {
 		return nil, errors.Wrap(regErr, "unable to register checkers")
 	}
 
@@ -106,7 +118,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, dpESClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
+	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions, cfg.ElasticVersion710)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
@@ -186,7 +198,7 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient *legacyESClient.Client) (err error) {
+func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient dpEsClient.Client) (err error) {
 	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		err = errors.New("Error(s) registering checkers for health check")
