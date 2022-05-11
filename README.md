@@ -52,6 +52,7 @@ environment variables, or with a link to a configuration guide.
 | ELASTIC_SEARCH_URL	       | "http://localhost:9200"  | Http url of the ElasticSearch server. For Site Wide ElasticSearch this needs to be set to "http://localhost:11200".
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)
 | SIGN_ELASTICSEARCH_REQUESTS  | false                    | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
+| ELASTIC_VERSION_710          | false                    | Boolean flag to switch on the elastic version 7.10. By default this will point to the legacy ES version which is 2.2
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
 | HEALTHCHECK_INTERVAL         | 30s                      | Time between self-healthchecks (`time.Duration` format)
 | ZEBEDEE_URL                  | http://localhost:8082    | The URL to Zebedee (for authorisation)

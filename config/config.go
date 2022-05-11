@@ -19,7 +19,7 @@ type Config struct {
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 	DatasetAPIURL              string        `envconfig:"DATASET_API_URL"`
 	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
-	ElasticVersion710          bool          `envconfig:"ElASTIC_VERSION_710"`
+	ElasticVersion710          bool          `envconfig:"ELASTIC_VERSION_710"`
 }
 
 type AWS struct {
