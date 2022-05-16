@@ -115,21 +115,23 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 
 		typesParam := paramGet(params, "content_type", defaultContentTypes)
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset)
+		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset, true)
 		if err != nil {
 			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
 			return
 		}
 
-		responseData, err := elasticSearchClient.MultiSearch(ctx, []client.Search{
-			{
-				Header: client.Header{
-					Index: "ons",
-				},
-				Query: formattedQuery,
-			},
-		})
+		var searches []client.Search
+
+		err = json.Unmarshal(formattedQuery, &searches)
+		if err != nil {
+			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
+			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
+			return
+		}
+
+		responseData, err := elasticSearchClient.MultiSearch(ctx, searches)
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
@@ -218,7 +220,7 @@ func LegacySearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient Elas
 
 		typesParam := paramGet(params, "content_type", defaultContentTypes)
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset)
+		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset, false)
 		if err != nil {
 			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)

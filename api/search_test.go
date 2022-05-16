@@ -25,6 +25,15 @@ const (
 )
 
 func TestSearchHandlerFunc(t *testing.T) {
+	var searches []client.Search
+	expectedQuery := "a valid query"
+	searches = append(searches, client.Search{
+		Header: client.Header{
+			Index: "valid index",
+		},
+		Query: []byte(expectedQuery),
+	})
+	validQueryDocBytes, _ := json.Marshal(searches)
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
 		qbMock := newQueryBuilderMock(nil, nil)
 		esMock := newDpElasticSearcherMock(nil, nil)
@@ -117,7 +126,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return InternalError for errors returned from elastic search", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock(nil, errors.New("Something"))
 		trMock := newResponseTransformerMock(nil, nil)
 
@@ -134,11 +143,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 	})
 
 	Convey("Should return InternalError for invalid json from elastic search", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
@@ -155,11 +164,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 	})
 
 	Convey("Should return InternalError for transformation failures", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock(nil, errors.New("Something"))
 
@@ -176,14 +185,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
 		So(actualResponse, ShouldResemble, validESResponse)
 	})
 
 	Convey("Should return OK for valid search result with raw=true", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
@@ -200,12 +209,13 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 0)
 	})
 
 	Convey("Should return OK for valid search result", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		searchBytes, _ := json.Marshal(searches)
+		qbMock := newQueryBuilderMock(searchBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
@@ -222,7 +232,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
 		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeTrue)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
@@ -230,7 +240,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return OK for valid search result with highlight = true", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
@@ -247,7 +257,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
 		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeTrue)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
@@ -255,7 +265,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should return OK for valid search result with highlight = false", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
@@ -272,7 +282,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
 		So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeFalse)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
@@ -280,7 +290,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 	})
 
 	Convey("Should pass all search terms on to elastic search", t, func() {
-		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+		qbMock := newQueryBuilderMock(validQueryDocBytes, nil)
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
@@ -309,7 +319,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
-		So(actualRequest, ShouldResemble, validQueryDoc)
+		So(actualRequest, ShouldResemble, expectedQuery)
 
 		So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
@@ -682,7 +692,7 @@ func newDpElasticSearcherMock(response []byte, err error) *DpElasticSearcherMock
 
 func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
 	return &QueryBuilderMock{
-		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
+		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
 			return query, err
 		},
 	}

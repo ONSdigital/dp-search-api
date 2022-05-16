@@ -220,8 +220,10 @@ func (t *Transformer) TransformSearchResponse(
 func (t *Transformer) transform(esresponse *models.EsResponses, highlight bool) models.SearchResponse {
 	var search7xResponse = models.SearchResponse{
 		Took:        esresponse.Responses[0].Took,
-		Items:       esresponse.Responses[0].Hits.Hits[0].Source,
 		Suggestions: esresponse.Responses[0].Suggest,
+	}
+	for i := 0; i < len(esresponse.Responses[0].Hits.Hits); i++ {
+		search7xResponse.Items = append(search7xResponse.Items, esresponse.Responses[0].Hits.Hits[i].Source)
 	}
 	return search7xResponse
 }

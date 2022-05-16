@@ -244,7 +244,7 @@ func (sb *ReleaseBuilder) BuildSearchQuery(_ context.Context, sr ReleaseSearchRe
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
 	}
 
-	formattedQuery, err := FormatMultiQuery(doc.Bytes())
+	formattedQuery, err := LegacyFormatMultiQuery(doc.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("formating of query for elasticsearch failed: %w", err)
 	}

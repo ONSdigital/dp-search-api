@@ -13,17 +13,26 @@ type EsResponse struct {
 	Took         int                    `json:"took"`
 	Hits         ESResponseHits         `json:"hits"`
 	Aggregations ESResponseAggregations `json:"aggregations"`
-	Suggest      []string               `json:"suggest"`
+	Suggest      Suggest                `json:"suggest"`
+}
+
+type Suggest struct {
+	SearchSuggest []SearchSuggest `json:"search_suggest"`
+}
+
+type SearchSuggest struct {
+	Text   string `json:"text"`
+	Offset int    `json:"offset"`
+	Length int    `json:"length"`
 }
 
 type ESResponseHits struct {
-	Total int
-	Hits  []ESResponseHit `json:"hits"`
+	Hits []ESResponseHit `json:"hits"`
 }
 
 type ESResponseHit struct {
-	Source    []ESSourceDocument `json:"_source"`
-	Highlight ESHighlight        `json:"highlight"`
+	Source    ESSourceDocument `json:"_source"`
+	Highlight ESHighlight      `json:"highlight"`
 }
 
 type ESResponseAggregations struct {
@@ -70,6 +79,6 @@ type SearchResponse struct {
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
 	Items               []ESSourceDocument `json:"items"`
-	Suggestions         []string           `json:"suggestions,omitempty"`
+	Suggestions         Suggest            `json:"suggestions,omitempty"`
 	AdditionSuggestions []string           `json:"additional_suggestions,omitempty"`
 }

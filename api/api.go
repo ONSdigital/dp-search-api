@@ -51,7 +51,7 @@ type QueryParamValidator interface {
 
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
-	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error)
+	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error)
 }
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type

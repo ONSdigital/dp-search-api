@@ -88,7 +88,7 @@ func SetupV710Search() (*template.Template, error) {
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int) ([]byte, error) {
+func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
 	reqParams := searchRequest{
 		Term:  q,
 		From:  offset,
@@ -96,7 +96,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		Types: strings.Split(contentTypes, ","),
 		//Topic:            topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
 		SortBy:           sort,
-		AggregationField: "_type",
+		AggregationField: "type",
 		Highlight:        true,
 		Now:              time.Now().UTC().Format(time.RFC3339),
 	}
@@ -108,8 +108,13 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}
 
+	var formattedQuery []byte
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	formattedQuery, err := FormatMultiQuery(doc.Bytes())
+	if esVersion710 {
+		formattedQuery, err = FormatMultiQuery(doc.Bytes())
+	} else {
+		formattedQuery, err = LegacyFormatMultiQuery(doc.Bytes())
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "formating of query for elasticsearch failed")
 	}

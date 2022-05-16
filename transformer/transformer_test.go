@@ -223,7 +223,7 @@ func TestTransform(t *testing.T) {
 					So(len(transformedResponse.Items), ShouldEqual, 2)
 					So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
 					So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
-					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
+					So(transformedResponse.Suggestions.SearchSuggest[0].Text, ShouldResemble, "testSuggestion")
 				})
 			}
 		})
@@ -261,7 +261,12 @@ func prepareESMockResponse() models.EsResponses {
 	esDocuments := []models.ESSourceDocument{esDocument1, esDocument2}
 
 	hit := models.ESResponseHit{
-		Source:    esDocuments,
+		Source:    esDocuments[0],
+		Highlight: models.ESHighlight{},
+	}
+
+	hit2 := models.ESResponseHit{
+		Source:    esDocuments[1],
 		Highlight: models.ESHighlight{},
 	}
 
@@ -282,15 +287,19 @@ func prepareESMockResponse() models.EsResponses {
 	esResponse1 := models.EsResponse{
 		Took: 10,
 		Hits: models.ESResponseHits{
-			Total: 1,
 			Hits: []models.ESResponseHit{
 				hit,
+				hit2,
 			},
 		},
 		Aggregations: models.ESResponseAggregations{
 			Doccounts: esDoccount,
 		},
-		Suggest: []string{"testSuggestion"},
+		Suggest: models.Suggest{
+			SearchSuggest: []models.SearchSuggest{
+				{Text: "testSuggestion"},
+			},
+		},
 	}
 
 	// Preparing ES response array
