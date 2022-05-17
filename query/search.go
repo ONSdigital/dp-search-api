@@ -15,6 +15,11 @@ import (
 //go:embed templates/search/v710/*.tmpl
 var searchFS embed.FS
 
+const (
+	legacyAggregationField = "_type"
+	es710AggregationField  = "type"
+)
+
 type searchRequest struct {
 	Term             string
 	From             int
@@ -95,14 +100,18 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		Size:  limit,
 		Types: strings.Split(contentTypes, ","),
 		//Topic:            topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
-		SortBy:           sort,
-		AggregationField: "type",
-		Highlight:        true,
-		Now:              time.Now().UTC().Format(time.RFC3339),
+		SortBy:    sort,
+		Highlight: true,
+		Now:       time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if esVersion710 {
+		reqParams.AggregationField = es710AggregationField
+	} else {
+		reqParams.AggregationField = legacyAggregationField
 	}
 
 	var doc bytes.Buffer
-
 	err := sb.searchTemplates.Execute(&doc, reqParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "creation of search from template failed")

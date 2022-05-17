@@ -57,6 +57,8 @@ github.com/ONSdigital/dp-component-test v0.6.3/go.mod h1:CfpOujIEqZS5qON7sWn0LRy
 github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0/go.mod h1:B+WXR1PRVgrU1/tS3UygATLVTnX+5Sp+M0w5i3LROac=
 github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.3 h1:AbCp4GAL1InSjo15Ffyk+kHoNHLBPKokzdRO86dwGFU=
 github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.3/go.mod h1:s00OAPfjfNf5u8z+RcNb8Wqgwo1+KtVgnawWtumOyWg=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.4 h1:RJ5rgjoeDPXKbaQQNHx4YBKfdL4LqWBQ7e1I6g61cf0=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.4/go.mod h1:s00OAPfjfNf5u8z+RcNb8Wqgwo1+KtVgnawWtumOyWg=
 github.com/ONSdigital/dp-frontend-models v1.1.0/go.mod h1:TT96P7Mi69N3Tc/jFNdbjiwG4GAaMjP26HLotFQ6BPw=
 github.com/ONSdigital/dp-healthcheck v0.0.0-20200131122546-9db6d3f0494e/go.mod h1:zighxZ/0m5u7zo0eAr8XFlA+Dz2ic7A1vna6YXvhCjQ=
 github.com/ONSdigital/dp-healthcheck v1.0.5/go.mod h1:2wbVAUHMl9+4tWhUlxYUuA1dnf2+NrwzC+So5f5BMLk=

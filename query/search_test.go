@@ -38,7 +38,7 @@ func TestBuildSearchQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Size=2")
 		So(queryString, ShouldContainSubstring, "Types=[ta tb]")
 		So(queryString, ShouldContainSubstring, "SortBy=relevance")
-		So(queryString, ShouldContainSubstring, "AggregationField=type")
+		So(queryString, ShouldContainSubstring, "AggregationField=_type")
 		So(queryString, ShouldContainSubstring, "Highlight=true")
 		So(queryString, ShouldContainSubstring, "Now=20")
 	})
