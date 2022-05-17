@@ -185,7 +185,6 @@ func TestTransform(t *testing.T) {
 	t.Parallel()
 	expectedESDocument1 := models.ESSourceDocument{
 		DataType:        "anyDataType1",
-		JobID:           "",
 		CDID:            "",
 		DatasetID:       "",
 		Keywords:        []string{"anykeyword1"},
@@ -197,7 +196,6 @@ func TestTransform(t *testing.T) {
 	}
 	expectedESDocument2 := models.ESSourceDocument{
 		DataType:        "anyDataType2",
-		JobID:           "",
 		CDID:            "",
 		DatasetID:       "",
 		Keywords:        []string{"anykeyword2"},
@@ -223,7 +221,7 @@ func TestTransform(t *testing.T) {
 					So(len(transformedResponse.Items), ShouldEqual, 2)
 					So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
 					So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
-					So(transformedResponse.Suggestions.SearchSuggest[0].Text, ShouldResemble, "testSuggestion")
+					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
 				})
 			}
 		})
@@ -234,7 +232,6 @@ func TestTransform(t *testing.T) {
 func prepareESMockResponse() models.EsResponses {
 	esDocument1 := models.ESSourceDocument{
 		DataType:        "anyDataType1",
-		JobID:           "",
 		CDID:            "",
 		DatasetID:       "",
 		Keywords:        []string{"anykeyword1"},
@@ -247,7 +244,6 @@ func prepareESMockResponse() models.EsResponses {
 
 	esDocument2 := models.ESSourceDocument{
 		DataType:        "anyDataType2",
-		JobID:           "",
 		CDID:            "",
 		DatasetID:       "",
 		Keywords:        []string{"anykeyword2"},
@@ -293,7 +289,7 @@ func prepareESMockResponse() models.EsResponses {
 			},
 		},
 		Aggregations: models.ESResponseAggregations{
-			Doccounts: esDoccount,
+			DocCounts: esDoccount,
 		},
 		Suggest: models.Suggest{
 			SearchSuggest: []models.SearchSuggest{

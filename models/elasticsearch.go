@@ -21,9 +21,15 @@ type Suggest struct {
 }
 
 type SearchSuggest struct {
-	Text   string `json:"text"`
-	Offset int    `json:"offset"`
-	Length int    `json:"length"`
+	Text    string   `json:"text"`
+	Offset  int      `json:"offset"`
+	Length  int      `json:"length"`
+	Options []Option `json:"options"`
+}
+
+type Option struct {
+	Text  string  `json:"text"`
+	Score float64 `json:"score"`
 }
 
 type ESResponseHits struct {
@@ -36,7 +42,7 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	Doccounts ESDocCounts `json:"docCounts"`
+	DocCounts ESDocCounts `json:"docCounts"`
 }
 
 type ESDocCounts struct {
@@ -50,8 +56,6 @@ type ESBucket struct {
 
 type ESSourceDocument struct {
 	DataType        string   `json:"type"`
-	JobID           string   `json:"job_id"`
-	SearchIndex     string   `json:"search_index"`
 	CDID            string   `json:"cdid"`
 	DatasetID       string   `json:"dataset_id"`
 	Keywords        []string `json:"keywords"`
@@ -60,6 +64,7 @@ type ESSourceDocument struct {
 	Summary         string   `json:"summary"`
 	Title           string   `json:"title"`
 	Topics          []string `json:"topics"`
+	URI             string   `json:"uri"`
 }
 
 type ESHighlight struct {
@@ -78,7 +83,8 @@ type ESHighlight struct {
 type SearchResponse struct {
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
+	ContentTypes        []ContentType      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`
-	Suggestions         Suggest            `json:"suggestions,omitempty"`
+	Suggestions         []string           `json:"suggestions,omitempty"`
 	AdditionSuggestions []string           `json:"additional_suggestions,omitempty"`
 }

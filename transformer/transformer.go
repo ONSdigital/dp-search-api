@@ -66,7 +66,7 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, high
 	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItemLegacy{},
-		ContentTypes: []models.ContentTypeLegacy{},
+		ContentTypes: []models.ContentType{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -164,8 +164,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highl
 	return overlaid
 }
 
-func buildContentTypes(bucket models.ESBucketLegacy) models.ContentTypeLegacy {
-	return models.ContentTypeLegacy{
+func buildContentTypes(bucket models.ESBucketLegacy) models.ContentType {
+	return models.ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
@@ -218,12 +218,26 @@ func (t *Transformer) TransformSearchResponse(
 
 // Transform the raw ES to search response
 func (t *Transformer) transform(esresponse *models.EsResponses, highlight bool) models.SearchResponse {
-	var search7xResponse = models.SearchResponse{
-		Took:        esresponse.Responses[0].Took,
-		Suggestions: esresponse.Responses[0].Suggest,
+	search7xResponse := models.SearchResponse{
+		Items:        []models.ESSourceDocument{},
+		ContentTypes: []models.ContentType{},
 	}
-	for i := 0; i < len(esresponse.Responses[0].Hits.Hits); i++ {
-		search7xResponse.Items = append(search7xResponse.Items, esresponse.Responses[0].Hits.Hits[i].Source)
+	var took int
+	for _, response := range esresponse.Responses {
+		for i := 0; i < len(response.Hits.Hits); i++ {
+			search7xResponse.Items = append(search7xResponse.Items, response.Hits.Hits[i].Source)
+		}
+		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
+			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
+				Type:  response.Aggregations.DocCounts.Buckets[j].Key,
+				Count: response.Aggregations.DocCounts.Buckets[j].Count,
+			})
+		}
+		for _, suggestion := range response.Suggest.SearchSuggest {
+			search7xResponse.Suggestions = append(search7xResponse.Suggestions, suggestion.Text)
+		}
+		took += response.Took
 	}
+	search7xResponse.Took = took
 	return search7xResponse
 }

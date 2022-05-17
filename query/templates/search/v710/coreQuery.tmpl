@@ -7,7 +7,6 @@
                 "match": {
                   "title.title_no_dates": {
                     "query": "{{.Term}}",
-                    "type": "boolean",
                     "boost": 10.0,
                     "minimum_should_match": "1<-2 3<80% 5<60%"
                   }
@@ -17,7 +16,6 @@
                 "match": {
                   "title.title_no_stem": {
                     "query": "{{.Term}}",
-                    "type": "boolean",
                     "boost": 10.0,
                     "minimum_should_match": "1<-2 3<80% 5<60%"
                   }
@@ -73,7 +71,6 @@
           "match": {
             "keywords": {
               "query": "{{.Term}}",
-              "type": "boolean",
               "operator": "AND",
               "boost": 10.0
             }
@@ -92,7 +89,6 @@
           "match": {
             "searchBoost": {
               "query": "{{.Term}}",
-              "type": "boolean",
               "operator": "AND",
               "boost": 100.0
             }

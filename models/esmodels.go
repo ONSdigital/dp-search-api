@@ -4,13 +4,13 @@ package models
 type SearchResponseLegacy struct {
 	Count               int                 `json:"count"`
 	Took                int                 `json:"took"`
-	ContentTypes        []ContentTypeLegacy `json:"content_types"`
+	ContentTypes        []ContentType       `json:"content_types"`
 	Items               []ContentItemLegacy `json:"items"`
 	Suggestions         []string            `json:"suggestions,omitempty"`
 	AdditionSuggestions []string            `json:"additional_suggestions,omitempty"`
 }
 
-type ContentTypeLegacy struct {
+type ContentType struct {
 	Type  string `json:"type"`
 	Count int    `json:"count"`
 }
