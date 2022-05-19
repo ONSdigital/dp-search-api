@@ -217,13 +217,13 @@ func (t *Transformer) TransformSearchResponse(
 }
 
 // Transform the raw ES to search response
-func (t *Transformer) transform(esresponse *models.EsResponses, highlight bool) models.SearchResponse {
+func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
 	search7xResponse := models.SearchResponse{
 		Items:        []models.ESSourceDocument{},
 		ContentTypes: []models.ContentType{},
 	}
 	var took int
-	for _, response := range esresponse.Responses {
+	for _, response := range esresponses.Responses {
 		for i := 0; i < len(response.Hits.Hits); i++ {
 			search7xResponse.Items = append(search7xResponse.Items, response.Hits.Hits[i].Source)
 		}
