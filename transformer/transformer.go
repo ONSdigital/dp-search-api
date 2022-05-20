@@ -235,6 +235,9 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 		}
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			search7xResponse.Suggestions = append(search7xResponse.Suggestions, suggestion.Text)
+			for _, option := range suggestion.Options {
+				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)
+			}
 		}
 		took += response.Took
 	}

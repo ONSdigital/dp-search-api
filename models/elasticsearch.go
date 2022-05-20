@@ -81,7 +81,6 @@ type ESHighlight struct {
 // ********************************************************
 
 type SearchResponse struct {
-	Count               int                `json:"count"`
 	Took                int                `json:"took"`
 	ContentTypes        []ContentType      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`
