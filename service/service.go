@@ -71,19 +71,24 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Initialse AWS signer
 	if cfg.ElasticVersion710 {
-		var awsSignerRT *awsauth.AwsSignerRoundTripper
-
-		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
-		if err != nil {
-			log.Error(ctx, "failed to create aws auth round tripper", err)
-			return nil, err
-		}
-
-		esClient, esClientErr = dpEs.NewClient(dpEsClient.Config{
+		esConfig := dpEsClient.Config{
 			ClientLib: dpEsClient.GoElasticV710,
 			Address:   cfg.ElasticSearchAPIURL,
-			Transport: awsSignerRT,
-		})
+		}
+
+		if cfg.AWS.Signer {
+			var awsSignerRT *awsauth.AwsSignerRoundTripper
+
+			awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
+			if err != nil {
+				log.Error(ctx, "failed to create aws auth round tripper", err)
+				return nil, err
+			}
+
+			esConfig.Transport = awsSignerRT
+		}
+
+		esClient, esClientErr = dpEs.NewClient(esConfig)
 		if esClientErr != nil {
 			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
 			return nil, err
