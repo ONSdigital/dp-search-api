@@ -27,6 +27,7 @@ type AWS struct {
 	Profile               string `envconfig:"AWS_PROFILE"`
 	Region                string `envconfig:"AWS_REGION"`
 	Service               string `envconfig:"AWS_SERVICE"`
+	Signer                bool   `envconfig:"AWS_SIGNER"`
 	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
@@ -56,6 +57,7 @@ func Get() (*Config, error) {
 		Profile:               "",
 		Region:                "eu-west-1",
 		Service:               "es",
+		Signer:                false,
 		TLSInsecureSkipVerify: false,
 	}
 
