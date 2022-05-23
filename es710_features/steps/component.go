@@ -22,8 +22,8 @@ const (
 	buildTime     = "20"
 )
 
-// LegacyComponent contains all the information to create a component test
-type LegacyComponent struct {
+// Component contains all the information to create a component test
+type Component struct {
 	APIFeature           *componentTest.APIFeature
 	AuthFeature          *componentTest.AuthorizationFeature
 	Cfg                  *config.Config
@@ -36,9 +36,9 @@ type LegacyComponent struct {
 	StartTime            time.Time
 }
 
-// LegacySearchAPIComponent creates a search api component
-func LegacySearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *LegacyComponent, err error) {
-	c = &LegacyComponent{
+// SearchAPIComponent creates a search api component
+func SearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Component, err error) {
+	c = &Component{
 		HTTPServer: &http.Server{},
 		svcErrors:  make(chan error),
 	}
@@ -57,7 +57,7 @@ func LegacySearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (
 
 	c.FakeElasticSearchAPI = NewFakeAPI(&c.ErrorFeature)
 	c.Cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
-	c.Cfg.ElasticVersion710 = false
+	c.Cfg.ElasticVersion710 = true
 
 	// Setup responses from registered checkers for component
 	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
@@ -86,19 +86,19 @@ func LegacySearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (
 }
 
 // InitAPIFeature initialises the ApiFeature that's contained within a specific JobsFeature.
-func (c *LegacyComponent) InitAPIFeature() *componentTest.APIFeature {
+func (c *Component) InitAPIFeature() *componentTest.APIFeature {
 	c.APIFeature = componentTest.NewAPIFeature(c.InitialiseService)
 
 	return c.APIFeature
 }
 
 // Reset resets the search api component (should not reset Fake APIs)
-func (c *LegacyComponent) Reset() *LegacyComponent {
+func (c *Component) Reset() *Component {
 	return c
 }
 
 // Close closes the search api component
-func (c *LegacyComponent) Close() error {
+func (c *Component) Close() error {
 	if c.svc != nil && c.ServiceRunning {
 		c.svc.Close(context.Background())
 		c.ServiceRunning = false
@@ -110,7 +110,7 @@ func (c *LegacyComponent) Close() error {
 }
 
 // InitialiseService returns the http.Handler that's contained within the component.
-func (c *LegacyComponent) InitialiseService() (http.Handler, error) {
+func (c *Component) InitialiseService() (http.Handler, error) {
 	return c.HTTPServer.Handler, nil
 }
 
@@ -122,7 +122,7 @@ func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) 
 	}, nil
 }
 
-func (c *LegacyComponent) getHealthClient(name, url string) *health.Client {
+func (c *Component) getHealthClient(name, url string) *health.Client {
 	return &health.Client{
 		URL:    url,
 		Name:   "elasticsearch",
@@ -130,7 +130,7 @@ func (c *LegacyComponent) getHealthClient(name, url string) *health.Client {
 	}
 }
 
-func (c *LegacyComponent) getHTTPServer(bindAddr string, router http.Handler) service.HTTPServer {
+func (c *Component) getHTTPServer(bindAddr string, router http.Handler) service.HTTPServer {
 	c.HTTPServer.Addr = bindAddr
 	c.HTTPServer.Handler = router
 	return c.HTTPServer
@@ -148,7 +148,7 @@ func (f *FakeAPI) getMockAPIHTTPClient() *dphttp.ClienterMock {
 }
 
 // DoGetAuthorisationHandlers returns the mock AuthHandler that was created in the NewComponent function.
-func (c *LegacyComponent) doGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
+func (c *Component) doGetAuthorisationHandlers(cfg *config.Config) api.AuthHandler {
 	authClient := auth.NewPermissionsClient(dphttp.NewClient())
 	authVerifier := auth.DefaultPermissionsVerifier()
 
