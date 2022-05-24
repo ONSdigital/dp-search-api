@@ -38,7 +38,7 @@ type ESResponseHits struct {
 
 type ESResponseHit struct {
 	Source    ESSourceDocument `json:"_source"`
-	Highlight ESHighlight      `json:"highlight"`
+	Highlight *ESHighlight     `json:"highlight"`
 }
 
 type ESResponseAggregations struct {
@@ -55,16 +55,25 @@ type ESBucket struct {
 }
 
 type ESSourceDocument struct {
-	DataType        string   `json:"type"`
-	CDID            string   `json:"cdid"`
-	DatasetID       string   `json:"dataset_id"`
-	Keywords        []string `json:"keywords"`
-	MetaDescription string   `json:"meta_description"`
-	ReleaseDate     string   `json:"release_date,omitempty"`
-	Summary         string   `json:"summary"`
-	Title           string   `json:"title"`
-	Topics          []string `json:"topics"`
-	URI             string   `json:"uri"`
+	DataType        string        `json:"type"`
+	CDID            string        `json:"cdid"`
+	DatasetID       string        `json:"dataset_id"`
+	Keywords        []string      `json:"keywords"`
+	MetaDescription string        `json:"meta_description"`
+	ReleaseDate     string        `json:"release_date,omitempty"`
+	Summary         string        `json:"summary"`
+	Title           string        `json:"title"`
+	Topics          []string      `json:"topics"`
+	URI             string        `json:"uri"`
+	Highlight       *HighlightObj `json:"highlight,omitempty"`
+}
+
+type HighlightObj struct {
+	DatasetID       string    `json:"dataset_id,omitempty"`
+	Keywords        []*string `json:"keywords,omitempty"`
+	MetaDescription string    `json:"meta_description,omitempty"`
+	Summary         string    `json:"summary,omitempty"`
+	Title           string    `json:"title,omitempty"`
 }
 
 type ESHighlight struct {

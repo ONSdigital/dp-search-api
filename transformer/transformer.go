@@ -225,7 +225,7 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 	var took int
 	for _, response := range esresponses.Responses {
 		for i := 0; i < len(response.Hits.Hits); i++ {
-			search7xResponse.Items = append(search7xResponse.Items, response.Hits.Hits[i].Source)
+			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
 		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
 			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
@@ -243,4 +243,64 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 	}
 	search7xResponse.Took = took
 	return search7xResponse
+}
+
+func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ESSourceDocument {
+	hl := doc.Highlight
+	esDoc := models.ESSourceDocument{
+		CDID:            doc.Source.CDID,
+		DataType:        doc.Source.DataType,
+		DatasetID:       doc.Source.DatasetID,
+		URI:             doc.Source.URI,
+		Keywords:        doc.Source.Keywords,
+		MetaDescription: doc.Source.MetaDescription,
+		ReleaseDate:     doc.Source.ReleaseDate,
+		Summary:         doc.Source.Summary,
+		Title:           doc.Source.Title,
+		Topics:          doc.Source.Topics,
+	}
+
+	if highlight {
+		esDoc.Highlight = &models.HighlightObj{
+			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, doc.Source.DatasetID, highlight),
+			Keywords:        t.overlayItemList(hl.DescriptionKeywords, doc.Source.Keywords, highlight),
+			MetaDescription: t.overlaySingleItem(hl.DescriptionMeta, doc.Source.MetaDescription, highlight),
+			Summary:         t.overlaySingleItem(hl.DescriptionSummary, doc.Source.Summary, highlight),
+			Title:           t.overlaySingleItem(hl.DescriptionTitle, doc.Source.Title, highlight),
+		}
+	}
+
+	return esDoc
+}
+
+func (t *Transformer) overlaySingleItem(hl []*string, def string, highlight bool) (overlaid string) {
+	if highlight && hl != nil && len(hl) > 0 {
+		overlaid = *(hl)[0]
+	}
+	return
+}
+
+func (t *Transformer) overlayItemList(hlList []*string, defaultList []string, highlight bool) []*string {
+	if defaultList == nil || hlList == nil {
+		return nil
+	}
+	var defaultListptr []*string
+	for i := 0; i < len(defaultList); i++ {
+		defaultListptr = append(defaultListptr, &defaultList[i])
+	}
+
+	overlaid := make([]*string, len(defaultListptr))
+	copy(overlaid, defaultListptr)
+	if highlight {
+		for _, hl := range hlList {
+			unformatted := t.higlightReplacer.Replace(*hl)
+			for i, defItem := range overlaid {
+				if *defItem == unformatted {
+					overlaid[i] = hl
+				}
+			}
+		}
+	}
+
+	return overlaid
 }

@@ -193,6 +193,9 @@ func TestTransform(t *testing.T) {
 		ReleaseDate:     "",
 		Title:           "anyTitle2",
 		Topics:          []string{"anyTopic1"},
+		Highlight: &models.HighlightObj{
+			DatasetID: "",
+		},
 	}
 	expectedESDocument2 := models.ESSourceDocument{
 		DataType:        "anyDataType2",
@@ -204,6 +207,9 @@ func TestTransform(t *testing.T) {
 		ReleaseDate:     "",
 		Title:           "anyTitle2",
 		Topics:          []string{"anyTopic2"},
+		Highlight: &models.HighlightObj{
+			DatasetID: "",
+		},
 	}
 
 	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
@@ -258,12 +264,12 @@ func prepareESMockResponse() models.EsResponses {
 
 	hit := models.ESResponseHit{
 		Source:    esDocuments[0],
-		Highlight: models.ESHighlight{},
+		Highlight: &models.ESHighlight{},
 	}
 
 	hit2 := models.ESResponseHit{
 		Source:    esDocuments[1],
-		Highlight: models.ESHighlight{},
+		Highlight: &models.ESHighlight{},
 	}
 
 	bucket1 := models.ESBucket{

@@ -20,7 +20,19 @@
             "release_date": "2015-02-17T00:00:00.000Z",
             "summary": "regional house prices",
             "title": "House Price Statistics for Small Areas in England and Wales",
-            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
+            "uri": "/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17",
+            "highlight": {
+                "dataset_id": "/peoplepopulationandcommunity/housing/articles/<em class=\"highlight\">house</em>pricestatisticsforsmallareasinenglandandwales/2015-02-17",
+                "keywords": [
+                    "regional <em class=\"highlight\">house</em> prices",
+                    "property prices",
+                    "area with cheapest <em class=\"highlight\">houses</em>",
+                    "area with most expensive <em class=\"highlight\">houses</em>"
+                ],
+                "meta_description": "A brief overview of average (median) <em class=\"highlight\">house</em> prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013.",
+                "summary": "regional <em class=\"highlight\">house</em> prices",
+                "title": "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales"
+            }
         }
     ],
     "suggestions": [
