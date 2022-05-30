@@ -13,7 +13,6 @@ type Config struct {
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
@@ -43,7 +42,6 @@ func Get() (*Config, error) {
 		BindAddr:                   ":23900",
 		ElasticSearchAPIURL:        "http://localhost:9200",
 		GracefulShutdownTimeout:    5 * time.Second,
-		SignElasticsearchRequests:  false,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		ZebedeeURL:                 "http://localhost:8082",
