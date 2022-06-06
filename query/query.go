@@ -2,9 +2,11 @@ package query
 
 import (
 	"bytes"
+	"encoding/json"
 	"regexp"
 	"text/template"
 
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/pkg/errors"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
@@ -34,6 +36,38 @@ func NewQueryBuilder(esVersion710 bool) (*Builder, error) {
 
 // FormatMultiQuery minifies and reformats an elasticsearch MultiQuery
 func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
+	// Is minify thread Safe? can I put this as a global?
+	m := minify.New()
+	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
+
+	linearQuery, err := m.Bytes("application/js", rawQuery)
+	if err != nil {
+		return nil, err
+	}
+	newBytes := bytes.Split(linearQuery, []byte("$$"))
+	var searches []client.Search
+	for i := 0; i < len(newBytes)-1; i += 2 {
+		var header client.Header
+		byteHeader := newBytes[i]
+		query := newBytes[i+1]
+		if marshalErr := json.Unmarshal(byteHeader, &header); marshalErr != nil {
+			return nil, marshalErr
+		}
+		searches = append(searches, client.Search{
+			Header: header,
+			Query:  query,
+		})
+	}
+	searchBytes, err := json.Marshal(searches)
+	if err != nil {
+		return nil, err
+	}
+	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
+	return searchBytes, nil
+}
+
+// LegacyFormatMultiQuery minifies and reformats an elasticsearch MultiQuery
+func LegacyFormatMultiQuery(rawQuery []byte) ([]byte, error) {
 	// Is minify thread Safe? can I put this as a global?
 	m := minify.New()
 	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)

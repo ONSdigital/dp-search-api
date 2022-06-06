@@ -145,7 +145,7 @@ const (
 )
 
 var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
-var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title": "asc"}`, TitleDesc: `{"description.title": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title.title_raw": "asc"}`, TitleDesc: `{"description.title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
 
 type InvalidSortString string
 
@@ -244,7 +244,7 @@ func (sb *ReleaseBuilder) BuildSearchQuery(_ context.Context, sr ReleaseSearchRe
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
 	}
 
-	formattedQuery, err := FormatMultiQuery(doc.Bytes())
+	formattedQuery, err := LegacyFormatMultiQuery(doc.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("formating of query for elasticsearch failed: %w", err)
 	}
@@ -324,7 +324,7 @@ func (sr ReleaseSearchRequest) CensusClause() string {
 }
 
 func (sr ReleaseSearchRequest) HighlightClause() string {
-	if sr.Census {
+	if sr.Highlight {
 		return `
 			"highlight":{
 				"pre_tags":["<em class=\"ons-highlight\">"],

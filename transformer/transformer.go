@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/pkg/errors"
 )
@@ -15,23 +16,20 @@ type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
 }
 
-// NewLegacy returns a new instance of Transformer
-func NewLegacy() *LegacyTransformer {
-	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	return &LegacyTransformer{
-		higlightReplacer: highlightReplacer,
-	}
-}
-
 // Transformer represents an instance of the ResponseTransformer interface for ES7x
 type Transformer struct {
 	higlightReplacer *strings.Replacer
 }
 
 // New returns a new instance of Transformer ES7x
-func New() *Transformer {
+func New(esVersion710 bool) api.ResponseTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	return &Transformer{
+	if esVersion710 {
+		return &Transformer{
+			higlightReplacer: highlightReplacer,
+		}
+	}
+	return &LegacyTransformer{
 		higlightReplacer: highlightReplacer,
 	}
 }
@@ -68,7 +66,7 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, high
 	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItemLegacy{},
-		ContentTypes: []models.ContentTypeLegacy{},
+		ContentTypes: []models.ContentType{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -166,8 +164,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highl
 	return overlaid
 }
 
-func buildContentTypes(bucket models.ESBucketLegacy) models.ContentTypeLegacy {
-	return models.ContentTypeLegacy{
+func buildContentTypes(bucket models.ESBucketLegacy) models.ContentType {
+	return models.ContentType{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
@@ -219,11 +217,90 @@ func (t *Transformer) TransformSearchResponse(
 }
 
 // Transform the raw ES to search response
-func (t *Transformer) transform(esresponse *models.EsResponses, highlight bool) models.SearchResponse {
-	var search7xResponse = models.SearchResponse{
-		Took:        esresponse.Responses[0].Took,
-		Items:       esresponse.Responses[0].Hits.Hits[0].Source,
-		Suggestions: esresponse.Responses[0].Suggest,
+func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
+	search7xResponse := models.SearchResponse{
+		Items:        []models.ESSourceDocument{},
+		ContentTypes: []models.ContentType{},
 	}
+	var took int
+	for _, response := range esresponses.Responses {
+		for i := 0; i < len(response.Hits.Hits); i++ {
+			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
+		}
+		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
+			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
+				Type:  response.Aggregations.DocCounts.Buckets[j].Key,
+				Count: response.Aggregations.DocCounts.Buckets[j].Count,
+			})
+		}
+		for _, suggestion := range response.Suggest.SearchSuggest {
+			search7xResponse.Suggestions = append(search7xResponse.Suggestions, suggestion.Text)
+			for _, option := range suggestion.Options {
+				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)
+			}
+		}
+		took += response.Took
+	}
+	search7xResponse.Took = took
 	return search7xResponse
+}
+
+func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ESSourceDocument {
+	hl := doc.Highlight
+	esDoc := models.ESSourceDocument{
+		CDID:            doc.Source.CDID,
+		DataType:        doc.Source.DataType,
+		DatasetID:       doc.Source.DatasetID,
+		URI:             doc.Source.URI,
+		Keywords:        doc.Source.Keywords,
+		MetaDescription: doc.Source.MetaDescription,
+		ReleaseDate:     doc.Source.ReleaseDate,
+		Summary:         doc.Source.Summary,
+		Title:           doc.Source.Title,
+		Topics:          doc.Source.Topics,
+	}
+
+	if highlight {
+		esDoc.Highlight = &models.HighlightObj{
+			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, doc.Source.DatasetID, highlight),
+			Keywords:        t.overlayItemList(hl.DescriptionKeywords, doc.Source.Keywords, highlight),
+			MetaDescription: t.overlaySingleItem(hl.DescriptionMeta, doc.Source.MetaDescription, highlight),
+			Summary:         t.overlaySingleItem(hl.DescriptionSummary, doc.Source.Summary, highlight),
+			Title:           t.overlaySingleItem(hl.DescriptionTitle, doc.Source.Title, highlight),
+		}
+	}
+
+	return esDoc
+}
+
+func (t *Transformer) overlaySingleItem(hl []*string, def string, highlight bool) (overlaid string) {
+	if highlight && hl != nil && len(hl) > 0 {
+		overlaid = *(hl)[0]
+	}
+	return
+}
+
+func (t *Transformer) overlayItemList(hlList []*string, defaultList []string, highlight bool) []*string {
+	if defaultList == nil || hlList == nil {
+		return nil
+	}
+	var defaultListptr []*string
+	for i := 0; i < len(defaultList); i++ {
+		defaultListptr = append(defaultListptr, &defaultList[i])
+	}
+
+	overlaid := make([]*string, len(defaultListptr))
+	copy(overlaid, defaultListptr)
+	if highlight {
+		for _, hl := range hlList {
+			unformatted := t.higlightReplacer.Replace(*hl)
+			for i, defItem := range overlaid {
+				if *defItem == unformatted {
+					overlaid[i] = hl
+				}
+			}
+		}
+	}
+
+	return overlaid
 }

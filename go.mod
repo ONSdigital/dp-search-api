@@ -5,12 +5,12 @@ go 1.17
 replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.103.0
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.137.0
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.6.3
-	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.3
-	github.com/ONSdigital/dp-healthcheck v1.2.3
-	github.com/ONSdigital/dp-net/v2 v2.0.0
+	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.4
+	github.com/ONSdigital/dp-healthcheck v1.3.0
+	github.com/ONSdigital/dp-net/v2 v2.2.0
 	github.com/ONSdigital/dp-search-data-extractor v0.12.0
 	github.com/ONSdigital/dp-search-data-importer v0.7.0
 	github.com/ONSdigital/log.go/v2 v2.2.0
@@ -30,7 +30,7 @@ require (
 	github.com/ONSdigital/dp-net v1.4.1 // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad // indirect
-	github.com/aws/aws-sdk-go v1.42.47 // indirect
+	github.com/aws/aws-sdk-go v1.44.19 // indirect
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

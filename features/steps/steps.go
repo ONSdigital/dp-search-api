@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterSteps registers the specific steps needed to do component tests for the search api
-func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
+func (c *LegacyComponent) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.successfullyReturnSingleSearchResult)
 	ctx.Step(`^elasticsearch returns one item in search/release response$`, c.successfullyReturnSingleSearchReleaseResult)
@@ -24,7 +24,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponse)
 }
 
-func (c *Component) successfullyReturnMultipleSearchResults() error {
+func (c *LegacyComponent) successfullyReturnMultipleSearchResults() error {
 	body, err := os.ReadFile("./features/testdata/es_mulitple_search_results.json")
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (c *Component) successfullyReturnMultipleSearchResults() error {
 	return nil
 }
 
-func (c *Component) successfullyReturnMultipleSearchReleaseResults() error {
+func (c *LegacyComponent) successfullyReturnMultipleSearchReleaseResults() error {
 	body, err := os.ReadFile("./features/testdata/es_mulitple_search_release_results.json")
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (c *Component) successfullyReturnMultipleSearchReleaseResults() error {
 	return nil
 }
 
-func (c *Component) successfullyReturnSingleSearchResult() error {
+func (c *LegacyComponent) successfullyReturnSingleSearchResult() error {
 	body, err := os.ReadFile("./features/testdata/es_single_search_result.json")
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (c *Component) successfullyReturnSingleSearchResult() error {
 	return nil
 }
 
-func (c *Component) successfullyReturnSingleSearchReleaseResult() error {
+func (c *LegacyComponent) successfullyReturnSingleSearchReleaseResult() error {
 	body, err := os.ReadFile("./features/testdata/es_single_search_release_result.json")
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (c *Component) successfullyReturnSingleSearchReleaseResult() error {
 	return nil
 }
 
-func (c *Component) successfullyReturnNoSearchResults() error {
+func (c *LegacyComponent) successfullyReturnNoSearchResults() error {
 	body, err := os.ReadFile("./features/testdata/es_zero_search_results.json")
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (c *Component) successfullyReturnNoSearchResults() error {
 	return nil
 }
 
-func (c *Component) successfullyReturnNoSearchReleaseResults() error {
+func (c *LegacyComponent) successfullyReturnNoSearchReleaseResults() error {
 	body, err := os.ReadFile("./features/testdata/es_zero_search_release_results.json")
 	if err != nil {
 		return err
@@ -90,13 +90,13 @@ func (c *Component) successfullyReturnNoSearchReleaseResults() error {
 	return nil
 }
 
-func (c *Component) failureInternalServerError() error {
+func (c *LegacyComponent) failureInternalServerError() error {
 	c.FakeElasticSearchAPI.setJSONResponseForPost("/elasticsearch/ons/_msearch", 500, nil)
 
 	return nil
 }
 
-func (c *Component) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
+func (c *LegacyComponent) iShouldReceiveTheFollowingSearchResponse(expectedJSONFile string) error {
 	var searchResponse, expectedSearchResponse models.SearchResponseLegacy
 
 	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)

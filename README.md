@@ -47,11 +47,12 @@ environment variables, or with a link to a configuration guide.
 | AWS_PROFILE                  | ""                       | The AWS profile to use from credentials file to sign AWS http requests
 | AWS_REGION                   | eu-west-1                | The AWS region to use when signing requests with AWS SDK
 | AWS_SERVICE                  | "es"                     | The AWS service that the AWS SDK signing mechanism needs to sign a request
+| AWS_SIGNER                   | false                    | The AWS signer flag will determine if requests to Elasticsearch contain round tripper for signing requests
 | AWS_TLS_INSECURE_SKIP_VERIFY | false                    | This should never be set to true, as it disables SSL certificate verification. Used only for development
 | BIND_ADDR                    | :23900                   | The host and port to bind to
 | ELASTIC_SEARCH_URL	       | "http://localhost:9200"  | Http url of the ElasticSearch server. For Site Wide ElasticSearch this needs to be set to "http://localhost:11200".
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)
-| SIGN_ELASTICSEARCH_REQUESTS  | false                    | Boolean flag to identify whether elasticsearch requests via elastic API need to be signed if elasticsearch cluster is running in aws
+| ELASTIC_VERSION_710          | false                    | Boolean flag to switch on the elastic version 7.10. By default this will point to the legacy ES version which is 2.2
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
 | HEALTHCHECK_INTERVAL         | 30s                      | Time between self-healthchecks (`time.Duration` format)
 | ZEBEDEE_URL                  | http://localhost:8082    | The URL to Zebedee (for authorisation)

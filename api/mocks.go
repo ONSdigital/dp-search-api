@@ -6,6 +6,7 @@ package api
 import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"net/http"
 	"sync"
@@ -168,6 +169,9 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 // 			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
 // 				panic("mock out the CreateIndex method")
 // 			},
+// 			MultiSearchFunc: func(ctx context.Context, searches []client.Search) ([]byte, error) {
+// 				panic("mock out the MultiSearch method")
+// 			},
 // 		}
 //
 // 		// use mockedDpElasticSearcher in code that requires DpElasticSearcher
@@ -177,6 +181,9 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 type DpElasticSearcherMock struct {
 	// CreateIndexFunc mocks the CreateIndex method.
 	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) error
+
+	// MultiSearchFunc mocks the MultiSearch method.
+	MultiSearchFunc func(ctx context.Context, searches []client.Search) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -189,8 +196,16 @@ type DpElasticSearcherMock struct {
 			// IndexSettings is the indexSettings argument value.
 			IndexSettings []byte
 		}
+		// MultiSearch holds details about calls to the MultiSearch method.
+		MultiSearch []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Searches is the searches argument value.
+			Searches []client.Search
+		}
 	}
 	lockCreateIndex sync.RWMutex
+	lockMultiSearch sync.RWMutex
 }
 
 // CreateIndex calls CreateIndexFunc.
@@ -229,6 +244,41 @@ func (mock *DpElasticSearcherMock) CreateIndexCalls() []struct {
 	mock.lockCreateIndex.RLock()
 	calls = mock.calls.CreateIndex
 	mock.lockCreateIndex.RUnlock()
+	return calls
+}
+
+// MultiSearch calls MultiSearchFunc.
+func (mock *DpElasticSearcherMock) MultiSearch(ctx context.Context, searches []client.Search) ([]byte, error) {
+	if mock.MultiSearchFunc == nil {
+		panic("DpElasticSearcherMock.MultiSearchFunc: method is nil but DpElasticSearcher.MultiSearch was just called")
+	}
+	callInfo := struct {
+		Ctx      context.Context
+		Searches []client.Search
+	}{
+		Ctx:      ctx,
+		Searches: searches,
+	}
+	mock.lockMultiSearch.Lock()
+	mock.calls.MultiSearch = append(mock.calls.MultiSearch, callInfo)
+	mock.lockMultiSearch.Unlock()
+	return mock.MultiSearchFunc(ctx, searches)
+}
+
+// MultiSearchCalls gets all the calls that were made to MultiSearch.
+// Check the length with:
+//     len(mockedDpElasticSearcher.MultiSearchCalls())
+func (mock *DpElasticSearcherMock) MultiSearchCalls() []struct {
+	Ctx      context.Context
+	Searches []client.Search
+} {
+	var calls []struct {
+		Ctx      context.Context
+		Searches []client.Search
+	}
+	mock.lockMultiSearch.RLock()
+	calls = mock.calls.MultiSearch
+	mock.lockMultiSearch.RUnlock()
 	return calls
 }
 
@@ -319,7 +369,7 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 // 		// make and configure a mocked QueryBuilder
 // 		mockedQueryBuilder := &QueryBuilderMock{
-// 			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int) ([]byte, error) {
+// 			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
 // 				panic("mock out the BuildSearchQuery method")
 // 			},
 // 		}
@@ -330,7 +380,7 @@ var _ QueryBuilder = &QueryBuilderMock{}
 // 	}
 type QueryBuilderMock struct {
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
-	BuildSearchQueryFunc func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int) ([]byte, error)
+	BuildSearchQueryFunc func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -350,13 +400,15 @@ type QueryBuilderMock struct {
 			Limit int
 			// Offset is the offset argument value.
 			Offset int
+			// EsVersion710 is the esVersion710 argument value.
+			EsVersion710 bool
 		}
 	}
 	lockBuildSearchQuery sync.RWMutex
 }
 
 // BuildSearchQuery calls BuildSearchQueryFunc.
-func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int) ([]byte, error) {
+func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
 	if mock.BuildSearchQueryFunc == nil {
 		panic("QueryBuilderMock.BuildSearchQueryFunc: method is nil but QueryBuilder.BuildSearchQuery was just called")
 	}
@@ -368,6 +420,7 @@ func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, co
 		Topics       []string
 		Limit        int
 		Offset       int
+		EsVersion710 bool
 	}{
 		Ctx:          ctx,
 		Q:            q,
@@ -376,11 +429,12 @@ func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, co
 		Topics:       topics,
 		Limit:        limit,
 		Offset:       offset,
+		EsVersion710: esVersion710,
 	}
 	mock.lockBuildSearchQuery.Lock()
 	mock.calls.BuildSearchQuery = append(mock.calls.BuildSearchQuery, callInfo)
 	mock.lockBuildSearchQuery.Unlock()
-	return mock.BuildSearchQueryFunc(ctx, q, contentTypes, sort, topics, limit, offset)
+	return mock.BuildSearchQueryFunc(ctx, q, contentTypes, sort, topics, limit, offset, esVersion710)
 }
 
 // BuildSearchQueryCalls gets all the calls that were made to BuildSearchQuery.
@@ -394,6 +448,7 @@ func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 	Topics       []string
 	Limit        int
 	Offset       int
+	EsVersion710 bool
 } {
 	var calls []struct {
 		Ctx          context.Context
@@ -403,6 +458,7 @@ func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 		Topics       []string
 		Limit        int
 		Offset       int
+		EsVersion710 bool
 	}
 	mock.lockBuildSearchQuery.RLock()
 	calls = mock.calls.BuildSearchQuery

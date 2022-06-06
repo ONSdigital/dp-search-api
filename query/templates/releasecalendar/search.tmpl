@@ -32,14 +32,14 @@
     "aggs":{
         "breakdown":{
             "filters":{
+                "other_bucket_key":"confirmed",
                 "filters":{
                     "provisional":{"term":{"description.finalised":false}},
-                    "confirmed":{"term":{"description.finalised":true}},
                     "postponed":{
                         "bool":{
                             "must":[
-                                {"term":{"description.finalised":true}},
-                                {"exists":{"field":"dateChanges"}}
+                            {"term":{"description.finalised":true}},
+                            {"exists":{"field":"dateChanges"}}
                             ]
                         }
                     }
@@ -49,7 +49,7 @@
         "census" : {
             "filters":{
                 "filters":{
-                    "census" : { "term": { "census": "true" } }
+                    "census":{"term":{"census":"true"}}
                 }
             }
         }
@@ -58,10 +58,33 @@
 {"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
 {
     "size":0,
-    "query":{"match_all":{}},
+    "query": {
+        "bool": {
+            "must": {
+                {{if .Term}}
+                    {{- template "query.tmpl" . }}
+                {{else}}  "match_all": {}
+                {{end}}
+            },
+            "filter": [
+                {
+                    "range": {
+                        "description.releaseDate": {
+                            "from": {{.ReleasedAfter.ESString}},
+                            "to":  {{.ReleasedBefore.ESString}},
+                            "include_lower": true,
+                            "include_upper": true
+                        }
+                    }
+                },
+                {{.CensusClause}}
+            ]
+        }
+    },
     "aggs":{
         "release_types":{
             "filters":{
+                "other_bucket_key":"cancelled",
                 "filters":{
                     "upcoming":{
                         "bool":{
@@ -88,8 +111,7 @@
                                 {"term":{"description.cancelled":false}}
                             ]
                         }
-                    },
-                    "cancelled":{"term":{"description.cancelled":true}}
+                    }
                 }
             },
             "aggs":{

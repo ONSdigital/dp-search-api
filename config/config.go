@@ -13,13 +13,12 @@ type Config struct {
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	SignElasticsearchRequests  bool          `envconfig:"SIGN_ELASTICSEARCH_REQUESTS"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 	DatasetAPIURL              string        `envconfig:"DATASET_API_URL"`
 	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
-	ElasticVersion710          bool          `envconfig:"ElASTIC_VERSION_710"`
+	ElasticVersion710          bool          `envconfig:"ELASTIC_VERSION_710"`
 }
 
 type AWS struct {
@@ -27,6 +26,7 @@ type AWS struct {
 	Profile               string `envconfig:"AWS_PROFILE"`
 	Region                string `envconfig:"AWS_REGION"`
 	Service               string `envconfig:"AWS_SERVICE"`
+	Signer                bool   `envconfig:"AWS_SIGNER"`
 	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
@@ -42,7 +42,6 @@ func Get() (*Config, error) {
 		BindAddr:                   ":23900",
 		ElasticSearchAPIURL:        "http://localhost:9200",
 		GracefulShutdownTimeout:    5 * time.Second,
-		SignElasticsearchRequests:  false,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		ZebedeeURL:                 "http://localhost:8082",
@@ -56,6 +55,7 @@ func Get() (*Config, error) {
 		Profile:               "",
 		Region:                "eu-west-1",
 		Service:               "es",
+		Signer:                false,
 		TLSInsecureSkipVerify: false,
 	}
 

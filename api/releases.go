@@ -77,6 +77,9 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			http.Error(w, "Invalid release-type parameter", http.StatusBadRequest)
 			return
 		}
+		provisional := paramGetBool(params, "subtype-provisional", false)
+		confirmed := paramGetBool(params, "subtype-confirmed", false)
+		postponed := paramGetBool(params, "subtype-postponed", false)
 		highlight := paramGetBool(params, "highlight", true)
 
 		searchReq := query.ReleaseSearchRequest{
@@ -87,6 +90,9 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			ReleasedAfter:  fromDate.(query.Date),
 			ReleasedBefore: toDate.(query.Date),
 			Type:           relType.(query.ReleaseType),
+			Provisional:    provisional,
+			Confirmed:      confirmed,
+			Postponed:      postponed,
 			Highlight:      highlight,
 		}
 
