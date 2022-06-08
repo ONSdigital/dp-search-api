@@ -258,6 +258,11 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		Summary:         doc.Source.Summary,
 		Title:           doc.Source.Title,
 		Topics:          doc.Source.Topics,
+		Cancelled:       doc.Source.Cancelled,
+		Finalised:       doc.Source.Finalised,
+		ProvisionalDate: doc.Source.ProvisionalDate,
+		Published:       doc.Source.Published,
+		DateChanges:     doc.Source.DateChanges,
 	}
 
 	if highlight {
