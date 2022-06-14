@@ -246,7 +246,6 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 }
 
 func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ESSourceDocument {
-	hl := doc.Highlight
 	esDoc := models.ESSourceDocument{
 		CDID:            doc.Source.CDID,
 		DataType:        doc.Source.DataType,
@@ -265,7 +264,8 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		DateChanges:     doc.Source.DateChanges,
 	}
 
-	if highlight {
+	if doc.Highlight != nil && highlight {
+		hl := *doc.Highlight
 		esDoc.Highlight = &models.HighlightObj{
 			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, doc.Source.DatasetID, highlight),
 			Keywords:        t.overlayItemList(hl.DescriptionKeywords, doc.Source.Keywords, highlight),
