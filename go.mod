@@ -8,7 +8,7 @@ require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.140.2
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.7.0
-	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.4
+	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4
 	github.com/ONSdigital/dp-healthcheck v1.3.0
 	github.com/ONSdigital/dp-net/v2 v2.4.0
 	github.com/ONSdigital/dp-search-data-extractor v0.14.0
