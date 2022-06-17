@@ -117,13 +117,9 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}
 
-	var formattedQuery []byte
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	if esVersion710 {
-		formattedQuery, err = FormatMultiQuery(doc.Bytes())
-	} else {
-		formattedQuery, err = LegacyFormatMultiQuery(doc.Bytes())
-	}
+	formattedQuery, err := FormatMultiQuery(doc.Bytes())
+
 	if err != nil {
 		return nil, errors.Wrap(err, "formating of query for elasticsearch failed")
 	}

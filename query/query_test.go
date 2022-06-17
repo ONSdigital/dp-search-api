@@ -17,14 +17,14 @@ func TestSetupSearch(t *testing.T) {
 
 func TestNewQueryBuilder(t *testing.T) {
 	Convey("Should return a Builder object with templates", t, func() {
-		builderObject, err := NewQueryBuilder(false)
+		builderObject, err := NewQueryBuilder()
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Should return a Builder object with elastic v710 templates", t, func() {
-		builderObject, err := NewQueryBuilder(true)
+		builderObject, err := NewQueryBuilder()
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "search.tmpl")

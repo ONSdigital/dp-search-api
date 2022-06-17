@@ -57,7 +57,6 @@ func SearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Com
 
 	c.FakeElasticSearchAPI = NewFakeAPI(&c.ErrorFeature)
 	c.Cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
-	c.Cfg.ElasticVersion710 = true
 
 	// Setup responses from registered checkers for component
 	c.FakeElasticSearchAPI.setJSONResponseForGetHealth("/elasticsearch/_cluster/health", 200)
