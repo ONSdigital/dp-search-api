@@ -94,8 +94,8 @@ github.com/ONSdigital/dp-rchttp v0.0.0-20190919143000-bb5699e6fd59/go.mod h1:KkW
 github.com/ONSdigital/dp-rchttp v0.0.0-20200114090501-463a529590e8/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
 github.com/ONSdigital/dp-rchttp v1.0.0 h1:K/1/gDtfMZCX1Mbmq80nZxzDirzneqA1c89ea26FqP4=
 github.com/ONSdigital/dp-rchttp v1.0.0/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
-github.com/ONSdigital/dp-search-data-extractor v0.14.0 h1:AJoY2GzQsLfUnSsuggYTvlxZsmM42EXHvbOAmREA2I0=
-github.com/ONSdigital/dp-search-data-extractor v0.14.0/go.mod h1:GDD3NRXBAR8iUGio3M3hMs0E3WgJOS65TDwaumJ09Io=
+github.com/ONSdigital/dp-search-data-extractor v0.15.0 h1:1GE47Ms7dswj6o4XBCCGLaxDE2zezzIOsR8svggW8P0=
+github.com/ONSdigital/dp-search-data-extractor v0.15.0/go.mod h1:GDD3NRXBAR8iUGio3M3hMs0E3WgJOS65TDwaumJ09Io=
 github.com/ONSdigital/dp-search-data-importer v0.8.0 h1:fioclMvMnwHxwUpM3uUMAbWaRBKSTRlaf1e7Gfzna4k=
 github.com/ONSdigital/dp-search-data-importer v0.8.0/go.mod h1:2h9KIhP0/927Cks6qIdWHjtyP1AAoAjf5SDyHZFP3+4=
 github.com/ONSdigital/go-ns v0.0.0-20191104121206-f144c4ec2e58/go.mod h1:iWos35il+NjbvDEqwtB736pyHru0MPFE/LqcwkV1wDc=
