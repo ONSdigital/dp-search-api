@@ -3,3 +3,4 @@ CVE-2022-29153 # HashiCorp Consul and Consul Enterprise through 2022-04-12 allow
 CVE-2022-21698 # Uncontrolled Resource Consumption ('Resource Exhaustion'). https://ossindex.sonatype.org/vulnerability/CVE-2022-21698?component-type=golang&component-name=github.com%2Fprometheus%2Fclient_golang&utm_source=nancy-client&utm_medium=integration&utm_content=0.0.0-dev
 sonatype-2021-1401 # 1 non-CVE vulnerability found. To see more details, please create a free account at https://https://ossindex.sonatype.org/ and request for this information using your registered account
 sonatype-2019-0890 # 1 non-CVE vulnerability found. To see more details, please create a free account at https://https://ossindex.sonatype.org/ and request for this information using your registered account
+sonatype-2021-4899 #  1 non-CVE vulnerability found. To see more details, please create a free account at https://ossindex.sonatype.org/ and request for this information using your registered account
