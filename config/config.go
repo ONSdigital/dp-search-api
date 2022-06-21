@@ -18,7 +18,6 @@ type Config struct {
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 	DatasetAPIURL              string        `envconfig:"DATASET_API_URL"`
 	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
-	ElasticVersion710          bool          `envconfig:"ELASTIC_VERSION_710"`
 }
 
 type AWS struct {
@@ -47,7 +46,6 @@ func Get() (*Config, error) {
 		ZebedeeURL:                 "http://localhost:8082",
 		DatasetAPIURL:              "http://localhost:22000",
 		ServiceAuthToken:           "",
-		ElasticVersion710:          false,
 	}
 
 	cfg.AWS = AWS{

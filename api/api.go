@@ -18,12 +18,11 @@ var (
 
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	Router             *mux.Router
-	QueryBuilder       QueryBuilder
-	dpESClient         DpElasticSearcher
-	deprecatedESClient ElasticSearcher
-	Transformer        ResponseTransformer
-	permissions        AuthHandler
+	Router       *mux.Router
+	QueryBuilder QueryBuilder
+	dpESClient   DpElasticSearcher
+	Transformer  ResponseTransformer
+	permissions  AuthHandler
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -69,21 +68,16 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler, elasticVersion710 bool) (*SearchAPI, error) {
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	api := &SearchAPI{
-		Router:             router,
-		QueryBuilder:       queryBuilder,
-		dpESClient:         dpESClient,
-		deprecatedESClient: deprecatedESClient,
-		Transformer:        transformer,
-		permissions:        permissions,
+		Router:       router,
+		QueryBuilder: queryBuilder,
+		dpESClient:   dpESClient,
+		Transformer:  transformer,
+		permissions:  permissions,
 	}
 
-	if elasticVersion710 {
-		router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
-	} else {
-		router.HandleFunc("/search", LegacySearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
-	}
+	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil

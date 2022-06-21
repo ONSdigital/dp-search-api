@@ -67,36 +67,34 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise transformerClient
-	transformerClient = transformer.New(cfg.ElasticVersion710)
+	transformerClient = transformer.New()
 
 	// Initialse AWS signer
-	if cfg.ElasticVersion710 {
-		esConfig := dpEsClient.Config{
-			ClientLib: dpEsClient.GoElasticV710,
-			Address:   cfg.ElasticSearchAPIURL,
-		}
+	esConfig := dpEsClient.Config{
+		ClientLib: dpEsClient.GoElasticV710,
+		Address:   cfg.ElasticSearchAPIURL,
+	}
 
-		if cfg.AWS.Signer {
-			var awsSignerRT *awsauth.AwsSignerRoundTripper
+	if cfg.AWS.Signer {
+		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
-			awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
-			if err != nil {
-				log.Error(ctx, "failed to create aws auth round tripper", err)
-				return nil, err
-			}
-
-			esConfig.Transport = awsSignerRT
-		}
-
-		esClient, esClientErr = dpEs.NewClient(esConfig)
-		if esClientErr != nil {
-			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
+		if err != nil {
+			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
 		}
+
+		esConfig.Transport = awsSignerRT
+	}
+
+	esClient, esClientErr = dpEs.NewClient(esConfig)
+	if esClientErr != nil {
+		log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+		return nil, err
 	}
 
 	// Initialise query builder
-	queryBuilder, err := query.NewQueryBuilder(cfg.ElasticVersion710)
+	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err
@@ -123,7 +121,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions, cfg.ElasticVersion710)
+	searchAPI, err := api.NewSearchAPI(router, esClient, queryBuilder, transformerClient, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err

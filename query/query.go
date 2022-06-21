@@ -18,14 +18,10 @@ type Builder struct {
 }
 
 // NewQueryBuilder loads the elastic search templates and returns a query builder instance
-func NewQueryBuilder(esVersion710 bool) (*Builder, error) {
+func NewQueryBuilder() (*Builder, error) {
 	var searchTemplates *template.Template
 	var err error
-	if esVersion710 {
-		searchTemplates, err = SetupV710Search()
-	} else {
-		searchTemplates, err = SetupSearch()
-	}
+	searchTemplates, err = SetupV710Search()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load search templates")
 	}
@@ -64,19 +60,4 @@ func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
 	}
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
 	return searchBytes, nil
-}
-
-// LegacyFormatMultiQuery minifies and reformats an elasticsearch MultiQuery
-func LegacyFormatMultiQuery(rawQuery []byte) ([]byte, error) {
-	// Is minify thread Safe? can I put this as a global?
-	m := minify.New()
-	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
-
-	linearQuery, err := m.Bytes("application/js", rawQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
 }
