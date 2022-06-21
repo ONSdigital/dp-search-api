@@ -261,6 +261,8 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		Finalised:       doc.Source.Finalised,
 		ProvisionalDate: doc.Source.ProvisionalDate,
 		Published:       doc.Source.Published,
+		Survey:          doc.Source.Survey,
+		Language:        doc.Source.Language,
 		DateChanges:     doc.Source.DateChanges,
 	}
 

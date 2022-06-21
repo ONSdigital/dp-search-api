@@ -483,6 +483,8 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		Finalised:       searchDataImport.Finalised,
 		ProvisionalDate: searchDataImport.ProvisionalDate,
 		Published:       searchDataImport.Published,
+		Survey:          searchDataImport.Survey,
+		Language:        searchDataImport.Language,
 	}
 	for _, dateChange := range searchDataImport.DateChanges {
 		searchDIM.DateChanges = append(searchDIM.DateChanges, importerModels.ReleaseDateDetails{

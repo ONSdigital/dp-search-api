@@ -71,6 +71,8 @@ type ESSourceDocument struct {
 	Finalised       bool                `json:"finalised,omitempty"`
 	ProvisionalDate string              `json:"provisional_date,omitempty"`
 	Published       bool                `json:"published,omitempty"`
+	Language        string              `json:"language,omitempty"`
+	Survey          string              `json:"survey,omitempty"`
 }
 
 type HighlightObj struct {

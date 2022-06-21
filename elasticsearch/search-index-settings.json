@@ -264,6 +264,14 @@
       "finalised":{
         "type":"boolean"
       },
+      "language":{
+        "type":"text",
+        "analyzer":"ons_standard"
+      },
+      "survey":{
+        "type":"text",
+        "analyzer":"ons_standard"
+      },
       "dateChanges":{
         "type":"nested",
         "properties":{
