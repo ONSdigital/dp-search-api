@@ -234,7 +234,7 @@
         "analyzer":"ons_synonym_stem",
         "search_analyzer":"ons_stem"
       },
-      "metaDescription":{
+      "meta_description":{
         "type":"text",
         "analyzer":"ons_standard"
       },
@@ -252,7 +252,7 @@
           }
         }
       },
-      "releaseDate":{
+      "release_date":{
         "type":"date"
       },
       "published":{
@@ -269,16 +269,15 @@
         "analyzer":"ons_standard"
       },
       "survey":{
-        "type":"text",
-        "analyzer":"ons_standard"
+        "type":"text"
       },
-      "dateChanges":{
+      "date_changes":{
         "type":"nested",
         "properties":{
-          "previousDate":{
+          "previous_date":{
             "type":"date"
           },
-          "changeNotice":{
+          "change_notice":{
             "type":"text"
           }
         }
