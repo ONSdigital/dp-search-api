@@ -6,25 +6,68 @@ import (
 )
 
 const (
-	Separator = ","
+	Separator   = ","
+	EmptyClause = `{}`
 
 	NoProvisionalNoConfirmedPostponed = `
-{"term":{"description.finalised":true}}, {"exists":{"field":"dateChanges"}}
+{"term":{"finalised":true}}, {"exists":{"field":"date_changes"}}
 `
 
 	NoProvisionalConfirmedNoPostponed = `
-{"term":{"description.finalised":true}}, {"bool":{"must_not":{"exists":{"field":"dateChanges"}}}}
+{"term":{"finalised":true}}, {"bool":{"must_not":{"exists":{"field":"date_changes"}}}}
 `
 
 	NoProvisionalConfirmedPostponed = `
-{"term":{"description.finalised":true}}
+{"term":{"finalised":true}}
 `
 
 	ProvisionalNoConfirmedNoPostponed = `
-{"term":{"description.finalised":false}}
+{"term":{"finalised":false}}
 `
 
 	ProvisionalNoConfirmedPostponed = `
+{"bool":{
+    "should":[
+      {"term":{"finalised":false}},
+      {"bool":{
+          "must":[
+            {"term":{"finalised":true}},
+            {"exists":{"field":"date_changes"}}
+          ]}
+      }
+    ]}
+}`
+
+	ProvisionalConfirmedNoPostponed = `
+{"bool":{
+    "should":[
+      {"term":{"finalised":false}},
+      {"bool":{
+          "must":[
+            {"term":{"finalised":true}},
+            {"bool":{"must_not":{"exists":{"field":"date_changes"}}}}
+          ]}
+      }
+    ]}
+}`
+
+	LegacyNoProvisionalNoConfirmedPostponed = `
+{"term":{"description.finalised":true}}, {"exists":{"field":"dateChanges"}}
+`
+
+	LegacyNoProvisionalConfirmedNoPostponed = `
+{"term":{"description.finalised":true}}, {"bool":{"must_not":{"exists":{"field":"dateChanges"}}}}
+`
+
+	LegacyNoProvisionalConfirmedPostponed = `
+{"term":{"description.finalised":true}}
+`
+
+	LegacyProvisionalNoConfirmedNoPostponed = `
+{"term":{"description.finalised":false}}
+`
+
+	LegacyProvisionalNoConfirmedPostponed = `
 {"bool":{
     "should":[
       {"term":{"description.finalised":false}},
@@ -37,7 +80,7 @@ const (
     ]}
 }`
 
-	ProvisionalConfirmedNoPostponed = `
+	LegacyProvisionalConfirmedNoPostponed = `
 {"bool":{
     "should":[
       {"term":{"description.finalised":false}},
@@ -52,8 +95,8 @@ const (
 )
 
 func mainUpcomingClause(now time.Time) string {
-	return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
-		fmt.Sprintf(`{"range": {"description.releaseDate": {"gte": %q}}}`, now.Format(dateFormat)))
+	return fmt.Sprintf("%s, %s, %s", `{"term": {"published": false}}`, `{"term": {"cancelled": false}}`,
+		fmt.Sprintf(`{"range": {"release_date": {"gte": %q}}}`, now.Format(dateFormat)))
 }
 
 func supplementaryUpcomingClause(sr ReleaseSearchRequest) string {
@@ -70,6 +113,30 @@ func supplementaryUpcomingClause(sr ReleaseSearchRequest) string {
 		return ProvisionalNoConfirmedPostponed
 	case sr.Provisional && sr.Confirmed && !sr.Postponed:
 		return ProvisionalConfirmedNoPostponed
+	}
+
+	return ""
+}
+
+func legacyMainUpcomingClause(now time.Time) string {
+	return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
+		fmt.Sprintf(`{"range": {"description.releaseDate": {"gte": %q}}}`, now.Format(dateFormat)))
+}
+
+func legacySupplementaryUpcomingClause(sr LegacyReleaseSearchRequest) string {
+	switch {
+	case !sr.Provisional && !sr.Confirmed && sr.Postponed:
+		return LegacyNoProvisionalNoConfirmedPostponed
+	case !sr.Provisional && sr.Confirmed && !sr.Postponed:
+		return LegacyNoProvisionalConfirmedNoPostponed
+	case !sr.Provisional && sr.Confirmed && sr.Postponed:
+		return LegacyNoProvisionalConfirmedPostponed
+	case sr.Provisional && !sr.Confirmed && !sr.Postponed:
+		return LegacyProvisionalNoConfirmedNoPostponed
+	case sr.Provisional && !sr.Confirmed && sr.Postponed:
+		return LegacyProvisionalNoConfirmedPostponed
+	case sr.Provisional && sr.Confirmed && !sr.Postponed:
+		return LegacyProvisionalConfirmedNoPostponed
 	}
 
 	return ""

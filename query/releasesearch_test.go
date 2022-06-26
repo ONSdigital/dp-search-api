@@ -198,7 +198,7 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 		So(queryString, ShouldContainSubstring, "Term=query+term")
 		So(queryString, ShouldContainSubstring, "From=0")
 		So(queryString, ShouldContainSubstring, "Size=25")
-		So(queryString, ShouldContainSubstring, `SortBy={"description.title.title_raw":"asc"}`)
+		So(queryString, ShouldContainSubstring, `SortBy={"title.title_raw":"asc"}`)
 		So(queryString, ShouldContainSubstring, "ReleasedAfter=null")
 		So(queryString, ShouldContainSubstring, `ReleasedBefore="2020-12-31"`)
 		So(queryString, ShouldContainSubstring, "Type=type-published")
