@@ -56,7 +56,7 @@ type QueryBuilder interface {
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type
 type ReleaseQueryBuilder interface {
-	BuildSearchQuery(ctx context.Context, request query.ReleaseSearchRequest) ([]byte, error)
+	BuildSearchQuery(ctx context.Context, request interface{}) ([]byte, error)
 }
 
 // ResponseTransformer provides methods for the transform package
@@ -89,8 +89,12 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	return api, nil
 }
 
-func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher ElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
-	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
+func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, legacySearcher ElasticSearcher, transformer ReleaseResponseTransformer, elasticVersion710 bool) *SearchAPI {
+	if elasticVersion710 {
+		a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
+	} else {
+		a.Router.HandleFunc("/search/releases", LegacySearchReleasesHandlerFunc(validator, builder, legacySearcher, transformer)).Methods("GET")
+	}
 
 	return a
 }
