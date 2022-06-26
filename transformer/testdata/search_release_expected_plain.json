@@ -19,7 +19,6 @@
         "cancelled":false,
         "finalised":true,
         "postponed":true,
-        "census":false,
         "national_statistic":false,
         "latest_release":false,
         "contact":{
@@ -39,7 +38,6 @@
         "cancelled":false,
         "finalised":false,
         "postponed":false,
-        "census":false,
         "national_statistic":true,
         "next_release":"22 November 2018",
         "latest_release":false,

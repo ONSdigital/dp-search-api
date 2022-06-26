@@ -16,7 +16,7 @@ func TestTransformSearchReleaseResponse(t *testing.T) {
 	t.Parallel()
 	Convey("With a transformer initialised", t, func() {
 		ctx := context.Background()
-		transformer := NewReleaseTransformer()
+		transformer := NewReleaseTransformer(true)
 		So(t, ShouldNotBeNil)
 
 		Convey("Throws error on invalid JSON", func() {
