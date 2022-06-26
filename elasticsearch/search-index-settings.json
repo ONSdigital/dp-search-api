@@ -269,7 +269,7 @@
         "analyzer":"ons_standard"
       },
       "survey":{
-        "type":"text"
+        "type":"keyword"
       },
       "date_changes":{
         "type":"nested",
