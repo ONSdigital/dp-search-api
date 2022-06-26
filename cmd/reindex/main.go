@@ -203,7 +203,7 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 				log.Fatal("error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
 			}
 			exporterEventData := extractorModels.MapZebedeeDataToSearchDataImport(zebedeeData, -1)
-			importerEventData := importerModels.SearchDataImportModel(exporterEventData)
+			importerEventData := convertToSearchDataModel(exporterEventData)
 			esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
 
 			body, err := json.Marshal(esModel)
@@ -245,7 +245,7 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 			cmdData.DatasetDetails.Keywords = *metadata.DatasetDetails.Keywords
 		}
 		exporterEventData := extractorModels.MapVersionMetadataToSearchDataImport(cmdData)
-		importerEventData := importerModels.SearchDataImportModel(exporterEventData)
+		importerEventData := convertToSearchDataModel(exporterEventData)
 		esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
 		body, err := json.Marshal(esModel)
 		if err != nil {
@@ -461,4 +461,36 @@ func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAP
 		wg.Wait()
 	}()
 	return metadataChan
+}
+
+func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport) importerModels.SearchDataImportModel {
+	searchDIM := importerModels.SearchDataImportModel{
+		UID:             searchDataImport.UID,
+		URI:             searchDataImport.URI,
+		DataType:        searchDataImport.DataType,
+		JobID:           searchDataImport.JobID,
+		SearchIndex:     searchDataImport.SearchIndex,
+		CDID:            searchDataImport.CDID,
+		DatasetID:       searchDataImport.DatasetID,
+		Keywords:        searchDataImport.Keywords,
+		MetaDescription: searchDataImport.MetaDescription,
+		ReleaseDate:     searchDataImport.ReleaseDate,
+		Summary:         searchDataImport.Summary,
+		Title:           searchDataImport.Title,
+		Topics:          searchDataImport.Topics,
+		TraceID:         searchDataImport.TraceID,
+		Cancelled:       searchDataImport.Cancelled,
+		Finalised:       searchDataImport.Finalised,
+		ProvisionalDate: searchDataImport.ProvisionalDate,
+		Published:       searchDataImport.Published,
+		Survey:          searchDataImport.Survey,
+		Language:        searchDataImport.Language,
+	}
+	for _, dateChange := range searchDataImport.DateChanges {
+		searchDIM.DateChanges = append(searchDIM.DateChanges, importerModels.ReleaseDateDetails{
+			ChangeNotice: dateChange.ChangeNotice,
+			Date:         dateChange.Date,
+		})
+	}
+	return searchDIM
 }
