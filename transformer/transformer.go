@@ -265,6 +265,7 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		Survey:          doc.Source.Survey,
 		Language:        doc.Source.Language,
 		DateChanges:     doc.Source.DateChanges,
+		CanonicalTopic:  doc.Source.CanonicalTopic,
 	}
 
 	if doc.Highlight != nil && highlight {

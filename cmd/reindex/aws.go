@@ -15,9 +15,9 @@ func getConfig(ctx context.Context) cliConfig {
 			tlsInsecureSkipVerify: false,
 		},
 		zebedeeURL:       "http://localhost:10050",
-		esURL:            "ES_URL_Replaceme",
+		esURL:            "https://vpc-sandbox-site-xczo3vpa3wd7hzu3mvjjxczq4u.eu-west-2.es.amazonaws.com",
 		signRequests:     true,
 		datasetURL:       "http://localhost:10400",
-		ServiceAuthToken: "SAuthToken_Replaceme",
+		ServiceAuthToken: "aevaep0chohj0phi7ephaew5chi0ohnaephaipheibahcheipoughoy4sie5tooH",
 	}
 }

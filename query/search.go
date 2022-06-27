@@ -99,7 +99,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 		From:  offset,
 		Size:  limit,
 		Types: strings.Split(contentTypes, ","),
-		//Topic:            topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
+		//Topic:     topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
 		SortBy:    sort,
 		Highlight: true,
 		Now:       time.Now().UTC().Format(time.RFC3339),

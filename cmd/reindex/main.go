@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ONSdigital/dp-search-api/api"
+
+	"github.com/ONSdigital/dp-search-api/query"
+	"github.com/ONSdigital/dp-search-api/transformer"
 	"log"
 	"net/url"
 	"strings"
@@ -88,7 +92,7 @@ func main() {
 		esHTTPClient = dphttp2.NewClientWithTransport(awsSignerRT)
 	}
 
-	datasetClient := dataset.NewAPIClient(cfg.datasetURL)
+	//datasetClient := dataset.NewAPIClient(cfg.datasetURL)
 	esClient, esClientErr := dpEs.NewClient(dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.esURL,
@@ -101,16 +105,29 @@ func main() {
 	if err := esClient.NewBulkIndexer(ctx); err != nil {
 		log.Fatal(ctx, "Failed to create new bulk indexer")
 	}
-	datasetChan := extractDatasets(ctx, datasetClient, cfg.ServiceAuthToken)
-	editionChan := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
-	metadataChan := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
-	urisChan := uriProducer(ctx, zebClient)
-	extractedChan, extractionFailuresChan := docExtractor(ctx, zebClient, urisChan, maxConcurrentExtractions)
-	transformedChan := docTransformer(extractedChan, metadataChan)
-	indexedChan := docIndexer(ctx, esClient, transformedChan, maxConcurrentIndexings)
+	queryBuilder, err := query.NewQueryBuilder(true)
+	if err != nil {
+		log.Fatal(ctx, "error initialising query builder", err)
+	}
 
-	summarize(indexedChan, extractionFailuresChan)
-	cleanOldIndices(ctx, esClient)
+	transformerClient := transformer.New(true)
+	//
+	//datasetChan := extractDatasets(ctx, datasetClient, cfg.ServiceAuthToken)
+	//editionChan := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
+	//metadataChan := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
+	//urisChan := uriProducer(ctx, zebClient)
+	//extractedChan, extractionFailuresChan := docExtractor(ctx, zebClient, urisChan, maxConcurrentExtractions)
+	//transformedChan := docTransformer(extractedChan, metadataChan)
+	//indexedChan := docIndexer(ctx, esClient, transformedChan, maxConcurrentIndexings)
+	//
+	//summarize(indexedChan, extractionFailuresChan)
+	//cleanOldIndices(ctx, esClient)
+
+	//b, err := esClient.GetIndices(ctx, []string{"ons"})
+	//fmt.Println("...er.....", err)
+	//fmt.Println(".....indeices....", string(b))
+
+	api.TestSearchHandlerFunc(queryBuilder, esClient, transformerClient)
 }
 
 func uriProducer(ctx context.Context, z clients.ZebedeeClient) chan string {
@@ -485,6 +502,7 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		Published:       searchDataImport.Published,
 		Survey:          searchDataImport.Survey,
 		Language:        searchDataImport.Language,
+		CanonicalTopic:  searchDataImport.CanonicalTopic,
 	}
 	for _, dateChange := range searchDataImport.DateChanges {
 		searchDIM.DateChanges = append(searchDIM.DateChanges, importerModels.ReleaseDateDetails{

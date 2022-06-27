@@ -55,6 +55,7 @@ type ReleaseDescription struct {
 	Keywords        []string `json:"keywords,omitempty"`
 	ProvisionalDate string   `json:"provisional_date,omitempty"`
 	Language        string   `json:"language,omitempty"`
+	CanonicalTopic  string   `json:"canonical_topic,omitempty"`
 }
 
 type highlight struct {

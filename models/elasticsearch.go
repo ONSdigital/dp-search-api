@@ -73,6 +73,7 @@ type ESSourceDocument struct {
 	Published       bool                `json:"published,omitempty"`
 	Language        string              `json:"language,omitempty"`
 	Survey          string              `json:"survey,omitempty"`
+	CanonicalTopic  string              `json:"canonical_topic"`
 }
 
 type HighlightObj struct {

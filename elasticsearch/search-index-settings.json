@@ -268,6 +268,13 @@
         "type":"text",
         "analyzer":"ons_standard"
       },
+      "canonical_topic":{
+        "type":"text",
+        "analyzer":"ons_standard"
+      },
+      "provisional_date":{
+        "type":"date"
+      },
       "survey":{
         "type":"keyword"
       },
