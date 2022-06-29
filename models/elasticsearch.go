@@ -97,6 +97,7 @@ type ESHighlight struct {
 // ********************************************************
 
 type SearchResponse struct {
+	ES_710              bool               `json:"es_710"`
 	Took                int                `json:"took"`
 	ContentTypes        []ContentType      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`
