@@ -202,6 +202,7 @@ func (t *Transformer) TransformSearchResponse(
 	}
 
 	sr := t.transform(&esResponse, highlight)
+	sr.Es710 = true
 
 	needAdditionalSuggestions := numberOfSearchTerms(query)
 	if needAdditionalSuggestions > 1 {
