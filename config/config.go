@@ -53,7 +53,7 @@ func Get() (*Config, error) {
 	cfg.AWS = AWS{
 		Filename:              "",
 		Profile:               "",
-		Region:                "eu-west-1",
+		Region:                "eu-west-2",
 		Service:               "es",
 		Signer:                false,
 		TLSInsecureSkipVerify: false,

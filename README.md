@@ -81,7 +81,28 @@ Once connected, run the following make target:
 
 ### Running Bulk Indexer
 
+The Bulk Indexer creates an Elastic Search 7.10 index with the alias "ons". It loads data from zebedee, and the dataset API, into the ES 7.10 index.
+
 #### Locally
+
+###### Prerequisites
+
+* Requires ElasticSearch 7.10 running on port 9200 (NOT 11200)
+* Requires Zebedee running on port 8082 (and this has a dependency on vault)
+* Requires the Dataset API running on port 22000
+* Requires a local service auth token value to be put in line 35 of cmd/reindex/local.go
+
+NB. The Dataset API requires a mongo database named 'datasets', which must contain the following collections:
+* contacts
+* datasets
+* dimension.options
+* editions
+* instances
+* instances_locks
+
+The Dataset API also requires this environment variable to be set to true: DISABLE_GRAPH_DB_DEPENDENCY
+
+###### Steps
 
 Build the bulk indexer by running the following command
 ```
@@ -97,7 +118,7 @@ Please make sure your elasticsearch server is running locally on localhost:9200 
 
 ###### Prerequisites
 
-Before attempting the following steps please make sure you have dp tool setup locally.For more info on setting up the dp tool: https://github.com/ONSdigital/dp-cli#build-and-run
+Before attempting the following steps please make sure you have dp tool setup locally. For more info on setting up the dp tool: https://github.com/ONSdigital/dp-cli#build-and-run
 
 ###### Steps
 

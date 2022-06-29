@@ -10,7 +10,7 @@ var Name = "aws"
 func getConfig(ctx context.Context) cliConfig {
 	return cliConfig{
 		aws: AWSConfig{
-			region:                "eu-west-1",
+			region:                "eu-west-2",
 			service:               "es",
 			tlsInsecureSkipVerify: false,
 		},
