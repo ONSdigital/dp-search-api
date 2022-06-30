@@ -16,7 +16,6 @@ type Config struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
-	DatasetAPIURL              string        `envconfig:"DATASET_API_URL"`
 	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
 	ElasticVersion710          bool          `envconfig:"ELASTIC_VERSION_710"`
 }
@@ -45,7 +44,6 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		ZebedeeURL:                 "http://localhost:8082",
-		DatasetAPIURL:              "http://localhost:22000",
 		ServiceAuthToken:           "",
 		ElasticVersion710:          false,
 	}
