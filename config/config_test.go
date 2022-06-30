@@ -19,7 +19,7 @@ func TestSpec(t *testing.T) {
 			Convey("The values should be set to the expected defaults", func() {
 				So(cfg.AWS.Filename, ShouldEqual, "")
 				So(cfg.AWS.Profile, ShouldEqual, "")
-				So(cfg.AWS.Region, ShouldEqual, "eu-west-1")
+				So(cfg.AWS.Region, ShouldEqual, "eu-west-2")
 				So(cfg.AWS.Service, ShouldEqual, "es")
 				So(cfg.AWS.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.BindAddr, ShouldEqual, ":23900")
