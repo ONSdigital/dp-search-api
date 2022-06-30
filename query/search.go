@@ -80,9 +80,10 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/weightedQuery.tmpl",
 		"templates/search/v710/contentFilters.tmpl",
 		"templates/search/v710/contentFilterOnURIPrefix.tmpl",
-		"templates/search/v710/contentFilterOnTopic.tmpl",
 		"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
 		"templates/search/v710/sortByTitle.tmpl",
+		"templates/search/v710/topicFilters.tmpl",
+		"templates/search/v710/canonicalFilters.tmpl",
 		"templates/search/v710/sortByRelevance.tmpl",
 		"templates/search/v710/sortByReleaseDate.tmpl",
 		"templates/search/v710/sortByReleaseDateAsc.tmpl",
@@ -95,11 +96,11 @@ func SetupV710Search() (*template.Template, error) {
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
 	reqParams := searchRequest{
-		Term:  q,
-		From:  offset,
-		Size:  limit,
-		Types: strings.Split(contentTypes, ","),
-		//Topic:     topics, // Todo: This needs to be reintroduced when migrating to ES 7.10
+		Term:      q,
+		From:      offset,
+		Size:      limit,
+		Types:     strings.Split(contentTypes, ","),
+		Topic:     topics,
 		SortBy:    sort,
 		Highlight: true,
 		Now:       time.Now().UTC().Format(time.RFC3339),
@@ -129,4 +130,8 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 	}
 
 	return formattedQuery, nil
+}
+
+func (sr searchRequest) ConcatTopic() string {
+	return strings.Join(sr.Topic, ",")
 }

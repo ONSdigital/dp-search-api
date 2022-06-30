@@ -10,14 +10,14 @@ var Name = "aws"
 func getConfig(ctx context.Context) cliConfig {
 	return cliConfig{
 		aws: AWSConfig{
-			region:                "eu-west-2",
+			region:                "eu-west-1",
 			service:               "es",
 			tlsInsecureSkipVerify: false,
 		},
 		zebedeeURL:       "http://localhost:10050",
-		esURL:            "https://vpc-sandbox-site-xczo3vpa3wd7hzu3mvjjxczq4u.eu-west-2.es.amazonaws.com",
+		esURL:            "ES_URL_Replaceme",
 		signRequests:     true,
 		datasetURL:       "http://localhost:10400",
-		ServiceAuthToken: "aevaep0chohj0phi7ephaew5chi0ohnaephaipheibahcheipoughoy4sie5tooH",
+		ServiceAuthToken: "SAuthToken_Replaceme",
 	}
 }

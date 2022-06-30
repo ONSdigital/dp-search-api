@@ -3,7 +3,6 @@ module github.com/ONSdigital/dp-search-api
 go 1.17
 
 replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
-replace github.com/ONSdigital/dp-elasticsearch/v3 => /Users/rahulmadathumpalliyalil/workdir/ONSdigital/dp-elasticsearch
 
 require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.140.2

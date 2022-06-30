@@ -6,14 +6,18 @@
  "size" : {{.Size}},
  "query" : {
      "bool" : {
-       "must" : {
+          {{- if .Topic}}
+             {{template "topicFilters.tmpl" .}}
+          {{- else}}
+             "must" : {
                   {{- if .Term}}
                       {{- template "weightedQuery.tmpl" .}}
                    {{- else}}
                       {{- template "matchAll.tmpl" .}}
                    {{- end}}
               }
-         {{template "contentFilters.tmpl" .}}
+             {{template "contentFilters.tmpl" .}}
+         {{- end}}
          }
     },
  "suggest":{

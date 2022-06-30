@@ -39,14 +39,14 @@ func TestNewQueryBuilder(t *testing.T) {
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "weightedQuery.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilterOnURIPrefix.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilterOnTopic.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilterOnTopicWildcard.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByTitle.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByRelevance.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByReleaseDate.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByReleaseDateAsc.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByFirstLetter.tmpl")
-
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "topicFilters.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "canonicalFilters.tmpl")
 		So(err, ShouldBeNil)
 	})
 }

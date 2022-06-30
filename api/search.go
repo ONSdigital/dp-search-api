@@ -1,20 +1,18 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
-	"github.com/ONSdigital/dp-search-api/elasticsearch"
-	"strings"
-	"time"
-
-	//"github.com/ONSdigital/dp-search-api/elasticsearch"
-	"github.com/ONSdigital/log.go/v2/log"
-	"github.com/pkg/errors"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
+	"time"
+
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/pkg/errors"
 )
 
 const defaultContentTypes string = "article," +
@@ -59,107 +57,6 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 		return defaultValue
 	}
 	return value == "true"
-}
-
-// SearchHandlerFunc returns a http handler function handling search api requests.
-func TestSearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) {
-	ctx := context.TODO()
-	params := url.Values{}
-
-	q := params.Get("q")
-	sort := paramGet(params, "sort", "relevance")
-
-	highlight := paramGetBool(params, "highlight", true)
-	topics := paramGet(params, "topics", "")
-	topicSlice := sanitiseURLParams(topics)
-	log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
-		"param": "topics",
-		"value": topicSlice,
-	})
-	limit := 10
-	//limit, err := strconv.Atoi(40000)
-	//if err != nil {
-	//	log.Warn(ctx, "numeric search parameter provided with non numeric characters", log.Data{
-	//		"param": "limit",
-	//		"value": limitParam,
-	//	})
-	//	//http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
-	//	return
-	//}
-	if limit < 0 {
-		log.Warn(ctx, "numeric search parameter provided with negative value", log.Data{
-			"param": "limit",
-			"value": 40000,
-		})
-		//http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
-		return
-	}
-
-	offsetParam := paramGet(params, "offset", "0")
-	offset, err := strconv.Atoi(offsetParam)
-	if err != nil {
-		log.Warn(ctx, "numeric search parameter provided with non numeric characters", log.Data{
-			"param": "from",
-			"value": offsetParam,
-		})
-		//http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
-		return
-	}
-	if offset < 0 {
-		log.Warn(ctx, "numeric search parameter provided with negative value", log.Data{
-			"param": "from",
-			"value": offsetParam,
-		})
-		//http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
-		return
-	}
-
-	typesParam := paramGet(params, "content_type", defaultContentTypes)
-
-	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset, true)
-	if err != nil {
-		log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
-		//http.Error(w, "Failed to create search query", http.StatusInternalServerError)
-		return
-	}
-
-	var searches []client.Search
-
-	err = json.Unmarshal(formattedQuery, &searches)
-	if err != nil {
-		log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
-		//http.Error(w, "Failed to create search query", http.StatusInternalServerError)
-		return
-	}
-
-	responseData, err := elasticSearchClient.MultiSearch(ctx, searches)
-	if err != nil {
-		log.Error(ctx, "elasticsearch query failed", err)
-		//http.Error(w, "Failed to run search query", http.StatusInternalServerError)
-		return
-	}
-
-	if !json.Valid(responseData) {
-		log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
-		//http.Error(w, "Failed to process search query", http.StatusInternalServerError)
-		return
-	}
-
-	if !paramGetBool(params, "raw", false) {
-		responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
-		if err != nil {
-			log.Error(ctx, "transformation of response data failed", err)
-			//http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if err != nil {
-		log.Error(ctx, "writing response failed", err)
-		return
-	}
-
-	fmt.Println("......response data.....", string(responseData))
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
