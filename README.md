@@ -102,41 +102,46 @@ NB. The Dataset API requires a mongo database named 'datasets', which must conta
 
 The Dataset API also requires this environment variable to be set to true: DISABLE_GRAPH_DB_DEPENDENCY
 
+Please make sure your elasticsearch server is running locally on localhost:9200 and version of the server is 7.10, which is the current supported version.
+
 ###### Steps
 
-Build the bulk indexer by running the following command
+Navigate to the root of the 'Search API' repository. Build and run the bulk indexer by running the following command
 ```
   make reindex
 ```
-Then run the executable  
-```
-  ./reindex
-```
-Please make sure your elasticsearch server is running locally on localhost:9200 and version of the server is 7.10, which is the current supported version.
+NB. To run the executable ./reindex is not necessary in the local environment
 
 #### Remote Environment
 
 ###### Prerequisites
 
-Before attempting the following steps please make sure you have dp tool setup locally. For more info on setting up the dp tool: https://github.com/ONSdigital/dp-cli#build-and-run
+* Requires dp tool setup locally. For more info on setting up the dp tool: https://github.com/ONSdigital/dp-cli#build-and-run
+* Requires the domain endpoint, for the relevant AWS Open Search site cluster, to be put in line 18 (the esURL) of cmd/reindex/aws.go 
+* Requires the Search API service auth token value, for the remote environment, to be put in line 21 of cmd/reindex/aws.go
 
 ###### Steps
 
-Navigate to ```cmd/reindex/aws.go``` and update esurl to correct elastic search 7.10 url in environment and then build the bulk indexer by running the following command
+Navigate to the root of the 'Search API' repository and build the bulk indexer by running the following command
 ```
   make build-reindex
 ```
-Then copy to your environment build directory  by running the following command
+Then copy the reindex executable from your local environment build directory, to the remote server, by running the following command
 ```
 dp scp <environment> publishing <box> ./build/reindex <location on publishing box>
 ```
 For example
 ```
-dp scp develop publishing 2 ./build/reindex .
+dp scp sandbox publishing 2 ./build/reindex .
 ```
 Then ssh into the box as follows
 ```
 dp ssh <environment> publishing <box>
+```
+Then create a build directory and move the executable into it
+```
+  mkdir build
+  mv reindex build
 ```
 Then run the executable
 ```
