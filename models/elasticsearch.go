@@ -68,12 +68,12 @@ type ESSourceDocument struct {
 	Highlight       *HighlightObj       `json:"highlight,omitempty"`
 	DateChanges     []ReleaseDateChange `json:"date_changes,omitempty"`
 	Cancelled       bool                `json:"cancelled,omitempty"`
+	CanonicalTopic  string              `json:"canonical_topic"`
 	Finalised       bool                `json:"finalised,omitempty"`
 	ProvisionalDate string              `json:"provisional_date,omitempty"`
 	Published       bool                `json:"published,omitempty"`
 	Language        string              `json:"language,omitempty"`
 	Survey          string              `json:"survey,omitempty"`
-	CanonicalTopic  string              `json:"canonical_topic"`
 }
 
 type HighlightObj struct {

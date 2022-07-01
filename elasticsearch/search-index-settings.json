@@ -261,14 +261,14 @@
       "cancelled":{
         "type":"boolean"
       },
+      "canonical_topic":{
+        "type":"text",
+        "analyzer":"ons_standard"
+      },
       "finalised":{
         "type":"boolean"
       },
       "language":{
-        "type":"text",
-        "analyzer":"ons_standard"
-      },
-      "canonical_topic":{
         "type":"text",
         "analyzer":"ons_standard"
       },

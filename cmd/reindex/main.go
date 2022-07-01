@@ -470,6 +470,7 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		DataType:        searchDataImport.DataType,
 		JobID:           searchDataImport.JobID,
 		SearchIndex:     searchDataImport.SearchIndex,
+		CanonicalTopic:  searchDataImport.CanonicalTopic,
 		CDID:            searchDataImport.CDID,
 		DatasetID:       searchDataImport.DatasetID,
 		Keywords:        searchDataImport.Keywords,
@@ -485,7 +486,6 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		Published:       searchDataImport.Published,
 		Survey:          searchDataImport.Survey,
 		Language:        searchDataImport.Language,
-		CanonicalTopic:  searchDataImport.CanonicalTopic,
 	}
 	for _, dateChange := range searchDataImport.DateChanges {
 		searchDIM.DateChanges = append(searchDIM.DateChanges, importerModels.ReleaseDateDetails{
