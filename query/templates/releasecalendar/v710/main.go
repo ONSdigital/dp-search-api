@@ -9,8 +9,8 @@ import (
 	"log"
 	"os"
 
-	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
-	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v4"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 )
@@ -73,7 +73,7 @@ func main() {
 		fmt.Printf("%s\n%s\n", s.Header.Index, s.Query)
 	}
 
-	responseData, err = esClient.MultiSearch(ctx, searches)
+	responseData, err = esClient.MultiSearch(ctx, searches, nil)
 	if err != nil {
 		log.Fatalf("elasticsearch query failed: %s", err)
 	}

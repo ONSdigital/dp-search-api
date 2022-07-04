@@ -11,8 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
-
+	"github.com/ONSdigital/dp-elasticsearch/v4/client"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -684,7 +683,7 @@ func newDpElasticSearcherMock(response []byte, err error) *DpElasticSearcherMock
 		CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
 			return err
 		},
-		MultiSearchFunc: func(ctx context.Context, searches []client.Search) ([]byte, error) {
+		MultiSearchFunc: func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
 			return response, err
 		},
 	}

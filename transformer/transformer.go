@@ -220,6 +220,7 @@ func (t *Transformer) TransformSearchResponse(
 // Transform the raw ES to search response
 func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
 	search7xResponse := models.SearchResponse{
+		Count:        esresponses.Responses[0].Hits.Total,
 		Items:        []models.ESSourceDocument{},
 		ContentTypes: []models.ContentType{},
 	}

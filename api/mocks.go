@@ -6,7 +6,7 @@ package api
 import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"net/http"
 	"sync"
 )
@@ -168,7 +168,7 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 // 			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
 // 				panic("mock out the CreateIndex method")
 // 			},
-// 			MultiSearchFunc: func(ctx context.Context, searches []client.Search) ([]byte, error) {
+// 			MultiSearchFunc: func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
 // 				panic("mock out the MultiSearch method")
 // 			},
 // 		}
@@ -182,7 +182,7 @@ type DpElasticSearcherMock struct {
 	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) error
 
 	// MultiSearchFunc mocks the MultiSearch method.
-	MultiSearchFunc func(ctx context.Context, searches []client.Search) ([]byte, error)
+	MultiSearchFunc func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -201,6 +201,8 @@ type DpElasticSearcherMock struct {
 			Ctx context.Context
 			// Searches is the searches argument value.
 			Searches []client.Search
+			// Params is the params argument value.
+			Params *client.QueryParams
 		}
 	}
 	lockCreateIndex sync.RWMutex
@@ -247,21 +249,23 @@ func (mock *DpElasticSearcherMock) CreateIndexCalls() []struct {
 }
 
 // MultiSearch calls MultiSearchFunc.
-func (mock *DpElasticSearcherMock) MultiSearch(ctx context.Context, searches []client.Search) ([]byte, error) {
+func (mock *DpElasticSearcherMock) MultiSearch(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
 	if mock.MultiSearchFunc == nil {
 		panic("DpElasticSearcherMock.MultiSearchFunc: method is nil but DpElasticSearcher.MultiSearch was just called")
 	}
 	callInfo := struct {
 		Ctx      context.Context
 		Searches []client.Search
+		Params   *client.QueryParams
 	}{
 		Ctx:      ctx,
 		Searches: searches,
+		Params:   params,
 	}
 	mock.lockMultiSearch.Lock()
 	mock.calls.MultiSearch = append(mock.calls.MultiSearch, callInfo)
 	mock.lockMultiSearch.Unlock()
-	return mock.MultiSearchFunc(ctx, searches)
+	return mock.MultiSearchFunc(ctx, searches, params)
 }
 
 // MultiSearchCalls gets all the calls that were made to MultiSearch.
@@ -270,10 +274,12 @@ func (mock *DpElasticSearcherMock) MultiSearch(ctx context.Context, searches []c
 func (mock *DpElasticSearcherMock) MultiSearchCalls() []struct {
 	Ctx      context.Context
 	Searches []client.Search
+	Params   *client.QueryParams
 } {
 	var calls []struct {
 		Ctx      context.Context
 		Searches []client.Search
+		Params   *client.QueryParams
 	}
 	mock.lockMultiSearch.RLock()
 	calls = mock.calls.MultiSearch

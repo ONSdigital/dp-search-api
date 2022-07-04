@@ -33,7 +33,8 @@ type Option struct {
 }
 
 type ESResponseHits struct {
-	Hits []ESResponseHit `json:"hits"`
+	Total int
+	Hits  []ESResponseHit `json:"hits"`
 }
 
 type ESResponseHit struct {
@@ -99,6 +100,7 @@ type ESHighlight struct {
 
 type SearchResponse struct {
 	Es710               bool               `json:"es_710"`
+	Count               int                `json:"count"`
 	Took                int                `json:"took"`
 	ContentTypes        []ContentType      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`

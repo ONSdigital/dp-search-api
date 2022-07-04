@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -112,7 +112,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			return
 		}
 
-		responseData, err := searcher.MultiSearch(ctx, searches)
+		responseData, err := searcher.MultiSearch(ctx, searches, nil)
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)

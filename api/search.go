@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
@@ -131,7 +131,10 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 			return
 		}
 
-		responseData, err := elasticSearchClient.MultiSearch(ctx, searches)
+		enableTotalHitsCount := true
+		responseData, err := elasticSearchClient.MultiSearch(ctx, searches, &client.QueryParams{
+			EnableTotalHitsCounter: &enableTotalHitsCount,
+		})
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)

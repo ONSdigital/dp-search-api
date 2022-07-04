@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
-	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
@@ -41,7 +41,7 @@ type ElasticSearcher interface {
 // DpElasticSearcher provides an interface for the dp-elasticsearch functionality
 type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
-	MultiSearch(ctx context.Context, searches []client.Search) ([]byte, error)
+	MultiSearch(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error)
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
