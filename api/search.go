@@ -301,5 +301,8 @@ func createIndexName(s string) string {
 }
 
 func sanitiseURLParams(str string) []string {
+	if str == "" {
+		return nil
+	}
 	return strings.Split(strings.ReplaceAll(str, " ", ""), ",")
 }
