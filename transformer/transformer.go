@@ -235,6 +235,12 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 				Count: response.Aggregations.DocCounts.Buckets[j].Count,
 			})
 		}
+		for z := 0; z < len(response.Aggregations.TopicCounts.Buckets); z++ {
+			search7xResponse.Topics = append(search7xResponse.Topics, models.Topic{
+				Type:  response.Aggregations.TopicCounts.Buckets[z].Key,
+				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
+			})
+		}
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			search7xResponse.Suggestions = append(search7xResponse.Suggestions, suggestion.Text)
 			for _, option := range suggestion.Options {

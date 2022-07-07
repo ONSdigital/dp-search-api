@@ -43,7 +43,8 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	DocCounts ESDocCounts `json:"docCounts"`
+	DocCounts   ESDocCounts `json:"docCounts"`
+	TopicCounts ESDocCounts `json:"topicCounts"`
 }
 
 type ESDocCounts struct {
@@ -94,6 +95,11 @@ type ESHighlight struct {
 	DescriptionDatasetID []*string `json:"description.datasetId"`
 }
 
+type Topic struct {
+	Type  string `json:"type"`
+	Count int    `json:"count"`
+}
+
 // ********************************************************
 // Structs representing the transformed response
 // ********************************************************
@@ -102,6 +108,7 @@ type SearchResponse struct {
 	Es710               bool               `json:"es_710"`
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
+	Topics              []Topic            `json:"topics"`
 	ContentTypes        []ContentType      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`
 	Suggestions         []string           `json:"suggestions,omitempty"`

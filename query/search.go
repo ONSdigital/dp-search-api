@@ -76,6 +76,8 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/contentHeader.tmpl",
 		"templates/search/v710/countHeader.tmpl",
 		"templates/search/v710/countQuery.tmpl",
+		"templates/search/v710/topicCountHeader.tmpl",
+		"templates/search/v710/topicCountQuery.tmpl",
 		"templates/search/v710/coreQuery.tmpl",
 		"templates/search/v710/weightedQuery.tmpl",
 		"templates/search/v710/contentFilters.tmpl",
