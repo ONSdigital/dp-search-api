@@ -43,8 +43,8 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	DocCounts   ESDocCounts `json:"docCounts"`
-	TopicCounts ESDocCounts `json:"topicCounts"`
+	ContentTypeCounts ESDocCounts `json:"contentTypeCounts"`
+	TopicCounts       ESDocCounts `json:"topicCounts"`
 }
 
 type ESDocCounts struct {

@@ -229,10 +229,10 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 		for i := 0; i < len(response.Hits.Hits); i++ {
 			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
-		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
+		for j := 0; j < len(response.Aggregations.ContentTypeCounts.Buckets); j++ {
 			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
-				Type:  response.Aggregations.DocCounts.Buckets[j].Key,
-				Count: response.Aggregations.DocCounts.Buckets[j].Count,
+				Type:  response.Aggregations.ContentTypeCounts.Buckets[j].Key,
+				Count: response.Aggregations.ContentTypeCounts.Buckets[j].Count,
 			})
 		}
 		for z := 0; z < len(response.Aggregations.TopicCounts.Buckets); z++ {

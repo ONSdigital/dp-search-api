@@ -310,8 +310,8 @@ func prepareESMockResponse() models.EsResponses {
 			},
 		},
 		Aggregations: models.ESResponseAggregations{
-			DocCounts:   esDoccount,
-			TopicCounts: esTopicCount,
+			ContentTypeCounts: esDoccount,
+			TopicCounts:       esTopicCount,
 		},
 		Suggest: models.Suggest{
 			SearchSuggest: []models.SearchSuggest{
