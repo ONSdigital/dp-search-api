@@ -2,6 +2,7 @@
     "es_710":true,
     "count": 2,
     "took": 96,
+    "topics": [],
     "content_types": [
         {
             "type": "article",

@@ -66,7 +66,7 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, high
 	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItemLegacy{},
-		ContentTypes: []models.ContentType{},
+		ContentTypes: []models.FilterCount{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -164,8 +164,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highl
 	return overlaid
 }
 
-func buildContentTypes(bucket models.ESBucketLegacy) models.ContentType {
-	return models.ContentType{
+func buildContentTypes(bucket models.ESBucketLegacy) models.FilterCount {
+	return models.FilterCount{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
@@ -222,7 +222,8 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 	search7xResponse := models.SearchResponse{
 		Count:        esresponses.Responses[0].Hits.Total,
 		Items:        []models.ESSourceDocument{},
-		ContentTypes: []models.ContentType{},
+		Topics:       []models.FilterCount{},
+		ContentTypes: []models.FilterCount{},
 	}
 	var took int
 	for _, response := range esresponses.Responses {
@@ -230,13 +231,13 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
 		for j := 0; j < len(response.Aggregations.ContentTypeCounts.Buckets); j++ {
-			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
+			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.FilterCount{
 				Type:  response.Aggregations.ContentTypeCounts.Buckets[j].Key,
 				Count: response.Aggregations.ContentTypeCounts.Buckets[j].Count,
 			})
 		}
 		for z := 0; z < len(response.Aggregations.TopicCounts.Buckets); z++ {
-			search7xResponse.Topics = append(search7xResponse.Topics, models.Topic{
+			search7xResponse.Topics = append(search7xResponse.Topics, models.FilterCount{
 				Type:  response.Aggregations.TopicCounts.Buckets[z].Key,
 				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
 			})

@@ -211,7 +211,7 @@ func TestTransform(t *testing.T) {
 			DatasetID: "",
 		},
 	}
-	expectedTopic1 := models.Topic{Type: "topic1", Count: 1}
+	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
 
 	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
 		transformer := New(true)
