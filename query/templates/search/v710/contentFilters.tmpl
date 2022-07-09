@@ -1,14 +1,20 @@
-{{ if or .URIPrefix .TopicWildcard}}
 ,
 "filter" : [
-{{if or .URIPrefix .TopicWildcard}}
-  { "bool": { "should": [
-
-  {{ template "contentFilterOnURIPrefix.tmpl" . }}
-  {{ template "contentFilterOnTopicWildcard.tmpl" . }}
-
-    ]}
-  }
- {{end}}
+{
+	"bool": {
+		"must": [
+		   { "bool": { "should": [
+		       {{ template "contentTypeFilter.tmpl" . }}
+		   ]}}
+           {{if or .URIPrefix .TopicWildcard .Topic}}
+           ,{ "bool": { "should": [
+                                  {{ template "topicFilters.tmpl" . }}
+                                  {{ template "contentFilterOnURIPrefix.tmpl" . }}
+                                  {{ template "contentFilterOnTopicWildcard.tmpl" . }}
+                                  ]}
+          }
+         {{end}}
+          ]
+	}
+}
 ]
-{{end}}

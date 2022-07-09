@@ -47,6 +47,7 @@ func TestNewQueryBuilder(t *testing.T) {
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByFirstLetter.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "topicFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "canonicalFilters.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentTypeFilter.tmpl")
 		So(err, ShouldBeNil)
 	})
 }
