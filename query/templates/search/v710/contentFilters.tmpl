@@ -10,7 +10,7 @@
             ]
           }
         }
-        {{ if or.URIPrefix.TopicWildcard.Topic }}
+        {{if or .URIPrefix .TopicWildcard .Topic}}
         , {
           "bool": {
             "should": [
