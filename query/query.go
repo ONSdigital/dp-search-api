@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"text/template"
 
-	"github.com/ONSdigital/dp-elasticsearch/v4/client"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/pkg/errors"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"

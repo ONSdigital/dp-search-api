@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	dpEs "github.com/ONSdigital/dp-elasticsearch/v4"
-	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
-	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v4/client/elasticsearch/v2"
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/api"

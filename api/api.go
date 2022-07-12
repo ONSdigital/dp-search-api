@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-authorisation/auth"
-	"github.com/ONSdigital/dp-elasticsearch/v4/client"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
