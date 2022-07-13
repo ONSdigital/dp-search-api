@@ -6,7 +6,7 @@ package api
 import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
-	"github.com/ONSdigital/dp-elasticsearch/v4/client"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"net/http"
 	"sync"
 )
