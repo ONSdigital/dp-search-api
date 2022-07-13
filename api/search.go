@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ONSdigital/dp-elasticsearch/v4/client"
+	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"

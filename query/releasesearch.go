@@ -16,7 +16,7 @@ import (
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 
-	esClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
+	esClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 

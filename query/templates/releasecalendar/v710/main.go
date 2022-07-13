@@ -9,8 +9,8 @@ import (
 	"log"
 	"os"
 
-	dpEs "github.com/ONSdigital/dp-elasticsearch/v4"
-	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 )
