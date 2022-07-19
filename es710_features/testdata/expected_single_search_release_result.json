@@ -1,0 +1,29 @@
+{
+  "took":11,
+  "breakdown":{
+    "total":1,
+    "postponed": 1,
+    "published": 2466,
+    "cancelled": 45
+  },
+  "releases":[
+    {
+      "uri":"/releases/estimatingsuicideamonghighereducationstudentsenglandandwales",
+      "date_changes":  [{"previous_date": "2018-06-01", "change_notice": "changed it"}],
+      "description":{
+        "title":"Estimating suicide among higher education students, England and Wales: Experimental Statistics",
+        "summary":"Estimates of suicides among higher education students by sex, age and ethnicity. Analysis based on mortality records linked to Higher Education Statistics Agency (HESA) Student records. ",
+        "release_date":"2018-06-25T08:30:00.000Z",
+        "published":false,
+        "cancelled":false,
+        "finalised":true,
+        "postponed":true,
+        "census":false
+      },
+      "highlight":{
+        "summary":"Estimates of suicides among higher \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e students by sex, age and ethnicity. Analysis based on mortality records linked to Higher \u003cem class=\"ons-highlight\"\u003eEducation\u003c/em\u003e Statistics Agency (HESA) Student records. ",
+        "title":"Estimating suicide among higher \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e students, England and \u003cem class=\"ons-highlight\"\u003eWales\u003c/em\u003e: Experimental Statistics"
+      }
+    }
+  ]
+}

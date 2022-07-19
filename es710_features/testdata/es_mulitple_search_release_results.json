@@ -75,7 +75,7 @@
               "title":"Young people not in education, employment or training (NEET), UK: August 2018",
               "summary":"Estimates of young people (aged 16 to 24) who are not in education, employment or training, by age and sex.",
               "release_date":"2018-08-23T08:30:00.000Z",
-               "topics":null,
+              "topics":null,
               "cancelled":false,
               "finalised":false,
               "published":false,
@@ -100,7 +100,7 @@
         "breakdown":{
           "buckets":{
             "provisional":{
-              "doc_count":15
+              "doc_count":1
             },
             "confirmed":{
               "doc_count":0

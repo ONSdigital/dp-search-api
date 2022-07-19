@@ -66,7 +66,7 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, high
 	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItemLegacy{},
-		ContentTypes: []models.ContentType{},
+		ContentTypes: []models.FilterCount{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -164,8 +164,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highl
 	return overlaid
 }
 
-func buildContentTypes(bucket models.ESBucketLegacy) models.ContentType {
-	return models.ContentType{
+func buildContentTypes(bucket models.ESBucketLegacy) models.FilterCount {
+	return models.FilterCount{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
@@ -202,6 +202,7 @@ func (t *Transformer) TransformSearchResponse(
 	}
 
 	sr := t.transform(&esResponse, highlight)
+	sr.Es710 = true
 
 	needAdditionalSuggestions := numberOfSearchTerms(query)
 	if needAdditionalSuggestions > 1 {
@@ -219,18 +220,26 @@ func (t *Transformer) TransformSearchResponse(
 // Transform the raw ES to search response
 func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
 	search7xResponse := models.SearchResponse{
+		Count:        esresponses.Responses[0].Hits.Total,
 		Items:        []models.ESSourceDocument{},
-		ContentTypes: []models.ContentType{},
+		Topics:       []models.FilterCount{},
+		ContentTypes: []models.FilterCount{},
 	}
 	var took int
 	for _, response := range esresponses.Responses {
 		for i := 0; i < len(response.Hits.Hits); i++ {
 			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
-		for j := 0; j < len(response.Aggregations.DocCounts.Buckets); j++ {
-			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.ContentType{
-				Type:  response.Aggregations.DocCounts.Buckets[j].Key,
-				Count: response.Aggregations.DocCounts.Buckets[j].Count,
+		for j := 0; j < len(response.Aggregations.ContentTypeCounts.Buckets); j++ {
+			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.FilterCount{
+				Type:  response.Aggregations.ContentTypeCounts.Buckets[j].Key,
+				Count: response.Aggregations.ContentTypeCounts.Buckets[j].Count,
+			})
+		}
+		for z := 0; z < len(response.Aggregations.TopicCounts.Buckets); z++ {
+			search7xResponse.Topics = append(search7xResponse.Topics, models.FilterCount{
+				Type:  response.Aggregations.TopicCounts.Buckets[z].Key,
+				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
 			})
 		}
 		for _, suggestion := range response.Suggest.SearchSuggest {
@@ -264,6 +273,7 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		Survey:          doc.Source.Survey,
 		Language:        doc.Source.Language,
 		DateChanges:     doc.Source.DateChanges,
+		CanonicalTopic:  doc.Source.CanonicalTopic,
 	}
 
 	if doc.Highlight != nil && highlight {

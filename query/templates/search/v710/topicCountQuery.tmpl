@@ -1,0 +1,18 @@
+{ {{/* count query */}}
+"query" : {
+    "bool" : {
+      "must" : {
+                     {{- template "matchAll.tmpl" .}}
+             }
+      }
+   },
+  "size": 0,
+  "aggregations": {
+  		"topicCounts": {
+  				"terms": {
+  					"size": 1000,
+  					"field":"topics"
+			}
+  		}
+	}
+}

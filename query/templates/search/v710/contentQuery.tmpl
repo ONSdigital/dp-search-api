@@ -6,14 +6,14 @@
  "size" : {{.Size}},
  "query" : {
      "bool" : {
-       "must" : {
+             "must" : {
                   {{- if .Term}}
                       {{- template "weightedQuery.tmpl" .}}
                    {{- else}}
                       {{- template "matchAll.tmpl" .}}
                    {{- end}}
               }
-         {{template "contentFilters.tmpl" .}}
+             {{template "contentFilters.tmpl" .}}
          }
     },
  "suggest":{

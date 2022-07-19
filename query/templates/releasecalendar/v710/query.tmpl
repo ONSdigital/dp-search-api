@@ -1,0 +1,76 @@
+"dis_max": {
+    "queries": [
+        {
+            "bool": {
+                "should": [
+                    {
+                        "match": {
+                            "title.title_no_dates": {
+                                "query": "{{.Term}}",
+                                "boost": 10.0,
+                                "minimum_should_match": "1<-2 3<80% 5<60%"
+                            }
+                        }
+                    },
+                    {
+                        "match": {
+                            "title.title_no_stem": {
+                                "query": "{{.Term}}",
+                                "boost": 10.0,
+                                "minimum_should_match": "1<-2 3<80% 5<60%"
+                            }
+                        }
+                    },
+                    {
+                        "multi_match": {
+                            "query": "{{.Term}}",
+                            "fields": [
+                                "title^10",
+                                "edition"
+                           ],
+                            "type": "cross_fields",
+                            "minimum_should_match": "3<80% 5<60%"
+                         }
+                    },
+                    {
+                        "match": {
+                            "title.title_no_synonym_no_stem": {
+                                "query": "{{.Term}}",
+                                "max_expansions": 10
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "multi_match": {
+                "query": "{{.Term}}",
+                "fields": [
+                    "summary",
+                    "meta_description"
+                ],
+                "type": "best_fields",
+                "minimum_should_match": "75%"
+            }
+        },
+        {
+            "match": {
+                "keywords": {
+                    "query": "{{.Term}}",
+                    "operator": "AND",
+                    "boost": 10.0
+                }
+            }
+        },
+        {
+            "match": {
+                "searchBoost": {
+                    "query": "{{.Term}}",
+                    "operator": "AND",
+                    "boost": 100.0
+                }
+            }
+        }
+    ]
+}

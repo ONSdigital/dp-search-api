@@ -33,7 +33,8 @@ type Option struct {
 }
 
 type ESResponseHits struct {
-	Hits []ESResponseHit `json:"hits"`
+	Total int
+	Hits  []ESResponseHit `json:"hits"`
 }
 
 type ESResponseHit struct {
@@ -42,7 +43,8 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	DocCounts ESDocCounts `json:"docCounts"`
+	ContentTypeCounts ESDocCounts `json:"contentTypeCounts"`
+	TopicCounts       ESDocCounts `json:"topicCounts"`
 }
 
 type ESDocCounts struct {
@@ -68,6 +70,7 @@ type ESSourceDocument struct {
 	Highlight       *HighlightObj       `json:"highlight,omitempty"`
 	DateChanges     []ReleaseDateChange `json:"date_changes,omitempty"`
 	Cancelled       bool                `json:"cancelled,omitempty"`
+	CanonicalTopic  string              `json:"canonical_topic"`
 	Finalised       bool                `json:"finalised,omitempty"`
 	ProvisionalDate string              `json:"provisional_date,omitempty"`
 	Published       bool                `json:"published,omitempty"`
@@ -92,13 +95,21 @@ type ESHighlight struct {
 	DescriptionDatasetID []*string `json:"description.datasetId"`
 }
 
+type FilterCount struct {
+	Type  string `json:"type"`
+	Count int    `json:"count"`
+}
+
 // ********************************************************
 // Structs representing the transformed response
 // ********************************************************
 
 type SearchResponse struct {
+	Es710               bool               `json:"es_710"`
+	Count               int                `json:"count"`
 	Took                int                `json:"took"`
-	ContentTypes        []ContentType      `json:"content_types"`
+	Topics              []FilterCount      `json:"topics"`
+	ContentTypes        []FilterCount      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`
 	Suggestions         []string           `json:"suggestions,omitempty"`
 	AdditionSuggestions []string           `json:"additional_suggestions,omitempty"`

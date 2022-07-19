@@ -470,6 +470,7 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		DataType:        searchDataImport.DataType,
 		JobID:           searchDataImport.JobID,
 		SearchIndex:     searchDataImport.SearchIndex,
+		CanonicalTopic:  searchDataImport.CanonicalTopic,
 		CDID:            searchDataImport.CDID,
 		DatasetID:       searchDataImport.DatasetID,
 		Keywords:        searchDataImport.Keywords,

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	componentTest "github.com/ONSdigital/dp-component-test"
-	es710_steps "github.com/ONSdigital/dp-search-api/es710_features/steps"
+	es710Steps "github.com/ONSdigital/dp-search-api/es710_features/steps"
 	"github.com/ONSdigital/dp-search-api/features/steps"
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
@@ -27,7 +27,7 @@ type ComponentTest struct {
 func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
 	ctx := context.Background()
 
-	apiComponent, err := es710_steps.SearchAPIComponent(c.AuthFeature)
+	apiComponent, err := es710Steps.SearchAPIComponent(c.AuthFeature)
 	if err != nil {
 		fmt.Println(ctx, "failed to create search api component - error: #{err}")
 		os.Exit(1)
@@ -113,14 +113,14 @@ func TestComponent(t *testing.T) {
 		c := &ComponentTest{}
 
 		status = godog.TestSuite{
-			Name:                 "legacy_component_tests",
+			Name:                 "component_tests",
 			ScenarioInitializer:  c.InitializeScenario,
 			TestSuiteInitializer: c.InitializeTestSuite,
 			Options:              &opts,
 		}.Run()
 
 		fmt.Println("=================================")
-		fmt.Printf("LegacyComponent test coverage: %.2f%%\n", testing.Coverage()*100)
+		fmt.Printf("Component test coverage: %.2f%%\n", testing.Coverage()*100)
 		fmt.Println("=================================")
 
 		if status != 0 {
@@ -144,14 +144,14 @@ func TestLegacyComponent(t *testing.T) {
 		c := &LegacyComponentTest{}
 
 		status = godog.TestSuite{
-			Name:                 "component_tests",
+			Name:                 "legacy_component_tests",
 			ScenarioInitializer:  c.InitializeScenario,
 			TestSuiteInitializer: c.InitializeTestSuite,
 			Options:              &opts,
 		}.Run()
 
 		fmt.Println("=================================")
-		fmt.Printf("Component test coverage: %.2f%%\n", testing.Coverage()*100)
+		fmt.Printf("LegacyComponent test coverage: %.2f%%\n", testing.Coverage()*100)
 		fmt.Println("=================================")
 
 		if status != 0 {

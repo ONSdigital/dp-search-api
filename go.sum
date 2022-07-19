@@ -59,8 +59,8 @@ github.com/ONSdigital/dp-component-test v0.6.3/go.mod h1:CfpOujIEqZS5qON7sWn0LRy
 github.com/ONSdigital/dp-component-test v0.7.0 h1:VfAxUPDSSt106qxDVF9NQ/5S9GwJaiMDpwhQZ9lybOM=
 github.com/ONSdigital/dp-component-test v0.7.0/go.mod h1:6nvnxyPDFxEhVVIciXdMJ5e2nG8wS8XGhciCtuan5xo=
 github.com/ONSdigital/dp-elasticsearch/v2 v2.3.0/go.mod h1:B+WXR1PRVgrU1/tS3UygATLVTnX+5Sp+M0w5i3LROac=
-github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4 h1:KL2DakjqKqHl1F4axYD0lSqKbRl5AlJZ17AQlp1NrhY=
-github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4/go.mod h1:s00OAPfjfNf5u8z+RcNb8Wqgwo1+KtVgnawWtumOyWg=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.6 h1:26Q6wUc9zHtR3fv0AUlAw09GwdQqEVFQsyuVM6Cn3Pk=
+github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.6/go.mod h1:s00OAPfjfNf5u8z+RcNb8Wqgwo1+KtVgnawWtumOyWg=
 github.com/ONSdigital/dp-frontend-models v1.1.0/go.mod h1:TT96P7Mi69N3Tc/jFNdbjiwG4GAaMjP26HLotFQ6BPw=
 github.com/ONSdigital/dp-healthcheck v0.0.0-20200131122546-9db6d3f0494e/go.mod h1:zighxZ/0m5u7zo0eAr8XFlA+Dz2ic7A1vna6YXvhCjQ=
 github.com/ONSdigital/dp-healthcheck v1.0.5/go.mod h1:2wbVAUHMl9+4tWhUlxYUuA1dnf2+NrwzC+So5f5BMLk=
@@ -94,10 +94,10 @@ github.com/ONSdigital/dp-rchttp v0.0.0-20190919143000-bb5699e6fd59/go.mod h1:KkW
 github.com/ONSdigital/dp-rchttp v0.0.0-20200114090501-463a529590e8/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
 github.com/ONSdigital/dp-rchttp v1.0.0 h1:K/1/gDtfMZCX1Mbmq80nZxzDirzneqA1c89ea26FqP4=
 github.com/ONSdigital/dp-rchttp v1.0.0/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
-github.com/ONSdigital/dp-search-data-extractor v0.16.0 h1:P09hDmciCntyBGqiAtQsXKNWw2w7Z/mgWEsunbMa0bE=
-github.com/ONSdigital/dp-search-data-extractor v0.16.0/go.mod h1:GDD3NRXBAR8iUGio3M3hMs0E3WgJOS65TDwaumJ09Io=
-github.com/ONSdigital/dp-search-data-importer v0.9.0 h1:OhESIGPI7iZRWkH9RokwMOxtS9T1ry8BNBpJXwCawuc=
-github.com/ONSdigital/dp-search-data-importer v0.9.0/go.mod h1:2h9KIhP0/927Cks6qIdWHjtyP1AAoAjf5SDyHZFP3+4=
+github.com/ONSdigital/dp-search-data-extractor v0.17.0 h1:NTXmqu1FMmW4PqSZg8Hz8t0R7htouMoSxqHhWXNFF0Q=
+github.com/ONSdigital/dp-search-data-extractor v0.17.0/go.mod h1:GDD3NRXBAR8iUGio3M3hMs0E3WgJOS65TDwaumJ09Io=
+github.com/ONSdigital/dp-search-data-importer v0.10.0 h1:2MC7L9Xo39+9zANk5ZbD9KTWpRJEErogVb3wY3Eyzdw=
+github.com/ONSdigital/dp-search-data-importer v0.10.0/go.mod h1:2h9KIhP0/927Cks6qIdWHjtyP1AAoAjf5SDyHZFP3+4=
 github.com/ONSdigital/go-ns v0.0.0-20191104121206-f144c4ec2e58/go.mod h1:iWos35il+NjbvDEqwtB736pyHru0MPFE/LqcwkV1wDc=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad h1:Axoxm5rF6j7LSZfm4AGBT5IwGhWIcfcOkkhy/su/UpA=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad/go.mod h1:uHT6LaUlRbJsJRrIlN31t+QLUB80tAbk6ZR9sfoHL8Y=

@@ -12,7 +12,7 @@
       },
       "hits":{
         "total":{
-          "value":16,
+          "value":1,
           "relation":"eq"
         },
         "max_score":null,
@@ -57,42 +57,6 @@
               0.2374177,
               1529915400000
             ]
-          },
-          {
-            "_index":"ons1646652430467",
-            "_type":"_doc",
-            "_id":"Young people not in education, employment or training (NEET), UK: August 2018",
-            "_score":0.04704748,
-            "_source":{
-              "uri":"/releases/youngpeoplenotineducationemploymentortrainingneetukaugust2018",
-              "type":"release",
-              "job_id":"",
-              "search_index":"",
-              "cdid":"",
-              "dataset_id":"",
-              "keywords":[],
-              "meta_description":"",
-              "title":"Young people not in education, employment or training (NEET), UK: August 2018",
-              "summary":"Estimates of young people (aged 16 to 24) who are not in education, employment or training, by age and sex.",
-              "release_date":"2018-08-23T08:30:00.000Z",
-               "topics":null,
-              "cancelled":false,
-              "finalised":false,
-              "published":false,
-              "provisional_date":"2018-08-23"
-            },
-            "highlight":{
-              "summary":[
-                "Estimates of young people (aged 16 to 24) who are not in <em class=\"ons-highlight\">education</em>, employment or training, by age and sex."
-              ],
-              "title":[
-                "Young people not in <em class=\"ons-highlight\">education</em>, employment or training (NEET), UK: August <em class=\"ons-highlight\">2018</em>"
-              ]
-            },
-            "sort":[
-              0.04704748,
-              1535013000000
-            ]
           }
         ]
       },
@@ -100,7 +64,7 @@
         "breakdown":{
           "buckets":{
             "provisional":{
-              "doc_count":15
+              "doc_count":0
             },
             "confirmed":{
               "doc_count":0

@@ -7,15 +7,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/js"
+
+	esClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
 //go:embed templates/releasecalendar/*.tmpl
+//go:embed templates/releasecalendar/v710/*.tmpl
 var releaseFS embed.FS
 
 type ParamValidator map[paramName]validator
@@ -122,6 +128,10 @@ func MustParseDate(date string) Date {
 	return d
 }
 
+func (d Date) Set() bool {
+	return !time.Time(d).IsZero()
+}
+
 func (d Date) String() string {
 	return time.Time(d).UTC().Format(dateFormat)
 }
@@ -144,8 +154,11 @@ const (
 	Relevance
 )
 
-var sortNames = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
-var esSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title.title_raw": "asc"}`, TitleDesc: `{"description.title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+var (
+	sortNames         = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
+	esSortNames       = map[Sort]string{RelDateAsc: `{"release_date": "asc"}`, RelDateDesc: `{"release_date": "desc"}`, TitleAsc: `{"title.title_raw": "asc"}`, TitleDesc: `{"title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+	legacyESSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title.title_raw": "asc"}`, TitleDesc: `{"description.title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+)
 
 type InvalidSortString string
 
@@ -163,21 +176,16 @@ func ParseSort(sort string) (Sort, error) {
 	return Invalid, InvalidSortString(sort)
 }
 
-func MustParseSort(sort string) Sort {
-	s, err := ParseSort(sort)
-	if err != nil {
-		log.Fatal(context.Background(), "MustParseSort", InvalidSortString(sort))
-	}
-
-	return s
-}
-
 func (s Sort) String() string {
 	return sortNames[s]
 }
 
 func (s Sort) ESString() string {
 	return esSortNames[s]
+}
+
+func (s Sort) LegacyESString() string {
+	return legacyESSortNames[s]
 }
 
 type ReleaseType int
@@ -222,34 +230,79 @@ func (rt ReleaseType) String() string {
 
 type ReleaseBuilder struct {
 	searchTemplates *template.Template
+	v710            bool
 }
 
-func NewReleaseBuilder() (*ReleaseBuilder, error) {
-	searchTemplate, err := template.ParseFS(releaseFS,
-		"templates/releasecalendar/search.tmpl",
-		"templates/releasecalendar/query.tmpl")
+func NewReleaseBuilder(v710 bool) (*ReleaseBuilder, error) {
+	var (
+		searchTemplate *template.Template
+		err            error
+	)
+
+	if v710 {
+		searchTemplate, err = template.ParseFS(releaseFS,
+			"templates/releasecalendar/v710/search.tmpl",
+			"templates/releasecalendar/v710/query.tmpl")
+	} else {
+		searchTemplate, err = template.ParseFS(releaseFS,
+			"templates/releasecalendar/search.tmpl",
+			"templates/releasecalendar/query.tmpl")
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
 	}
+
 	return &ReleaseBuilder{
 		searchTemplates: searchTemplate,
+		v710:            v710,
 	}, nil
 }
 
 // BuildSearchQuery builds an elastic search query from the provided search parameters for Release Calendars
-func (sb *ReleaseBuilder) BuildSearchQuery(_ context.Context, sr ReleaseSearchRequest) ([]byte, error) {
-	var doc bytes.Buffer
-	err := sb.searchTemplates.Execute(&doc, sr)
+func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest interface{}) ([]byte, error) {
+	var (
+		doc            bytes.Buffer
+		formattedQuery []byte
+	)
+
+	err := rb.searchTemplates.Execute(&doc, searchRequest)
 	if err != nil {
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
 	}
 
-	formattedQuery, err := LegacyFormatMultiQuery(doc.Bytes())
+	formattedQuery, err = legacyFormatQuery(doc.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("formating of query for elasticsearch failed: %w", err)
 	}
 
+	if rb.v710 {
+		lines := bytes.Split(formattedQuery, []byte("\n"))
+		var searches []esClient.Search
+		for i := 0; i < len(lines)-1; i += 2 {
+			searches = append(searches, esClient.Search{
+				Header: esClient.Header{Index: string(lines[i])},
+				Query:  lines[i+1],
+			})
+		}
+		formattedQuery, err = json.Marshal(searches)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return formattedQuery, nil
+}
+
+func legacyFormatQuery(rawQuery []byte) ([]byte, error) {
+	m := minify.New()
+	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
+
+	linearQuery, err := m.Bytes("application/js", rawQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
 }
 
 type ReleaseSearchRequest struct {
@@ -309,21 +362,97 @@ func (sr ReleaseSearchRequest) ReleaseTypeClause() string {
 		return buf.String()
 	case Published:
 		return fmt.Sprintf("%s, %s",
+			`{"term": {"published": true}}`, `{"term": {"cancelled": false}}`)
+	default:
+		return `{"term": {"cancelled": true}}`
+	}
+}
+
+func (sr ReleaseSearchRequest) CensusClause() string {
+	if sr.Census {
+		return `{"term": {"survey":  "census"}}`
+	}
+
+	return EmptyClause
+}
+
+func (sr ReleaseSearchRequest) HighlightClause() string {
+	if sr.Highlight {
+		return `
+			"highlight":{
+				"pre_tags":["<em class=\"ons-highlight\">"],
+				"post_tags":["</em>"],
+				"fields":{
+					"title":{"fragment_size":0,"number_of_fragments":0},
+					"summary":{"fragment_size":0,"number_of_fragments":0},
+					"keywords":{"fragment_size":0,"number_of_fragments":0}
+				}
+			}
+`
+	}
+
+	return fmt.Sprintf("%q:%s", "highlight", EmptyClause)
+}
+
+func (sr *ReleaseSearchRequest) Set(value string) error {
+	var sr2 ReleaseSearchRequest
+	err := json.Unmarshal([]byte(value), &sr2)
+	if err != nil {
+		return err
+	}
+
+	*sr = sr2
+	return nil
+}
+
+type LegacyReleaseSearchRequest struct {
+	ReleaseSearchRequest
+}
+
+func (sr LegacyReleaseSearchRequest) SortClause() string {
+	if sr.SortBy == Relevance {
+		switch sr.Type {
+		case Upcoming:
+			return fmt.Sprintf("%s, %s", legacyESSortNames[Relevance], legacyESSortNames[RelDateAsc])
+		case Published:
+			return fmt.Sprintf("%s, %s", legacyESSortNames[Relevance], legacyESSortNames[RelDateDesc])
+		case Cancelled:
+			return legacyESSortNames[Relevance]
+		}
+	}
+
+	return sr.SortBy.LegacyESString()
+}
+
+// ReleaseTypeClause returns the query clause to select the type of release
+// Note that it is possible for a Release to have both its Published and Cancelled flags true (yes indeed!)
+// In this case it is deemed cancelled
+func (sr LegacyReleaseSearchRequest) ReleaseTypeClause() string {
+	switch sr.Type {
+	case Upcoming:
+		var buf bytes.Buffer
+		buf.WriteString(legacyMainUpcomingClause(time.Now()))
+		if secondary := legacySupplementaryUpcomingClause(sr); secondary != "" {
+			buf.WriteString(Separator + secondary)
+		}
+		return buf.String()
+	case Published:
+		return fmt.Sprintf("%s, %s",
 			`{"term": {"description.published": true}}`, `{"term": {"description.cancelled": false}}`)
 	default:
 		return `{"term": {"description.cancelled": true}}`
 	}
 }
 
-func (sr ReleaseSearchRequest) CensusClause() string {
+func (sr LegacyReleaseSearchRequest) CensusClause() string {
 	if sr.Census {
-		return `{"term": {"census":  true}}`
+		return `{"term": {"census":  "true"}}`
 	}
 
-	return `{}`
+	return EmptyClause
 }
 
-func (sr ReleaseSearchRequest) HighlightClause() string {
+func (sr LegacyReleaseSearchRequest) HighlightClause() string {
 	if sr.Highlight {
 		return `
 			"highlight":{
@@ -338,11 +467,11 @@ func (sr ReleaseSearchRequest) HighlightClause() string {
 `
 	}
 
-	return `"highlight":{}`
+	return fmt.Sprintf("%q:%s", "highlight", EmptyClause)
 }
 
-func (sr *ReleaseSearchRequest) Set(value string) error {
-	var sr2 ReleaseSearchRequest
+func (sr *LegacyReleaseSearchRequest) Set(value string) error {
+	var sr2 LegacyReleaseSearchRequest
 	err := json.Unmarshal([]byte(value), &sr2)
 	if err != nil {
 		return err

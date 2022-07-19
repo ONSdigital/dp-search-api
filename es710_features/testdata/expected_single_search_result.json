@@ -1,5 +1,8 @@
 {
+    "es_710":true,
+    "count": 1,
     "took": 96,
+    "topics": [],
     "content_types": [
         {
             "type": "article",

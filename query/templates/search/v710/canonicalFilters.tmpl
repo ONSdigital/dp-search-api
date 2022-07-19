@@ -1,0 +1,7 @@
+{{range $i,$e := .Topic}}
+,{
+   "match":{
+      "canonical_topic": "{{.}}"
+   }
+}
+{{end}}

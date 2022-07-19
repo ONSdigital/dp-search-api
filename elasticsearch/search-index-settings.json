@@ -234,7 +234,7 @@
         "analyzer":"ons_synonym_stem",
         "search_analyzer":"ons_stem"
       },
-      "metaDescription":{
+      "meta_description":{
         "type":"text",
         "analyzer":"ons_standard"
       },
@@ -252,7 +252,7 @@
           }
         }
       },
-      "releaseDate":{
+      "release_date":{
         "type":"date"
       },
       "published":{
@@ -261,6 +261,10 @@
       "cancelled":{
         "type":"boolean"
       },
+      "canonical_topic":{
+        "type":"text",
+        "analyzer":"ons_standard"
+      },
       "finalised":{
         "type":"boolean"
       },
@@ -268,17 +272,19 @@
         "type":"text",
         "analyzer":"ons_standard"
       },
-      "survey":{
-        "type":"text",
-        "analyzer":"ons_standard"
+      "provisional_date":{
+        "type":"date"
       },
-      "dateChanges":{
+      "survey":{
+        "type":"keyword"
+      },
+      "date_changes":{
         "type":"nested",
         "properties":{
-          "previousDate":{
+          "previous_date":{
             "type":"date"
           },
-          "changeNotice":{
+          "change_notice":{
             "type":"text"
           }
         }

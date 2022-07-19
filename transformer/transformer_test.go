@@ -211,6 +211,7 @@ func TestTransform(t *testing.T) {
 			DatasetID: "",
 		},
 	}
+	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
 
 	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
 		transformer := New(true)
@@ -218,7 +219,7 @@ func TestTransform(t *testing.T) {
 
 		Convey("When calling a transformer", func() {
 			if transformer, ok := transformer.(*Transformer); !ok {
-				t.Error("failed to retrieve legacy transfromer")
+				t.Error("failed to retrieve transfromer")
 			} else {
 				transformedResponse := transformer.transform(&esResponse, true)
 				Convey("Then transforms unmarshalled search responses successfully", func() {
@@ -227,6 +228,7 @@ func TestTransform(t *testing.T) {
 					So(len(transformedResponse.Items), ShouldEqual, 2)
 					So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
 					So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
+					So(transformedResponse.Topics[0], ShouldResemble, expectedTopic1)
 					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
 				})
 			}
@@ -280,10 +282,23 @@ func prepareESMockResponse() models.EsResponses {
 		Key:   "product_page",
 		Count: 1,
 	}
+	topicBucket1 := models.ESBucket{
+		Key:   "topic1",
+		Count: 1,
+	}
+	topicBucket2 := models.ESBucket{
+		Key:   "topic2",
+		Count: 1,
+	}
 	buckets := []models.ESBucket{bucket1, bucket2}
 
 	esDoccount := models.ESDocCounts{
 		Buckets: buckets,
+	}
+
+	topicBuckets := []models.ESBucket{topicBucket1, topicBucket2}
+	esTopicCount := models.ESDocCounts{
+		Buckets: topicBuckets,
 	}
 
 	esResponse1 := models.EsResponse{
@@ -295,7 +310,8 @@ func prepareESMockResponse() models.EsResponses {
 			},
 		},
 		Aggregations: models.ESResponseAggregations{
-			DocCounts: esDoccount,
+			ContentTypeCounts: esDoccount,
+			TopicCounts:       esTopicCount,
 		},
 		Suggest: models.Suggest{
 			SearchSuggest: []models.SearchSuggest{

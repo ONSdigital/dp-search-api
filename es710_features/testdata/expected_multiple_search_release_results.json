@@ -1,8 +1,8 @@
 {
   "took":11,
   "breakdown":{
-    "total":16,
-    "provisional": 15,
+    "total":2,
+    "provisional": 1,
     "postponed": 1,
     "published": 2466,
     "cancelled": 45
@@ -19,13 +19,11 @@
         "cancelled":false,
         "finalised":true,
         "postponed":true,
-        "national_statistic":false,
-        "latest_release":false,
-        "contact":{
-          "name":"Sarah Caul",
-          "telephone":"+44 (0)1633 456490",
-          "email":"mortality@ons.gov.uk"
-        }
+        "census":false
+      },
+      "highlight":{
+        "summary":"Estimates of suicides among higher \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e students by sex, age and ethnicity. Analysis based on mortality records linked to Higher \u003cem class=\"ons-highlight\"\u003eEducation\u003c/em\u003e Statistics Agency (HESA) Student records. ",
+        "title":"Estimating suicide among higher \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e students, England and \u003cem class=\"ons-highlight\"\u003eWales\u003c/em\u003e: Experimental Statistics"
       }
     },
     {
@@ -38,14 +36,11 @@
         "cancelled":false,
         "finalised":false,
         "postponed":false,
-        "national_statistic":true,
-        "next_release":"22 November 2018",
-        "latest_release":false,
-        "contact":{
-          "name":"Yanitsa Petkova ",
-          "telephone":"+44 (0)1633 651599 ",
-          "email":"yanitsa.petkova@ons.gov.uk"
-        }
+        "census":false
+      },
+      "highlight":{
+        "summary":"Estimates of young people (aged 16 to 24) who are not in \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e, employment or training, by age and sex.",
+        "title":"Young people not in \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e, employment or training (NEET), UK: August \u003cem class=\"ons-highlight\"\u003e2018\u003c/em\u003e"
       }
     }
   ]

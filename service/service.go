@@ -14,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/v2/log"
+
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -130,13 +131,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	// Create the interfaces needed, and add route for the new search releases api
-	builder, err := query.NewReleaseBuilder()
+	builder, err := query.NewReleaseBuilder(cfg.ElasticVersion710)
 	if err != nil {
 		log.Fatal(ctx, "error initialising release query builder", err)
 		return nil, err
 	}
 
-	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, deprecatedESClient, transformer.NewReleaseTransformer())
+	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, deprecatedESClient, transformer.NewReleaseTransformer(cfg.ElasticVersion710), cfg.ElasticVersion710)
 
 	go func() {
 		log.Info(ctx, "search api starting")

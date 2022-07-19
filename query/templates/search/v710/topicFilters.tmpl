@@ -1,0 +1,8 @@
+{{/* topic query */}}
+      {
+         "match":{
+             "topic" :
+                    "{{ .ConcatTopic }}"
+         }
+      }
+      {{ template "canonicalFilters.tmpl" . }}

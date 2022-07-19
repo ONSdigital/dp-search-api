@@ -131,7 +131,10 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 			return
 		}
 
-		responseData, err := elasticSearchClient.MultiSearch(ctx, searches)
+		enableTotalHitsCount := true
+		responseData, err := elasticSearchClient.MultiSearch(ctx, searches, &client.QueryParams{
+			EnableTotalHitsCounter: &enableTotalHitsCount,
+		})
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
@@ -298,5 +301,8 @@ func createIndexName(s string) string {
 }
 
 func sanitiseURLParams(str string) []string {
+	if str == "" {
+		return nil
+	}
 	return strings.Split(strings.ReplaceAll(str, " ", ""), ",")
 }
