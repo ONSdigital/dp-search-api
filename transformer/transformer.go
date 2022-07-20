@@ -259,6 +259,7 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		CDID:            doc.Source.CDID,
 		DataType:        doc.Source.DataType,
 		DatasetID:       doc.Source.DatasetID,
+		Edition:         doc.Source.Edition,
 		URI:             doc.Source.URI,
 		Keywords:        doc.Source.Keywords,
 		MetaDescription: doc.Source.MetaDescription,

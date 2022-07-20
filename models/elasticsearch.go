@@ -60,6 +60,7 @@ type ESSourceDocument struct {
 	DataType        string              `json:"type"`
 	CDID            string              `json:"cdid"`
 	DatasetID       string              `json:"dataset_id"`
+	Edition         string              `json:"edition"`
 	Keywords        []string            `json:"keywords"`
 	MetaDescription string              `json:"meta_description"`
 	ReleaseDate     string              `json:"release_date,omitempty"`
