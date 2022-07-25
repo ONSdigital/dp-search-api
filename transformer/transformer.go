@@ -279,11 +279,11 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 	if doc.Highlight != nil && highlight {
 		hl := *doc.Highlight
 		esDoc.Highlight = &models.HighlightObj{
-			DatasetID:       t.overlaySingleItem(hl.DescriptionDatasetID, doc.Source.DatasetID, highlight),
-			Keywords:        t.overlayItemList(hl.DescriptionKeywords, doc.Source.Keywords, highlight),
-			MetaDescription: t.overlaySingleItem(hl.DescriptionMeta, doc.Source.MetaDescription, highlight),
-			Summary:         t.overlaySingleItem(hl.DescriptionSummary, doc.Source.Summary, highlight),
-			Title:           t.overlaySingleItem(hl.DescriptionTitle, doc.Source.Title, highlight),
+			DatasetID:       t.overlaySingleItem(hl.DatasetID, doc.Source.DatasetID, highlight),
+			Keywords:        t.overlayItemList(hl.Keywords, doc.Source.Keywords, highlight),
+			MetaDescription: t.overlaySingleItem(hl.MetaDesc, doc.Source.MetaDescription, highlight),
+			Summary:         t.overlaySingleItem(hl.Summary, doc.Source.Summary, highlight),
+			Title:           t.overlaySingleItem(hl.Title, doc.Source.Title, highlight),
 		}
 	}
 

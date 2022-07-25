@@ -88,12 +88,12 @@ type HighlightObj struct {
 }
 
 type ESHighlight struct {
-	DescriptionTitle     []*string `json:"description.title"`
-	DescriptionEdition   []*string `json:"description.edition"`
-	DescriptionSummary   []*string `json:"description.summary"`
-	DescriptionMeta      []*string `json:"description.metaDescription"`
-	DescriptionKeywords  []*string `json:"description.keywords"`
-	DescriptionDatasetID []*string `json:"description.datasetId"`
+	Title     []*string `json:"title"`
+	Edition   []*string `json:"edition"`
+	Summary   []*string `json:"summary"`
+	MetaDesc  []*string `json:"metaDescription"`
+	Keywords  []*string `json:"keywords"`
+	DatasetID []*string `json:"datasetId"`
 }
 
 type FilterCount struct {
