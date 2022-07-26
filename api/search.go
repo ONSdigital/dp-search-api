@@ -66,6 +66,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 		params := req.URL.Query()
 
 		q := params.Get("q")
+		q = sanitiseDoubleQuotes(q)
 		sort := paramGet(params, "sort", "relevance")
 
 		highlight := paramGetBool(params, "highlight", true)
@@ -305,4 +306,9 @@ func sanitiseURLParams(str string) []string {
 		return nil
 	}
 	return strings.Split(strings.ReplaceAll(str, " ", ""), ",")
+}
+
+func sanitiseDoubleQuotes(str string) string {
+	b := strconv.Quote(str)
+	return b[1 : len(b)-1]
 }
