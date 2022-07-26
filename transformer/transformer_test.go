@@ -315,7 +315,7 @@ func prepareESMockResponse() models.EsResponses {
 		},
 		Suggest: models.Suggest{
 			SearchSuggest: []models.SearchSuggest{
-				{Text: "testSuggestion"},
+				{Options: []models.Option{{Text: "testSuggestion"}}},
 			},
 		},
 	}

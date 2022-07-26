@@ -60,6 +60,7 @@ type ESSourceDocument struct {
 	DataType        string              `json:"type"`
 	CDID            string              `json:"cdid"`
 	DatasetID       string              `json:"dataset_id"`
+	Edition         string              `json:"edition"`
 	Keywords        []string            `json:"keywords"`
 	MetaDescription string              `json:"meta_description"`
 	ReleaseDate     string              `json:"release_date,omitempty"`
@@ -87,12 +88,12 @@ type HighlightObj struct {
 }
 
 type ESHighlight struct {
-	DescriptionTitle     []*string `json:"description.title"`
-	DescriptionEdition   []*string `json:"description.edition"`
-	DescriptionSummary   []*string `json:"description.summary"`
-	DescriptionMeta      []*string `json:"description.metaDescription"`
-	DescriptionKeywords  []*string `json:"description.keywords"`
-	DescriptionDatasetID []*string `json:"description.datasetId"`
+	Title     []*string `json:"title"`
+	Edition   []*string `json:"edition"`
+	Summary   []*string `json:"summary"`
+	MetaDesc  []*string `json:"metaDescription"`
+	Keywords  []*string `json:"keywords"`
+	DatasetID []*string `json:"datasetId"`
 }
 
 type FilterCount struct {

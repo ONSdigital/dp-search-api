@@ -33,24 +33,24 @@
                             "uri":"/peoplepopulationandcommunity/housing/articles/housepricestatisticsforsmallareasinenglandandwales/2015-02-17"
                         },
                         "highlight":{
-                            "description.title":[
+                            "title":[
                                 "<em class=\"highlight\">House</em> Price Statistics for Small Areas in England and Wales"
                             ],
-                            "description.edition":[
+                            "edition":[
                                 "1995 <em class=\"highlight\">to</em> 2013"
                             ],
-                            "description.summary":[
+                            "summary":[
                                 "regional <em class=\"highlight\">house</em> prices"
                             ],
-                            "description.metaDescription":[
+                            "metaDescription":[
                                 "A brief overview of average (median) <em class=\"highlight\">house</em> prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013."
                             ],
-                            "description.keywords":[
+                            "keywords":[
                                 "regional <em class=\"highlight\">house</em> prices",
                                 "area with cheapest <em class=\"highlight\">houses</em>",
                                 "area with most expensive <em class=\"highlight\">houses</em>"
                             ],
-                            "description.datasetId":[
+                            "datasetId":[
                                 "/peoplepopulationandcommunity/housing/articles/<em class=\"highlight\">house</em>pricestatisticsforsmallareasinenglandandwales/2015-02-17"
                             ]
                         },
@@ -71,7 +71,7 @@
                             "uri":"/peoplepopulationandcommunity/housing"
                         },
                         "highlight":{
-                            "description.title":[
+                            "title":[
                                 "<em class=\"highlight\">Housing</em>"
                             ]
                         },
