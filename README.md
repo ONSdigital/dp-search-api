@@ -126,18 +126,7 @@ Navigate to the root of the 'Search API' repository and build the bulk indexer b
 ```
   make build-reindex
 ```
-Then copy the reindex executable from your local environment build directory, to the remote server, by running the following command
-```
-dp scp <environment> publishing <box> ./build/reindex <location on publishing box>
-```
-For example
-```
-dp scp sandbox publishing 2 ./build/reindex .
-```
-Then ssh into the box as follows
-```
-dp ssh <environment> publishing <box>
-```
+
 Then create a build directory and move the executable into it
 ```
   mkdir build
