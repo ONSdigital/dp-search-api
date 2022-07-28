@@ -82,6 +82,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		confirmed := paramGetBool(params, "subtype-confirmed", false)
 		postponed := paramGetBool(params, "subtype-postponed", false)
 		highlight := paramGetBool(params, "highlight", true)
+		census := paramGetBool(params, "census", false)
 
 		searchReq := query.ReleaseSearchRequest{
 			Term:           queryString,
@@ -94,6 +95,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			Provisional:    provisional,
 			Confirmed:      confirmed,
 			Postponed:      postponed,
+			Census:         census,
 			Highlight:      highlight,
 		}
 
