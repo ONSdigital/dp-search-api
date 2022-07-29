@@ -16,7 +16,7 @@ type Config struct {
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
-	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"`
+	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"             json:"-"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
