@@ -87,6 +87,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 			}
 
 			esConfig.Transport = awsSignerRT
+		} else {
+			esConfig.Transport = dphttp.DefaultTransport
 		}
 
 		esClient, esClientErr = dpEs.NewClient(esConfig)
