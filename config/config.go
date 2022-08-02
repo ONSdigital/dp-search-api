@@ -16,7 +16,6 @@ type Config struct {
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
-	ServiceAuthToken           string        `envconfig:"SERVICE_AUTH_TOKEN"             json:"-"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
@@ -44,7 +43,6 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
-		ServiceAuthToken:           "",
 		ZebedeeURL:                 "http://localhost:8082",
 	}
 
