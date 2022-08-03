@@ -75,6 +75,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		esConfig := dpEsClient.Config{
 			ClientLib: dpEsClient.GoElasticV710,
 			Address:   cfg.ElasticSearchAPIURL,
+			Transport: dphttp.DefaultTransport,
 		}
 
 		if cfg.AWS.Signer {
@@ -87,8 +88,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 			}
 
 			esConfig.Transport = awsSignerRT
-		} else {
-			esConfig.Transport = dphttp.DefaultTransport
 		}
 
 		esClient, esClientErr = dpEs.NewClient(esConfig)
