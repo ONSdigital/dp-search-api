@@ -108,7 +108,7 @@ func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
 			So(query3, ShouldHaveLength, 3)
 			So(query3[0], ShouldEqual, "test")
 			So(query3[1], ShouldEqual, "query")
-			So(query3[2], ShouldEqual, "\"with quote marks\"")
+			So(query3[2], ShouldEqual, "with quote marks")
 		})
 	})
 }
