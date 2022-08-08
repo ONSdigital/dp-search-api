@@ -66,7 +66,7 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 		params := req.URL.Query()
 
 		q := params.Get("q")
-		q = sanitiseDoubleQuotes(q)
+		sanitisedQuery := sanitiseDoubleQuotes(q)
 		sort := paramGet(params, "sort", "relevance")
 
 		highlight := paramGetBool(params, "highlight", true)
@@ -116,9 +116,9 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 
 		typesParam := paramGet(params, "content_type", defaultContentTypes)
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, q, typesParam, sort, topicSlice, limit, offset, true)
+		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, sanitisedQuery, typesParam, sort, topicSlice, limit, offset, true)
 		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
+			log.Error(ctx, "creation of search query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
 			return
 		}

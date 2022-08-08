@@ -176,7 +176,7 @@ func buildAdditionalSuggestionList(query string) []string {
 
 	queryTerms := []string{}
 	for _, match := range regex.FindAllStringSubmatch(query, -1) {
-		queryTerms = append(queryTerms, match[0])
+		queryTerms = append(queryTerms, strings.Trim(match[0], "\""))
 	}
 	return queryTerms
 }
