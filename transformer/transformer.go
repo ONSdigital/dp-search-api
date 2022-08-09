@@ -174,10 +174,34 @@ func buildContentTypes(bucket models.ESBucketLegacy) models.FilterCount {
 func buildAdditionalSuggestionList(query string) []string {
 	regex := regexp.MustCompile(`"[^"]*"|\S+`)
 
+	existingQueryTerms := make(map[string]bool)
 	queryTerms := []string{}
 	for _, match := range regex.FindAllStringSubmatch(query, -1) {
-		queryTerms = append(queryTerms, strings.Trim(match[0], "\""))
+		term := strings.Trim(match[0], "\"")
+		if existingQueryTerms[term] {
+			continue
+		}
+
+		queryTerms = append(queryTerms, term)
+		existingQueryTerms[term] = true
 	}
+
+	// handle case where the the ONLY query term is in double quotes
+	if len(queryTerms) == 1 && strings.Contains(queryTerms[0], " ") {
+		terms := strings.Fields(queryTerms[0])
+
+		//reset queryTerms field
+		queryTerms = nil
+		for i := range terms {
+			if existingQueryTerms[terms[i]] {
+				continue
+			}
+
+			queryTerms = append(queryTerms, terms[i])
+			existingQueryTerms[terms[i]] = true
+		}
+	}
+
 	return queryTerms
 }
 

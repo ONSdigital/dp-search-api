@@ -109,6 +109,28 @@ func TestLegacyBuildAdditionalSuggestionsList(t *testing.T) {
 			So(query3[0], ShouldEqual, "test")
 			So(query3[1], ShouldEqual, "query")
 			So(query3[2], ShouldEqual, "with quote marks")
+
+			query4 := buildAdditionalSuggestionList("multiple multiple terms")
+			So(query4, ShouldHaveLength, 2)
+			So(query4[0], ShouldEqual, "multiple")
+			So(query4[1], ShouldEqual, "terms")
+
+			query5 := buildAdditionalSuggestionList("\"with quote marks only\"")
+			So(query5, ShouldHaveLength, 4)
+			So(query5[0], ShouldEqual, "with")
+			So(query5[1], ShouldEqual, "quote")
+			So(query5[2], ShouldEqual, "marks")
+			So(query5[3], ShouldEqual, "only")
+
+			query6 := buildAdditionalSuggestionList("\"with quote marks in terms and duplicate terms\"")
+			So(query6, ShouldHaveLength, 7)
+			So(query6[0], ShouldEqual, "with")
+			So(query6[1], ShouldEqual, "quote")
+			So(query6[2], ShouldEqual, "marks")
+			So(query6[3], ShouldEqual, "in")
+			So(query6[4], ShouldEqual, "terms")
+			So(query6[5], ShouldEqual, "and")
+			So(query6[6], ShouldEqual, "duplicate")
 		})
 	})
 }
