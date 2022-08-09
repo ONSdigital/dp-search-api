@@ -190,7 +190,7 @@ func buildAdditionalSuggestionList(query string) []string {
 	if len(queryTerms) == 1 && strings.Contains(queryTerms[0], " ") {
 		terms := strings.Fields(queryTerms[0])
 
-		//reset queryTerms field
+		// reset queryTerms field
 		queryTerms = nil
 		for i := range terms {
 			if existingQueryTerms[terms[i]] {
