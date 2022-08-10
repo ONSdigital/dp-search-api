@@ -238,9 +238,10 @@ func NewReleaseBuilder() (*ReleaseBuilder, error) {
 		searchTemplate *template.Template
 		err            error
 	)
+
 	searchTemplate, err = template.ParseFS(releaseFS,
-		"templates/releasecalendar/search.tmpl",
-		"templates/releasecalendar/query.tmpl")
+		"templates/releasecalendar/v710/search.tmpl",
+		"templates/releasecalendar/v710/query.tmpl")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
