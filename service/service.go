@@ -5,7 +5,6 @@ import (
 
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
-	legacyESClient "github.com/ONSdigital/dp-elasticsearch/v3/client/elasticsearch/v2"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/api"
@@ -63,42 +62,40 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var transformerClient api.ResponseTransformer
 
 	elasticHTTPClient := dphttp.NewClient()
-	esClient = legacyESClient.NewClientWithHTTPClient(cfg.ElasticSearchAPIURL, elasticHTTPClient)
 	// Initialise deprecatedESClient
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
 	// Initialise transformerClient
-	transformerClient = transformer.New(cfg.ElasticVersion710)
+	transformerClient = transformer.New()
 
 	// Initialse AWS signer
-	if cfg.ElasticVersion710 {
-		esConfig := dpEsClient.Config{
-			ClientLib: dpEsClient.GoElasticV710,
-			Address:   cfg.ElasticSearchAPIURL,
-			Transport: dphttp.DefaultTransport,
-		}
 
-		if cfg.AWS.Signer {
-			var awsSignerRT *awsauth.AwsSignerRoundTripper
+	esConfig := dpEsClient.Config{
+		ClientLib: dpEsClient.GoElasticV710,
+		Address:   cfg.ElasticSearchAPIURL,
+		Transport: dphttp.DefaultTransport,
+	}
 
-			awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
-			if err != nil {
-				log.Error(ctx, "failed to create aws auth round tripper", err)
-				return nil, err
-			}
+	if cfg.AWS.Signer {
+		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
-			esConfig.Transport = awsSignerRT
-		}
-
-		esClient, esClientErr = dpEs.NewClient(esConfig)
-		if esClientErr != nil {
-			log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
+		if err != nil {
+			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err
 		}
+
+		esConfig.Transport = awsSignerRT
+	}
+
+	esClient, esClientErr = dpEs.NewClient(esConfig)
+	if esClientErr != nil {
+		log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+		return nil, err
 	}
 
 	// Initialise query builder
-	queryBuilder, err := query.NewQueryBuilder(cfg.ElasticVersion710)
+	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err
@@ -125,20 +122,20 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions, cfg.ElasticVersion710)
+	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
 	if err != nil {
 		log.Fatal(ctx, "error initialising API", err)
 		return nil, err
 	}
 
 	// Create the interfaces needed, and add route for the new search releases api
-	builder, err := query.NewReleaseBuilder(cfg.ElasticVersion710)
+	builder, err := query.NewReleaseBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising release query builder", err)
 		return nil, err
 	}
 
-	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, deprecatedESClient, transformer.NewReleaseTransformer(cfg.ElasticVersion710), cfg.ElasticVersion710)
+	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, deprecatedESClient, transformer.NewReleaseTransformer())
 
 	go func() {
 		log.Info(ctx, "search api starting")

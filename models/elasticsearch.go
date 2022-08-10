@@ -106,7 +106,6 @@ type FilterCount struct {
 // ********************************************************
 
 type SearchResponse struct {
-	Es710               bool               `json:"es_710"`
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
 	Topics              []FilterCount      `json:"topics"`

@@ -127,15 +127,9 @@ type bucketContents struct {
 	Breakdown aggregation `json:"breakdown"`
 }
 
-func NewReleaseTransformer(v710 bool) api.ReleaseResponseTransformer {
+func NewReleaseTransformer() api.ReleaseResponseTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	if v710 {
-		return &ReleaseTransformer{
-			higlightReplacer: highlightReplacer,
-		}
-	}
-
-	return &LegacyReleaseTransformer{
+	return &ReleaseTransformer{
 		higlightReplacer: highlightReplacer,
 	}
 }

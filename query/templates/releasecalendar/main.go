@@ -53,7 +53,7 @@ func main() {
 			log.Fatalf("failed to read query from file: %s", err)
 		}
 	} else {
-		builder, err = query.NewReleaseBuilder(false)
+		builder, err = query.NewReleaseBuilder()
 		if err != nil {
 			log.Fatalf("failed to create builder: %s", err)
 		}
@@ -75,7 +75,7 @@ func main() {
 	}
 	fmt.Printf("\nresponse is:\n%s", responseData)
 
-	responseData, err = transformer.NewReleaseTransformer(false).TransformSearchResponse(ctx, responseData, sr.ReleaseSearchRequest, sr.Highlight)
+	responseData, err = transformer.NewReleaseTransformer().TransformSearchResponse(ctx, responseData, sr.ReleaseSearchRequest, sr.Highlight)
 	if err != nil {
 		log.Fatalf("transformation of response data failed: %s", err)
 	}

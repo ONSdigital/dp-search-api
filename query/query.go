@@ -18,14 +18,12 @@ type Builder struct {
 }
 
 // NewQueryBuilder loads the elastic search templates and returns a query builder instance
-func NewQueryBuilder(esVersion710 bool) (*Builder, error) {
+func NewQueryBuilder() (*Builder, error) {
 	var searchTemplates *template.Template
 	var err error
-	if esVersion710 {
-		searchTemplates, err = SetupV710Search()
-	} else {
-		searchTemplates, err = SetupSearch()
-	}
+
+	searchTemplates, err = SetupV710Search()
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load search templates")
 	}

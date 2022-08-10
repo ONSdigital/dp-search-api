@@ -233,28 +233,22 @@ type ReleaseBuilder struct {
 	v710            bool
 }
 
-func NewReleaseBuilder(v710 bool) (*ReleaseBuilder, error) {
+func NewReleaseBuilder() (*ReleaseBuilder, error) {
 	var (
 		searchTemplate *template.Template
 		err            error
 	)
+	searchTemplate, err = template.ParseFS(releaseFS,
+		"templates/releasecalendar/search.tmpl",
+		"templates/releasecalendar/query.tmpl")
 
-	if v710 {
-		searchTemplate, err = template.ParseFS(releaseFS,
-			"templates/releasecalendar/v710/search.tmpl",
-			"templates/releasecalendar/v710/query.tmpl")
-	} else {
-		searchTemplate, err = template.ParseFS(releaseFS,
-			"templates/releasecalendar/search.tmpl",
-			"templates/releasecalendar/query.tmpl")
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
 	}
 
 	return &ReleaseBuilder{
 		searchTemplates: searchTemplate,
-		v710:            v710,
+		v710:            true,
 	}, nil
 }
 
