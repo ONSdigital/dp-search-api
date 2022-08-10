@@ -69,7 +69,7 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler, elasticVersion710 bool) (*SearchAPI, error) {
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
 	api := &SearchAPI{
 		Router:             router,
 		QueryBuilder:       queryBuilder,
@@ -79,22 +79,13 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 		permissions:        permissions,
 	}
 
-	if elasticVersion710 {
-		router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
-	} else {
-		router.HandleFunc("/search", LegacySearchHandlerFunc(queryBuilder, api.deprecatedESClient, api.Transformer)).Methods("GET")
-	}
+	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
 	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
 	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
 	return api, nil
 }
 
-func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, legacySearcher ElasticSearcher, transformer ReleaseResponseTransformer, elasticVersion710 bool) *SearchAPI {
-	if elasticVersion710 {
-		a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
-	} else {
-		a.Router.HandleFunc("/search/releases", LegacySearchReleasesHandlerFunc(validator, builder, legacySearcher, transformer)).Methods("GET")
-	}
-
+func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, legacySearcher ElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
 	return a
 }

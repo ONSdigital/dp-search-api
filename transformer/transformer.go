@@ -22,14 +22,9 @@ type Transformer struct {
 }
 
 // New returns a new instance of Transformer ES7x
-func New(esVersion710 bool) api.ResponseTransformer {
+func New() api.ResponseTransformer {
 	highlightReplacer := strings.NewReplacer("<em class=\"highlight\">", "", "</em>", "")
-	if esVersion710 {
-		return &Transformer{
-			higlightReplacer: highlightReplacer,
-		}
-	}
-	return &LegacyTransformer{
+	return &Transformer{
 		higlightReplacer: highlightReplacer,
 	}
 }
@@ -226,7 +221,6 @@ func (t *Transformer) TransformSearchResponse(
 	}
 
 	sr := t.transform(&esResponse, highlight)
-	sr.Es710 = true
 
 	needAdditionalSuggestions := numberOfSearchTerms(query)
 	if needAdditionalSuggestions > 1 {
