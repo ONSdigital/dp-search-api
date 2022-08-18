@@ -5,8 +5,8 @@ package mocks
 
 import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/health"
-	api "github.com/ONSdigital/dp-search-api/api"
-	"github.com/ONSdigital/dp-search-api/clients"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
 	"net/http"
@@ -25,6 +25,9 @@ var _ service.Initialiser = &InitialiserMock{}
 // 		mockedInitialiser := &InitialiserMock{
 // 			DoGetAuthorisationHandlersFunc: func(cfg *config.Config) api.AuthHandler {
 // 				panic("mock out the DoGetAuthorisationHandlers method")
+// 			},
+// 			DoGetElasticSearchServerFunc: func(cfg *config.Config) (dpEsClient.Client, error) {
+// 				panic("mock out the DoGetElasticSearchServer method")
 // 			},
 // 			DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
 // 				panic("mock out the DoGetHTTPServer method")
@@ -45,8 +48,8 @@ type InitialiserMock struct {
 	// DoGetAuthorisationHandlersFunc mocks the DoGetAuthorisationHandlers method.
 	DoGetAuthorisationHandlersFunc func(cfg *config.Config) api.AuthHandler
 
-	// DoGetDatasetClientFunc mocks the DoGetDatasetClient method.
-	DoGetDatasetClientFunc func(cfg *config.Config) clients.DatasetAPIClient
+	// DoGetElasticSearchServerFunc mocks the DoGetElasticSearchServer method.
+	DoGetElasticSearchServerFunc func(cfg *config.Config) (dpEsClient.Client, error)
 
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
@@ -64,8 +67,8 @@ type InitialiserMock struct {
 			// Cfg is the cfg argument value.
 			Cfg *config.Config
 		}
-		// DoGetDatasetClient holds details about calls to the DoGetDatasetClient method.
-		DoGetDatasetClient []struct {
+		// DoGetElasticSearchServer holds details about calls to the DoGetElasticSearchServer method.
+		DoGetElasticSearchServer []struct {
 			// Cfg is the cfg argument value.
 			Cfg *config.Config
 		}
@@ -96,7 +99,7 @@ type InitialiserMock struct {
 		}
 	}
 	lockDoGetAuthorisationHandlers sync.RWMutex
-	lockDoGetDatasetClient         sync.RWMutex
+	lockDoGetElasticSearchServer   sync.RWMutex
 	lockDoGetHTTPServer            sync.RWMutex
 	lockDoGetHealthCheck           sync.RWMutex
 	lockDoGetHealthClient          sync.RWMutex
@@ -130,38 +133,37 @@ func (mock *InitialiserMock) DoGetAuthorisationHandlersCalls() []struct {
 	mock.lockDoGetAuthorisationHandlers.RLock()
 	calls = mock.calls.DoGetAuthorisationHandlers
 	mock.lockDoGetAuthorisationHandlers.RUnlock()
-	mock.lockDoGetAuthorisationHandlers.RUnlock()
 	return calls
 }
 
-// DoGetDatasetClient calls DoGetDatasetClientFunc.
-func (mock *InitialiserMock) DoGetDatasetClient(cfg *config.Config) clients.DatasetAPIClient {
-	if mock.DoGetDatasetClientFunc == nil {
-		panic("InitialiserMock.DoGetDatasetClientFunc: method is nil but Initialiser.DoGetDatasetClient was just called")
+// DoGetElasticSearchServer calls DoGetElasticSearchServerFunc.
+func (mock *InitialiserMock) DoGetElasticSearchServer(cfg *config.Config) (dpEsClient.Client, error) {
+	if mock.DoGetElasticSearchServerFunc == nil {
+		panic("InitialiserMock.DoGetElasticSearchServerFunc: method is nil but Initialiser.DoGetElasticSearchServer was just called")
 	}
 	callInfo := struct {
 		Cfg *config.Config
 	}{
 		Cfg: cfg,
 	}
-	mock.lockDoGetDatasetClient.Lock()
-	mock.calls.DoGetDatasetClient = append(mock.calls.DoGetDatasetClient, callInfo)
-	mock.lockDoGetDatasetClient.Unlock()
-	return mock.DoGetDatasetClientFunc(cfg)
+	mock.lockDoGetElasticSearchServer.Lock()
+	mock.calls.DoGetElasticSearchServer = append(mock.calls.DoGetElasticSearchServer, callInfo)
+	mock.lockDoGetElasticSearchServer.Unlock()
+	return mock.DoGetElasticSearchServerFunc(cfg)
 }
 
-// DoGetDatasetClientCalls gets all the calls that were made to DoGetDatasetClient.
+// DoGetElasticSearchServerCalls gets all the calls that were made to DoGetElasticSearchServer.
 // Check the length with:
-//     len(mockedInitialiser.DoGetDatasetClientCalls())
-func (mock *InitialiserMock) DoGetDatasetClientCalls() []struct {
+//     len(mockedInitialiser.DoGetElasticSearchServerCalls())
+func (mock *InitialiserMock) DoGetElasticSearchServerCalls() []struct {
 	Cfg *config.Config
 } {
 	var calls []struct {
 		Cfg *config.Config
 	}
-	mock.lockDoGetDatasetClient.RLock()
-	calls = mock.calls.DoGetDatasetClient
-	mock.lockDoGetDatasetClient.RUnlock()
+	mock.lockDoGetElasticSearchServer.RLock()
+	calls = mock.calls.DoGetElasticSearchServer
+	mock.lockDoGetElasticSearchServer.RUnlock()
 	return calls
 }
 

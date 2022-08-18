@@ -7,83 +7,61 @@ import (
 	"os"
 	"testing"
 
-	componentTest "github.com/ONSdigital/dp-component-test"
-	es710Steps "github.com/ONSdigital/dp-search-api/es710_features/steps"
+	"github.com/ONSdigital/dp-search-api/es710_features/steps"
+
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
 )
 
 var componentFlag = flag.Bool("component", false, "perform component tests")
 
-type ComponentTest struct {
-	AuthFeature *componentTest.AuthorizationFeature
+type Component struct {
+	*steps.Component
 }
 
-func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
-	ctx := context.Background()
-
-	apiComponent, err := es710Steps.SearchAPIComponent(c.AuthFeature)
-	if err != nil {
-		fmt.Println(ctx, "failed to create search api component - error: #{err}")
-		os.Exit(1)
-	}
-
-	apiFeature := apiComponent.InitAPIFeature()
-
-	godogCtx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-		apiFeature.Reset()
-		c.AuthFeature.Reset()
-		apiComponent.Reset()
-		return ctx, nil
-	})
-
+func (c *Component) InitializeScenario(godogCtx *godog.ScenarioContext) {
 	godogCtx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		if err := apiComponent.Close(); err != nil {
-			fmt.Println(ctx, "error occurred while closing the api component - error: #{err}")
-			os.Exit(1)
-		}
+		c.Reset()
 		return ctx, nil
 	})
-	apiComponent.RegisterSteps(godogCtx)
-	c.AuthFeature.RegisterSteps(godogCtx)
 }
 
-func (c *ComponentTest) InitializeTestSuite(ctx *godog.TestSuiteContext) {
-	ctx.BeforeSuite(func() {
-		c.AuthFeature = componentTest.NewAuthorizationFeature()
-	})
+func (c *Component) InitializeTestSuite(ctx *godog.TestSuiteContext) {
+	c.RegisterSteps(ctx.ScenarioContext())
+
 	ctx.AfterSuite(func() {
-		c.AuthFeature.Close()
+		_ = c.Close()
 	})
 }
 
 func TestComponent(t *testing.T) {
-	if *componentFlag {
-		status := 0
-
-		var opts = godog.Options{
-			Output: colors.Colored(os.Stdout),
-			Paths:  []string{"es710_features"},
-			Format: "pretty",
-		}
-
-		c := &ComponentTest{}
-
-		status = godog.TestSuite{
-			Name:                 "component_tests",
-			ScenarioInitializer:  c.InitializeScenario,
-			TestSuiteInitializer: c.InitializeTestSuite,
-			Options:              &opts,
-		}.Run()
-
-		fmt.Println("=================================")
-		fmt.Printf("Component test coverage: %.2f%%\n", testing.Coverage()*100)
-		fmt.Println("=================================")
-
-		if status != 0 {
-			t.FailNow()
-		}
-	} else {
+	if !*componentFlag {
 		t.Skip("component flag required to run component tests")
+	}
+
+	var (
+		status int
+		c      = Component{Component: steps.TestComponent(t)}
+		opts   = godog.Options{
+			Output:   colors.Colored(os.Stdout),
+			Paths:    []string{"es710_features"},
+			Format:   "pretty",
+			TestingT: t,
+		}
+	)
+
+	status = godog.TestSuite{
+		Name:                 "component_tests",
+		ScenarioInitializer:  c.InitializeScenario,
+		TestSuiteInitializer: c.InitializeTestSuite,
+		Options:              &opts,
+	}.Run()
+
+	fmt.Println("=================================")
+	fmt.Printf("Component test coverage: %.2f%%\n", testing.Coverage()*100)
+	fmt.Println("=================================")
+
+	if status != 0 {
+		t.FailNow()
 	}
 }

@@ -3,9 +3,7 @@ package service
 import (
 	"context"
 
-	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
-	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
@@ -19,14 +17,14 @@ import (
 )
 
 type Service struct {
-	api                 *api.SearchAPI
+	API                 *api.SearchAPI
 	config              *config.Config
-	elasticSearchClient elasticsearch.Client
 	healthCheck         HealthChecker
-	queryBuilder        api.QueryBuilder
-	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
+	elasticSearchClient elasticsearch.Client
+	elasticSearchServer dpEsClient.Client
+	queryBuilder        api.QueryBuilder
 	transformer         api.ResponseTransformer
 }
 
@@ -57,86 +55,60 @@ func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransfor
 
 // Run the service
 func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
-	var esClientErr error
-	var esClient dpEsClient.Client
-	var transformerClient api.ResponseTransformer
-
-	elasticHTTPClient := dphttp.NewClient()
-	// Initialise deprecatedESClient
-	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
-
-	// Initialise transformerClient
-	transformerClient = transformer.New()
-
-	// Initialse AWS signer
-
-	esConfig := dpEsClient.Config{
-		ClientLib: dpEsClient.GoElasticV710,
-		Address:   cfg.ElasticSearchAPIURL,
-		Transport: dphttp.DefaultTransport,
-	}
-
-	if cfg.AWS.Signer {
-		var awsSignerRT *awsauth.AwsSignerRoundTripper
-
-		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
-		if err != nil {
-			log.Error(ctx, "failed to create aws auth round tripper", err)
-			return nil, err
-		}
-
-		esConfig.Transport = awsSignerRT
-	}
-
-	esClient, esClientErr = dpEs.NewClient(esConfig)
-	if esClientErr != nil {
-		log.Error(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+	// Inject all external services
+	healthCheck, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
+	if err != nil {
+		log.Fatal(ctx, "could not instantiate healthcheck", err)
 		return nil, err
 	}
+	permissions := serviceList.GetAuthorisationHandlers(cfg)
+	esClient, err := serviceList.GetElasticSearchServer(cfg)
+	if err != nil {
+		log.Fatal(ctx, "could not initialise the ElasticSearch server", err)
+		return nil, err
+	}
+	// temporary workaround while we maintain the deprecatedESClient
+	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, dphttp.NewClient(), cfg.AWS.Region, cfg.AWS.Service)
 
-	// Initialise query builder
+	// Create all internal functional components
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
 		return nil, err
 	}
 
-	// Initialise authorisation handler
-	permissions := serviceList.GetAuthorisationHandlers(cfg)
-
-	// Get HealthCheck
-	healthCheck, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
-	if err != nil {
-		log.Fatal(ctx, "could not instantiate healthcheck", err)
-		return nil, err
-	}
-
-	if regErr := registerCheckers(ctx, healthCheck, esClient); regErr != nil {
-		return nil, errors.Wrap(regErr, "unable to register checkers")
-	}
-
-	router := mux.NewRouter()
-	server := serviceList.GetHTTPServer(cfg.BindAddr, router)
-
-	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
-	healthCheck.Start(ctx)
-
-	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
-	if err != nil {
-		log.Fatal(ctx, "error initialising API", err)
-		return nil, err
-	}
-
-	// Create the interfaces needed, and add route for the new search releases api
-	builder, err := query.NewReleaseBuilder()
+	releasebuilder, err := query.NewReleaseBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising release query builder", err)
 		return nil, err
 	}
 
-	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, deprecatedESClient, transformer.NewReleaseTransformer())
+	transformerClient := transformer.New()
 
+	// Create the router and populate it with handled routes in the api
+	router := mux.NewRouter()
+	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
+
+	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
+	if err != nil {
+		log.Fatal(ctx, "error initialising API", err)
+		return nil, err
+	}
+	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), releasebuilder, esClient, deprecatedESClient, transformer.NewReleaseTransformer())
+
+	// Register the checkers
+	if regErr := registerCheckers(ctx, healthCheck, esClient); regErr != nil {
+		return nil, errors.Wrap(regErr, "unable to register checkers")
+	}
+
+	// Create the server - *** this is the only place where the idea of injection of 'independent' external services breaks down; because the server
+	// explicitly needs the router, which is a major piece of internal plumbing; All the rest of the internal plumbing use the injected external services
+	server := serviceList.GetHTTPServer(cfg.BindAddr, router)
+
+	// Start the health check
+	healthCheck.Start(ctx)
+
+	// Start the server
 	go func() {
 		log.Info(ctx, "search api starting")
 		if err := server.ListenAndServe(); err != nil {
@@ -146,14 +118,14 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}()
 
 	return &Service{
-		api:                 searchAPI,
+		API:                 searchAPI,
 		config:              cfg,
-		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,
-		queryBuilder:        queryBuilder,
-		router:              router,
-		server:              server,
 		serviceList:         serviceList,
+		server:              server,
+		elasticSearchClient: *deprecatedESClient,
+		elasticSearchServer: esClient,
+		queryBuilder:        queryBuilder,
 		transformer:         transformerClient,
 	}, nil
 }
