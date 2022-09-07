@@ -9,7 +9,9 @@
         "failed":0
       },
       "hits":{
-        "total":0
+        "total":{
+          "value": 0
+        }
       },
       "aggregations":{
         "breakdown":{
@@ -43,8 +45,10 @@
         "failed":0
       },
       "hits":{
-        "total":2979,
-        "max_score":0.0,
+        "total":{
+          "value": 2979
+        },
+        "max_score":null,
         "hits":[]
       },
       "aggregations":{

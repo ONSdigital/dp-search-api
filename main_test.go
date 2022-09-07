@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	componentTest "github.com/ONSdigital/dp-component-test"
-	es710Steps "github.com/ONSdigital/dp-search-api/es710_features/steps"
+	"github.com/ONSdigital/dp-search-api/features/steps"
+
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
 )
@@ -22,7 +23,7 @@ type ComponentTest struct {
 func (c *ComponentTest) InitializeScenario(godogCtx *godog.ScenarioContext) {
 	ctx := context.Background()
 
-	apiComponent, err := es710Steps.SearchAPIComponent(c.AuthFeature)
+	apiComponent, err := steps.SearchAPIComponent(c.AuthFeature)
 	if err != nil {
 		fmt.Println(ctx, "failed to create search api component - error: #{err}")
 		os.Exit(1)
@@ -63,7 +64,7 @@ func TestComponent(t *testing.T) {
 
 		var opts = godog.Options{
 			Output: colors.Colored(os.Stdout),
-			Paths:  []string{"es710_features"},
+			Paths:  []string{"features"},
 			Format: "pretty",
 		}
 
