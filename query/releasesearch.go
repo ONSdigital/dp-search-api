@@ -21,7 +21,6 @@ import (
 )
 
 //go:embed templates/releasecalendar/*.tmpl
-//go:embed templates/releasecalendar/v710/*.tmpl
 var releaseFS embed.FS
 
 type ParamValidator map[paramName]validator
@@ -230,7 +229,6 @@ func (rt ReleaseType) String() string {
 
 type ReleaseBuilder struct {
 	searchTemplates *template.Template
-	v710            bool
 }
 
 func NewReleaseBuilder() (*ReleaseBuilder, error) {
@@ -240,8 +238,8 @@ func NewReleaseBuilder() (*ReleaseBuilder, error) {
 	)
 
 	searchTemplate, err = template.ParseFS(releaseFS,
-		"templates/releasecalendar/v710/search.tmpl",
-		"templates/releasecalendar/v710/query.tmpl")
+		"templates/releasecalendar/search.tmpl",
+		"templates/releasecalendar/query.tmpl")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
@@ -249,7 +247,6 @@ func NewReleaseBuilder() (*ReleaseBuilder, error) {
 
 	return &ReleaseBuilder{
 		searchTemplates: searchTemplate,
-		v710:            true,
 	}, nil
 }
 
@@ -265,39 +262,28 @@ func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest inte
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
 	}
 
-	formattedQuery, err = legacyFormatQuery(doc.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("formating of query for elasticsearch failed: %w", err)
-	}
-
-	if rb.v710 {
-		lines := bytes.Split(formattedQuery, []byte("\n"))
-		var searches []esClient.Search
-		for i := 0; i < len(lines)-1; i += 2 {
-			searches = append(searches, esClient.Search{
-				Header: esClient.Header{Index: string(lines[i])},
-				Query:  lines[i+1],
-			})
-		}
-		formattedQuery, err = json.Marshal(searches)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return formattedQuery, nil
-}
-
-func legacyFormatQuery(rawQuery []byte) ([]byte, error) {
 	m := minify.New()
 	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
-
-	linearQuery, err := m.Bytes("application/js", rawQuery)
+	linearQuery, err := m.Bytes("application/js", doc.Bytes())
 	if err != nil {
 		return nil, err
 	}
 
-	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
+	bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1)
+	lines := bytes.Split(linearQuery, []byte("\n"))
+	var searches []esClient.Search
+	for i := 0; i < len(lines)-1; i += 2 {
+		searches = append(searches, esClient.Search{
+			Header: esClient.Header{Index: string(lines[i])},
+			Query:  lines[i+1],
+		})
+	}
+	formattedQuery, err = json.Marshal(searches)
+	if err != nil {
+		return nil, err
+	}
+
+	return formattedQuery, nil
 }
 
 type ReleaseSearchRequest struct {
@@ -391,82 +377,6 @@ func (sr ReleaseSearchRequest) HighlightClause() string {
 
 func (sr *ReleaseSearchRequest) Set(value string) error {
 	var sr2 ReleaseSearchRequest
-	err := json.Unmarshal([]byte(value), &sr2)
-	if err != nil {
-		return err
-	}
-
-	*sr = sr2
-	return nil
-}
-
-type LegacyReleaseSearchRequest struct {
-	ReleaseSearchRequest
-}
-
-func (sr LegacyReleaseSearchRequest) SortClause() string {
-	if sr.SortBy == Relevance {
-		switch sr.Type {
-		case Upcoming:
-			return fmt.Sprintf("%s, %s", legacyESSortNames[Relevance], legacyESSortNames[RelDateAsc])
-		case Published:
-			return fmt.Sprintf("%s, %s", legacyESSortNames[Relevance], legacyESSortNames[RelDateDesc])
-		case Cancelled:
-			return legacyESSortNames[Relevance]
-		}
-	}
-
-	return sr.SortBy.LegacyESString()
-}
-
-// ReleaseTypeClause returns the query clause to select the type of release
-// Note that it is possible for a Release to have both its Published and Cancelled flags true (yes indeed!)
-// In this case it is deemed cancelled
-func (sr LegacyReleaseSearchRequest) ReleaseTypeClause() string {
-	switch sr.Type {
-	case Upcoming:
-		var buf bytes.Buffer
-		buf.WriteString(legacyMainUpcomingClause(time.Now()))
-		if secondary := legacySupplementaryUpcomingClause(sr); secondary != "" {
-			buf.WriteString(Separator + secondary)
-		}
-		return buf.String()
-	case Published:
-		return fmt.Sprintf("%s, %s",
-			`{"term": {"description.published": true}}`, `{"term": {"description.cancelled": false}}`)
-	default:
-		return `{"term": {"description.cancelled": true}}`
-	}
-}
-
-func (sr LegacyReleaseSearchRequest) CensusClause() string {
-	if sr.Census {
-		return `{"term": {"census":  "true"}}`
-	}
-
-	return EmptyClause
-}
-
-func (sr LegacyReleaseSearchRequest) HighlightClause() string {
-	if sr.Highlight {
-		return `
-			"highlight":{
-				"pre_tags":["<em class=\"ons-highlight\">"],
-				"post_tags":["</em>"],
-				"fields":{
-					"description.title":{"fragment_size":0,"number_of_fragments":0},
-					"description.summary":{"fragment_size":0,"number_of_fragments":0},
-					"description.keywords":{"fragment_size":0,"number_of_fragments":0}
-				}
-			}
-`
-	}
-
-	return fmt.Sprintf("%q:%s", "highlight", EmptyClause)
-}
-
-func (sr *LegacyReleaseSearchRequest) Set(value string) error {
-	var sr2 LegacyReleaseSearchRequest
 	err := json.Unmarshal([]byte(value), &sr2)
 	if err != nil {
 		return err

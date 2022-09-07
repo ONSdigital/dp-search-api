@@ -50,48 +50,6 @@ const (
       }
     ]}
 }`
-
-	LegacyNoProvisionalNoConfirmedPostponed = `
-{"term":{"description.finalised":true}}, {"exists":{"field":"dateChanges"}}
-`
-
-	LegacyNoProvisionalConfirmedNoPostponed = `
-{"term":{"description.finalised":true}}, {"bool":{"must_not":{"exists":{"field":"dateChanges"}}}}
-`
-
-	LegacyNoProvisionalConfirmedPostponed = `
-{"term":{"description.finalised":true}}
-`
-
-	LegacyProvisionalNoConfirmedNoPostponed = `
-{"term":{"description.finalised":false}}
-`
-
-	LegacyProvisionalNoConfirmedPostponed = `
-{"bool":{
-    "should":[
-      {"term":{"description.finalised":false}},
-      {"bool":{
-          "must":[
-            {"term":{"description.finalised":true}},
-            {"exists":{"field":"dateChanges"}}
-          ]}
-      }
-    ]}
-}`
-
-	LegacyProvisionalConfirmedNoPostponed = `
-{"bool":{
-    "should":[
-      {"term":{"description.finalised":false}},
-      {"bool":{
-          "must":[
-            {"term":{"description.finalised":true}},
-            {"bool":{"must_not":{"exists":{"field":"dateChanges"}}}}
-          ]}
-      }
-    ]}
-}`
 )
 
 func mainUpcomingClause(now time.Time) string {
@@ -113,30 +71,6 @@ func supplementaryUpcomingClause(sr ReleaseSearchRequest) string {
 		return ProvisionalNoConfirmedPostponed
 	case sr.Provisional && sr.Confirmed && !sr.Postponed:
 		return ProvisionalConfirmedNoPostponed
-	}
-
-	return ""
-}
-
-func legacyMainUpcomingClause(now time.Time) string {
-	return fmt.Sprintf("%s, %s, %s", `{"term": {"description.published": false}}`, `{"term": {"description.cancelled": false}}`,
-		fmt.Sprintf(`{"range": {"description.releaseDate": {"gte": %q}}}`, now.Format(dateFormat)))
-}
-
-func legacySupplementaryUpcomingClause(sr LegacyReleaseSearchRequest) string {
-	switch {
-	case !sr.Provisional && !sr.Confirmed && sr.Postponed:
-		return LegacyNoProvisionalNoConfirmedPostponed
-	case !sr.Provisional && sr.Confirmed && !sr.Postponed:
-		return LegacyNoProvisionalConfirmedNoPostponed
-	case !sr.Provisional && sr.Confirmed && sr.Postponed:
-		return LegacyNoProvisionalConfirmedPostponed
-	case sr.Provisional && !sr.Confirmed && !sr.Postponed:
-		return LegacyProvisionalNoConfirmedNoPostponed
-	case sr.Provisional && !sr.Confirmed && sr.Postponed:
-		return LegacyProvisionalNoConfirmedPostponed
-	case sr.Provisional && sr.Confirmed && !sr.Postponed:
-		return LegacyProvisionalConfirmedNoPostponed
 	}
 
 	return ""
