@@ -1,5 +1,5 @@
 {{- /*gotype:github.com/ONSdigital/dp-search-api/query.ReleaseSearchRequest*/ -}}
-{"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
+ons
 {
     "from": {{.From}},
     "size": {{.Size}},
@@ -13,18 +13,20 @@
                 {{end}}
             },
             "filter": [
-                {
-                    "range": {
-                         "description.releaseDate": {
-                            "from": {{.ReleasedAfter.ESString}},
-                            "to":  {{.ReleasedBefore.ESString}},
-                            "include_lower": true,
-                            "include_upper": true
-                        }
+                {"term": {"type":"release"}},
+                {"range": {
+                     "release_date": {
+                        "from": {{.ReleasedAfter.ESString}},
+                        "to":  {{.ReleasedBefore.ESString}},
+                        "include_lower": true,
+                        "include_upper": true
                     }
-                },
-                {{.ReleaseTypeClause}},
-                {{.CensusClause}}
+                }},
+                {{.ReleaseTypeClause}}
+                {{if .Census}}
+                    ,
+                    {{.CensusClause}}
+                {{end}}
              ]
         }
     },
@@ -34,12 +36,12 @@
             "filters":{
                 "other_bucket_key":"confirmed",
                 "filters":{
-                    "provisional":{"term":{"description.finalised":false}},
+                    "provisional":{"term":{"finalised":false}},
                     "postponed":{
                         "bool":{
                             "must":[
-                            {"term":{"description.finalised":true}},
-                            {"exists":{"field":"dateChanges"}}
+                            {"term":{"finalised":true}},
+                            {"exists":{"field":"date_changes"}}
                             ]
                         }
                     }
@@ -49,13 +51,13 @@
         "census" : {
             "filters":{
                 "filters":{
-                    "census":{"term":{"census":"true"}}
+                    "census":{"term":{"survey":"census"}}
                 }
             }
         }
     }
 }
-{"index" : "ons", "type": ["release"], "search_type": "dfs_query_then_fetch"}
+ons
 {
     "size":0,
     "query": {
@@ -67,17 +69,19 @@
                 {{end}}
             },
             "filter": [
-                {
-                    "range": {
-                        "description.releaseDate": {
-                            "from": {{.ReleasedAfter.ESString}},
-                            "to":  {{.ReleasedBefore.ESString}},
-                            "include_lower": true,
-                            "include_upper": true
-                        }
+                {"term": {"type":"release"}},
+                {"range": {
+                    "release_date": {
+                        "from": {{.ReleasedAfter.ESString}},
+                        "to":  {{.ReleasedBefore.ESString}},
+                        "include_lower": true,
+                        "include_upper": true
                     }
-                },
-                {{.CensusClause}}
+                }}
+                {{if .Census}}
+                    ,
+                    {{.CensusClause}}
+                {{end}}
             ]
         }
     },
@@ -89,26 +93,26 @@
                     "upcoming":{
                         "bool":{
                             "must":[
-                                {"term":{"description.published":false}},
-                                {"term":{"description.cancelled":false}},
-                                {"range":{"description.releaseDate":{"gte":{{.Now}}}}}
+                                {"term":{"published":false}},
+                                {"term":{"cancelled":false}},
+                                {"range":{"release_date":{"gte":{{.Now}}}}}
                             ]
                         }
                     },
                     "outdated":{
                         "bool":{
                             "must":[
-                                {"term":{"description.published":false}},
-                                {"term":{"description.cancelled":false}},
-                                {"range":{"description.releaseDate":{"lt":{{.Now}}}}}
+                                {"term":{"published":false}},
+                                {"term":{"cancelled":false}},
+                                {"range":{"release_date":{"lt":{{.Now}}}}}
                             ]
                         }
                     },
                     "published":{
                         "bool":{
                             "must":[
-                                {"term":{"description.published":true}},
-                                {"term":{"description.cancelled":false}}
+                                {"term":{"published":true}},
+                                {"term":{"cancelled":false}}
                             ]
                         }
                     }
@@ -119,12 +123,12 @@
                     "filters":{
                         "other_bucket_key":"confirmed",
                         "filters":{
-                            "provisional":{"term":{"description.finalised":false}},
+                            "provisional":{"term":{"finalised":false}},
                             "postponed":{
                                 "bool":{
                                     "must":[
-                                        {"term":{"description.finalised":true}},
-                                        {"exists":{"field":"dateChanges"}}
+                                        {"term":{"finalised":true}},
+                                        {"exists":{"field":"date_changes"}}
                                     ]
                                 }
                             }

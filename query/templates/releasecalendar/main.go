@@ -9,34 +9,34 @@ import (
 	"log"
 	"os"
 
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
-	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 )
 
 func main() {
 	var (
-		sr = query.LegacyReleaseSearchRequest{
-			ReleaseSearchRequest: query.ReleaseSearchRequest{
-				Size:   10,
-				SortBy: query.TitleAsc,
-				Term:   "",
-				//ReleasedAfter:  query.MustParseDate("2015-01-01"),
-				//ReleasedBefore: query.MustParseDate("2015-09-22"),
-				Type:        query.Published,
-				Provisional: true,
-				Confirmed:   true,
-				Postponed:   true,
-				//Census:      true,
-				Highlight: true,
-			}}
+		sr = query.ReleaseSearchRequest{
+			Size:   10,
+			SortBy: query.Relevance,
+			Term:   ``,
+			//ReleasedAfter:  query.MustParseDate("2015-01-01"),
+			//ReleasedBefore: query.MustParseDate("2015-09-22"),
+			Type:        query.Published,
+			Provisional: true,
+			Confirmed:   true,
+			Postponed:   true,
+			Census:      true,
+			Highlight:   true,
+		}
 		builder         *query.ReleaseBuilder
 		q, responseData []byte
 		err             error
 		ctx             = context.Background()
 		file            = flag.String("file", "", "a file containing the actual multi-query to be sent to ES (in json format)")
-		esClient        = elasticsearch.New("http://localhost:9200", dphttp.NewClient(), "eu-west-1", "es")
+		esClient, _     = dpEs.NewClient(dpEsClient.Config{ClientLib: dpEsClient.GoElasticV710, Address: "http://localhost:11200", Transport: dphttp.DefaultTransport})
 	)
 
 	flag.Var(&sr, "sr", "a searchRequest object in json format")
@@ -64,8 +64,17 @@ func main() {
 		}
 	}
 
-	fmt.Printf("\nformatted query is:\n%s", q)
-	responseData, err = esClient.MultiSearch(ctx, "ons", "release", q)
+	var searches []dpEsClient.Search
+	err = json.Unmarshal(q, &searches)
+	if err != nil {
+		log.Fatalf("failed to unmarshal searches: %s", err)
+	}
+	fmt.Println("\nsearches are:")
+	for _, s := range searches {
+		fmt.Printf("%s\n%s\n", s.Header.Index, s.Query)
+	}
+
+	responseData, err = esClient.MultiSearch(ctx, searches, nil)
 	if err != nil {
 		log.Fatalf("elasticsearch query failed: %s", err)
 	}
@@ -75,7 +84,7 @@ func main() {
 	}
 	fmt.Printf("\nresponse is:\n%s", responseData)
 
-	responseData, err = transformer.NewReleaseTransformer().TransformSearchResponse(ctx, responseData, sr.ReleaseSearchRequest, sr.Highlight)
+	responseData, err = transformer.NewReleaseTransformer().TransformSearchResponse(ctx, responseData, sr, sr.Highlight)
 	if err != nil {
 		log.Fatalf("transformation of response data failed: %s", err)
 	}
