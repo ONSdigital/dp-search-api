@@ -85,7 +85,7 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 	return api, nil
 }
 
-func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, legacySearcher ElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
+func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
 	return a
 }

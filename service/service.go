@@ -135,7 +135,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, deprecatedESClient, transformer.NewReleaseTransformer())
+	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, transformer.NewReleaseTransformer())
 
 	go func() {
 		log.Info(ctx, "search api starting")
