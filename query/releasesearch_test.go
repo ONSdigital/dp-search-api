@@ -2,11 +2,14 @@ package query
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
 	"text/template"
 	"time"
+
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -171,7 +174,8 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 	})
 
 	Convey("Should include all search parameters in elastic search query", t, func() {
-		qb := createReleaseQueryBuilderForTemplate("Term={{.Term}};" +
+		qb := createReleaseQueryBuilderForTemplate("test-index\n" +
+			"Term={{.Term}};" +
 			"From={{.From}};" +
 			"Size={{.Size}};" +
 			"SortBy={{.SortBy.ESString}};" +
@@ -194,7 +198,13 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 
 		So(err, ShouldBeNil)
 		So(query, ShouldNotBeNil)
-		queryString := string(query)
+
+		var searches []dpEsClient.Search
+		err = json.Unmarshal(query, &searches)
+		So(err, ShouldBeNil)
+		So(len(searches), ShouldEqual, 1)
+
+		queryString := string(searches[0].Query)
 		So(queryString, ShouldContainSubstring, "Term=query+term")
 		So(queryString, ShouldContainSubstring, "From=0")
 		So(queryString, ShouldContainSubstring, "Size=25")
