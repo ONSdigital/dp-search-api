@@ -24,6 +24,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 			http.Error(w, "Bad url encoding of the query parameter", http.StatusBadRequest)
 			return
 		}
+		sanitisedQuery := sanitiseDoubleQuotes(queryString)
 
 		limitParam := paramGet(params, "limit", "10")
 		limit, err := validator.Validate(ctx, "limit", limitParam)
@@ -85,7 +86,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		census := paramGetBool(params, "census", false)
 
 		searchReq := query.ReleaseSearchRequest{
-			Term:           queryString,
+			Term:           sanitisedQuery,
 			From:           offset.(int),
 			Size:           limit.(int),
 			SortBy:         sort.(query.Sort),
@@ -101,7 +102,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 
 		formattedQuery, err := builder.BuildSearchQuery(ctx, searchReq)
 		if err != nil {
-			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": sort, "limit": limit, "offset": offset})
+			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search release query", http.StatusInternalServerError)
 			return
 		}
@@ -109,7 +110,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		var searches []client.Search
 		err = json.Unmarshal(formattedQuery, &searches)
 		if err != nil {
-			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": sort, "limit": limit, "offset": offset})
+			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
 			http.Error(w, "Failed to create search release query", http.StatusInternalServerError)
 			return
 		}
