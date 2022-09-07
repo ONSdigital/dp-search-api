@@ -19,14 +19,7 @@
         "cancelled":false,
         "finalised":true,
         "postponed":true,
-        "census":false,
-        "national_statistic":false,
-        "latest_release":false,
-        "contact":{
-          "name":"Sarah Caul",
-          "telephone":"+44 (0)1633 456490",
-          "email":"mortality@ons.gov.uk"
-        }
+        "census":false
       },
       "highlight":{
         "summary":"Estimates of suicides among higher \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e students by sex, age and ethnicity. Analysis based on mortality records linked to Higher \u003cem class=\"ons-highlight\"\u003eEducation\u003c/em\u003e Statistics Agency (HESA) Student records. ",
@@ -43,15 +36,7 @@
         "cancelled":false,
         "finalised":false,
         "postponed":false,
-        "census":false,
-        "national_statistic":true,
-        "next_release":"22 November 2018",
-        "latest_release":false,
-        "contact":{
-          "name":"Yanitsa Petkova ",
-          "telephone":"+44 (0)1633 651599 ",
-          "email":"yanitsa.petkova@ons.gov.uk"
-        }
+        "census":false
       },
       "highlight":{
         "summary":"Estimates of young people (aged 16 to 24) who are not in \u003cem class=\"ons-highlight\"\u003eeducation\u003c/em\u003e, employment or training, by age and sex.",
