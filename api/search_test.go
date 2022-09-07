@@ -704,3 +704,14 @@ func newResponseTransformerMock(response []byte, err error) *ResponseTransformer
 		},
 	}
 }
+
+func TestSanitise(t *testing.T) {
+	Convey("Given a query term with quoted terms", t, func() {
+		query := `"education results for Wales" "education results for England"`
+
+		Convey("when sanitised the individual quotes in the query term should be escaped", func() {
+			sanitised := sanitiseDoubleQuotes(query)
+			So(sanitised, ShouldEqual, `\"education results for Wales\" \"education results for England\"`)
+		})
+	})
+}
