@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log"
-	"os"
 
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
@@ -21,7 +19,7 @@ func main() {
 		sr = query.ReleaseSearchRequest{
 			Size:   10,
 			SortBy: query.Relevance,
-			Term:   ``,
+			Term:   `\"Birth summary\"`,
 			//ReleasedAfter:  query.MustParseDate("2015-01-01"),
 			//ReleasedBefore: query.MustParseDate("2015-09-22"),
 			Type:        query.Published,
@@ -31,44 +29,26 @@ func main() {
 			Census:      true,
 			Highlight:   true,
 		}
-		builder         *query.ReleaseBuilder
-		q, responseData []byte
-		err             error
-		ctx             = context.Background()
-		file            = flag.String("file", "", "a file containing the actual multi-query to be sent to ES (in json format)")
-		esClient, _     = dpEs.NewClient(dpEsClient.Config{ClientLib: dpEsClient.GoElasticV710, Address: "http://localhost:11200", Transport: dphttp.DefaultTransport})
+		builder      *query.ReleaseBuilder
+		searches     []dpEsClient.Search
+		responseData []byte
+		err          error
+		ctx          = context.Background()
+		esClient, _  = dpEs.NewClient(dpEsClient.Config{ClientLib: dpEsClient.GoElasticV710, Address: "http://localhost:9200", Transport: dphttp.DefaultTransport})
 	)
 
 	flag.Var(&sr, "sr", "a searchRequest object in json format")
 	flag.Parse()
 
-	if *file != "" {
-		switch *file {
-		case "-":
-			q, err = io.ReadAll(os.Stdin)
-		default:
-			q, err = os.ReadFile(*file)
-		}
-		if err != nil {
-			log.Fatalf("failed to read query from file: %s", err)
-		}
-	} else {
-		builder, err = query.NewReleaseBuilder()
-		if err != nil {
-			log.Fatalf("failed to create builder: %s", err)
-		}
-
-		q, err = builder.BuildSearchQuery(ctx, sr)
-		if err != nil {
-			log.Fatalf("failed to build query: %s", err)
-		}
-	}
-
-	var searches []dpEsClient.Search
-	err = json.Unmarshal(q, &searches)
+	builder, err = query.NewReleaseBuilder()
 	if err != nil {
-		log.Fatalf("failed to unmarshal searches: %s", err)
+		log.Fatalf("failed to create builder: %s", err)
 	}
+	searches, err = builder.BuildSearchQuery(ctx, sr)
+	if err != nil {
+		log.Fatalf("failed to build query: %s", err)
+	}
+
 	fmt.Println("\nsearches are:")
 	for _, s := range searches {
 		fmt.Printf("%s\n%s\n", s.Header.Index, s.Query)
