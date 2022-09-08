@@ -481,7 +481,7 @@ var _ ReleaseQueryBuilder = &ReleaseQueryBuilderMock{}
 //
 // 		// make and configure a mocked ReleaseQueryBuilder
 // 		mockedReleaseQueryBuilder := &ReleaseQueryBuilderMock{
-// 			BuildSearchQueryFunc: func(ctx context.Context, request interface{}) ([]byte, error) {
+// 			BuildSearchQueryFunc: func(ctx context.Context, request interface{}) ([]client.Search, error) {
 // 				panic("mock out the BuildSearchQuery method")
 // 			},
 // 		}
@@ -492,7 +492,7 @@ var _ ReleaseQueryBuilder = &ReleaseQueryBuilderMock{}
 // 	}
 type ReleaseQueryBuilderMock struct {
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
-	BuildSearchQueryFunc func(ctx context.Context, request interface{}) ([]byte, error)
+	BuildSearchQueryFunc func(ctx context.Context, request interface{}) ([]client.Search, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -508,7 +508,7 @@ type ReleaseQueryBuilderMock struct {
 }
 
 // BuildSearchQuery calls BuildSearchQueryFunc.
-func (mock *ReleaseQueryBuilderMock) BuildSearchQuery(ctx context.Context, request interface{}) ([]byte, error) {
+func (mock *ReleaseQueryBuilderMock) BuildSearchQuery(ctx context.Context, request interface{}) ([]client.Search, error) {
 	if mock.BuildSearchQueryFunc == nil {
 		panic("ReleaseQueryBuilderMock.BuildSearchQueryFunc: method is nil but ReleaseQueryBuilder.BuildSearchQuery was just called")
 	}
