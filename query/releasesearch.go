@@ -21,6 +21,7 @@ import (
 )
 
 //go:embed templates/releasecalendar/*.tmpl
+//go:embed templates/search/v710/*.tmpl
 var releaseFS embed.FS
 
 type ParamValidator map[paramName]validator
@@ -239,7 +240,9 @@ func NewReleaseBuilder() (*ReleaseBuilder, error) {
 
 	searchTemplate, err = template.ParseFS(releaseFS,
 		"templates/releasecalendar/search.tmpl",
-		"templates/releasecalendar/query.tmpl")
+		"templates/releasecalendar/query.tmpl",
+		"templates/releasecalendar/simplequery.tmpl",
+		"templates/search/v710/coreQuery.tmpl")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to load search template: %w", err)
@@ -251,12 +254,8 @@ func NewReleaseBuilder() (*ReleaseBuilder, error) {
 }
 
 // BuildSearchQuery builds an elastic search query from the provided search parameters for Release Calendars
-func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest interface{}) ([]byte, error) {
-	var (
-		doc            bytes.Buffer
-		formattedQuery []byte
-	)
-
+func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest interface{}) ([]esClient.Search, error) {
+	var doc bytes.Buffer
 	err := rb.searchTemplates.Execute(&doc, searchRequest)
 	if err != nil {
 		return nil, fmt.Errorf("creation of search from template failed: %w", err)
@@ -278,16 +277,13 @@ func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest inte
 			Query:  lines[i+1],
 		})
 	}
-	formattedQuery, err = json.Marshal(searches)
-	if err != nil {
-		return nil, err
-	}
 
-	return formattedQuery, nil
+	return searches, nil
 }
 
 type ReleaseSearchRequest struct {
 	Term           string
+	Template       string
 	From           int
 	Size           int
 	SortBy         Sort
@@ -299,6 +295,30 @@ type ReleaseSearchRequest struct {
 	Postponed      bool
 	Census         bool
 	Highlight      bool
+}
+
+const (
+	Simple         = "!!s:"
+	SimpleExtended = "!!se:"
+	Sitewide       = "!!sw:"
+	Standard       = "!!st"
+)
+
+var TemplateNames = map[string]string{Simple: "s", SimpleExtended: "ss", Sitewide: "sw", Standard: "st"}
+
+func ParseQuery(q string) (s1, s2 string) {
+	// The following looks horrific but is probably the easiest and most efficient way to escape quotes(") in
+	// the query string (regex in golang doesn't allow negative look-behind)
+	qb := []byte(strconv.Quote(q))
+	q = string(qb[1 : len(qb)-1])
+
+	for ts, tn := range TemplateNames {
+		if strings.HasPrefix(q, ts) {
+			return strings.TrimPrefix(q, ts), tn
+		}
+	}
+
+	return q, TemplateNames[Standard]
 }
 
 func (sr *ReleaseSearchRequest) String() string {
