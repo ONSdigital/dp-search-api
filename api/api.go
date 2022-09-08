@@ -56,7 +56,7 @@ type QueryBuilder interface {
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type
 type ReleaseQueryBuilder interface {
-	BuildSearchQuery(ctx context.Context, request interface{}) ([]byte, error)
+	BuildSearchQuery(ctx context.Context, request interface{}) ([]client.Search, error)
 }
 
 // ResponseTransformer provides methods for the transform package
