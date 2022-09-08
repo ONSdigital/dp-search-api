@@ -2,14 +2,11 @@ package query
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
 	"text/template"
 	"time"
-
-	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -162,6 +159,49 @@ func TestReleaseType(t *testing.T) {
 	})
 }
 
+func TestParseQuery(t *testing.T) {
+	t.Parallel()
+	Convey("Given a query string with no template prefix", t, func() {
+		query := `A standard query`
+
+		Convey("the function return the query string exactly with the Standard template name", func() {
+			q, tmpl := ParseQuery(query)
+			So(q, ShouldEqual, `A standard query`)
+			So(tmpl, ShouldEqual, TemplateNames[Standard])
+		})
+	})
+
+	Convey("Given a query string with the prefix for the Simple template", t, func() {
+		query := `!!s:A "simple query"`
+
+		Convey("the function return the query string without the template prefix, and the Simple template name", func() {
+			q, tmpl := ParseQuery(query)
+			So(q, ShouldEqual, `A \"simple query\"`)
+			So(tmpl, ShouldEqual, TemplateNames[Simple])
+		})
+	})
+
+	Convey("Given a query string with the prefix for the Simple Extended template", t, func() {
+		query := `!!se:"A simple" +(extended query)`
+
+		Convey("the function returns the query string without the template prefix, and the Simple Extended template name", func() {
+			q, tmpl := ParseQuery(query)
+			So(q, ShouldEqual, `\"A simple\" +(extended query)`)
+			So(tmpl, ShouldEqual, TemplateNames[SimpleExtended])
+		})
+	})
+
+	Convey("Given a query string with the prefix for the Sitewide template", t, func() {
+		query := `!!sw:A simple "sitewide query"`
+
+		Convey("the function returns the query string without the template prefix, and the Sitewide template name", func() {
+			q, tmpl := ParseQuery(query)
+			So(q, ShouldEqual, `A simple \"sitewide query\"`)
+			So(tmpl, ShouldEqual, TemplateNames[Sitewide])
+		})
+	})
+}
+
 func TestBuildSearchReleaseQuery(t *testing.T) {
 	t.Parallel()
 	Convey("Should return InternalError for invalid template", t, func() {
@@ -197,14 +237,9 @@ func TestBuildSearchReleaseQuery(t *testing.T) {
 		})
 
 		So(err, ShouldBeNil)
-		So(query, ShouldNotBeNil)
+		So(len(query), ShouldEqual, 1)
 
-		var searches []dpEsClient.Search
-		err = json.Unmarshal(query, &searches)
-		So(err, ShouldBeNil)
-		So(len(searches), ShouldEqual, 1)
-
-		queryString := string(searches[0].Query)
+		queryString := string(query[0].Query)
 		So(queryString, ShouldContainSubstring, "Term=query+term")
 		So(queryString, ShouldContainSubstring, "From=0")
 		So(queryString, ShouldContainSubstring, "Size=25")
