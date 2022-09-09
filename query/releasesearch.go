@@ -298,27 +298,36 @@ type ReleaseSearchRequest struct {
 }
 
 const (
-	Simple         = "!!s:"
-	SimpleExtended = "!!se:"
-	Sitewide       = "!!sw:"
-	Standard       = "!!st"
+	simple         = "!!s:"
+	simpleExtended = "!!se:"
+	sitewide       = "!!sw:"
+	standard       = "!!st"
 )
 
-var TemplateNames = map[string]string{Simple: "s", SimpleExtended: "ss", Sitewide: "sw", Standard: "st"}
+var templateNames = map[string]string{simple: "s", simpleExtended: "ss", sitewide: "sw", standard: "st"}
 
+// ParseQuery :
+//
+// escapes double quotes (") in the given query q, so that ElasticSearch will accept them
+//
+// looks for a prefix in the given query q (which can be used to determine the type of query passed to
+// ElasticSearch)
+//
+// returns the escaped query with the prefix removed (if any was prefixed), together
+// with the name of the template to use to generate the ElasticSearch query
 func ParseQuery(q string) (s1, s2 string) {
 	// The following looks horrific but is probably the easiest and most efficient way to escape quotes(") in
 	// the query string (regex in golang doesn't allow negative look-behind)
 	qb := []byte(strconv.Quote(q))
 	q = string(qb[1 : len(qb)-1])
 
-	for ts, tn := range TemplateNames {
+	for ts, tn := range templateNames {
 		if strings.HasPrefix(q, ts) {
 			return strings.TrimPrefix(q, ts), tn
 		}
 	}
 
-	return q, TemplateNames[Standard]
+	return q, templateNames[standard]
 }
 
 func (sr *ReleaseSearchRequest) String() string {
