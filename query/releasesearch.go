@@ -155,9 +155,8 @@ const (
 )
 
 var (
-	sortNames         = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
-	esSortNames       = map[Sort]string{RelDateAsc: `{"release_date": "asc"}`, RelDateDesc: `{"release_date": "desc"}`, TitleAsc: `{"title.title_raw": "asc"}`, TitleDesc: `{"title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
-	legacyESSortNames = map[Sort]string{RelDateAsc: `{"description.releaseDate": "asc"}`, RelDateDesc: `{"description.releaseDate": "desc"}`, TitleAsc: `{"description.title.title_raw": "asc"}`, TitleDesc: `{"description.title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
+	sortNames   = map[Sort]string{RelDateAsc: "release_date_asc", RelDateDesc: "release_date_desc", TitleAsc: "title_asc", TitleDesc: "title_desc", Relevance: "relevance", Invalid: "invalid"}
+	esSortNames = map[Sort]string{RelDateAsc: `{"release_date": "asc"}`, RelDateDesc: `{"release_date": "desc"}`, TitleAsc: `{"title.title_raw": "asc"}`, TitleDesc: `{"title.title_raw": "desc"}`, Relevance: `{"_score": "desc"}`, Invalid: "invalid"}
 )
 
 type InvalidSortString string
@@ -182,10 +181,6 @@ func (s Sort) String() string {
 
 func (s Sort) ESString() string {
 	return esSortNames[s]
-}
-
-func (s Sort) LegacyESString() string {
-	return legacyESSortNames[s]
 }
 
 type ReleaseType int
