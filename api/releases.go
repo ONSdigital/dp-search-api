@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/ONSdigital/dp-search-api/query"
@@ -17,12 +16,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		queryString, err := url.QueryUnescape(params.Get("query"))
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "query", "value": params.Get("query")})
-			http.Error(w, "Bad url encoding of the query parameter", http.StatusBadRequest)
-			return
-		}
+		queryString := params.Get("query")
 		term, template := query.ParseQuery(queryString)
 
 		limitParam := paramGet(params, "limit", "10")
