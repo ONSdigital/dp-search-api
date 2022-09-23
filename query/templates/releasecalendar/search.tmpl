@@ -11,8 +11,6 @@ ons
                     {{$use := .Template}}
                     {{if eq $use "s"}}
                         {{template "simplequery.tmpl" .}}
-                    {{else if eq $use "se"}}
-                        {{template "simpleextendedquery.tmpl" .}}
                     {{else if eq $use "sw"}}
                         {{template "coreQuery.tmpl" .}}
                     {{else}}
