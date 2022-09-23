@@ -181,16 +181,6 @@ func TestParseQuery(t *testing.T) {
 		})
 	})
 
-	Convey("Given a query string with the prefix for the simple Extended template", t, func() {
-		query := `!!se:"A simple" +(extended query)`
-
-		Convey("the function returns the query string without the template prefix, and the simple Extended template name", func() {
-			q, tmpl := ParseQuery(query)
-			So(q, ShouldEqual, `\"A simple\" +(extended query)`)
-			So(tmpl, ShouldEqual, templateNames[simpleExtended])
-		})
-	})
-
 	Convey("Given a query string with the prefix for the sitewide template", t, func() {
 		query := `!!sw:A simple "sitewide query"`
 

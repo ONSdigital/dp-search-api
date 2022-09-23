@@ -298,13 +298,12 @@ type ReleaseSearchRequest struct {
 }
 
 const (
-	simple         = "!!s:"
-	simpleExtended = "!!se:"
-	sitewide       = "!!sw:"
-	standard       = "!!st"
+	simple   = "!!s:"
+	sitewide = "!!sw:"
+	standard = "!!st"
 )
 
-var templateNames = map[string]string{simple: "s", simpleExtended: "ss", sitewide: "sw", standard: "st"}
+var templateNames = map[string]string{simple: "s", sitewide: "sw", standard: "st"}
 
 // ParseQuery :
 //
