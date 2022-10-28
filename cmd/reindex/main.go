@@ -237,8 +237,10 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 				ReleaseDate: metadata.Version.ReleaseDate,
 			},
 			DatasetDetails: extractorModels.DatasetDetails{
-				Title:       metadata.DatasetDetails.Title,
-				Description: metadata.DatasetDetails.Description,
+				Title:          metadata.DatasetDetails.Title,
+				Description:    metadata.DatasetDetails.Description,
+				CanonicalTopic: metadata.DatasetDetails.CanonicalTopic,
+				Subtopics:      metadata.Subtopics,
 			},
 		}
 		if metadata.DatasetDetails.Keywords != nil {
