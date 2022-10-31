@@ -42,7 +42,7 @@
                             "summary":[
                                 "regional <em class=\"highlight\">house</em> prices"
                             ],
-                            "metaDescription":[
+                            "meta_description":[
                                 "A brief overview of average (median) <em class=\"highlight\">house</em> prices using estimates from the sale prices of residential properties in England and Wales between 1995 and 2013."
                             ],
                             "keywords":[
@@ -50,7 +50,7 @@
                                 "area with cheapest <em class=\"highlight\">houses</em>",
                                 "area with most expensive <em class=\"highlight\">houses</em>"
                             ],
-                            "datasetId":[
+                            "dataset_id":[
                                 "/peoplepopulationandcommunity/housing/articles/<em class=\"highlight\">house</em>pricestatisticsforsmallareasinenglandandwales/2015-02-17"
                             ]
                         },

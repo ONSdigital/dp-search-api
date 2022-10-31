@@ -197,7 +197,7 @@
         "type":"text",
         "analyzer":"ons_standard"
       },
-      "datasetId":{
+      "dataset_id":{
         "type":"text",
         "analyzer":"ons_standard"
       },
