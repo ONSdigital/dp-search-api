@@ -91,9 +91,9 @@ type ESHighlight struct {
 	Title     []*string `json:"title"`
 	Edition   []*string `json:"edition"`
 	Summary   []*string `json:"summary"`
-	MetaDesc  []*string `json:"metaDescription"`
+	MetaDesc  []*string `json:"meta_description"`
 	Keywords  []*string `json:"keywords"`
-	DatasetID []*string `json:"datasetId"`
+	DatasetID []*string `json:"dataset_id"`
 }
 
 type FilterCount struct {
