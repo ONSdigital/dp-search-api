@@ -231,9 +231,10 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 		if err != nil {
 			log.Fatalf("error occured while parsing url: %v", err)
 		}
-		datasetID, _, _, getIDErr := getIDsFromURI(uri)
+		datasetID, edition, _, getIDErr := getIDsFromURI(uri)
 		if getIDErr != nil {
 			datasetID = metadata.DatasetDetails.ID
+			edition = metadata.DatasetDetails.Links.Edition.ID
 		}
 		cmdData := extractorModels.CMDData{
 			UID: metadata.DatasetDetails.ID,
@@ -243,10 +244,12 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 			},
 			DatasetDetails: extractorModels.DatasetDetails{
 				Title:          metadata.DatasetDetails.Title,
-				Description:    metadata.DatasetDetails.Description,
+				Summary:        metadata.DatasetDetails.Description,
 				CanonicalTopic: metadata.DatasetDetails.CanonicalTopic,
 				Subtopics:      metadata.Subtopics,
 				DatasetID:      datasetID,
+				Edition:        edition,
+				Type:           "dataset_landing_page",
 			},
 		}
 		if metadata.DatasetDetails.Keywords != nil {
