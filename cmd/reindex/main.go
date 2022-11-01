@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -230,6 +231,10 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 		if err != nil {
 			log.Fatalf("error occured while parsing url: %v", err)
 		}
+		datasetID, _, _, getIDErr := getIDsFromURI(uri)
+		if getIDErr != nil {
+			datasetID = metadata.DatasetDetails.ID
+		}
 		cmdData := extractorModels.CMDData{
 			UID: metadata.DatasetDetails.ID,
 			URI: parsedURI.Path,
@@ -241,6 +246,7 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 				Description:    metadata.DatasetDetails.Description,
 				CanonicalTopic: metadata.DatasetDetails.CanonicalTopic,
 				Subtopics:      metadata.Subtopics,
+				DatasetID:      datasetID,
 			},
 		}
 		if metadata.DatasetDetails.Keywords != nil {
@@ -497,4 +503,20 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		})
 	}
 	return searchDIM
+}
+
+func getIDsFromURI(uri string) (datasetID, editionID, versionID string, err error) {
+	parsedURL, err := url.Parse(uri)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	s := strings.Split(parsedURL.Path, "/")
+	if len(s) < 7 {
+		return "", "", "", errors.New("not enough arguments in path for version metadata endpoint")
+	}
+	datasetID = s[2]
+	editionID = s[4]
+	versionID = s[6]
+	return
 }
