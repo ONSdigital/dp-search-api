@@ -11,7 +11,7 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.0-alpha.7
 	github.com/ONSdigital/dp-healthcheck v1.3.0
 	github.com/ONSdigital/dp-net/v2 v2.4.0
-	github.com/ONSdigital/dp-search-data-extractor v0.22.1
+	github.com/ONSdigital/dp-search-data-extractor v0.23.0
 	github.com/ONSdigital/dp-search-data-importer v0.12.0
 	github.com/ONSdigital/log.go/v2 v2.2.0
 	github.com/cucumber/godog v0.12.5
@@ -75,6 +75,6 @@ require (
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
