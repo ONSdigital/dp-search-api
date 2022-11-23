@@ -87,6 +87,7 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByTitle.tmpl",
 		"templates/search/v710/topicFilters.tmpl",
 		"templates/search/v710/canonicalFilters.tmpl",
+		"templates/search/v710/subTopicsFilters.tmpl",
 		"templates/search/v710/sortByRelevance.tmpl",
 		"templates/search/v710/sortByReleaseDate.tmpl",
 		"templates/search/v710/sortByReleaseDateAsc.tmpl",
