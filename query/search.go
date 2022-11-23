@@ -135,7 +135,3 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 
 	return formattedQuery, nil
 }
-
-func (sr searchRequest) ConcatTopic() string {
-	return strings.Join(sr.Topic, ",")
-}
