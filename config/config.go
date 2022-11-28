@@ -37,7 +37,7 @@ func Get() (*Config, error) {
 
 	cfg = &Config{
 		BindAddr:                   ":23900",
-		ElasticSearchAPIURL:        "http://localhost:9200",
+		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
