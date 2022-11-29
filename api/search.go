@@ -11,6 +11,7 @@ import (
 
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -38,10 +39,6 @@ const defaultContentTypes string = "article," +
 	"timeseries_dataset"
 
 var serverErrorMessage = "internal server error"
-
-type CreateIndexResponse struct {
-	IndexName string
-}
 
 func paramGet(params url.Values, key, defaultValue string) string {
 	value := params.Get(key)
@@ -285,7 +282,7 @@ func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	createIndexResponse := CreateIndexResponse{IndexName: indexName}
+	createIndexResponse := models.CreateIndexResponse{IndexName: indexName}
 	jsonResponse, _ := json.Marshal(createIndexResponse)
 
 	_, err = w.Write(jsonResponse)

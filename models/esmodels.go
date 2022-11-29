@@ -1,5 +1,9 @@
 package models
 
+type CreateIndexResponse struct {
+	IndexName string `json:"index_name"`
+}
+
 // Structs representing the transformed response
 type SearchResponseLegacy struct {
 	Count               int                 `json:"count"`

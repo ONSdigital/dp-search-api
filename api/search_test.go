@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -635,7 +636,7 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 				So(resp.Code, ShouldEqual, http.StatusCreated)
 				payload, err := io.ReadAll(resp.Body)
 				So(err, ShouldBeNil)
-				indexCreated := CreateIndexResponse{}
+				indexCreated := models.CreateIndexResponse{}
 				err = json.Unmarshal(payload, &indexCreated)
 				So(err, ShouldBeNil)
 
