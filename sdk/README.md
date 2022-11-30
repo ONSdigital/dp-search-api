@@ -58,7 +58,7 @@ Use the GetSearch method to send a request to find search results based on query
 ...
     // Set query parameters - no limit to which keys and values you set - please refer to swagger spec for list of available parameters
     query := url.Values{}
-	query.Add("q", "census")
+    query.Add("q", "census")
 
     resp, err := searchAPIClient.GetSearch(ctx, sdk.Options{sdk.Query: query})
     if err != nil {
@@ -75,7 +75,7 @@ Use the GetReleaseCalendarEntries method to send a request to find release calen
 ...
     // Set query parameters - no limit to which keys and values you set - please refer to swagger spec for list of available parameters
     query := url.Values{}
-	query.Add("q", "census")
+    query.Add("q", "census")
 
     resp, err := searchAPIClient.GetReleaseCalendarEntries(ctx, sdk.Options{sdk.Query: query})
     if err != nil {
