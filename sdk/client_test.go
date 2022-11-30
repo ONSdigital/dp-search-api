@@ -187,6 +187,7 @@ func TestCreateIndex(t *testing.T) {
 			Convey("Then an error should be returned ", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Status(), ShouldEqual, http.StatusUnauthorized)
+				So(err.Error(), ShouldEqual, "failed as unexpected code from search api: 401")
 
 				Convey("And the expected responde body should be nil", func() {
 					So(resp, ShouldBeNil)
