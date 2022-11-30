@@ -55,7 +55,7 @@ func (cli *Client) Checker(ctx context.Context, check *health.CheckState) error 
 }
 
 // GetReleaseCalendarEntries gets a list of release calendar entries based on the search request
-func (cli *Client) GetReleaseCalendarEntries(ctx context.Context, options Options) (*transformer.ReleaseTransformer, apiError.Error) {
+func (cli *Client) GetReleaseCalendarEntries(ctx context.Context, options Options) (*transformer.SearchReleaseResponse, apiError.Error) {
 	path := fmt.Sprintf("%s/search/releases", cli.hcCli.URL)
 	if options.Query != nil {
 		path = path + "?" + options.Query.Encode()
@@ -66,7 +66,7 @@ func (cli *Client) GetReleaseCalendarEntries(ctx context.Context, options Option
 		return nil, apiErr
 	}
 
-	var searchResponse transformer.ReleaseTransformer
+	var searchResponse transformer.SearchReleaseResponse
 
 	if err := json.Unmarshal(respInfo.Body, &searchResponse); err != nil {
 		return nil, apiError.StatusError{

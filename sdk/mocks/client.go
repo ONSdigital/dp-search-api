@@ -39,7 +39,7 @@ var _ sdk.Clienter = &ClienterMock{}
 //             CreateIndexFunc: func(ctx context.Context, options sdk.Options) (*models.CreateIndexResponse, errors.Error) {
 // 	               panic("mock out the CreateIndex method")
 //             },
-//             GetReleaseCalendarEntriesFunc: func(ctx context.Context, options sdk.Options) (*transformer.ReleaseTransformer, errors.Error) {
+//             GetReleaseCalendarEntriesFunc: func(ctx context.Context, options sdk.Options) (*transformer.SearchReleaseResponse, errors.Error) {
 // 	               panic("mock out the GetReleaseCalendarEntries method")
 //             },
 //             GetSearchFunc: func(ctx context.Context, options sdk.Options) (*models.SearchResponse, errors.Error) {
@@ -65,7 +65,7 @@ type ClienterMock struct {
 	CreateIndexFunc func(ctx context.Context, options sdk.Options) (*models.CreateIndexResponse, errors.Error)
 
 	// GetReleaseCalendarEntriesFunc mocks the GetReleaseCalendarEntries method.
-	GetReleaseCalendarEntriesFunc func(ctx context.Context, options sdk.Options) (*transformer.ReleaseTransformer, errors.Error)
+	GetReleaseCalendarEntriesFunc func(ctx context.Context, options sdk.Options) (*transformer.SearchReleaseResponse, errors.Error)
 
 	// GetSearchFunc mocks the GetSearch method.
 	GetSearchFunc func(ctx context.Context, options sdk.Options) (*models.SearchResponse, errors.Error)
@@ -186,7 +186,7 @@ func (mock *ClienterMock) CreateIndexCalls() []struct {
 }
 
 // GetReleaseCalendarEntries calls GetReleaseCalendarEntriesFunc.
-func (mock *ClienterMock) GetReleaseCalendarEntries(ctx context.Context, options sdk.Options) (*transformer.ReleaseTransformer, errors.Error) {
+func (mock *ClienterMock) GetReleaseCalendarEntries(ctx context.Context, options sdk.Options) (*transformer.SearchReleaseResponse, errors.Error) {
 	if mock.GetReleaseCalendarEntriesFunc == nil {
 		panic("ClienterMock.GetReleaseCalendarEntriesFunc: method is nil but Clienter.GetReleaseCalendarEntries was just called")
 	}

@@ -15,7 +15,7 @@ import (
 type Clienter interface {
 	Checker(ctx context.Context, check *health.CheckState) error
 	CreateIndex(ctx context.Context, options Options) (*models.CreateIndexResponse, apiError.Error)
-	GetReleaseCalendarEntries(ctx context.Context, options Options) (*transformer.ReleaseTransformer, apiError.Error)
+	GetReleaseCalendarEntries(ctx context.Context, options Options) (*transformer.SearchReleaseResponse, apiError.Error)
 	GetSearch(ctx context.Context, options Options) (*models.SearchResponse, apiError.Error)
 	Health() *healthcheck.Client
 	URL() string
