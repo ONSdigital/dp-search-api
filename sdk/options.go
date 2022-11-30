@@ -20,7 +20,7 @@ type Options struct {
 
 func setHeaders(req *http.Request, headers map[header][]string) {
 	for h := range headers {
-		for i := range h {
+		for i := range headers[h] {
 			req.Header.Add(string(h), headers[h][i])
 		}
 	}
