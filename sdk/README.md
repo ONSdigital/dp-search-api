@@ -3,8 +3,9 @@ dp-search-api SDK
 
 ## Overview
 
-This API contains a client with convenience functions for interacting with the search api from other applications.
-It also contains reusable structs representing models used as payloads in API endpoints.
+The search API contains a Go client for interacting with the API. The client contains a methods for each API endpoint
+so that any Go application wanting to interact with the search api can do so. Please refer to the [swagger specification](../swagger.yaml)
+as the source of truth of how each endpoint works.
 
 ## Example use of the API SDK
 
