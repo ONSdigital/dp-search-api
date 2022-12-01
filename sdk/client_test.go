@@ -177,7 +177,6 @@ func TestCreateIndex(t *testing.T) {
 	})
 
 	Convey("Given a 401 response from search api", t, func() {
-
 		httpClient := newMockHTTPClient(&http.Response{StatusCode: http.StatusUnauthorized}, nil)
 		searchAPIClient := newSearchAPIClient(t, httpClient)
 
@@ -205,7 +204,6 @@ func TestCreateIndex(t *testing.T) {
 	})
 
 	Convey("Given a 500 response from search api", t, func() {
-
 		httpClient := newMockHTTPClient(&http.Response{StatusCode: http.StatusInternalServerError}, nil)
 		searchAPIClient := newSearchAPIClient(t, httpClient)
 
