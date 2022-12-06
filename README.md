@@ -43,6 +43,15 @@ environment variables, or with a link to a configuration guide.
 | SERVICE_AUTH_TOKEN           | ""                       | The service auth token only gets used by the bulk indexer [Running Bulk Indexer](#running-bulk-indexer)
 | ZEBEDEE_URL                  | http://localhost:8082    | The URL to Zebedee (for authorisation)
 
+### API documentation
+
+Documentation of the API interface is described using swagger 2.0. This specification can be found [here](./swagger.yaml).
+
+### Go SDK - Client Package
+
+Applications trying to interact with the API can use the Go SDK package which contains a list of client methods that are maintained to align with
+the API. For futher reading on how to use the client follow this [link](./sdk/README.md).
+
 ### Connecting to AWS Elasticsearch cluster (dev only)
 
 #### Prerequisites

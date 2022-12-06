@@ -39,8 +39,10 @@ type Component struct {
 // SearchAPIComponent creates a search api component
 func SearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Component, err error) {
 	c = &Component{
-		HTTPServer: &http.Server{},
-		svcErrors:  make(chan error),
+		HTTPServer: &http.Server{
+			ReadHeaderTimeout: 5,
+		},
+		svcErrors: make(chan error),
 	}
 
 	ctx := context.Background()
