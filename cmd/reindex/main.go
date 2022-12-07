@@ -226,7 +226,13 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 
 func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
 	for metadata := range metadataChan {
-		uri := metadata.DatasetLinks.LatestVersion.URL
+		var uri string
+		if len(metadata.DatasetLinks.LatestVersion.URL) > 0 {
+			uri = metadata.DatasetLinks.LatestVersion.URL
+		} else {
+			uri = metadata.DatasetDetails.Links.Version.URL
+		}
+
 		parsedURI, err := url.Parse(uri)
 		if err != nil {
 			log.Fatalf("error occured while parsing url: %v", err)
