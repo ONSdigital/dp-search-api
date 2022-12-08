@@ -229,8 +229,10 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 		var uri string
 		if len(metadata.DatasetLinks.LatestVersion.URL) > 0 {
 			uri = metadata.DatasetLinks.LatestVersion.URL
-		} else {
+		} else if len(metadata.DatasetDetails.Links.Version.URL) > 0 {
 			uri = metadata.DatasetDetails.Links.Version.URL
+		} else {
+			uri = metadata.Version.Links.Version.URL
 		}
 
 		parsedURI, err := url.Parse(uri)
