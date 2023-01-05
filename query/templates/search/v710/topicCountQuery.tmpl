@@ -8,11 +8,16 @@
    },
   "size": 0,
   "aggregations": {
-  		"topicCounts": {
-  				"terms": {
-  					"size": 1000,
-  					"field":"topics"
+		"topicCounts": {
+			"terms": {
+				"size": 1000,
+				"field": "topics"
 			}
-  		}
-	}
+		},
+		"distinct_topics_count": {
+			"cardinality": {
+				"field": "topics"
+			}
+		}
+ }
 }

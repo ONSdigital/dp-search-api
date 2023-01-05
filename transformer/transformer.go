@@ -260,6 +260,7 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
 			})
 		}
+		search7xResponse.DistinctTopicCount = response.Aggregations.DistinctTopicCount.Value
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			for _, option := range suggestion.Options {
 				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)
