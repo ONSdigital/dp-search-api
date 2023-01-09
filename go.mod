@@ -1,6 +1,6 @@
 module github.com/ONSdigital/dp-search-api
 
-go 1.17
+go 1.19
 
 replace github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 
