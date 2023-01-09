@@ -48,5 +48,12 @@ Feature: Search endpoint should return data for requested search parameter
          And the response header "Content-Type" should be "application/json;charset=utf-8"
          And the response body is the same as the json in "./features/testdata/expected_single_topic_search_result.json"
 
+    Scenario: When filtering search results with multiple valid topics, I get multiple docs returned and also a distinct count of the topics.
+         Given elasticsearch returns multiple items with distinct topic count in search response
+         When I GET "/search?topics=123,004"
+         Then the HTTP status code should be "200"
+         And the response header "Content-Type" should be "application/json;charset=utf-8"
+         And the response body is the same as the json in "./features/testdata/expected_multiple_topics_search_result_with_distinct_topic_count.json"
+
 
 
