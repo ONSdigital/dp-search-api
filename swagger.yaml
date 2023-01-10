@@ -208,6 +208,10 @@ definitions:
         type: number
         description: "Time taken to execute query in milliseconds"
         example: 530
+      distinct_topic_count:
+        type: number
+        description: "Unique topics count"
+        example: 10
       content_types:
         type: array
         description: "List of content types included in results"
@@ -237,6 +241,7 @@ definitions:
     required:
       - count
       - took
+      - distinct_topic_count
       - content_types
       - items
 
