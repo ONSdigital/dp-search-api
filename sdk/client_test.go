@@ -137,8 +137,9 @@ func TestCreateIndex(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	headers := make(map[header][]string)
-	headers[Authorisation] = []string{"Bearer authorised-user"}
+	headers := http.Header{
+		Authorization: {"Bearer authorised-user"},
+	}
 
 	Convey("Given request is authorised to create a new search index", t, func() {
 		body, err := json.Marshal(createIndexResponse)
@@ -169,7 +170,7 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
-						So(doCalls[0].Req.Header["Authorisation"], ShouldResemble, []string{"Bearer authorised-user"})
+						So(doCalls[0].Req.Header["Authorization"], ShouldResemble, []string{"Bearer authorised-user"})
 					})
 				})
 			})
@@ -196,7 +197,7 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
-						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
 					})
 				})
 			})
@@ -222,7 +223,7 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
-						So(doCalls[0].Req.Header["Authorisation"], ShouldResemble, []string{"Bearer authorised-user"})
+						So(doCalls[0].Req.Header["Authorization"], ShouldResemble, []string{"Bearer authorised-user"})
 					})
 				})
 			})
@@ -266,7 +267,7 @@ func TestGetSearch(t *testing.T) {
 						So(doCalls[0].Req.Method, ShouldEqual, "GET")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
 						So(doCalls[0].Req.URL.Query().Get("q"), ShouldEqual, "census")
-						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
 					})
 				})
 			})
@@ -310,7 +311,7 @@ func TestGetReleaseCalendar(t *testing.T) {
 						So(doCalls[0].Req.Method, ShouldEqual, "GET")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search/releases")
 						So(doCalls[0].Req.URL.Query().Get("q"), ShouldEqual, "census")
-						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
 					})
 				})
 			})

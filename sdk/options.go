@@ -5,23 +5,22 @@ import (
 	"net/url"
 )
 
-type header string
-
 const (
 	// List of available headers
-	Authorisation header = "Authorisation"
+	Authorization string = "Authorization"
+	CollectionID  string = "Collection-Id"
 )
 
 // Options is a struct containing for customised options for the API client
 type Options struct {
-	Headers map[header][]string
+	Headers http.Header
 	Query   url.Values
 }
 
-func setHeaders(req *http.Request, headers map[header][]string) {
-	for h := range headers {
-		for i := range headers[h] {
-			req.Header.Add(string(h), headers[h][i])
+func setHeaders(req *http.Request, headers http.Header) {
+	for name, values := range headers {
+		for _, value := range values {
+			req.Header.Add(name, value)
 		}
 	}
 }
