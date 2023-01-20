@@ -43,12 +43,17 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	ContentTypeCounts ESDocCounts `json:"contentTypeCounts"`
-	TopicCounts       ESDocCounts `json:"topicCounts"`
+	ContentTypeCounts  ESDocCounts `json:"contentTypeCounts"`
+	TopicCounts        ESDocCounts `json:"topicCounts"`
+	DistinctTopicCount CountValue  `json:"distinct_topics_count"`
 }
 
 type ESDocCounts struct {
 	Buckets []ESBucket `json:"buckets"`
+}
+
+type CountValue struct {
+	Value int `json:"value"`
 }
 
 type ESBucket struct {
@@ -108,6 +113,7 @@ type FilterCount struct {
 type SearchResponse struct {
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
+	DistinctTopicCount  int                `json:"distinct_topic_count"`
 	Topics              []FilterCount      `json:"topics"`
 	ContentTypes        []FilterCount      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`

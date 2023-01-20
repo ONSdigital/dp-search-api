@@ -1,0 +1,39 @@
+{
+    "es_710":true,
+    "count": 2,
+    "took": 96,
+    "topics": [],
+    "content_types": [
+        {
+            "type": "dataset_landing_page",
+            "count": 2
+        }
+    ],
+    "items": [
+        {
+            "type": "dataset_landing_page",
+            "dataset_id": "TS056",
+            "keywords": [ "ltla","alternative_address_indicator"],
+            "meta_description": "",
+            "release_date": "2015-02-17T00:00:00.000Z",
+            "summary": "This dataset provides Census 2021 estimates that classify usual residents in England and Wales by their use of a second address, and whether the second address is inside or outside the UK. The estimates are as at Census Day, 21 March 2021.",
+            "title": "Second address indicator",
+            "uri": "/datasets/TS056/editions/2021/versions/4",
+            "highlight": {},
+            "topics":  ["001", "002"],
+            "canonical_topic":  "123"
+        },
+        {
+            "type": "dataset_landing_page",
+            "dataset_id": "",
+            "meta_description": "",
+            "release_date": "",
+            "summary": "",
+            "title": "Title for Prasad Cantabular Test",
+            "uri": "/datasets/my-cantabular-test/editions/my-cantabular-test-edition-1/versions/1",
+            "highlight": {},
+            "topics":  ["003", "004"],
+            "canonical_topic":  "456"
+        }
+    ]
+}

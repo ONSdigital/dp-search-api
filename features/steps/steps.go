@@ -15,6 +15,9 @@ import (
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.es7xSuccessfullyReturnSingleSearchResult)
+	ctx.Step(`^elasticsearch returns multiple items in search response with topics filter$`, c.es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter)
+	ctx.Step(`^elasticsearch returns multiple items with distinct topic count in search response$`, c.es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicCount)
+	ctx.Step(`^elasticsearch returns one item in search response with topics filter$`, c.es7xSuccessfullyReturnSingleSearchResultWithTopicFilter)
 	ctx.Step(`^elasticsearch returns one item in search/release response$`, c.successfullyReturnSingleSearchReleaseResult)
 	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponsefromes7x)
 	ctx.Step(`^elasticsearch returns multiple items in search response$`, c.es7xSuccessfullyReturnMultipleSearchResults)
@@ -26,6 +29,39 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 
 func (c *Component) es7xSuccessfullyReturnSingleSearchResult() error {
 	body, err := os.ReadFile("./features/testdata/es_single_search_result.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+
+	return nil
+}
+
+func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter() error {
+	body, err := os.ReadFile("./features/testdata/es_mulitple_search_topics_results.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+
+	return nil
+}
+
+func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicCount() error {
+	body, err := os.ReadFile("./features/testdata/es_mulitple_search_topics_results_with_distinct_topics_count.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+
+	return nil
+}
+
+func (c *Component) es7xSuccessfullyReturnSingleSearchResultWithTopicFilter() error {
+	body, err := os.ReadFile("./features/testdata/es_single_search_topic_results.json")
 	if err != nil {
 		return err
 	}

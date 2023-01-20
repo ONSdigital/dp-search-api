@@ -1,0 +1,166 @@
+{
+  "took": 20,
+  "responses": [{
+    "took": 7,
+    "timed_out": false,
+    "_shards": {
+      "total": 5,
+      "successful": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "hits": {
+      "total": 0,
+      "max_score": null,
+      "hits": []
+    },
+    "suggest": {
+      "search_suggest": [{
+        "text": "economy",
+        "offset": 0,
+        "length": 7,
+        "options": []
+      }]
+    },
+    "status": 200
+  }, {
+    "took": 10,
+    "timed_out": false,
+    "_shards": {
+      "total": 5,
+      "successful": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "hits": {
+      "total": 988,
+      "max_score": null,
+      "hits": []
+    },
+    "aggregations": {
+      "contentTypeCounts": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [{
+          "key": "bulletin",
+          "doc_count": 262
+        }, {
+          "key": "article",
+          "doc_count": 169
+        }, {
+          "key": "timeseries",
+          "doc_count": 115
+        }, {
+          "key": "release",
+          "doc_count": 113
+        }, {
+          "key": "dataset_landing_page",
+          "doc_count": 110
+        }, {
+          "key": "article_download",
+          "doc_count": 61
+        }, {
+          "key": "compendium_chapter",
+          "doc_count": 44
+        }, {
+          "key": "dataset",
+          "doc_count": 29
+        }, {
+          "key": "static_adhoc",
+          "doc_count": 24
+        }, {
+          "key": "static_methodology",
+          "doc_count": 16
+        }, {
+          "key": "compendium_landing_page",
+          "doc_count": 9
+        }, {
+          "key": "static_page",
+          "doc_count": 9
+        }, {
+          "key": "compendium_data",
+          "doc_count": 7
+        }, {
+          "key": "product_page",
+          "doc_count": 5
+        }, {
+          "key": "static_foi",
+          "doc_count": 4
+        }, {
+          "key": "taxonomy_landing_page",
+          "doc_count": 3
+        }, {
+          "key": "static_article",
+          "doc_count": 2
+        }, {
+          "key": "static_landing_page",
+          "doc_count": 2
+        }, {
+          "key": "home_page",
+          "doc_count": 1
+        }, {
+          "key": "static_methodology_download",
+          "doc_count": 1
+        }, {
+          "key": "static_qmi",
+          "doc_count": 1
+        }, {
+          "key": "visualisation",
+          "doc_count": 1
+        }]
+      }
+    },
+    "status": 200
+  }, {
+    "took": 14,
+    "timed_out": false,
+    "_shards": {
+      "total": 5,
+      "successful": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "hits": {
+      "total": 63798,
+      "max_score": null,
+      "hits": []
+    },
+    "aggregations": {
+      "distinct_topics_count": {
+        "value": 9
+      },
+      "topicCounts": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [{
+          "key": "4935",
+          "doc_count": 7
+        }, {
+          "key": "5524",
+          "doc_count": 2
+        }, {
+          "key": "3374",
+          "doc_count": 1
+        }, {
+          "key": "5253",
+          "doc_count": 1
+        }, {
+          "key": "6724",
+          "doc_count": 1
+        }, {
+          "key": "7555",
+          "doc_count": 1
+        }, {
+          "key": "7978",
+          "doc_count": 1
+        }, {
+          "key": "8725",
+          "doc_count": 1
+        }, {
+          "key": "culturalidentity",
+          "doc_count": 1
+        }]
+      }
+    }
+  }]
+}
