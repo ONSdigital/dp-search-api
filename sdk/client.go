@@ -128,7 +128,7 @@ type ResponseInfo struct {
 
 // callSearchAPI calls the Search API endpoint given by path for the provided REST method, request headers, and body payload.
 // It returns the response body and any error that occurred.
-func (cli *Client) callSearchAPI(ctx context.Context, path, method string, headers map[header][]string, payload []byte) (*ResponseInfo, apiError.Error) {
+func (cli *Client) callSearchAPI(ctx context.Context, path, method string, headers http.Header, payload []byte) (*ResponseInfo, apiError.Error) {
 	URL, err := url.Parse(path)
 	if err != nil {
 		return nil, apiError.StatusError{
@@ -194,7 +194,6 @@ func (cli *Client) callSearchAPI(ctx context.Context, path, method string, heade
 			Code: resp.StatusCode,
 		}
 	}
-
 	return respInfo, nil
 }
 
