@@ -194,10 +194,6 @@ func (cli *Client) callSearchAPI(ctx context.Context, path, method string, heade
 			Code: resp.StatusCode,
 		}
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 	return respInfo, nil
 }
 
