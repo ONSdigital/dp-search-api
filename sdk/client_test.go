@@ -170,7 +170,11 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
+<<<<<<< HEAD
 						So(doCalls[0].Req.Header["Authorization"], ShouldResemble, []string{"Bearer authorised-user"})
+=======
+						So(doCalls[0].Req.Header["Authorisation"], ShouldResemble, []string{"Bearer authorised-user"})
+>>>>>>> master
 					})
 				})
 			})
@@ -197,7 +201,11 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
+<<<<<<< HEAD
 						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
+=======
+						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+>>>>>>> master
 					})
 				})
 			})
@@ -223,7 +231,11 @@ func TestCreateIndex(t *testing.T) {
 						So(doCalls, ShouldHaveLength, 1)
 						So(doCalls[0].Req.Method, ShouldEqual, "POST")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
+<<<<<<< HEAD
 						So(doCalls[0].Req.Header["Authorization"], ShouldResemble, []string{"Bearer authorised-user"})
+=======
+						So(doCalls[0].Req.Header["Authorisation"], ShouldResemble, []string{"Bearer authorised-user"})
+>>>>>>> master
 					})
 				})
 			})
@@ -267,7 +279,11 @@ func TestGetSearch(t *testing.T) {
 						So(doCalls[0].Req.Method, ShouldEqual, "GET")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search")
 						So(doCalls[0].Req.URL.Query().Get("q"), ShouldEqual, "census")
+<<<<<<< HEAD
 						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
+=======
+						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+>>>>>>> master
 					})
 				})
 			})
@@ -311,7 +327,11 @@ func TestGetReleaseCalendar(t *testing.T) {
 						So(doCalls[0].Req.Method, ShouldEqual, "GET")
 						So(doCalls[0].Req.URL.Path, ShouldEqual, "/search/releases")
 						So(doCalls[0].Req.URL.Query().Get("q"), ShouldEqual, "census")
+<<<<<<< HEAD
 						So(doCalls[0].Req.Header["Authorization"], ShouldBeEmpty)
+=======
+						So(doCalls[0].Req.Header["Authorisation"], ShouldBeEmpty)
+>>>>>>> master
 					})
 				})
 			})
