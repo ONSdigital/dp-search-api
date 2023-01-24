@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -113,49 +114,67 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 
 		typesParam := paramGet(params, "content_type", defaultContentTypes)
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, sanitisedQuery, typesParam, sort, topicSlice, limit, offset, true)
-		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
-			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
-			return
-		}
+		var resDataChan = make(chan []byte)
+		var resCountChan = make(chan []byte)
+		var responseSearchData []byte
+		go func() {
+			defer close(resCountChan)
+			processCountQuery(ctx, elasticSearchClient, queryBuilder, sanitisedQuery, resCountChan)
+		}()
+		go func() {
+			defer close(resDataChan)
+			processSearchQuery(ctx, elasticSearchClient, queryBuilder, sanitisedQuery, typesParam, sort, topicSlice, limit, offset, resDataChan)
+		}()
 
-		var searches []client.Search
-
-		err = json.Unmarshal(formattedQuery, &searches)
-		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": sort, "limit": limit, "offset": offset})
-			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
-			return
-		}
-
-		enableTotalHitsCount := true
-		responseData, err := elasticSearchClient.MultiSearch(ctx, searches, &client.QueryParams{
-			EnableTotalHitsCounter: &enableTotalHitsCount,
-		})
-		if err != nil {
-			log.Error(ctx, "elasticsearch query failed", err)
-			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
-			return
-		}
-
-		if !json.Valid(responseData) {
-			log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
-			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
-			return
-		}
-
-		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
-			if err != nil {
-				log.Error(ctx, "transformation of response data failed", err)
-				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
+		for responseData := range resDataChan {
+			if responseData == nil {
+				log.Error(ctx, "call to elastic multisearch api failed", errors.New("nil response data"))
+				http.Error(w, "call to elastic multisearch api failed", http.StatusInternalServerError)
 				return
+			}
+			if !paramGetBool(params, "raw", false) {
+				responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
+				if err != nil {
+					log.Error(ctx, "transformation of response data failed", err)
+					http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+					return
+				}
+			}
+			responseSearchData = responseData
+		}
+
+		for responseCountData := range resCountChan {
+			if responseCountData == nil {
+				log.Error(ctx, "call to elastic count api failed due to", errors.New("nil response data"))
+				http.Error(w, "call to elastic count api failed due to", http.StatusInternalServerError)
+				return
+			}
+			if !paramGetBool(params, "raw", false) {
+				count, CountAPIErr := transformer.TransformCountResponse(ctx, responseCountData)
+				if CountAPIErr != nil {
+					log.Error(ctx, "transformation of response count data failed", CountAPIErr)
+					http.Error(w, "failed to transform count result", http.StatusInternalServerError)
+					return
+				}
+				var esSearchResponse models.SearchResponse
+				if SearchRespErr := json.Unmarshal(responseSearchData, &esSearchResponse); SearchRespErr != nil {
+					log.Error(ctx, "failed to un marshal the essearchResponse data due to", SearchRespErr)
+					http.Error(w, "failed to un marshal the essearchResponse data due to", http.StatusInternalServerError)
+					return
+				}
+				esSearchResponse.DistinctItemsCount = count
+				var responseDataErr error
+				responseSearchData, responseDataErr = json.Marshal(esSearchResponse)
+				if responseDataErr != nil {
+					log.Error(ctx, "failed to marshal the essearchResponse data due to", responseDataErr)
+					http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+					return
+				}
 			}
 		}
 
 		w.Header().Set("Content-Type", "application/json;charset=utf-8")
-		_, err = w.Write(responseData)
+		_, err = w.Write(responseSearchData)
 		if err != nil {
 			log.Error(ctx, "writing response failed", err)
 			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
@@ -308,4 +327,55 @@ func sanitiseURLParams(str string) []string {
 func sanitiseDoubleQuotes(str string) string {
 	b := strconv.Quote(str)
 	return b[1 : len(b)-1]
+}
+
+func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery, typesParam, sort string, topicSlice []string, limit, offset int, responseDataChan chan []byte) {
+	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, sanitisedQuery, typesParam, sort, topicSlice, limit, offset, true)
+	if err != nil {
+		log.Error(ctx, "creation of search query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
+		responseDataChan <- nil
+	}
+
+	var searches []client.Search
+
+	err = json.Unmarshal(formattedQuery, &searches)
+	if err != nil {
+		log.Error(ctx, "creation of search query failed", err, log.Data{"q": sanitisedQuery, "sort": sort, "limit": limit, "offset": offset})
+		responseDataChan <- nil
+	}
+
+	enableTotalHitsCount := true
+	responseData, err := elasticSearchClient.MultiSearch(ctx, searches, &client.QueryParams{
+		EnableTotalHitsCounter: &enableTotalHitsCount,
+	})
+	if err != nil {
+		log.Error(ctx, "elasticsearch query failed", err)
+		responseDataChan <- nil
+	}
+
+	if !json.Valid(responseData) {
+		log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
+		responseDataChan <- nil
+	}
+	responseDataChan <- responseData
+	return
+}
+
+func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery string, resCountChan chan []byte) {
+	countQBytes, err := queryBuilder.BuildCountQuery(ctx, sanitisedQuery)
+	if err != nil {
+		log.Error(ctx, "creation of count query failed", err, log.Data{"q": sanitisedQuery})
+		resCountChan <- nil
+		return
+	}
+
+	countRes, err := elasticSearchClient.Count(ctx, client.Count{
+		Query: countQBytes,
+	})
+	if err != nil {
+		log.Error(ctx, "call to elastic count api failed", err, log.Data{"q": sanitisedQuery})
+		resCountChan <- nil
+		return
+	}
+	resCountChan <- countRes
 }

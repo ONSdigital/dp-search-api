@@ -15,20 +15,27 @@ import (
 // Builder represents an instance of a query builder
 type Builder struct {
 	searchTemplates *template.Template
+	countTemplates  *template.Template
 }
 
 // NewQueryBuilder loads the elastic search templates and returns a query builder instance
 func NewQueryBuilder() (*Builder, error) {
 	var searchTemplates *template.Template
-	var err error
+	var countTemplates *template.Template
+	var err, countErr error
 
 	searchTemplates, err = SetupV710Search()
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load search templates")
 	}
+
+	countTemplates, countErr = SetupV710Count()
+	if countErr != nil {
+		return nil, errors.Wrap(countErr, "failed to load count templates")
+	}
 	return &Builder{
 		searchTemplates: searchTemplates,
+		countTemplates:  countTemplates,
 	}, nil
 }
 

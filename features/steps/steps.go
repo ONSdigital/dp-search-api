@@ -33,7 +33,13 @@ func (c *Component) es7xSuccessfullyReturnSingleSearchResult() error {
 		return err
 	}
 
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
+
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
@@ -43,8 +49,13 @@ func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter() 
 	if err != nil {
 		return err
 	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
 
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
@@ -54,8 +65,13 @@ func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicC
 	if err != nil {
 		return err
 	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
 
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
@@ -65,8 +81,13 @@ func (c *Component) es7xSuccessfullyReturnSingleSearchResultWithTopicFilter() er
 	if err != nil {
 		return err
 	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
 
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
@@ -87,8 +108,13 @@ func (c *Component) es7xSuccessfullyReturnMultipleSearchResults() error {
 	if err != nil {
 		return err
 	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
 
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
@@ -109,8 +135,13 @@ func (c *Component) es7xSuccessfullyReturnNoSearchResults() error {
 	if err != nil {
 		return err
 	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
 
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
 
 	return nil
 }
