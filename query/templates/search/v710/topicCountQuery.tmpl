@@ -2,8 +2,19 @@
 "query" : {
     "bool" : {
       "must" : {
+                 {{- if .Term}}
+                     {{- template "coreQuery.tmpl" .}}
+                  {{- else}}
                      {{- template "matchAll.tmpl" .}}
+                  {{- end}}
              }
+        {{-  if .URIPrefix }}
+          ,"filter": [{
+	        "prefix": {
+                    "uri": "{{.URIPrefix}}"
+                }}
+                ]
+	      {{end}}
       }
    },
   "size": 0,
@@ -11,11 +22,6 @@
 		"topicCounts": {
 			"terms": {
 				"size": 1000,
-				"field": "topics"
-			}
-		},
-		"distinct_topics_count": {
-			"cardinality": {
 				"field": "topics"
 			}
 		}

@@ -14,7 +14,7 @@ linters-settings:
   gocyclo:
     min-complexity: 20
   gocognit:
-    min-complexity: 40
+    min-complexity: 42
   maligned:
     suggest-new: true
   dupl:

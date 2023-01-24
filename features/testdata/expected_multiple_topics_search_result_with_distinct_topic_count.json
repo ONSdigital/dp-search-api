@@ -1,7 +1,7 @@
 {
   "count": 0,
   "took": 31,
-  "distinct_topic_count": 9,
+  "distinct_items_count": 3,
   "topics": [{
     "type": "4935",
     "count": 7

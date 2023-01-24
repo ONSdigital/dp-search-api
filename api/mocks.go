@@ -17,22 +17,22 @@ var _ ElasticSearcher = &ElasticSearcherMock{}
 
 // ElasticSearcherMock is a mock implementation of ElasticSearcher.
 //
-// 	func TestSomethingThatUsesElasticSearcher(t *testing.T) {
+//	func TestSomethingThatUsesElasticSearcher(t *testing.T) {
 //
-// 		// make and configure a mocked ElasticSearcher
-// 		mockedElasticSearcher := &ElasticSearcherMock{
-// 			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 				panic("mock out the MultiSearch method")
-// 			},
-// 			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
-// 				panic("mock out the Search method")
-// 			},
-// 		}
+//		// make and configure a mocked ElasticSearcher
+//		mockedElasticSearcher := &ElasticSearcherMock{
+//			MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
+//				panic("mock out the MultiSearch method")
+//			},
+//			SearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
+//				panic("mock out the Search method")
+//			},
+//		}
 //
-// 		// use mockedElasticSearcher in code that requires ElasticSearcher
-// 		// and then make assertions.
+//		// use mockedElasticSearcher in code that requires ElasticSearcher
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ElasticSearcherMock struct {
 	// MultiSearchFunc mocks the MultiSearch method.
 	MultiSearchFunc func(ctx context.Context, index string, docType string, request []byte) ([]byte, error)
@@ -93,7 +93,8 @@ func (mock *ElasticSearcherMock) MultiSearch(ctx context.Context, index string, 
 
 // MultiSearchCalls gets all the calls that were made to MultiSearch.
 // Check the length with:
-//     len(mockedElasticSearcher.MultiSearchCalls())
+//
+//	len(mockedElasticSearcher.MultiSearchCalls())
 func (mock *ElasticSearcherMock) MultiSearchCalls() []struct {
 	Ctx     context.Context
 	Index   string
@@ -136,7 +137,8 @@ func (mock *ElasticSearcherMock) Search(ctx context.Context, index string, docTy
 
 // SearchCalls gets all the calls that were made to Search.
 // Check the length with:
-//     len(mockedElasticSearcher.SearchCalls())
+//
+//	len(mockedElasticSearcher.SearchCalls())
 func (mock *ElasticSearcherMock) SearchCalls() []struct {
 	Ctx     context.Context
 	Index   string
@@ -161,23 +163,29 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 
 // DpElasticSearcherMock is a mock implementation of DpElasticSearcher.
 //
-// 	func TestSomethingThatUsesDpElasticSearcher(t *testing.T) {
+//	func TestSomethingThatUsesDpElasticSearcher(t *testing.T) {
 //
-// 		// make and configure a mocked DpElasticSearcher
-// 		mockedDpElasticSearcher := &DpElasticSearcherMock{
-// 			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
-// 				panic("mock out the CreateIndex method")
-// 			},
-// 			MultiSearchFunc: func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
-// 				panic("mock out the MultiSearch method")
-// 			},
-// 		}
+//		// make and configure a mocked DpElasticSearcher
+//		mockedDpElasticSearcher := &DpElasticSearcherMock{
+//			CountFunc: func(ctx context.Context, count client.Count) ([]byte, error) {
+//				panic("mock out the Count method")
+//			},
+//			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
+//				panic("mock out the CreateIndex method")
+//			},
+//			MultiSearchFunc: func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
+//				panic("mock out the MultiSearch method")
+//			},
+//		}
 //
-// 		// use mockedDpElasticSearcher in code that requires DpElasticSearcher
-// 		// and then make assertions.
+//		// use mockedDpElasticSearcher in code that requires DpElasticSearcher
+//		// and then make assertions.
 //
-// 	}
+//	}
 type DpElasticSearcherMock struct {
+	// CountFunc mocks the Count method.
+	CountFunc func(ctx context.Context, count client.Count) ([]byte, error)
+
 	// CreateIndexFunc mocks the CreateIndex method.
 	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) error
 
@@ -186,6 +194,13 @@ type DpElasticSearcherMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Count holds details about calls to the Count method.
+		Count []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Count is the count argument value.
+			Count client.Count
+		}
 		// CreateIndex holds details about calls to the CreateIndex method.
 		CreateIndex []struct {
 			// Ctx is the ctx argument value.
@@ -205,8 +220,45 @@ type DpElasticSearcherMock struct {
 			Params *client.QueryParams
 		}
 	}
+	lockCount       sync.RWMutex
 	lockCreateIndex sync.RWMutex
 	lockMultiSearch sync.RWMutex
+}
+
+// Count calls CountFunc.
+func (mock *DpElasticSearcherMock) Count(ctx context.Context, count client.Count) ([]byte, error) {
+	if mock.CountFunc == nil {
+		panic("DpElasticSearcherMock.CountFunc: method is nil but DpElasticSearcher.Count was just called")
+	}
+	callInfo := struct {
+		Ctx   context.Context
+		Count client.Count
+	}{
+		Ctx:   ctx,
+		Count: count,
+	}
+	mock.lockCount.Lock()
+	mock.calls.Count = append(mock.calls.Count, callInfo)
+	mock.lockCount.Unlock()
+	return mock.CountFunc(ctx, count)
+}
+
+// CountCalls gets all the calls that were made to Count.
+// Check the length with:
+//
+//	len(mockedDpElasticSearcher.CountCalls())
+func (mock *DpElasticSearcherMock) CountCalls() []struct {
+	Ctx   context.Context
+	Count client.Count
+} {
+	var calls []struct {
+		Ctx   context.Context
+		Count client.Count
+	}
+	mock.lockCount.RLock()
+	calls = mock.calls.Count
+	mock.lockCount.RUnlock()
+	return calls
 }
 
 // CreateIndex calls CreateIndexFunc.
@@ -231,7 +283,8 @@ func (mock *DpElasticSearcherMock) CreateIndex(ctx context.Context, indexName st
 
 // CreateIndexCalls gets all the calls that were made to CreateIndex.
 // Check the length with:
-//     len(mockedDpElasticSearcher.CreateIndexCalls())
+//
+//	len(mockedDpElasticSearcher.CreateIndexCalls())
 func (mock *DpElasticSearcherMock) CreateIndexCalls() []struct {
 	Ctx           context.Context
 	IndexName     string
@@ -270,7 +323,8 @@ func (mock *DpElasticSearcherMock) MultiSearch(ctx context.Context, searches []c
 
 // MultiSearchCalls gets all the calls that were made to MultiSearch.
 // Check the length with:
-//     len(mockedDpElasticSearcher.MultiSearchCalls())
+//
+//	len(mockedDpElasticSearcher.MultiSearchCalls())
 func (mock *DpElasticSearcherMock) MultiSearchCalls() []struct {
 	Ctx      context.Context
 	Searches []client.Search
@@ -293,19 +347,19 @@ var _ QueryParamValidator = &QueryParamValidatorMock{}
 
 // QueryParamValidatorMock is a mock implementation of QueryParamValidator.
 //
-// 	func TestSomethingThatUsesQueryParamValidator(t *testing.T) {
+//	func TestSomethingThatUsesQueryParamValidator(t *testing.T) {
 //
-// 		// make and configure a mocked QueryParamValidator
-// 		mockedQueryParamValidator := &QueryParamValidatorMock{
-// 			ValidateFunc: func(ctx context.Context, name string, value string) (interface{}, error) {
-// 				panic("mock out the Validate method")
-// 			},
-// 		}
+//		// make and configure a mocked QueryParamValidator
+//		mockedQueryParamValidator := &QueryParamValidatorMock{
+//			ValidateFunc: func(ctx context.Context, name string, value string) (interface{}, error) {
+//				panic("mock out the Validate method")
+//			},
+//		}
 //
-// 		// use mockedQueryParamValidator in code that requires QueryParamValidator
-// 		// and then make assertions.
+//		// use mockedQueryParamValidator in code that requires QueryParamValidator
+//		// and then make assertions.
 //
-// 	}
+//	}
 type QueryParamValidatorMock struct {
 	// ValidateFunc mocks the Validate method.
 	ValidateFunc func(ctx context.Context, name string, value string) (interface{}, error)
@@ -347,7 +401,8 @@ func (mock *QueryParamValidatorMock) Validate(ctx context.Context, name string, 
 
 // ValidateCalls gets all the calls that were made to Validate.
 // Check the length with:
-//     len(mockedQueryParamValidator.ValidateCalls())
+//
+//	len(mockedQueryParamValidator.ValidateCalls())
 func (mock *QueryParamValidatorMock) ValidateCalls() []struct {
 	Ctx   context.Context
 	Name  string
@@ -370,25 +425,38 @@ var _ QueryBuilder = &QueryBuilderMock{}
 
 // QueryBuilderMock is a mock implementation of QueryBuilder.
 //
-// 	func TestSomethingThatUsesQueryBuilder(t *testing.T) {
+//	func TestSomethingThatUsesQueryBuilder(t *testing.T) {
 //
-// 		// make and configure a mocked QueryBuilder
-// 		mockedQueryBuilder := &QueryBuilderMock{
-// 			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
-// 				panic("mock out the BuildSearchQuery method")
-// 			},
-// 		}
+//		// make and configure a mocked QueryBuilder
+//		mockedQueryBuilder := &QueryBuilderMock{
+//			BuildCountQueryFunc: func(ctx context.Context, query string) ([]byte, error) {
+//				panic("mock out the BuildCountQuery method")
+//			},
+//			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
+//				panic("mock out the BuildSearchQuery method")
+//			},
+//		}
 //
-// 		// use mockedQueryBuilder in code that requires QueryBuilder
-// 		// and then make assertions.
+//		// use mockedQueryBuilder in code that requires QueryBuilder
+//		// and then make assertions.
 //
-// 	}
+//	}
 type QueryBuilderMock struct {
+	// BuildCountQueryFunc mocks the BuildCountQuery method.
+	BuildCountQueryFunc func(ctx context.Context, query string) ([]byte, error)
+
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
 	BuildSearchQueryFunc func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// BuildCountQuery holds details about calls to the BuildCountQuery method.
+		BuildCountQuery []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Query is the query argument value.
+			Query string
+		}
 		// BuildSearchQuery holds details about calls to the BuildSearchQuery method.
 		BuildSearchQuery []struct {
 			// Ctx is the ctx argument value.
@@ -409,7 +477,44 @@ type QueryBuilderMock struct {
 			EsVersion710 bool
 		}
 	}
+	lockBuildCountQuery  sync.RWMutex
 	lockBuildSearchQuery sync.RWMutex
+}
+
+// BuildCountQuery calls BuildCountQueryFunc.
+func (mock *QueryBuilderMock) BuildCountQuery(ctx context.Context, query string) ([]byte, error) {
+	if mock.BuildCountQueryFunc == nil {
+		panic("QueryBuilderMock.BuildCountQueryFunc: method is nil but QueryBuilder.BuildCountQuery was just called")
+	}
+	callInfo := struct {
+		Ctx   context.Context
+		Query string
+	}{
+		Ctx:   ctx,
+		Query: query,
+	}
+	mock.lockBuildCountQuery.Lock()
+	mock.calls.BuildCountQuery = append(mock.calls.BuildCountQuery, callInfo)
+	mock.lockBuildCountQuery.Unlock()
+	return mock.BuildCountQueryFunc(ctx, query)
+}
+
+// BuildCountQueryCalls gets all the calls that were made to BuildCountQuery.
+// Check the length with:
+//
+//	len(mockedQueryBuilder.BuildCountQueryCalls())
+func (mock *QueryBuilderMock) BuildCountQueryCalls() []struct {
+	Ctx   context.Context
+	Query string
+} {
+	var calls []struct {
+		Ctx   context.Context
+		Query string
+	}
+	mock.lockBuildCountQuery.RLock()
+	calls = mock.calls.BuildCountQuery
+	mock.lockBuildCountQuery.RUnlock()
+	return calls
 }
 
 // BuildSearchQuery calls BuildSearchQueryFunc.
@@ -444,7 +549,8 @@ func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, co
 
 // BuildSearchQueryCalls gets all the calls that were made to BuildSearchQuery.
 // Check the length with:
-//     len(mockedQueryBuilder.BuildSearchQueryCalls())
+//
+//	len(mockedQueryBuilder.BuildSearchQueryCalls())
 func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 	Ctx          context.Context
 	Q            string
@@ -477,19 +583,19 @@ var _ ReleaseQueryBuilder = &ReleaseQueryBuilderMock{}
 
 // ReleaseQueryBuilderMock is a mock implementation of ReleaseQueryBuilder.
 //
-// 	func TestSomethingThatUsesReleaseQueryBuilder(t *testing.T) {
+//	func TestSomethingThatUsesReleaseQueryBuilder(t *testing.T) {
 //
-// 		// make and configure a mocked ReleaseQueryBuilder
-// 		mockedReleaseQueryBuilder := &ReleaseQueryBuilderMock{
-// 			BuildSearchQueryFunc: func(ctx context.Context, request interface{}) ([]client.Search, error) {
-// 				panic("mock out the BuildSearchQuery method")
-// 			},
-// 		}
+//		// make and configure a mocked ReleaseQueryBuilder
+//		mockedReleaseQueryBuilder := &ReleaseQueryBuilderMock{
+//			BuildSearchQueryFunc: func(ctx context.Context, request interface{}) ([]client.Search, error) {
+//				panic("mock out the BuildSearchQuery method")
+//			},
+//		}
 //
-// 		// use mockedReleaseQueryBuilder in code that requires ReleaseQueryBuilder
-// 		// and then make assertions.
+//		// use mockedReleaseQueryBuilder in code that requires ReleaseQueryBuilder
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ReleaseQueryBuilderMock struct {
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
 	BuildSearchQueryFunc func(ctx context.Context, request interface{}) ([]client.Search, error)
@@ -527,7 +633,8 @@ func (mock *ReleaseQueryBuilderMock) BuildSearchQuery(ctx context.Context, reque
 
 // BuildSearchQueryCalls gets all the calls that were made to BuildSearchQuery.
 // Check the length with:
-//     len(mockedReleaseQueryBuilder.BuildSearchQueryCalls())
+//
+//	len(mockedReleaseQueryBuilder.BuildSearchQueryCalls())
 func (mock *ReleaseQueryBuilderMock) BuildSearchQueryCalls() []struct {
 	Ctx     context.Context
 	Request interface{}
@@ -548,25 +655,38 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 
 // ResponseTransformerMock is a mock implementation of ResponseTransformer.
 //
-// 	func TestSomethingThatUsesResponseTransformer(t *testing.T) {
+//	func TestSomethingThatUsesResponseTransformer(t *testing.T) {
 //
-// 		// make and configure a mocked ResponseTransformer
-// 		mockedResponseTransformer := &ResponseTransformerMock{
-// 			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
-// 				panic("mock out the TransformSearchResponse method")
-// 			},
-// 		}
+//		// make and configure a mocked ResponseTransformer
+//		mockedResponseTransformer := &ResponseTransformerMock{
+//			TransformCountResponseFunc: func(ctx context.Context, responseData []byte) (int, error) {
+//				panic("mock out the TransformCountResponse method")
+//			},
+//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+//				panic("mock out the TransformSearchResponse method")
+//			},
+//		}
 //
-// 		// use mockedResponseTransformer in code that requires ResponseTransformer
-// 		// and then make assertions.
+//		// use mockedResponseTransformer in code that requires ResponseTransformer
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ResponseTransformerMock struct {
+	// TransformCountResponseFunc mocks the TransformCountResponse method.
+	TransformCountResponseFunc func(ctx context.Context, responseData []byte) (int, error)
+
 	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
 	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// TransformCountResponse holds details about calls to the TransformCountResponse method.
+		TransformCountResponse []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ResponseData is the responseData argument value.
+			ResponseData []byte
+		}
 		// TransformSearchResponse holds details about calls to the TransformSearchResponse method.
 		TransformSearchResponse []struct {
 			// Ctx is the ctx argument value.
@@ -579,7 +699,44 @@ type ResponseTransformerMock struct {
 			Highlight bool
 		}
 	}
+	lockTransformCountResponse  sync.RWMutex
 	lockTransformSearchResponse sync.RWMutex
+}
+
+// TransformCountResponse calls TransformCountResponseFunc.
+func (mock *ResponseTransformerMock) TransformCountResponse(ctx context.Context, responseData []byte) (int, error) {
+	if mock.TransformCountResponseFunc == nil {
+		panic("ResponseTransformerMock.TransformCountResponseFunc: method is nil but ResponseTransformer.TransformCountResponse was just called")
+	}
+	callInfo := struct {
+		Ctx          context.Context
+		ResponseData []byte
+	}{
+		Ctx:          ctx,
+		ResponseData: responseData,
+	}
+	mock.lockTransformCountResponse.Lock()
+	mock.calls.TransformCountResponse = append(mock.calls.TransformCountResponse, callInfo)
+	mock.lockTransformCountResponse.Unlock()
+	return mock.TransformCountResponseFunc(ctx, responseData)
+}
+
+// TransformCountResponseCalls gets all the calls that were made to TransformCountResponse.
+// Check the length with:
+//
+//	len(mockedResponseTransformer.TransformCountResponseCalls())
+func (mock *ResponseTransformerMock) TransformCountResponseCalls() []struct {
+	Ctx          context.Context
+	ResponseData []byte
+} {
+	var calls []struct {
+		Ctx          context.Context
+		ResponseData []byte
+	}
+	mock.lockTransformCountResponse.RLock()
+	calls = mock.calls.TransformCountResponse
+	mock.lockTransformCountResponse.RUnlock()
+	return calls
 }
 
 // TransformSearchResponse calls TransformSearchResponseFunc.
@@ -606,7 +763,8 @@ func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context
 
 // TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
 // Check the length with:
-//     len(mockedResponseTransformer.TransformSearchResponseCalls())
+//
+//	len(mockedResponseTransformer.TransformSearchResponseCalls())
 func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	Ctx          context.Context
 	ResponseData []byte
@@ -631,19 +789,19 @@ var _ AuthHandler = &AuthHandlerMock{}
 
 // AuthHandlerMock is a mock implementation of AuthHandler.
 //
-// 	func TestSomethingThatUsesAuthHandler(t *testing.T) {
+//	func TestSomethingThatUsesAuthHandler(t *testing.T) {
 //
-// 		// make and configure a mocked AuthHandler
-// 		mockedAuthHandler := &AuthHandlerMock{
-// 			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-// 				panic("mock out the Require method")
-// 			},
-// 		}
+//		// make and configure a mocked AuthHandler
+//		mockedAuthHandler := &AuthHandlerMock{
+//			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+//				panic("mock out the Require method")
+//			},
+//		}
 //
-// 		// use mockedAuthHandler in code that requires AuthHandler
-// 		// and then make assertions.
+//		// use mockedAuthHandler in code that requires AuthHandler
+//		// and then make assertions.
 //
-// 	}
+//	}
 type AuthHandlerMock struct {
 	// RequireFunc mocks the Require method.
 	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
@@ -681,7 +839,8 @@ func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.Han
 
 // RequireCalls gets all the calls that were made to Require.
 // Check the length with:
-//     len(mockedAuthHandler.RequireCalls())
+//
+//	len(mockedAuthHandler.RequireCalls())
 func (mock *AuthHandlerMock) RequireCalls() []struct {
 	Required auth.Permissions
 	Handler  http.HandlerFunc
