@@ -1,0 +1,19 @@
+{ {{/* count query */}}
+{{if .CountEnable}}
+"query" : {
+    "bool" : {
+      "must" : [{
+                     {{- template "coreQuery.tmpl" .}}
+             },{
+             	"bool": {
+             		"must": {
+             			"exists": {
+             				"field": "topics"
+             			}
+             		}
+             	}
+             }]
+      }
+   }
+{{end}}
+}

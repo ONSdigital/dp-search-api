@@ -42,6 +42,7 @@ type ElasticSearcher interface {
 type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
 	MultiSearch(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error)
+	Count(ctx context.Context, count client.Count) ([]byte, error)
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
@@ -52,6 +53,7 @@ type QueryParamValidator interface {
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
 	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error)
+	BuildCountQuery(ctx context.Context, query string) ([]byte, error)
 }
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type
@@ -62,6 +64,7 @@ type ReleaseQueryBuilder interface {
 // ResponseTransformer provides methods for the transform package
 type ResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
+	TransformCountResponse(ctx context.Context, responseData []byte) (int, error)
 }
 
 type ReleaseResponseTransformer interface {

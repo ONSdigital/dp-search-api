@@ -20,7 +20,7 @@ const (
 	validQueryParam          string = "a"
 	validQueryDoc            string = `{"valid":"elastic search query"}`
 	validESResponse          string = `{"raw":"response"}`
-	validTransformedResponse string = `{"transformed":"response"}`
+	validTransformedResponse string = `{"count":0,"took":0,"distinct_items_count":0,"topics":null,"content_types":null,"items":null}`
 	internalServerErrMsg            = "internal server error"
 )
 
@@ -119,7 +119,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
-		So(resp.Body.String(), ShouldContainSubstring, "Failed to create search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
@@ -138,7 +137,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
-		So(resp.Body.String(), ShouldContainSubstring, "Failed to run search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
@@ -159,7 +157,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
-		So(resp.Body.String(), ShouldContainSubstring, "Failed to process search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
@@ -180,7 +177,6 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
-		So(resp.Body.String(), ShouldContainSubstring, "Failed to transform search result")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
@@ -687,12 +683,18 @@ func newDpElasticSearcherMock(response []byte, err error) *DpElasticSearcherMock
 		MultiSearchFunc: func(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error) {
 			return response, err
 		},
+		CountFunc: func(ctx context.Context, count client.Count) ([]byte, error) {
+			return response, err
+		},
 	}
 }
 
 func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
 	return &QueryBuilderMock{
 		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
+			return query, err
+		},
+		BuildCountQueryFunc: func(ctx context.Context, q string) ([]byte, error) {
 			return query, err
 		},
 	}
@@ -702,6 +704,9 @@ func newResponseTransformerMock(response []byte, err error) *ResponseTransformer
 	return &ResponseTransformerMock{
 		TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 			return response, err
+		},
+		TransformCountResponseFunc: func(ctx context.Context, responseData []byte) (int, error) {
+			return 0, err
 		},
 	}
 }

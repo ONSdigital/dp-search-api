@@ -35,6 +35,11 @@ type searchRequest struct {
 	Now              string
 }
 
+type countRequest struct {
+	Term        string
+	CountEnable bool
+}
+
 // SetupSearch loads templates for use by the search handler and should be done only once
 func SetupSearch() (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
@@ -97,6 +102,19 @@ func SetupV710Search() (*template.Template, error) {
 	return templates, err
 }
 
+// SetupV710Search loads v710 templates for use by the search handler and should be done only once
+func SetupV710Count() (*template.Template, error) {
+	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
+	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
+
+	templates, err := template.ParseFS(searchFS,
+		"templates/search/v710/distinctItemCountQuery.tmpl",
+		"templates/search/v710/coreQuery.tmpl",
+	)
+
+	return templates, err
+}
+
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
 	reqParams := searchRequest{
@@ -134,4 +152,19 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort s
 	}
 
 	return formattedQuery, nil
+}
+
+// BuildSearchQuery creates an elastic search query from the provided search parameters
+func (sb *Builder) BuildCountQuery(ctx context.Context, query string) ([]byte, error) {
+	reqParams := countRequest{
+		Term:        query,
+		CountEnable: true,
+	}
+
+	var doc bytes.Buffer
+	err := sb.countTemplates.Execute(&doc, reqParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "creation of search from template failed")
+	}
+	return doc.Bytes(), nil
 }

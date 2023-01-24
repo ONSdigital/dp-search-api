@@ -113,7 +113,7 @@ type FilterCount struct {
 type SearchResponse struct {
 	Count               int                `json:"count"`
 	Took                int                `json:"took"`
-	DistinctTopicCount  int                `json:"distinct_topic_count"`
+	DistinctItemsCount  int                `json:"distinct_items_count"`
 	Topics              []FilterCount      `json:"topics"`
 	ContentTypes        []FilterCount      `json:"content_types"`
 	Items               []ESSourceDocument `json:"items"`

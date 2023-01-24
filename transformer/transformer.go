@@ -29,6 +29,11 @@ func New() api.ResponseTransformer {
 	}
 }
 
+// TransformCountResponse is not supported for legacy transformer.
+func (t *LegacyTransformer) TransformCountResponse(ctx context.Context, responseData []byte) (int, error) {
+	return 0, nil
+}
+
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
 func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source models.ESResponseLegacy
@@ -235,6 +240,20 @@ func (t *Transformer) TransformSearchResponse(
 	return transformedData, nil
 }
 
+// TransformCountResponse transforms an elastic search 7.x response
+func (t *Transformer) TransformCountResponse(
+	ctx context.Context, responseData []byte) (int, error) {
+	var data struct {
+		Count int `json:"count"`
+	}
+
+	err := json.Unmarshal(responseData, &data)
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to decode elastic search 7x response")
+	}
+	return data.Count, nil
+}
+
 // Transform the raw ES to search response
 func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
 	search7xResponse := models.SearchResponse{
@@ -260,7 +279,6 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
 			})
 		}
-		search7xResponse.DistinctTopicCount = response.Aggregations.DistinctTopicCount.Value
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			for _, option := range suggestion.Options {
 				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)
