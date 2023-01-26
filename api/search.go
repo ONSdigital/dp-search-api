@@ -156,6 +156,10 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 					http.Error(w, "failed to transform count result", http.StatusInternalServerError)
 					return
 				}
+				//TODO: This needs to be refactored as it involves multiple marshal and unmarshal code. So basically the
+				// transformSearchResponse function can return an interface that would satisfy both legacy search response and
+				// new search response instead of bytes. So here we just have to add the count instead of unmarshalling the bytes
+				// and adding the count and marshalling it again. Will be done in a separate pr very soon.
 				var esSearchResponse models.SearchResponse
 				if SearchRespErr := json.Unmarshal(responseSearchData, &esSearchResponse); SearchRespErr != nil {
 					log.Error(ctx, "failed to un marshal the essearchResponse data due to", SearchRespErr)
