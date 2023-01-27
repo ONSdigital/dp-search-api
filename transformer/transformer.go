@@ -247,10 +247,10 @@ func (t *Transformer) TransformCountResponse(
 		Count int `json:"count"`
 	}
 
-	err := json.Unmarshal(responseData, &data)
-	if err != nil {
-		return 0, errors.Wrap(err, "Failed to decode elastic search 7x response")
+	if unmarshalErr := json.Unmarshal(responseData, &data); unmarshalErr != nil {
+		return 0, errors.Wrap(unmarshalErr, "Failed to decode elastic search 7x response")
 	}
+
 	return data.Count, nil
 }
 
