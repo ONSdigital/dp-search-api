@@ -2,20 +2,20 @@
 "query" : {
     "bool" : {
       "must" : {
-                 {{- if .Term}}
-                     {{- template "coreQuery.tmpl" .}}
-                  {{- else}}
-                     {{- template "matchAll.tmpl" .}}
-                  {{- end}}
-             }
-        {{-  if .URIPrefix }}
-          ,"filter": [{
-	        "prefix": {
-                    "uri": "{{.URIPrefix}}"
-                }}
-                ]
-	      {{end}}
+        {{- if .Term}}
+            {{- template "coreQuery.tmpl" .}}
+        {{- else}}
+            {{- template "matchAll.tmpl" .}}
+        {{- end}}
       }
+      {{-  if .URIPrefix }}
+        ,"filter": [{
+	        "prefix": {
+                "uri": "{{.URIPrefix}}"
+            }}
+        ]
+	  {{end}}
+    }
    },
   "size": 0,
   "aggregations": {
