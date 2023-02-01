@@ -110,6 +110,7 @@ func SetupV710Count() (*template.Template, error) {
 	templates, err := template.ParseFS(searchFS,
 		"templates/search/v710/distinctItemCountQuery.tmpl",
 		"templates/search/v710/coreQuery.tmpl",
+		"templates/search/v710/matchAll.tmpl",
 	)
 
 	return templates, err
