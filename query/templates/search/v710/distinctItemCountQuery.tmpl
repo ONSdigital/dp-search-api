@@ -3,7 +3,11 @@
 "query" : {
     "bool" : {
       "must" : [{
+      {{- if .Term}}
         {{- template "coreQuery.tmpl" .}}
+      {{- else}}
+        {{- template "matchAll.tmpl" .}}
+      {{- end}}
       },{
         "bool": {
             "must": {
