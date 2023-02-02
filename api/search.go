@@ -375,7 +375,6 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 		resCountChan <- nil
 		return
 	}
-	log.Info(ctx, "call count api with details", log.Data{"q": string(countQBytes)})
 
 	countRes, err := elasticSearchClient.Count(ctx, client.Count{
 		Query: countQBytes,
