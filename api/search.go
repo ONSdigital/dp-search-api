@@ -117,63 +117,64 @@ func SearchHandlerFunc(queryBuilder QueryBuilder, elasticSearchClient DpElasticS
 		var resDataChan = make(chan []byte)
 		var resCountChan = make(chan []byte)
 		var responseSearchData []byte
+		var responseCountData []byte
+		var count int
 		go func() {
-			defer close(resCountChan)
 			processCountQuery(ctx, elasticSearchClient, queryBuilder, sanitisedQuery, resCountChan)
 		}()
 		go func() {
-			defer close(resDataChan)
 			processSearchQuery(ctx, elasticSearchClient, queryBuilder, sanitisedQuery, typesParam, sort, topicSlice, limit, offset, resDataChan)
 		}()
 
-		for responseData := range resDataChan {
-			if responseData == nil {
+		for i := 0; i < 2; i++ {
+			select {
+			case responseSearchData = <-resDataChan:
+			case responseCountData = <-resCountChan:
+			}
+		}
+
+		if !paramGetBool(params, "raw", false) {
+			if responseSearchData == nil {
 				log.Error(ctx, "call to elastic multisearch api failed", errors.New("nil response data"))
 				http.Error(w, "call to elastic multisearch api failed", http.StatusInternalServerError)
 				return
 			}
-			if !paramGetBool(params, "raw", false) {
-				responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, highlight)
-				if err != nil {
-					log.Error(ctx, "transformation of response data failed", err)
-					http.Error(w, "failed to transform search result", http.StatusInternalServerError)
-					return
-				}
-			}
-			responseSearchData = responseData
-		}
 
-		for responseCountData := range resCountChan {
+			responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, q, highlight)
+			if err != nil {
+				log.Error(ctx, "transformation of response data failed", err)
+				http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+				return
+			}
+
 			if responseCountData == nil {
 				log.Error(ctx, "call to elasticsearch count api failed due to", errors.New("nil response data"))
 				http.Error(w, "call to elasticsearch count api failed due to", http.StatusInternalServerError)
 				return
 			}
-			if !paramGetBool(params, "raw", false) {
-				count, CountAPIErr := transformer.TransformCountResponse(ctx, responseCountData)
-				if CountAPIErr != nil {
-					log.Error(ctx, "transformation of response count data failed", CountAPIErr)
-					http.Error(w, "failed to transform count result", http.StatusInternalServerError)
-					return
-				}
-				//TODO: This needs to be refactored as it involves multiple marshal and unmarshal code. So basically the
-				// transformSearchResponse function can return an interface that would satisfy both legacy search response and
-				// new search response instead of bytes. So here we just have to add the count instead of unmarshalling the bytes
-				// and adding the count and marshalling it again. Will be done in a separate pr very soon.
-				var esSearchResponse models.SearchResponse
-				if SearchRespErr := json.Unmarshal(responseSearchData, &esSearchResponse); SearchRespErr != nil {
-					log.Error(ctx, "failed to unmarshal the essearchResponse data due to", SearchRespErr)
-					http.Error(w, "failed to unmarshal the essearchResponse data due to", http.StatusInternalServerError)
-					return
-				}
-				esSearchResponse.DistinctItemsCount = count
-				var responseDataErr error
-				responseSearchData, responseDataErr = json.Marshal(esSearchResponse)
-				if responseDataErr != nil {
-					log.Error(ctx, "failed to marshal the elasticsearch response data due to", responseDataErr)
-					http.Error(w, "failed to transform search result", http.StatusInternalServerError)
-					return
-				}
+			count, err = transformer.TransformCountResponse(ctx, responseCountData)
+			if err != nil {
+				log.Error(ctx, "transformation of response count data failed", err)
+				http.Error(w, "failed to transform count result", http.StatusInternalServerError)
+				return
+			}
+			//TODO: This needs to be refactored as it involves multiple marshal and unmarshal code. So basically the
+			// transformSearchResponse function can return an interface that would satisfy both legacy search response and
+			// new search response instead of bytes. So here we just have to add the count instead of unmarshalling the bytes
+			// and adding the count and marshalling it again. Will be done in a separate pr very soon.
+			var esSearchResponse models.SearchResponse
+			if SearchRespErr := json.Unmarshal(responseSearchData, &esSearchResponse); SearchRespErr != nil {
+				log.Error(ctx, "failed to unmarshal the essearchResponse data due to", SearchRespErr)
+				http.Error(w, "failed to unmarshal the essearchResponse data due to", http.StatusInternalServerError)
+				return
+			}
+			esSearchResponse.DistinctItemsCount = count
+			var responseDataErr error
+			responseSearchData, responseDataErr = json.Marshal(esSearchResponse)
+			if responseDataErr != nil {
+				log.Error(ctx, "failed to marshal the elasticsearch response data due to", responseDataErr)
+				http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+				return
 			}
 		}
 
