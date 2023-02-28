@@ -71,8 +71,7 @@ paths:
           description: "Query search term."
           type: string
           required: true
-        - in: query
-        
+        - in: query   
           name: content_type
           description: "Comma separated list of content types to be returned."
           type: array
@@ -82,7 +81,6 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
-        
           name: topics
           description: "Comma separated list of topics to be returned."
           type: array
@@ -92,7 +90,24 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
-
+          name: population_types
+          description: "Comma separated list of population types to be returned."
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          required: false
+          collectionFormat: csv
+        - in: query
+          name: dimensions
+          description: "Comma separated list of dimensions to be returned."
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          required: false
+          collectionFormat: csv
+        - in: query
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
           type: boolean
@@ -208,16 +223,26 @@ definitions:
         type: number
         description: "Time taken to execute query in milliseconds"
         example: 530
+      dimensions:
+        type: array
+        description: "List of population types included in results"
+        items:
+          $ref: "#/definitions/CountItem"
       content_types:
         type: array
         description: "List of content types included in results"
         items:
-          $ref: "#/definitions/ContentType"
+          $ref: "#/definitions/CountItem"
+      population_types:
+        type: array
+        description: "List of population types included in results"
+        items:
+          $ref: "#/definitions/CountItem"
       topics:
         type: array
         description: "List of topics included in results"
         items:
-          $ref: "#/definitions/Topics"
+          $ref: "#/definitions/CountItem"
       items:
         type: array
         description: "List of matching content items for the current page"
@@ -336,27 +361,15 @@ definitions:
       - count
       - took
 
-  ContentType:
+  Dimension: 
     type: object
     properties:
-      type:
+      label:
         type: string
-      count:
-        type: integer
-    required:
-      - "type"
-      - "count"
-
-  Topics:
-    type: object
-    properties:
-      type:
+      raw_label:
         type: string
-      count:
-        type: integer
-    required:
-      - "type"
-      - "count"
+      name:
+        type: string
 
   ContentItem:
     type: object
@@ -378,6 +391,11 @@ definitions:
               - email
           dataset_id:
             type: string
+          dimensions:
+            type: array
+            items:
+              $ref: "#/definitions/Dimension"
+            description: "An array of dimensions within a dataset."
           edition:
             type: string
           highlight:
@@ -404,6 +422,9 @@ definitions:
           next_release:
             type: string
             example: "14 August 2015"
+          population_type:
+            type: string
+            description: "A population type a dataset is associated with e.g. Usual-Residents.  This is applicable to Census 2021 datasets only."
           pre_unit:
             type: string
           release_date:
@@ -415,12 +436,13 @@ definitions:
             type: string
           title:
             type: string
-          unit:
-            type: string
           topics:
             type: array
             items:
               type: string
+          unit:
+            type: string
+
         required:
           - summary
           - title
@@ -432,6 +454,17 @@ definitions:
       - description
       - type
       - uri
+
+  CountItem:
+    type: object
+    properties:
+      type:
+        type: string
+      count:
+        type: integer
+    required:
+      - "type"
+      - "count"
 
   Release:
     type: object
