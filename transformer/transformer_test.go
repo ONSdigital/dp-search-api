@@ -9,7 +9,7 @@ import (
 
 func TestTransform(t *testing.T) {
 	t.Parallel()
-	expectedESDocument1 := models.ESSourceDocument{
+	expectedItem1 := models.Item{
 		DataType:        "anyDataType1",
 		CDID:            "",
 		DatasetID:       "",
@@ -22,8 +22,12 @@ func TestTransform(t *testing.T) {
 		Highlight: &models.HighlightObj{
 			DatasetID: "",
 		},
+		PopulationType: "PopLbl1",
+		Dimensions: []models.ESDimensions{
+			{Name: "Dim1", Label: "Lbl1", RawLabel: "RawLbl1"},
+		},
 	}
-	expectedESDocument2 := models.ESSourceDocument{
+	expectedItem2 := models.Item{
 		DataType:        "anyDataType2",
 		CDID:            "",
 		DatasetID:       "",
@@ -35,6 +39,10 @@ func TestTransform(t *testing.T) {
 		Topics:          []string{"anyTopic2"},
 		Highlight: &models.HighlightObj{
 			DatasetID: "",
+		},
+		PopulationType: "PopLbl2",
+		Dimensions: []models.ESDimensions{
+			{Name: "Dim2", Label: "Lbl2", RawLabel: "RawLbl2"},
 		},
 	}
 	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
@@ -52,8 +60,8 @@ func TestTransform(t *testing.T) {
 					So(transformedResponse, ShouldNotBeNil)
 					So(transformedResponse.Took, ShouldEqual, 10)
 					So(len(transformedResponse.Items), ShouldEqual, 2)
-					So(transformedResponse.Items[0], ShouldResemble, expectedESDocument1)
-					So(transformedResponse.Items[1], ShouldResemble, expectedESDocument2)
+					So(transformedResponse.Items[0], ShouldResemble, expectedItem1)
+					So(transformedResponse.Items[1], ShouldResemble, expectedItem2)
 					So(transformedResponse.Topics[0], ShouldResemble, expectedTopic1)
 					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
 				})
@@ -74,6 +82,10 @@ func prepareESMockResponse() models.EsResponses {
 		ReleaseDate:     "",
 		Title:           "anyTitle2",
 		Topics:          []string{"anyTopic1"},
+		PopulationType:  models.ESPopulationType{Name: "Pop1", Label: "PopLbl1"},
+		Dimensions: []models.ESDimensions{
+			{Name: "Dim1", Label: "Lbl1", RawLabel: "RawLbl1"},
+		},
 	}
 
 	esDocument2 := models.ESSourceDocument{
@@ -86,6 +98,10 @@ func prepareESMockResponse() models.EsResponses {
 		ReleaseDate:     "",
 		Title:           "anyTitle2",
 		Topics:          []string{"anyTopic2"},
+		PopulationType:  models.ESPopulationType{Name: "Pop2", Label: "PopLbl2"},
+		Dimensions: []models.ESDimensions{
+			{Name: "Dim2", Label: "Lbl2", RawLabel: "RawLbl2"},
+		},
 	}
 
 	esDocuments := []models.ESSourceDocument{esDocument1, esDocument2}

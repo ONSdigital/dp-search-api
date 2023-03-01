@@ -258,7 +258,7 @@ func (t *Transformer) TransformCountResponse(
 func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool) models.SearchResponse {
 	search7xResponse := models.SearchResponse{
 		Count:        esresponses.Responses[0].Hits.Total,
-		Items:        []models.ESSourceDocument{},
+		Items:        []models.Item{},
 		Topics:       []models.FilterCount{},
 		ContentTypes: []models.FilterCount{},
 	}
@@ -290,8 +290,8 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 	return search7xResponse
 }
 
-func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.ESSourceDocument {
-	esDoc := models.ESSourceDocument{
+func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool) models.Item {
+	esDoc := models.Item{
 		CDID:            doc.Source.CDID,
 		DataType:        doc.Source.DataType,
 		DatasetID:       doc.Source.DatasetID,
@@ -311,6 +311,8 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 		Language:        doc.Source.Language,
 		DateChanges:     doc.Source.DateChanges,
 		CanonicalTopic:  doc.Source.CanonicalTopic,
+		PopulationType:  doc.Source.PopulationType.Label,
+		Dimensions:      doc.Source.Dimensions,
 	}
 
 	if doc.Highlight != nil && highlight {

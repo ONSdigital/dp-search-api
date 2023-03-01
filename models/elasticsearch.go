@@ -82,6 +82,8 @@ type ESSourceDocument struct {
 	Published       bool                `json:"published,omitempty"`
 	Language        string              `json:"language,omitempty"`
 	Survey          string              `json:"survey,omitempty"`
+	PopulationType  ESPopulationType    `json:"population_type,omitempty"`
+	Dimensions      []ESDimensions      `json:"dimensions,omitempty"`
 }
 
 type HighlightObj struct {
@@ -106,19 +108,57 @@ type FilterCount struct {
 	Count int    `json:"count"`
 }
 
+type ESPopulationType struct {
+	Name  string `json:"name"`
+	Label string `json:"label"`
+}
+
+type ESDimensions struct {
+	Name     string `json:"name"`
+	Label    string `json:"label"`
+	RawLabel string `json:"raw_label"`
+}
+
 // ********************************************************
 // Structs representing the transformed response
 // ********************************************************
 
+type Item struct {
+	DataType        string              `json:"type"`
+	CDID            string              `json:"cdid"`
+	DatasetID       string              `json:"dataset_id"`
+	Edition         string              `json:"edition"`
+	Keywords        []string            `json:"keywords"`
+	MetaDescription string              `json:"meta_description"`
+	ReleaseDate     string              `json:"release_date,omitempty"`
+	Summary         string              `json:"summary"`
+	Title           string              `json:"title"`
+	Topics          []string            `json:"topics"`
+	URI             string              `json:"uri"`
+	Highlight       *HighlightObj       `json:"highlight,omitempty"`
+	DateChanges     []ReleaseDateChange `json:"date_changes,omitempty"`
+	Cancelled       bool                `json:"cancelled,omitempty"`
+	CanonicalTopic  string              `json:"canonical_topic"`
+	Finalised       bool                `json:"finalised,omitempty"`
+	ProvisionalDate string              `json:"provisional_date,omitempty"`
+	Published       bool                `json:"published,omitempty"`
+	Language        string              `json:"language,omitempty"`
+	Survey          string              `json:"survey,omitempty"`
+	PopulationType  string              `json:"population_type,omitempty"`
+	Dimensions      []ESDimensions      `json:"dimensions,omitempty"`
+}
+
 type SearchResponse struct {
-	Count               int                `json:"count"`
-	Took                int                `json:"took"`
-	DistinctItemsCount  int                `json:"distinct_items_count"`
-	Topics              []FilterCount      `json:"topics"`
-	ContentTypes        []FilterCount      `json:"content_types"`
-	Items               []ESSourceDocument `json:"items"`
-	Suggestions         []string           `json:"suggestions,omitempty"`
-	AdditionSuggestions []string           `json:"additional_suggestions,omitempty"`
+	Count               int           `json:"count"`
+	Took                int           `json:"took"`
+	DistinctItemsCount  int           `json:"distinct_items_count"`
+	Topics              []FilterCount `json:"topics"`
+	ContentTypes        []FilterCount `json:"content_types"`
+	Items               []Item        `json:"items"`
+	Suggestions         []string      `json:"suggestions,omitempty"`
+	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
+	Dimensions          []FilterCount `json:"dimensions,omitempty"`
+	PopulationType      []FilterCount `json:"population_types,omitempty"`
 }
 
 // ReleaseDateChange represent a date change of a release
