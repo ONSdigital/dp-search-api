@@ -366,7 +366,6 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		return
 	}
 	responseDataChan <- responseData
-	return
 }
 
 func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery string, resCountChan chan []byte) {

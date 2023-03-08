@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 	"sync"
@@ -23,6 +22,8 @@ import (
 	extractorModels "github.com/ONSdigital/dp-search-data-extractor/models"
 	importerModels "github.com/ONSdigital/dp-search-data-importer/models"
 	"github.com/ONSdigital/dp-search-data-importer/transform"
+	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
 )
 
 var (
@@ -38,6 +39,8 @@ type cliConfig struct {
 	esURL            string
 	signRequests     bool
 	ServiceAuthToken string
+	TestSubset       bool // Set this flag to true to request only one batch of datasets from Dataset API
+	IgnoreZebedee    bool // Set this flag to true to avoid requesting zebedee datasets
 }
 
 type AWSConfig struct {
@@ -48,10 +51,18 @@ type AWSConfig struct {
 	tlsInsecureSkipVerify bool
 }
 
+// DatasetEditionMetadata holds the necessary information for a dataset edition, plus isBasedOn
 type DatasetEditionMetadata struct {
 	id        string
 	editionID string
 	version   string
+	isBasedOn *dataset.IsBasedOn
+}
+
+// DatasetMetadata holds a dataset's metadata, plus its isBasedOn
+type DatasetMetadata struct {
+	metadata  *dataset.Metadata
+	isBasedOn *dataset.IsBasedOn
 }
 
 type Document struct {
@@ -61,29 +72,34 @@ type Document struct {
 }
 
 func main() {
-	fmt.Printf("Hola %s!\n", Name)
-
 	ctx := context.Background()
 	cfg := getConfig(ctx)
+	log.Info(ctx, "Running reindex script", log.Data{"name": Name, "config": cfg})
 
 	hcClienter := dphttp2.NewClient()
 	if hcClienter == nil {
-		log.Fatal("failed to create dp http client")
+		err := errors.New("failed to create dp http client")
+		log.Fatal(ctx, err.Error(), err)
+		panic(err)
 	}
 	hcClienter.SetMaxRetries(2)
 	hcClienter.SetTimeout(30 * time.Second) // Published Index takes about 10s to return so add a bit more
+
 	zebClient := zebedee.NewClientWithClienter(cfg.zebedeeURL, hcClienter)
-	if zebClient == nil {
-		log.Fatal("failed to create zebedee client")
+	if !cfg.IgnoreZebedee && zebClient == nil {
+		err := errors.New("failed to create zebedee client")
+		log.Fatal(ctx, err.Error(), err)
+		panic(err)
 	}
 
 	esHTTPClient := hcClienter
 	if cfg.signRequests {
-		fmt.Println("Use a signing roundtripper client")
+		log.Info(ctx, "use a signing roundtripper client")
 		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper(cfg.aws.filename, cfg.aws.filename, cfg.aws.region, cfg.aws.service,
 			awsauth.Options{TlsInsecureSkipVerify: cfg.aws.tlsInsecureSkipVerify})
 		if err != nil {
 			log.Fatal(ctx, "Failed to create http signer", err)
+			panic(err)
 		}
 
 		esHTTPClient = dphttp2.NewClientWithTransport(awsSignerRT)
@@ -97,28 +113,31 @@ func main() {
 	})
 	if esClientErr != nil {
 		log.Fatal(ctx, "Failed to create dp-elasticsearch client", esClientErr)
+		panic(esClientErr)
 	}
 
 	if err := esClient.NewBulkIndexer(ctx); err != nil {
-		log.Fatal(ctx, "Failed to create new bulk indexer")
+		log.Fatal(ctx, "failed to create new bulk indexer", err)
+		panic(err)
 	}
-	datasetChan := extractDatasets(ctx, datasetClient, cfg.ServiceAuthToken)
-	editionChan := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
-	metadataChan := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
-	urisChan := uriProducer(ctx, zebClient)
+
+	datasetChan := extractDatasets(ctx, datasetClient, cfg)
+	editionChan, _ := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
+	metadataChan, _ := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
+	urisChan := uriProducer(ctx, zebClient, cfg)
 	extractedChan, extractionFailuresChan := docExtractor(ctx, zebClient, urisChan, maxConcurrentExtractions)
-	transformedChan := docTransformer(extractedChan, metadataChan)
+	transformedChan := docTransformer(ctx, extractedChan, metadataChan)
 	indexedChan := docIndexer(ctx, esClient, transformedChan, maxConcurrentIndexings)
 
 	summarize(indexedChan, extractionFailuresChan)
 	cleanOldIndices(ctx, esClient)
 }
 
-func uriProducer(ctx context.Context, z clients.ZebedeeClient) chan string {
-	uriChan := make(chan string)
+func uriProducer(ctx context.Context, z clients.ZebedeeClient, cfg cliConfig) chan string {
+	uriChan := make(chan string, maxConcurrentExtractions)
 	go func() {
 		defer close(uriChan)
-		items := getPublishedURIs(ctx, z)
+		items := getPublishedURIs(ctx, z, cfg)
 		for _, item := range items {
 			uriChan <- item.URI
 		}
@@ -127,18 +146,22 @@ func uriProducer(ctx context.Context, z clients.ZebedeeClient) chan string {
 	return uriChan
 }
 
-func getPublishedURIs(ctx context.Context, z clients.ZebedeeClient) []zebedee.PublishedIndexItem {
+func getPublishedURIs(ctx context.Context, z clients.ZebedeeClient, cfg cliConfig) []zebedee.PublishedIndexItem {
+	if cfg.IgnoreZebedee {
+		return []zebedee.PublishedIndexItem{}
+	}
 	index, err := z.GetPublishedIndex(ctx, &zebedee.PublishedIndexRequestParams{})
 	if err != nil {
-		log.Fatalf("Fatal error getting index from zebedee: %s", err)
+		log.Fatal(ctx, "fatal error getting index from zebedee", err)
+		panic(err)
 	}
 	fmt.Printf("Fetched %d uris from zebedee\n", index.Count)
 	return index.Items
 }
 
 func docExtractor(ctx context.Context, z clients.ZebedeeClient, uriChan chan string, maxExtractions int) (extractedChan chan Document, extractionFailuresChan chan string) {
-	extractedChan = make(chan Document)
-	extractionFailuresChan = make(chan string)
+	extractedChan = make(chan Document, maxExtractions)
+	extractionFailuresChan = make(chan string, maxExtractions)
 	go func() {
 		defer close(extractedChan)
 		defer close(extractionFailuresChan)
@@ -173,15 +196,15 @@ func extractDoc(ctx context.Context, z clients.ZebedeeClient, uriChan <-chan str
 	}
 }
 
-func docTransformer(extractedChan chan Document, metadataChan chan dataset.Metadata) chan Document {
-	transformedChan := make(chan Document)
+func docTransformer(ctx context.Context, extractedChan chan Document, metadataChan chan DatasetMetadata) chan Document {
+	transformedChan := make(chan Document, maxConcurrentExtractions)
 	go func() {
 		var wg sync.WaitGroup
 		for i := 0; i < maxConcurrentExtractions; i++ {
 			wg.Add(2)
 			go func(wg *sync.WaitGroup) {
-				transformZebedeeDoc(extractedChan, transformedChan, wg)
-				transformMetadataDoc(metadataChan, transformedChan, wg)
+				transformZebedeeDoc(ctx, extractedChan, transformedChan, wg)
+				transformMetadataDoc(ctx, metadataChan, transformedChan, wg)
 			}(&wg)
 		}
 		wg.Wait()
@@ -191,7 +214,7 @@ func docTransformer(extractedChan chan Document, metadataChan chan dataset.Metad
 	return transformedChan
 }
 
-func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Document, wg *sync.WaitGroup) {
+func transformZebedeeDoc(ctx context.Context, extractedChan chan Document, transformedChan chan<- Document, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var wg2 sync.WaitGroup
 	for extractedDoc := range extractedChan {
@@ -201,7 +224,8 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 			var zebedeeData extractorModels.ZebedeeData
 			err := json.Unmarshal(extractedDoc.Body, &zebedeeData)
 			if err != nil {
-				log.Fatal("error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
+				log.Fatal(ctx, "error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
+				panic(err)
 			}
 			exporterEventData := extractorModels.MapZebedeeDataToSearchDataImport(zebedeeData, -1)
 			importerEventData := convertToSearchDataModel(exporterEventData)
@@ -209,8 +233,8 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 
 			body, err := json.Marshal(esModel)
 			if err != nil {
-				log.Fatal("error marshal to json", err) // TODO error handling
-				return
+				log.Fatal(ctx, "error marshal to json", err) // TODO error handling
+				panic(err)
 			}
 
 			transformedDoc := Document{
@@ -224,57 +248,52 @@ func transformZebedeeDoc(extractedChan chan Document, transformedChan chan<- Doc
 	wg2.Wait()
 }
 
-func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
-	for metadata := range metadataChan {
-		var uri string
-		if len(metadata.DatasetLinks.LatestVersion.URL) > 0 {
-			uri = metadata.DatasetLinks.LatestVersion.URL
-		} else if len(metadata.DatasetDetails.Links.Version.URL) > 0 {
-			uri = metadata.DatasetDetails.Links.Version.URL
-		} else {
-			uri = metadata.Version.Links.Version.URL
-		}
+func transformMetadataDoc(ctx context.Context, metadataChan chan DatasetMetadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
+	for m := range metadataChan {
+		uri := extractorModels.GetURI(m.metadata)
 
 		parsedURI, err := url.Parse(uri)
 		if err != nil {
-			log.Fatalf("error occured while parsing url: %v", err)
+			log.Fatal(ctx, "error occurred while parsing url", err)
+			panic(err)
 		}
+
 		datasetID, edition, _, getIDErr := getIDsFromURI(uri)
 		if getIDErr != nil {
-			datasetID = metadata.DatasetDetails.ID
-			edition = metadata.DatasetDetails.Links.Edition.ID
+			datasetID = m.metadata.DatasetDetails.ID
+			edition = m.metadata.DatasetDetails.Links.Edition.ID
 		}
-		cmdData := extractorModels.CMDData{
-			UID: metadata.DatasetDetails.ID,
-			URI: parsedURI.Path,
-			VersionDetails: extractorModels.VersionDetails{
-				ReleaseDate: metadata.Version.ReleaseDate,
-			},
-			DatasetDetails: extractorModels.DatasetDetails{
-				Title:          metadata.DatasetDetails.Title,
-				Summary:        metadata.DatasetDetails.Description,
-				CanonicalTopic: metadata.DatasetDetails.CanonicalTopic,
-				Subtopics:      metadata.Subtopics,
-				DatasetID:      datasetID,
-				Edition:        edition,
-				Type:           "dataset_landing_page",
+
+		searchDataImport := &extractorModels.SearchDataImport{
+			UID:       m.metadata.DatasetDetails.ID,
+			URI:       parsedURI.Path,
+			Edition:   edition,
+			DatasetID: datasetID,
+			DataType:  "dataset_landing_page",
+		}
+
+		ds := &dataset.Dataset{
+			Current: &dataset.DatasetDetails{
+				IsBasedOn: m.isBasedOn,
 			},
 		}
-		if metadata.DatasetDetails.Keywords != nil {
-			cmdData.DatasetDetails.Keywords = *metadata.DatasetDetails.Keywords
+
+		if err = searchDataImport.MapDatasetMetadataValues(context.Background(), ds, m.metadata); err != nil {
+			log.Fatal(ctx, "error occurred while mapping dataset metadata values", err)
+			panic(err)
 		}
-		exporterEventData := extractorModels.MapVersionMetadataToSearchDataImport(cmdData)
-		importerEventData := convertToSearchDataModel(exporterEventData)
+
+		importerEventData := convertToSearchDataModel(*searchDataImport)
 		esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)
 		body, err := json.Marshal(esModel)
 		if err != nil {
 			wg.Done()
-			log.Fatal("error marshal to json", err) // TODO error handling
-			return
+			log.Fatal(ctx, "error marshal to json", err) // TODO error handling
+			panic(err)
 		}
 
 		transformedDoc := Document{
-			ID:   exporterEventData.UID,
+			ID:   searchDataImport.UID,
 			URI:  parsedURI.Path,
 			Body: body,
 		}
@@ -284,7 +303,7 @@ func transformMetadataDoc(metadataChan chan dataset.Metadata, transformedChan ch
 }
 
 func docIndexer(ctx context.Context, dpEsIndexClient dpEsClient.Client, transformedChan chan Document, maxIndexings int) chan bool {
-	indexedChan := make(chan bool)
+	indexedChan := make(chan bool, maxIndexings)
 	go func() {
 		defer close(indexedChan)
 
@@ -293,6 +312,7 @@ func docIndexer(ctx context.Context, dpEsIndexClient dpEsClient.Client, transfor
 		err := dpEsIndexClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 		if err != nil {
 			log.Fatal(ctx, "error creating index", err)
+			panic(err)
 		}
 
 		fmt.Printf("Index created: %s\n", indexName)
@@ -320,22 +340,36 @@ func createIndexName(s string) string {
 	return fmt.Sprintf("%s%d", s, now.UnixMicro())
 }
 
+// indexDoc reads documents from the transformedChan and calls 'BulkIndexAdd'.
+// if the document is added successfully, then 'true' is sent to the indexedChan
+// otherwise, 'false' is sent
 func indexDoc(ctx context.Context, esClient dpEsClient.Client, transformedChan <-chan Document, indexedChan chan bool, indexName string) {
 	for transformedDoc := range transformedChan {
-		indexed := true
-		err := esClient.BulkIndexAdd(ctx, v710.Create, indexName, transformedDoc.ID, transformedDoc.Body)
-		if err != nil {
-			indexed = false
+		onSuccess := func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
+			indexedChan <- true
 		}
 
-		indexedChan <- indexed
+		onFailure := func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error) {
+			log.Error(ctx, "failed to index document", err, log.Data{
+				"doc_id":   transformedDoc.ID,
+				"response": biri,
+			})
+			indexedChan <- false
+		}
+
+		err := esClient.BulkIndexAdd(ctx, v710.Create, indexName, transformedDoc.ID, transformedDoc.Body, onSuccess, onFailure)
+		if err != nil {
+			log.Error(ctx, "failed to index document", err, log.Data{"doc_id": transformedDoc.ID})
+			indexedChan <- false
+		}
 	}
 }
 
 func swapAliases(ctx context.Context, dpEsIndexClient dpEsClient.Client, indexName string) {
 	updateAliasErr := dpEsIndexClient.UpdateAliases(ctx, "ons", []string{"ons*"}, []string{indexName})
 	if updateAliasErr != nil {
-		log.Fatalf("error swapping aliases: %v", updateAliasErr)
+		log.Fatal(ctx, "error swapping aliases: %v", updateAliasErr)
+		panic(updateAliasErr)
 	}
 }
 
@@ -363,11 +397,13 @@ type indexDetails struct {
 func cleanOldIndices(ctx context.Context, dpEsIndexClient dpEsClient.Client) {
 	body, err := dpEsIndexClient.GetAlias(ctx) // Create this method via dp-elasticsearch v3 lib
 	if err != nil {
-		log.Fatalf("Error: Indices.GetAlias: %s", err)
+		log.Fatal(ctx, "error getting alias", err)
+		panic(err)
 	}
 	var r aliasResponse
 	if err := json.Unmarshal(body, &r); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
+		log.Fatal(ctx, "error parsing alias response body", err)
+		panic(err)
 	}
 
 	toDelete := []string{}
@@ -391,26 +427,36 @@ func doesIndexHaveAlias(details indexDetails, alias string) bool {
 
 func deleteIndicies(ctx context.Context, dpEsIndexClient dpEsClient.Client, indicies []string) {
 	if err := dpEsIndexClient.DeleteIndices(ctx, indicies); err != nil {
-		log.Fatalf("Error: Indices.GetAlias: %s", err)
+		log.Fatal(ctx, "error getting alias", err)
+		panic(err)
 	}
 	fmt.Printf("Deleted Indicies: %s\n", strings.Join(indicies, ","))
 }
 
-func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient, serviceAuthToken string) chan dataset.Dataset {
-	datasetChan := make(chan dataset.Dataset)
-	go func() {
+func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient, cfg cliConfig) chan dataset.Dataset {
+	datasetChan := make(chan dataset.Dataset, maxConcurrentExtractions)
+
+	// extractAll extracts all datasets from datasetAPI in batches of up to 'DefaultPaginationLimit' size
+	extractAll := func() {
 		defer close(datasetChan)
 		var list dataset.List
 		var err error
 		var offset = 0
 		for {
-			list, err = datasetClient.GetDatasets(ctx, "", serviceAuthToken, "", &dataset.QueryParams{
+			list, err = datasetClient.GetDatasets(ctx, "", cfg.ServiceAuthToken, "", &dataset.QueryParams{
 				Offset: offset,
 				Limit:  DefaultPaginationLimit,
 			})
 			if err != nil {
-				log.Fatalf("Error: retrieving dataset clients: %v", err)
+				log.Fatal(ctx, "error retrieving datasets", err)
+				panic(err)
 			}
+			log.Info(ctx, "got datasets batch", log.Data{
+				"count":       list.Count,
+				"total_count": list.TotalCount,
+				"offset":      list.Offset,
+			})
+
 			if len(list.Items) == 0 {
 				break
 			}
@@ -419,12 +465,38 @@ func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient
 			}
 			offset += DefaultPaginationLimit
 		}
-	}()
+	}
+
+	// extractSome extracts only one batch of size 'DefaultPaginationLimit' from datasetAPI
+	extractSome := func() {
+		defer close(datasetChan)
+		var list dataset.List
+		var err error
+		var offset = 0
+		list, err = datasetClient.GetDatasets(ctx, "", cfg.ServiceAuthToken, "", &dataset.QueryParams{
+			Offset: offset,
+			Limit:  DefaultPaginationLimit,
+		})
+		if err != nil {
+			log.Fatal(ctx, "error retrieving datasets", err)
+			panic(err)
+		}
+		for i := 0; i < len(list.Items); i++ {
+			datasetChan <- list.Items[i]
+		}
+	}
+
+	if cfg.TestSubset {
+		go extractSome()
+	} else {
+		go extractAll()
+	}
+
 	return datasetChan
 }
 
-func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetAPIClient, datasetChan chan dataset.Dataset, serviceAuthToken string) chan DatasetEditionMetadata {
-	editionMetadataChan := make(chan DatasetEditionMetadata)
+func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetAPIClient, datasetChan chan dataset.Dataset, serviceAuthToken string) (chan DatasetEditionMetadata, *sync.WaitGroup) {
+	editionMetadataChan := make(chan DatasetEditionMetadata, maxConcurrentExtractions)
 	var wg sync.WaitGroup
 	go func() {
 		defer close(editionMetadataChan)
@@ -438,17 +510,22 @@ func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetA
 					}
 					editions, err := datasetClient.GetFullEditionsDetails(ctx, "", serviceAuthToken, dataset.CollectionID, dataset.Current.ID)
 					if err != nil {
-						log.Printf("error retrieving editions with dataset id: %v", dataset.ID)
-					} else {
-						for i := 0; i < len(editions); i++ {
-							if editions[i].ID == "" || editions[i].Current.Links.LatestVersion.ID == "" {
-								continue
-							}
-							editionMetadataChan <- DatasetEditionMetadata{
-								id:        dataset.Current.ID,
-								editionID: editions[i].Current.Edition,
-								version:   editions[i].Current.Links.LatestVersion.ID,
-							}
+						log.Warn(ctx, "error retrieving editions", log.Data{
+							"err":           err,
+							"dataset_id":    dataset.Current.ID,
+							"collection_id": dataset.CollectionID,
+						})
+						continue
+					}
+					for i := 0; i < len(editions); i++ {
+						if editions[i].ID == "" || editions[i].Current.Links.LatestVersion.ID == "" {
+							continue
+						}
+						editionMetadataChan <- DatasetEditionMetadata{
+							id:        dataset.Current.ID,
+							editionID: editions[i].Current.Edition,
+							version:   editions[i].Current.Links.LatestVersion.ID,
+							isBasedOn: dataset.Current.IsBasedOn,
 						}
 					}
 				}
@@ -456,11 +533,11 @@ func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetA
 		}
 		wg.Wait()
 	}()
-	return editionMetadataChan
+	return editionMetadataChan, &wg
 }
 
-func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAPIClient, editionMetadata chan DatasetEditionMetadata, serviceAuthToken string) chan dataset.Metadata {
-	metadataChan := make(chan dataset.Metadata)
+func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAPIClient, editionMetadata chan DatasetEditionMetadata, serviceAuthToken string) (chan DatasetMetadata, *sync.WaitGroup) {
+	metadataChan := make(chan DatasetMetadata, maxConcurrentExtractions)
 	var wg sync.WaitGroup
 	go func() {
 		defer close(metadataChan)
@@ -470,16 +547,25 @@ func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAP
 				for edMetadata := range editionMetadata {
 					metadata, err := datasetClient.GetVersionMetadata(ctx, "", serviceAuthToken, "", edMetadata.id, edMetadata.editionID, edMetadata.version)
 					if err != nil {
+						log.Warn(ctx, "failed to retrieve dataset version metadata", log.Data{
+							"err":        err,
+							"dataset_id": edMetadata.id,
+							"edition":    edMetadata.editionID,
+							"version":    edMetadata.version,
+						})
 						continue
 					}
-					metadataChan <- metadata
+					metadataChan <- DatasetMetadata{
+						metadata:  &metadata,
+						isBasedOn: edMetadata.isBasedOn,
+					}
 				}
 				wg.Done()
 			}()
 		}
 		wg.Wait()
 	}()
-	return metadataChan
+	return metadataChan, &wg
 }
 
 func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport) importerModels.SearchDataImportModel {
@@ -511,6 +597,17 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		searchDIM.DateChanges = append(searchDIM.DateChanges, importerModels.ReleaseDateDetails{
 			ChangeNotice: dateChange.ChangeNotice,
 			Date:         dateChange.Date,
+		})
+	}
+	searchDIM.PopulationType = &importerModels.PopulationType{
+		Name:  searchDataImport.PopulationType.Name,
+		Label: searchDataImport.PopulationType.Label,
+	}
+	for _, dim := range searchDataImport.Dimensions {
+		searchDIM.Dimensions = append(searchDIM.Dimensions, importerModels.Dimension{
+			Name:     dim.Name,
+			Label:    dim.Label,
+			RawLabel: dim.RawLabel,
 		})
 	}
 	return searchDIM

@@ -19,5 +19,7 @@ func getConfig(ctx context.Context) cliConfig {
 		signRequests:     true,
 		datasetURL:       "http://localhost:10400",
 		ServiceAuthToken: "SAuthToken_Replaceme",
+		TestSubset:       false,
+		IgnoreZebedee:    false,
 	}
 }
