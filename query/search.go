@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"strings"
 	"text/template"
-	"time"
 
 	"github.com/pkg/errors"
 )
@@ -20,7 +18,7 @@ const (
 	es710AggregationField  = "type"
 )
 
-type searchRequest struct {
+type SearchRequest struct {
 	Term             string
 	From             int
 	Size             int
@@ -117,18 +115,7 @@ func SetupV710Count() (*template.Template, error) {
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
-	reqParams := searchRequest{
-		Term:      q,
-		From:      offset,
-		Size:      limit,
-		Types:     strings.Split(contentTypes, ","),
-		Topic:     topics,
-		SortBy:    sort,
-		Highlight: true,
-		Now:       time.Now().UTC().Format(time.RFC3339),
-	}
-
+func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
 	if esVersion710 {
 		reqParams.AggregationField = es710AggregationField
 	} else {

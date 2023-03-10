@@ -10,93 +10,103 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
+func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator QueryParamValidator) (string, *query.ReleaseSearchRequest) {
+	ctx := req.Context()
+	params := req.URL.Query()
+
+	queryString := params.Get("query")
+	term, template := query.ParseQuery(queryString)
+
+	limitParam := paramGet(params, "limit", "10")
+	limit, err := validator.Validate(ctx, "limit", limitParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "limit", "value": limitParam})
+		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+		return "", nil
+	}
+
+	offsetParam := paramGet(params, "offset", "0")
+	offset, err := validator.Validate(ctx, "offset", offsetParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "offset", "value": offsetParam})
+		http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
+		return "", nil
+	}
+
+	sortParam := paramGet(params, "sort", query.RelDateAsc.String())
+	sort, err := validator.Validate(ctx, "sort", sortParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "sort", "value": sortParam})
+		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
+		return "", nil
+	}
+
+	fromDateParam := paramGet(params, "fromDate", "")
+	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
+		http.Error(w, "Invalid dateFrom parameter", http.StatusBadRequest)
+		return "", nil
+	}
+
+	toDateParam := paramGet(params, "toDate", "")
+	toDate, err := validator.Validate(ctx, "date", toDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
+		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		return "", nil
+	}
+
+	if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
+		log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
+		http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
+		return "", nil
+	}
+
+	relTypeParam := paramGet(params, "release-type", query.Published.String())
+	relType, err := validator.Validate(ctx, "release-type", relTypeParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "release-type", "value": relTypeParam})
+		http.Error(w, "Invalid release-type parameter", http.StatusBadRequest)
+		return "", nil
+	}
+	provisional := paramGetBool(params, "subtype-provisional", false)
+	confirmed := paramGetBool(params, "subtype-confirmed", false)
+	postponed := paramGetBool(params, "subtype-postponed", false)
+	highlight := paramGetBool(params, "highlight", true)
+	census := paramGetBool(params, "census", false)
+
+	return queryString, &query.ReleaseSearchRequest{
+		Term:           term,
+		Template:       template,
+		From:           offset.(int),
+		Size:           limit.(int),
+		SortBy:         sort.(query.Sort),
+		ReleasedAfter:  fromDate.(query.Date),
+		ReleasedBefore: toDate.(query.Date),
+		Type:           relType.(query.ReleaseType),
+		Provisional:    provisional,
+		Confirmed:      confirmed,
+		Postponed:      postponed,
+		Census:         census,
+		Highlight:      highlight,
+	}
+}
+
 // SearchReleasesHandlerFunc returns a http handler function handling release calendar search api requests.
 func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, transformer ReleaseResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		queryString := params.Get("query")
-		term, template := query.ParseQuery(queryString)
-
-		limitParam := paramGet(params, "limit", "10")
-		limit, err := validator.Validate(ctx, "limit", limitParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "limit", "value": limitParam})
-			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
-			return
-		}
-
-		offsetParam := paramGet(params, "offset", "0")
-		offset, err := validator.Validate(ctx, "offset", offsetParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "offset", "value": offsetParam})
-			http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
-			return
-		}
-
-		sortParam := paramGet(params, "sort", query.RelDateAsc.String())
-		sort, err := validator.Validate(ctx, "sort", sortParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "sort", "value": sortParam})
-			http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
-			return
-		}
-
-		fromDateParam := paramGet(params, "fromDate", "")
-		fromDate, err := validator.Validate(ctx, "date", fromDateParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
-			http.Error(w, "Invalid dateFrom parameter", http.StatusBadRequest)
-			return
-		}
-
-		toDateParam := paramGet(params, "toDate", "")
-		toDate, err := validator.Validate(ctx, "date", toDateParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
-			http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
-			return
-		}
-
-		if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
-			log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
-			http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
-			return
-		}
-
-		relTypeParam := paramGet(params, "release-type", query.Published.String())
-		relType, err := validator.Validate(ctx, "release-type", relTypeParam)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "release-type", "value": relTypeParam})
-			http.Error(w, "Invalid release-type parameter", http.StatusBadRequest)
-			return
-		}
-		provisional := paramGetBool(params, "subtype-provisional", false)
-		confirmed := paramGetBool(params, "subtype-confirmed", false)
-		postponed := paramGetBool(params, "subtype-postponed", false)
-		highlight := paramGetBool(params, "highlight", true)
-		census := paramGetBool(params, "census", false)
-
-		searchReq := query.ReleaseSearchRequest{
-			Term:           term,
-			Template:       template,
-			From:           offset.(int),
-			Size:           limit.(int),
-			SortBy:         sort.(query.Sort),
-			ReleasedAfter:  fromDate.(query.Date),
-			ReleasedBefore: toDate.(query.Date),
-			Type:           relType.(query.ReleaseType),
-			Provisional:    provisional,
-			Confirmed:      confirmed,
-			Postponed:      postponed,
-			Census:         census,
-			Highlight:      highlight,
+		queryString, searchReq := CreateReleaseRequest(w, req, validator)
+		if searchReq == nil {
+			return // error already handled
 		}
 
 		searches, err := builder.BuildSearchQuery(ctx, searchReq)
 		if err != nil {
-			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": sort, "limit": limit, "offset": offset})
+			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": searchReq.SortBy, "limit": searchReq.Size, "offset": searchReq.From})
 			http.Error(w, "Failed to create search release query", http.StatusInternalServerError)
 			return
 		}
@@ -115,7 +125,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, searchReq, highlight)
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, *searchReq, searchReq.Highlight)
 			if err != nil {
 				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)

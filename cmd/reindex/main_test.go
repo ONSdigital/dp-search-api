@@ -235,10 +235,8 @@ func TestRetrieveDatasetEditions(t *testing.T) {
 					wg.Wait()
 				})
 			})
-
 		})
 	})
-
 }
 
 func TestRetrieveLatestMetadata(t *testing.T) {

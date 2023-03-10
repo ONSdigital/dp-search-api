@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/query"
 	"net/http"
 	"sync"
 )
@@ -432,7 +433,7 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //			BuildCountQueryFunc: func(ctx context.Context, query string) ([]byte, error) {
 //				panic("mock out the BuildCountQuery method")
 //			},
-//			BuildSearchQueryFunc: func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
+//			BuildSearchQueryFunc: func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error) {
 //				panic("mock out the BuildSearchQuery method")
 //			},
 //		}
@@ -446,7 +447,7 @@ type QueryBuilderMock struct {
 	BuildCountQueryFunc func(ctx context.Context, query string) ([]byte, error)
 
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
-	BuildSearchQueryFunc func(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error)
+	BuildSearchQueryFunc func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -461,18 +462,8 @@ type QueryBuilderMock struct {
 		BuildSearchQuery []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// Q is the q argument value.
-			Q string
-			// ContentTypes is the contentTypes argument value.
-			ContentTypes string
-			// Sort is the sort argument value.
-			Sort string
-			// Topics is the topics argument value.
-			Topics []string
-			// Limit is the limit argument value.
-			Limit int
-			// Offset is the offset argument value.
-			Offset int
+			// Req is the req argument value.
+			Req *query.SearchRequest
 			// EsVersion710 is the esVersion710 argument value.
 			EsVersion710 bool
 		}
@@ -518,33 +509,23 @@ func (mock *QueryBuilderMock) BuildCountQueryCalls() []struct {
 }
 
 // BuildSearchQuery calls BuildSearchQueryFunc.
-func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, contentTypes string, sort string, topics []string, limit int, offset int, esVersion710 bool) ([]byte, error) {
+func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error) {
 	if mock.BuildSearchQueryFunc == nil {
 		panic("QueryBuilderMock.BuildSearchQueryFunc: method is nil but QueryBuilder.BuildSearchQuery was just called")
 	}
 	callInfo := struct {
 		Ctx          context.Context
-		Q            string
-		ContentTypes string
-		Sort         string
-		Topics       []string
-		Limit        int
-		Offset       int
+		Req          *query.SearchRequest
 		EsVersion710 bool
 	}{
 		Ctx:          ctx,
-		Q:            q,
-		ContentTypes: contentTypes,
-		Sort:         sort,
-		Topics:       topics,
-		Limit:        limit,
-		Offset:       offset,
+		Req:          req,
 		EsVersion710: esVersion710,
 	}
 	mock.lockBuildSearchQuery.Lock()
 	mock.calls.BuildSearchQuery = append(mock.calls.BuildSearchQuery, callInfo)
 	mock.lockBuildSearchQuery.Unlock()
-	return mock.BuildSearchQueryFunc(ctx, q, contentTypes, sort, topics, limit, offset, esVersion710)
+	return mock.BuildSearchQueryFunc(ctx, req, esVersion710)
 }
 
 // BuildSearchQueryCalls gets all the calls that were made to BuildSearchQuery.
@@ -553,22 +534,12 @@ func (mock *QueryBuilderMock) BuildSearchQuery(ctx context.Context, q string, co
 //	len(mockedQueryBuilder.BuildSearchQueryCalls())
 func (mock *QueryBuilderMock) BuildSearchQueryCalls() []struct {
 	Ctx          context.Context
-	Q            string
-	ContentTypes string
-	Sort         string
-	Topics       []string
-	Limit        int
-	Offset       int
+	Req          *query.SearchRequest
 	EsVersion710 bool
 } {
 	var calls []struct {
 		Ctx          context.Context
-		Q            string
-		ContentTypes string
-		Sort         string
-		Topics       []string
-		Limit        int
-		Offset       int
+		Req          *query.SearchRequest
 		EsVersion710 bool
 	}
 	mock.lockBuildSearchQuery.RLock()
@@ -662,7 +633,7 @@ var _ ResponseTransformer = &ResponseTransformerMock{}
 //			TransformCountResponseFunc: func(ctx context.Context, responseData []byte) (int, error) {
 //				panic("mock out the TransformCountResponse method")
 //			},
-//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error) {
 //				panic("mock out the TransformSearchResponse method")
 //			},
 //		}
@@ -676,7 +647,7 @@ type ResponseTransformerMock struct {
 	TransformCountResponseFunc func(ctx context.Context, responseData []byte) (int, error)
 
 	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
-	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error)
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -693,8 +664,8 @@ type ResponseTransformerMock struct {
 			Ctx context.Context
 			// ResponseData is the responseData argument value.
 			ResponseData []byte
-			// Query is the query argument value.
-			Query string
+			// QueryMoqParam is the queryMoqParam argument value.
+			QueryMoqParam string
 			// Highlight is the highlight argument value.
 			Highlight bool
 		}
@@ -740,25 +711,25 @@ func (mock *ResponseTransformerMock) TransformCountResponseCalls() []struct {
 }
 
 // TransformSearchResponse calls TransformSearchResponseFunc.
-func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, queryMoqParam string, highlight bool) ([]byte, error) {
 	if mock.TransformSearchResponseFunc == nil {
 		panic("ResponseTransformerMock.TransformSearchResponseFunc: method is nil but ResponseTransformer.TransformSearchResponse was just called")
 	}
 	callInfo := struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Query        string
-		Highlight    bool
+		Ctx           context.Context
+		ResponseData  []byte
+		QueryMoqParam string
+		Highlight     bool
 	}{
-		Ctx:          ctx,
-		ResponseData: responseData,
-		Query:        query,
-		Highlight:    highlight,
+		Ctx:           ctx,
+		ResponseData:  responseData,
+		QueryMoqParam: queryMoqParam,
+		Highlight:     highlight,
 	}
 	mock.lockTransformSearchResponse.Lock()
 	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
 	mock.lockTransformSearchResponse.Unlock()
-	return mock.TransformSearchResponseFunc(ctx, responseData, query, highlight)
+	return mock.TransformSearchResponseFunc(ctx, responseData, queryMoqParam, highlight)
 }
 
 // TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
@@ -766,16 +737,16 @@ func (mock *ResponseTransformerMock) TransformSearchResponse(ctx context.Context
 //
 //	len(mockedResponseTransformer.TransformSearchResponseCalls())
 func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
-	Ctx          context.Context
-	ResponseData []byte
-	Query        string
-	Highlight    bool
+	Ctx           context.Context
+	ResponseData  []byte
+	QueryMoqParam string
+	Highlight     bool
 } {
 	var calls []struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Query        string
-		Highlight    bool
+		Ctx           context.Context
+		ResponseData  []byte
+		QueryMoqParam string
+		Highlight     bool
 	}
 	mock.lockTransformSearchResponse.RLock()
 	calls = mock.calls.TransformSearchResponse

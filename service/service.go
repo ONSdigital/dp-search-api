@@ -27,7 +27,8 @@ type Service struct {
 	router              *mux.Router
 	server              HTTPServer
 	serviceList         *ExternalServiceList
-	transformer         api.ResponseTransformer
+	searchTransformer   api.ResponseTransformer
+	releaseTransformer  api.ReleaseResponseTransformer
 }
 
 // SetServer sets the http server for a service
@@ -52,21 +53,24 @@ func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Cli
 
 // SetTransformer sets the transformer for a service
 func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransformer) {
-	svc.transformer = transformerClient
+	svc.searchTransformer = transformerClient
 }
 
 // Run the service
 func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
 	var esClientErr error
 	var esClient dpEsClient.Client
-	var transformerClient api.ResponseTransformer
 
 	elasticHTTPClient := dphttp.NewClient()
+
 	// Initialise deprecatedESClient
 	deprecatedESClient := elasticsearch.New(cfg.ElasticSearchAPIURL, elasticHTTPClient, cfg.AWS.Region, cfg.AWS.Service)
 
-	// Initialise transformerClient
-	transformerClient = transformer.New()
+	// Initialise search transformer
+	searchTransformer := transformer.New()
+
+	// Initialise release transformer
+	releaseTransformer := transformer.NewReleaseTransformer()
 
 	// Initialse AWS signer
 
@@ -94,10 +98,17 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	// Initialise query builder
+	// Initialise search query builder
 	queryBuilder, err := query.NewQueryBuilder()
 	if err != nil {
 		log.Fatal(ctx, "error initialising query builder", err)
+		return nil, err
+	}
+
+	// Initialise release query builer
+	releaseBuilder, err := query.NewReleaseBuilder()
+	if err != nil {
+		log.Fatal(ctx, "error initialising release query builder", err)
 		return nil, err
 	}
 
@@ -121,21 +132,11 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
-	// Create Search API
-	searchAPI, err := api.NewSearchAPI(router, esClient, deprecatedESClient, queryBuilder, transformerClient, permissions)
-	if err != nil {
-		log.Fatal(ctx, "error initialising API", err)
-		return nil, err
-	}
-
-	// Create the interfaces needed, and add route for the new search releases api
-	builder, err := query.NewReleaseBuilder()
-	if err != nil {
-		log.Fatal(ctx, "error initialising release query builder", err)
-		return nil, err
-	}
-
-	_ = searchAPI.AddSearchReleaseAPI(query.NewReleaseQueryParamValidator(), builder, esClient, transformer.NewReleaseTransformer())
+	// Create Search API and register HTTP handlers
+	searchAPI := api.NewSearchAPI(router, esClient, deprecatedESClient, permissions).
+		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer).
+		RegisterPostSearch().
+		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
 
 	go func() {
 		log.Info(ctx, "search api starting")
@@ -154,7 +155,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		router:              router,
 		server:              server,
 		serviceList:         serviceList,
-		transformer:         transformerClient,
+		searchTransformer:   searchTransformer,
+		releaseTransformer:  releaseTransformer,
 	}, nil
 }
 
