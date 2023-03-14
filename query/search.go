@@ -18,6 +18,8 @@ const (
 	es710AggregationField  = "type"
 )
 
+// SearchRequest holds the values provided by a request against Search API
+// The values are used to build the elasticsearch query using the corresponding template/s
 type SearchRequest struct {
 	Term             string
 	From             int
@@ -30,7 +32,20 @@ type SearchRequest struct {
 	URIPrefix        string
 	Topic            []string
 	TopicWildcard    []string
+	PopulationType   *PopulationTypeRequest
+	Dimensions       []*DimensionRequest
 	Now              string
+}
+
+type PopulationTypeRequest struct {
+	Name  string
+	Label string
+}
+
+type DimensionRequest struct {
+	Name     string
+	Label    string
+	RawLabel string
 }
 
 type countRequest struct {
@@ -95,6 +110,8 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByReleaseDate.tmpl",
 		"templates/search/v710/sortByReleaseDateAsc.tmpl",
 		"templates/search/v710/sortByFirstLetter.tmpl",
+		"templates/search/v710/populationTypeFilters.tmpl",
+		"templates/search/v710/dimensionsFilters.tmpl",
 	)
 
 	return templates, err

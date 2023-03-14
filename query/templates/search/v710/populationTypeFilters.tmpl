@@ -1,0 +1,16 @@
+{{ if .PopulationType.Name }}
+{
+  "match":{
+    "population_type.name": {
+      "query": "{{ .PopulationType.Name }}"
+    }
+  }
+},
+{{ end }}
+{
+  "match":{
+    "population_type.label": {
+      "query": "{{ .PopulationType.Label }}"
+    }
+  }
+}

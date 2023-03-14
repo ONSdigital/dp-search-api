@@ -21,6 +21,24 @@
           }
         }
         {{ end }}
+        {{ if .PopulationType }}
+        , {
+          "bool": {
+            "should": [
+              {{ template "populationTypeFilters.tmpl". }}
+            ]
+          }
+        }
+        {{ end }}
+        {{ if .Dimensions }}
+        , {
+          "bool": {
+            "should": [
+              {{ template "dimensionsFilters.tmpl". }}
+            ]
+          }
+        }
+        {{ end }}
       ]
     }
   }
