@@ -1,29 +1,23 @@
-{ {{/* count query */}}
+{ {{/* count content type query */}}
 "query" : {
-    "bool" : {
-      "must" : {
-                 {{- if .Term}}
-                     {{- template "coreQuery.tmpl" .}}
-                  {{- else}}
-                     {{- template "matchAll.tmpl" .}}
-                  {{- end}}
-             }
-        {{-  if .URIPrefix }}
-          ,"filter": [{
-	        "prefix": {
-                    "uri": "{{.URIPrefix}}"
-                }}
-                ]
-	      {{end}}
-      }
-   },
+  "bool" : {
+    "must" : {
+      {{- if .Term}}
+        {{- template "coreQuery.tmpl" .}}
+      {{- else}}
+        {{- template "matchAll.tmpl" .}}
+      {{- end}}
+    }
+      {{template "countContentTypeFilters.tmpl" .}}
+    }
+  },
   "size": 0,
   "aggregations": {
-  		"content_types": {
-  			"terms": {
-  				"size": 1000,
-  				"field":"{{.AggregationFields.ContentTypes}}"
-			}
-  		}
-	}
+    "content_types": {
+      "terms": {
+        "size": 1000,
+  		  "field":"{{.AggregationFields.ContentTypes}}"
+      }
+  	 }
+  }
 }

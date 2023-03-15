@@ -30,15 +30,6 @@
         }
       }
       {{ end }}
-      {{ if .Dimensions }}
-      , {
-        "bool": {
-          "should": [
-            {{ template "dimensionsFilters.tmpl". }}
-          ]
-        }
-      }
-      {{ end }}
       ]
     }
   }

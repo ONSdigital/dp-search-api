@@ -91,16 +91,16 @@ func TestBuildSearchQueryContent(t *testing.T) {
 		So(string(searches[0].Query), ShouldEqual, `{"from":1,"size":2,"query":{"bool":{"must":{"function_score":{"query":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}},"functions":[{"filter":{"term":{"type":"bulletin"}},"weight":100},{"filter":{"term":{"type":"dataset_landing_page"}},"weight":70},{"filter":{"terms":{"type":["article","compendium_landing_page","article_download"]}},"weight":50},{"filter":{"term":{"type":"static_adhoc"}},"weight":30},{"filter":{"term":{"type":"timeseries"}},"weight":10}]}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}}]}}]}},"suggest":{"search_suggest":{"text":"a","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"highlight":{"pre_tags":["<em class=\"ons-highlight\">"],"post_tags":["</em>"],"fields":{"terms":{"fragment_size":0,"number_of_fragments":0},"title":{"fragment_size":0,"number_of_fragments":0},"edition":{"fragment_size":0,"number_of_fragments":0},"summary":{"fragment_size":0,"number_of_fragments":0},"meta_description":{"fragment_size":0,"number_of_fragments":0},"keywords":{"fragment_size":0,"number_of_fragments":0},"cdid":{"fragment_size":0,"number_of_fragments":0},"dataset_id":{"fragment_size":0,"number_of_fragments":0},"downloads.content":{"fragment_size":45,"number_of_fragments":5},"pageData":{"fragment_size":45,"number_of_fragments":5}}},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`)
 
 		So(searches[1].Header, ShouldResemble, client.Header{Index: "ons"})
-		So(string(searches[1].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}}}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`)
+		So(string(searches[1].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`)
 
 		So(searches[2].Header, ShouldResemble, client.Header{Index: "ons"})
-		So(string(searches[2].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}}}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`)
+		So(string(searches[2].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`)
 
 		So(searches[3].Header, ShouldResemble, client.Header{Index: "ons"})
-		So(string(searches[3].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}}}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`)
+		So(string(searches[3].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}}]}}]}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`)
 
 		So(searches[4].Header, ShouldResemble, client.Header{Index: "ons"})
-		So(string(searches[4].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}}}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`)
+		So(string(searches[4].Query), ShouldEqual, `{"query":{"bool":{"must":{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"a","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"a","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"a","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"a","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"a","operator":"AND","boost":10.0}}},{"multi_match":{"query":"a","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"a","operator":"AND","boost":100.0}}}]}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}}]}}]}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`)
 	})
 }
 
@@ -119,26 +119,71 @@ func TestBuildSearchQueryAggregates(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(searches, ShouldHaveLength, 5)
 
+			Convey("And the expected topics aggregation (count) query is generated with no filters", func() {
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
+				So(searches[1].Header, ShouldResemble, client.Header{Index: "ons"})
+				So(string(searches[1].Query), ShouldEqual, expectedQueryString)
+			})
+
+			Convey("And the expected content types aggregation (count) query is generated with no filters", func() {
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
+				So(searches[2].Header, ShouldResemble, client.Header{Index: "ons"})
+				So(string(searches[2].Query), ShouldEqual, expectedQueryString)
+			})
+
+			Convey("And the expected population type aggregation (count) query is generated with no filters", func() {
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}}]}}]}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`
+				So(searches[3].Header, ShouldResemble, client.Header{Index: "ons"})
+				So(string(searches[3].Query), ShouldEqual, expectedQueryString)
+			})
+
+			Convey("And the expected dimensions aggregation (count) query is generated with no filters", func() {
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}}]}}]}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`
+				So(searches[4].Header, ShouldResemble, client.Header{Index: "ons"})
+				So(string(searches[4].Query), ShouldEqual, expectedQueryString)
+			})
+		})
+
+		Convey("Then BuildSearchQuery successfully generates 5 queries for a request with topics, content type, population types and dimensions", func() {
+			reqParams := &SearchRequest{
+				Topic: []string{"test"},
+				Types: []string{"ta", "tb"},
+				PopulationType: &PopulationTypeRequest{
+					Name:  "pop1",
+					Label: "lbl1",
+				},
+				Dimensions: []*DimensionRequest{
+					{Name: "dim1", Label: "lbl1", RawLabel: "rawLbl1"},
+				},
+			}
+			query, err := qb.BuildSearchQuery(context.Background(), reqParams, true)
+			So(err, ShouldBeNil)
+
+			var searches []client.Search
+			err = json.Unmarshal(query, &searches)
+			So(err, ShouldBeNil)
+			So(searches, ShouldHaveLength, 5)
+
 			Convey("And the expected topics aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}}}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
 				So(searches[1].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[1].Query), ShouldEqual, expectedQueryString)
 			})
 
 			Convey("And the expected content types aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}}}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
 				So(searches[2].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[2].Query), ShouldEqual, expectedQueryString)
 			})
 
 			Convey("And the expected population type aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}}}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`
 				So(searches[3].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[3].Query), ShouldEqual, expectedQueryString)
 			})
 
-			Convey("And the expected asdf aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}}}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`
+			Convey("And the expected dimensions aggregation (count) query is generated, filtering by the other parameters", func() {
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}}]}}]}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`
 				So(searches[4].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[4].Query), ShouldEqual, expectedQueryString)
 			})

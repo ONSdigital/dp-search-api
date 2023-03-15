@@ -21,15 +21,6 @@
         }
       }
       {{ end }}
-      {{ if .PopulationType }}
-      , {
-        "bool": {
-          "should": [
-            {{ template "populationTypeFilters.tmpl". }}
-          ]
-        }
-      }
-      {{ end }}
       {{ if .Dimensions }}
       , {
         "bool": {

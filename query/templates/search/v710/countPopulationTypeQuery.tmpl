@@ -1,29 +1,23 @@
-{ {{/* count query */}}
+{ {{/* count population types query */}}
 "query" : {
-    "bool" : {
-      "must" : {
-                 {{- if .Term}}
-                     {{- template "coreQuery.tmpl" .}}
-                  {{- else}}
-                     {{- template "matchAll.tmpl" .}}
-                  {{- end}}
-             }
-        {{-  if .URIPrefix }}
-          ,"filter": [{
-	        "prefix": {
-                    "uri": "{{.URIPrefix}}"
-                }}
-                ]
-	      {{end}}
-      }
-   },
+  "bool" : {
+    "must" : {
+      {{- if .Term}}
+        {{- template "coreQuery.tmpl" .}}
+      {{- else}}
+        {{- template "matchAll.tmpl" .}}
+      {{- end}}
+    }
+      {{template "countPopulationTypeFilters.tmpl" .}}
+    }
+  },
   "size": 0,
   "aggregations": {
-  		"population_type": {
-  			"terms": {
-  				"size": 1000,
-  			   "field":"{{.AggregationFields.PopulationType}}"
-			}
-  		}
-	}
+    "population_type": {
+      "terms": {
+        "size": 1000,
+  		  "field":"{{.AggregationFields.PopulationType}}"
+      }
+  	 }
+  }
 }
