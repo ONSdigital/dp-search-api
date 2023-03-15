@@ -43,7 +43,7 @@ var (
 				Count: 1,
 			},
 		},
-		Items: []models.ESSourceDocument{
+		Items: []models.Item{
 			{
 				DataType:  "dataset_landing_page",
 				DatasetID: "Census 2021 Age Stats",
