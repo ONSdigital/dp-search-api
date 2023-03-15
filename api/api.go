@@ -51,7 +51,7 @@ type QueryParamValidator interface {
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
 	BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
-	BuildCountQuery(ctx context.Context, query string) ([]byte, error)
+	BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error)
 }
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type

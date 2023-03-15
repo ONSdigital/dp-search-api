@@ -1,4 +1,5 @@
 { {{/* count query */}}
+
 "query" : {
     "bool" : {
       "must" : {
@@ -19,11 +20,11 @@
    },
   "size": 0,
   "aggregations": {
-		"topicCounts": {
+		"topic": {
 			"terms": {
 				"size": 1000,
-				"field": "topics"
+  			"field":"{{.AggregationFields.Topics}}"
 			}
 		}
- }
+  }
 }

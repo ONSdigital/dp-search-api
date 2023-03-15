@@ -58,9 +58,9 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 	return value == "true"
 }
 
-// CreateSearchRequest reads the parameters from the request and generates the corresponding SearchRequest
+// CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateSearchRequest(w http.ResponseWriter, req *http.Request, validator QueryParamValidator) (string, *query.SearchRequest) {
+func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator) (string, *query.SearchRequest, *query.CountRequest) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
@@ -72,7 +72,7 @@ func CreateSearchRequest(w http.ResponseWriter, req *http.Request, validator Que
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "sort", "value": sortParam})
 		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
-		return "", nil
+		return "", nil, nil
 	}
 
 	highlight := paramGetBool(params, "highlight", true)
@@ -89,7 +89,7 @@ func CreateSearchRequest(w http.ResponseWriter, req *http.Request, validator Que
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "limit", "value": limitParam})
 		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
-		return "", nil
+		return "", nil, nil
 	}
 
 	offsetParam := paramGet(params, "offset", "0")
@@ -97,21 +97,24 @@ func CreateSearchRequest(w http.ResponseWriter, req *http.Request, validator Que
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "offset", "value": offsetParam})
 		http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
-		return "", nil
+		return "", nil, nil
 	}
 
 	typesParam := paramGet(params, "content_type", defaultContentTypes)
 
 	return q, &query.SearchRequest{
-		Term:      sanitisedQuery,
-		From:      offset.(int),
-		Size:      limit.(int),
-		Types:     strings.Split(typesParam, ","),
-		Topic:     topics,
-		SortBy:    sort.(string),
-		Highlight: highlight,
-		Now:       time.Now().UTC().Format(time.RFC3339),
-	}
+			Term:      sanitisedQuery,
+			From:      offset.(int),
+			Size:      limit.(int),
+			Types:     strings.Split(typesParam, ","),
+			Topic:     topics,
+			SortBy:    sort.(string),
+			Highlight: highlight,
+			Now:       time.Now().UTC().Format(time.RFC3339),
+		}, &query.CountRequest{
+			Term:        sanitisedQuery,
+			CountEnable: true,
+		}
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
@@ -120,8 +123,8 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q, reqParams := CreateSearchRequest(w, req, validator)
-		if reqParams == nil {
+		q, searchReq, countReq := CreateRequests(w, req, validator)
+		if searchReq == nil || countReq == nil {
 			return // error already handled
 		}
 
@@ -135,11 +138,11 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		)
 
 		go func() {
-			processCountQuery(ctx, elasticSearchClient, queryBuilder, reqParams.Term, resCountChan)
+			processCountQuery(ctx, elasticSearchClient, queryBuilder, countReq, resCountChan)
 		}()
 
 		go func() {
-			processSearchQuery(ctx, elasticSearchClient, queryBuilder, reqParams, resDataChan)
+			processSearchQuery(ctx, elasticSearchClient, queryBuilder, searchReq, resDataChan)
 		}()
 
 		for i := 0; i < 2; i++ {
@@ -156,7 +159,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 				return
 			}
 
-			responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, q, reqParams.Highlight)
+			responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, q, searchReq.Highlight)
 			if err != nil {
 				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "failed to transform search result", http.StatusInternalServerError)
@@ -210,14 +213,14 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q, reqParams := CreateSearchRequest(w, req, validator)
-		if reqParams == nil {
+		q, searchReq, countReq := CreateRequests(w, req, validator)
+		if searchReq == nil || countReq == nil {
 			return
 		}
 
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, reqParams, false)
+		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, searchReq, false)
 		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": reqParams.SortBy, "limit": reqParams.Size, "offset": reqParams.From})
+			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": searchReq.SortBy, "limit": searchReq.Size, "offset": searchReq.From})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
 			return
 		}
@@ -236,7 +239,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 		}
 
 		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, reqParams.Highlight)
+			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, searchReq.Highlight)
 			if err != nil {
 				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
@@ -339,10 +342,10 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 	responseDataChan <- responseData
 }
 
-func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery string, resCountChan chan []byte) {
-	countQBytes, err := queryBuilder.BuildCountQuery(ctx, sanitisedQuery)
+func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.CountRequest, resCountChan chan []byte) {
+	countQBytes, err := queryBuilder.BuildCountQuery(ctx, reqParams)
 	if err != nil {
-		log.Error(ctx, "creation of count query failed", err, log.Data{"q": sanitisedQuery})
+		log.Error(ctx, "creation of count query failed", err, log.Data{"q": reqParams.Term})
 		resCountChan <- nil
 		return
 	}
@@ -351,7 +354,7 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 		Query: countQBytes,
 	})
 	if err != nil {
-		log.Error(ctx, "call to elasticsearch count api failed", err, log.Data{"q": sanitisedQuery})
+		log.Error(ctx, "call to elasticsearch count api failed", err, log.Data{"q": reqParams.Term})
 		resCountChan <- nil
 		return
 	}

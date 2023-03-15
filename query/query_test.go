@@ -25,6 +25,7 @@ func TestNewQueryBuilder(t *testing.T) {
 
 	Convey("Should return a Builder object with elastic v710 templates", t, func() {
 		builderObject, err := NewQueryBuilder()
+		So(err, ShouldBeNil)
 
 		So(builderObject.searchTemplates, ShouldNotBeNil)
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "search.tmpl")
@@ -33,8 +34,14 @@ func TestNewQueryBuilder(t *testing.T) {
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "matchAll.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentQuery.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countQuery.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countContentTypeHeader.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countContentTypeQuery.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countTopicHeader.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countTopicQuery.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countPopulationTypeHeader.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countPopulationTypeQuery.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countDimensionsHeader.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countDimensionsQuery.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "coreQuery.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "weightedQuery.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilters.tmpl")
@@ -49,6 +56,10 @@ func TestNewQueryBuilder(t *testing.T) {
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "canonicalFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "subTopicsFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentTypeFilter.tmpl")
-		So(err, ShouldBeNil)
+
+		So(builderObject.countTemplates, ShouldNotBeNil)
+		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "distinctItemCountQuery.tmpl")
+		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "coreQuery.tmpl")
+		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "matchAll.tmpl")
 	})
 }

@@ -15,26 +15,33 @@ var searchFS embed.FS
 
 const (
 	legacyAggregationField = "_type"
-	es710AggregationField  = "type"
 )
+
+var es710AggregationField = &AggregationFields{
+	Topics:         "topics",
+	ContentTypes:   "type",
+	PopulationType: "population_type.name",
+	Dimensions:     "dimensions.name",
+}
 
 // SearchRequest holds the values provided by a request against Search API
 // The values are used to build the elasticsearch query using the corresponding template/s
 type SearchRequest struct {
-	Term             string
-	From             int
-	Size             int
-	Types            []string
-	Index            string
-	SortBy           string
-	AggregationField string
-	Highlight        bool
-	URIPrefix        string
-	Topic            []string
-	TopicWildcard    []string
-	PopulationType   *PopulationTypeRequest
-	Dimensions       []*DimensionRequest
-	Now              string
+	Term              string
+	From              int
+	Size              int
+	Types             []string
+	Index             string
+	SortBy            string
+	AggregationField  string // Deprecated (used only in legacy templates for aggregations)
+	AggregationFields *AggregationFields
+	Highlight         bool
+	URIPrefix         string
+	Topic             []string
+	TopicWildcard     []string
+	PopulationType    *PopulationTypeRequest
+	Dimensions        []*DimensionRequest
+	Now               string
 }
 
 type PopulationTypeRequest struct {
@@ -48,7 +55,15 @@ type DimensionRequest struct {
 	RawLabel string
 }
 
-type countRequest struct {
+// AggregationFields are the elasticsearch keys for which the aggregations will be done
+type AggregationFields struct {
+	Topics         string
+	ContentTypes   string
+	PopulationType string
+	Dimensions     string
+}
+
+type CountRequest struct {
 	Term        string
 	CountEnable bool
 }
@@ -92,13 +107,17 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/contentQuery.tmpl",
 		"templates/search/v710/matchAll.tmpl",
 		"templates/search/v710/contentHeader.tmpl",
-		"templates/search/v710/countHeader.tmpl",
-		"templates/search/v710/countQuery.tmpl",
-		"templates/search/v710/contentTypeFilter.tmpl",
-		"templates/search/v710/topicCountHeader.tmpl",
-		"templates/search/v710/topicCountQuery.tmpl",
+		"templates/search/v710/countContentTypeHeader.tmpl",
+		"templates/search/v710/countContentTypeQuery.tmpl",
+		"templates/search/v710/countTopicHeader.tmpl",
+		"templates/search/v710/countTopicQuery.tmpl",
+		"templates/search/v710/countPopulationTypeHeader.tmpl",
+		"templates/search/v710/countPopulationTypeQuery.tmpl",
+		"templates/search/v710/countDimensionsHeader.tmpl",
+		"templates/search/v710/countDimensionsQuery.tmpl",
 		"templates/search/v710/coreQuery.tmpl",
 		"templates/search/v710/weightedQuery.tmpl",
+		"templates/search/v710/contentTypeFilter.tmpl",
 		"templates/search/v710/contentFilters.tmpl",
 		"templates/search/v710/contentFilterOnURIPrefix.tmpl",
 		"templates/search/v710/contentFilterOnTopicWildcard.tmpl",
@@ -134,7 +153,7 @@ func SetupV710Count() (*template.Template, error) {
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
 	if esVersion710 {
-		reqParams.AggregationField = es710AggregationField
+		reqParams.AggregationFields = es710AggregationField
 	} else {
 		reqParams.AggregationField = legacyAggregationField
 	}
@@ -160,12 +179,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchReques
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildCountQuery(ctx context.Context, query string) ([]byte, error) {
-	reqParams := countRequest{
-		Term:        query,
-		CountEnable: true,
-	}
-
+func (sb *Builder) BuildCountQuery(ctx context.Context, reqParams *CountRequest) ([]byte, error) {
 	var doc bytes.Buffer
 	err := sb.countTemplates.Execute(&doc, reqParams)
 	if err != nil {

@@ -700,7 +700,7 @@ func newQueryBuilderMock(retQuery []byte, err error) *QueryBuilderMock {
 		BuildSearchQueryFunc: func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error) {
 			return retQuery, err
 		},
-		BuildCountQueryFunc: func(ctx context.Context, q string) ([]byte, error) {
+		BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 			return retQuery, err
 		},
 	}

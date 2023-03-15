@@ -430,7 +430,7 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //		// make and configure a mocked QueryBuilder
 //		mockedQueryBuilder := &QueryBuilderMock{
-//			BuildCountQueryFunc: func(ctx context.Context, query string) ([]byte, error) {
+//			BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 //				panic("mock out the BuildCountQuery method")
 //			},
 //			BuildSearchQueryFunc: func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error) {
@@ -444,7 +444,7 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //	}
 type QueryBuilderMock struct {
 	// BuildCountQueryFunc mocks the BuildCountQuery method.
-	BuildCountQueryFunc func(ctx context.Context, query string) ([]byte, error)
+	BuildCountQueryFunc func(ctx context.Context, req *query.CountRequest) ([]byte, error)
 
 	// BuildSearchQueryFunc mocks the BuildSearchQuery method.
 	BuildSearchQueryFunc func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
@@ -455,8 +455,8 @@ type QueryBuilderMock struct {
 		BuildCountQuery []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// Query is the query argument value.
-			Query string
+			// Req is the req argument value.
+			Req *query.CountRequest
 		}
 		// BuildSearchQuery holds details about calls to the BuildSearchQuery method.
 		BuildSearchQuery []struct {
@@ -473,21 +473,21 @@ type QueryBuilderMock struct {
 }
 
 // BuildCountQuery calls BuildCountQueryFunc.
-func (mock *QueryBuilderMock) BuildCountQuery(ctx context.Context, query string) ([]byte, error) {
+func (mock *QueryBuilderMock) BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 	if mock.BuildCountQueryFunc == nil {
 		panic("QueryBuilderMock.BuildCountQueryFunc: method is nil but QueryBuilder.BuildCountQuery was just called")
 	}
 	callInfo := struct {
-		Ctx   context.Context
-		Query string
+		Ctx context.Context
+		Req *query.CountRequest
 	}{
-		Ctx:   ctx,
-		Query: query,
+		Ctx: ctx,
+		Req: req,
 	}
 	mock.lockBuildCountQuery.Lock()
 	mock.calls.BuildCountQuery = append(mock.calls.BuildCountQuery, callInfo)
 	mock.lockBuildCountQuery.Unlock()
-	return mock.BuildCountQueryFunc(ctx, query)
+	return mock.BuildCountQueryFunc(ctx, req)
 }
 
 // BuildCountQueryCalls gets all the calls that were made to BuildCountQuery.
@@ -495,12 +495,12 @@ func (mock *QueryBuilderMock) BuildCountQuery(ctx context.Context, query string)
 //
 //	len(mockedQueryBuilder.BuildCountQueryCalls())
 func (mock *QueryBuilderMock) BuildCountQueryCalls() []struct {
-	Ctx   context.Context
-	Query string
+	Ctx context.Context
+	Req *query.CountRequest
 } {
 	var calls []struct {
-		Ctx   context.Context
-		Query string
+		Ctx context.Context
+		Req *query.CountRequest
 	}
 	mock.lockBuildCountQuery.RLock()
 	calls = mock.calls.BuildCountQuery
