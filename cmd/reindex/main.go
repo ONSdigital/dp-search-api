@@ -39,6 +39,7 @@ type cliConfig struct {
 	esURL            string
 	signRequests     bool
 	ServiceAuthToken string
+	PaginationLimit  int
 	TestSubset       bool // Set this flag to true to request only one batch of datasets from Dataset API
 	IgnoreZebedee    bool // Set this flag to true to avoid requesting zebedee datasets
 }
@@ -56,13 +57,6 @@ type DatasetEditionMetadata struct {
 	id        string
 	editionID string
 	version   string
-	isBasedOn *dataset.IsBasedOn
-}
-
-// DatasetMetadata holds a dataset's metadata, plus its isBasedOn
-type DatasetMetadata struct {
-	metadata  *dataset.Metadata
-	isBasedOn *dataset.IsBasedOn
 }
 
 type Document struct {
@@ -121,7 +115,7 @@ func main() {
 		panic(err)
 	}
 
-	datasetChan := extractDatasets(ctx, datasetClient, cfg)
+	datasetChan, _ := extractDatasets(ctx, datasetClient, cfg)
 	editionChan, _ := retrieveDatasetEditions(ctx, datasetClient, datasetChan, cfg.ServiceAuthToken)
 	metadataChan, _ := retrieveLatestMetadata(ctx, datasetClient, editionChan, cfg.ServiceAuthToken)
 	urisChan := uriProducer(ctx, zebClient, cfg)
@@ -196,7 +190,7 @@ func extractDoc(ctx context.Context, z clients.ZebedeeClient, uriChan <-chan str
 	}
 }
 
-func docTransformer(ctx context.Context, extractedChan chan Document, metadataChan chan DatasetMetadata) chan Document {
+func docTransformer(ctx context.Context, extractedChan chan Document, metadataChan chan *dataset.Metadata) chan Document {
 	transformedChan := make(chan Document, maxConcurrentExtractions)
 	go func() {
 		var wg sync.WaitGroup
@@ -248,9 +242,9 @@ func transformZebedeeDoc(ctx context.Context, extractedChan chan Document, trans
 	wg2.Wait()
 }
 
-func transformMetadataDoc(ctx context.Context, metadataChan chan DatasetMetadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
+func transformMetadataDoc(ctx context.Context, metadataChan chan *dataset.Metadata, transformedChan chan<- Document, wg *sync.WaitGroup) {
 	for m := range metadataChan {
-		uri := extractorModels.GetURI(m.metadata)
+		uri := extractorModels.GetURI(m)
 
 		parsedURI, err := url.Parse(uri)
 		if err != nil {
@@ -260,25 +254,19 @@ func transformMetadataDoc(ctx context.Context, metadataChan chan DatasetMetadata
 
 		datasetID, edition, _, getIDErr := getIDsFromURI(uri)
 		if getIDErr != nil {
-			datasetID = m.metadata.DatasetDetails.ID
-			edition = m.metadata.DatasetDetails.Links.Edition.ID
+			datasetID = m.DatasetDetails.ID
+			edition = m.DatasetDetails.Links.Edition.ID
 		}
 
 		searchDataImport := &extractorModels.SearchDataImport{
-			UID:       m.metadata.DatasetDetails.ID,
+			UID:       m.DatasetDetails.ID,
 			URI:       parsedURI.Path,
 			Edition:   edition,
 			DatasetID: datasetID,
 			DataType:  "dataset_landing_page",
 		}
 
-		ds := &dataset.Dataset{
-			Current: &dataset.DatasetDetails{
-				IsBasedOn: m.isBasedOn,
-			},
-		}
-
-		if err = searchDataImport.MapDatasetMetadataValues(context.Background(), ds, m.metadata); err != nil {
+		if err = searchDataImport.MapDatasetMetadataValues(context.Background(), m); err != nil {
 			log.Fatal(ctx, "error occurred while mapping dataset metadata values", err)
 			panic(err)
 		}
@@ -433,19 +421,23 @@ func deleteIndicies(ctx context.Context, dpEsIndexClient dpEsClient.Client, indi
 	fmt.Printf("Deleted Indicies: %s\n", strings.Join(indicies, ","))
 }
 
-func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient, cfg cliConfig) chan dataset.Dataset {
+func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient, cfg cliConfig) (chan dataset.Dataset, *sync.WaitGroup) {
 	datasetChan := make(chan dataset.Dataset, maxConcurrentExtractions)
+	var wg sync.WaitGroup
 
-	// extractAll extracts all datasets from datasetAPI in batches of up to 'DefaultPaginationLimit' size
+	// extractAll extracts all datasets from datasetAPI in batches of up to 'PaginationLimit' size
 	extractAll := func() {
-		defer close(datasetChan)
+		defer func() {
+			close(datasetChan)
+			wg.Done()
+		}()
 		var list dataset.List
 		var err error
 		var offset = 0
 		for {
 			list, err = datasetClient.GetDatasets(ctx, "", cfg.ServiceAuthToken, "", &dataset.QueryParams{
 				Offset: offset,
-				Limit:  DefaultPaginationLimit,
+				Limit:  cfg.PaginationLimit,
 			})
 			if err != nil {
 				log.Fatal(ctx, "error retrieving datasets", err)
@@ -463,19 +455,26 @@ func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient
 			for i := 0; i < len(list.Items); i++ {
 				datasetChan <- list.Items[i]
 			}
-			offset += DefaultPaginationLimit
+			offset += cfg.PaginationLimit
+
+			if offset > list.TotalCount {
+				break
+			}
 		}
 	}
 
-	// extractSome extracts only one batch of size 'DefaultPaginationLimit' from datasetAPI
+	// extractSome extracts only one batch of size 'PaginationLimit' from datasetAPI
 	extractSome := func() {
-		defer close(datasetChan)
+		defer func() {
+			close(datasetChan)
+			wg.Done()
+		}()
 		var list dataset.List
 		var err error
 		var offset = 0
 		list, err = datasetClient.GetDatasets(ctx, "", cfg.ServiceAuthToken, "", &dataset.QueryParams{
 			Offset: offset,
-			Limit:  DefaultPaginationLimit,
+			Limit:  cfg.PaginationLimit,
 		})
 		if err != nil {
 			log.Fatal(ctx, "error retrieving datasets", err)
@@ -486,13 +485,14 @@ func extractDatasets(ctx context.Context, datasetClient clients.DatasetAPIClient
 		}
 	}
 
+	wg.Add(1)
 	if cfg.TestSubset {
 		go extractSome()
 	} else {
 		go extractAll()
 	}
 
-	return datasetChan
+	return datasetChan, &wg
 }
 
 func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetAPIClient, datasetChan chan dataset.Dataset, serviceAuthToken string) (chan DatasetEditionMetadata, *sync.WaitGroup) {
@@ -525,7 +525,6 @@ func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetA
 							id:        dataset.Current.ID,
 							editionID: editions[i].Current.Edition,
 							version:   editions[i].Current.Links.LatestVersion.ID,
-							isBasedOn: dataset.Current.IsBasedOn,
 						}
 					}
 				}
@@ -536,8 +535,8 @@ func retrieveDatasetEditions(ctx context.Context, datasetClient clients.DatasetA
 	return editionMetadataChan, &wg
 }
 
-func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAPIClient, editionMetadata chan DatasetEditionMetadata, serviceAuthToken string) (chan DatasetMetadata, *sync.WaitGroup) {
-	metadataChan := make(chan DatasetMetadata, maxConcurrentExtractions)
+func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAPIClient, editionMetadata chan DatasetEditionMetadata, serviceAuthToken string) (chan *dataset.Metadata, *sync.WaitGroup) {
+	metadataChan := make(chan *dataset.Metadata, maxConcurrentExtractions)
 	var wg sync.WaitGroup
 	go func() {
 		defer close(metadataChan)
@@ -555,10 +554,7 @@ func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAP
 						})
 						continue
 					}
-					metadataChan <- DatasetMetadata{
-						metadata:  &metadata,
-						isBasedOn: edMetadata.isBasedOn,
-					}
+					metadataChan <- &metadata
 				}
 				wg.Done()
 			}()
@@ -568,8 +564,8 @@ func retrieveLatestMetadata(ctx context.Context, datasetClient clients.DatasetAP
 	return metadataChan, &wg
 }
 
-func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport) importerModels.SearchDataImportModel {
-	searchDIM := importerModels.SearchDataImportModel{
+func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport) importerModels.SearchDataImport {
+	searchDIM := importerModels.SearchDataImport{
 		UID:             searchDataImport.UID,
 		URI:             searchDataImport.URI,
 		DataType:        searchDataImport.DataType,
@@ -599,7 +595,7 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 			Date:         dateChange.Date,
 		})
 	}
-	searchDIM.PopulationType = &importerModels.PopulationType{
+	searchDIM.PopulationType = importerModels.PopulationType{
 		Name:  searchDataImport.PopulationType.Name,
 		Label: searchDataImport.PopulationType.Label,
 	}

@@ -46,24 +46,22 @@ func TestCreateIndexName(t *testing.T) {
 
 func TestTransformMetadataDoc(t *testing.T) {
 	Convey("Given a metadata channel and a transformed document channel", t, func() {
-		metadataChan := make(chan DatasetMetadata, 1)
+		metadataChan := make(chan *dataset.Metadata, 1)
 		transformedChan := make(chan Document, 1)
 
 		Convey("When a generic dataset metadata is sent to the channel and consumed by transformMetadataDoc", func() {
-			sent := DatasetMetadata{
-				metadata: &dataset.Metadata{
-					DatasetLinks: dataset.Links{
-						LatestVersion: dataset.Link{
-							URL: fmt.Sprintf("http://testHost:123%s", testURI),
-						},
-					},
-					DatasetDetails: dataset.DatasetDetails{
-						ID: testDatasetID,
+			sent := &dataset.Metadata{
+				DatasetLinks: dataset.Links{
+					LatestVersion: dataset.Link{
+						URL: fmt.Sprintf("http://testHost:123%s", testURI),
 					},
 				},
-				isBasedOn: &dataset.IsBasedOn{
-					Type: "testType",
-					ID:   "testID",
+				DatasetDetails: dataset.DatasetDetails{
+					ID: testDatasetID,
+					IsBasedOn: &dataset.IsBasedOn{
+						Type: "testType",
+						ID:   "testID",
+					},
 				},
 			}
 
@@ -100,34 +98,32 @@ func TestTransformMetadataDoc(t *testing.T) {
 	})
 
 	Convey("Given a metadata channel and a transformed document channel", t, func() {
-		metadataChan := make(chan DatasetMetadata, 1)
+		metadataChan := make(chan *dataset.Metadata, 1)
 		transformedChan := make(chan Document, 1)
 
 		Convey("When a cantabular type dataset metadata is sent to the channel and consumed by transformMetadataDoc", func() {
 			areaTypeTrue := true
 			areaTypeFalse := false
-			sent := DatasetMetadata{
-				metadata: &dataset.Metadata{
-					DatasetLinks: dataset.Links{
-						LatestVersion: dataset.Link{
-							URL: fmt.Sprintf("http://testHost:123%s", testURI),
-						},
-					},
-					DatasetDetails: dataset.DatasetDetails{
-						ID: testDatasetID,
-					},
-					Version: dataset.Version{
-						Dimensions: []dataset.VersionDimension{
-							{ID: "dim1", Label: "label 1 (10 categories)"},
-							{ID: "dim2", Label: "label 2 (12 Categories)", IsAreaType: &areaTypeFalse},
-							{ID: "dim3", IsAreaType: &areaTypeTrue},
-							{ID: "dim4", Label: "label 4 (1 category)"},
-						},
+			sent := &dataset.Metadata{
+				DatasetLinks: dataset.Links{
+					LatestVersion: dataset.Link{
+						URL: fmt.Sprintf("http://testHost:123%s", testURI),
 					},
 				},
-				isBasedOn: &dataset.IsBasedOn{
-					ID:   "UR_HH",
-					Type: "cantabular_flexible_table",
+				DatasetDetails: dataset.DatasetDetails{
+					ID: testDatasetID,
+					IsBasedOn: &dataset.IsBasedOn{
+						ID:   "UR_HH",
+						Type: "cantabular_flexible_table",
+					},
+				},
+				Version: dataset.Version{
+					Dimensions: []dataset.VersionDimension{
+						{ID: "dim1", Label: "label 1 (10 categories)"},
+						{ID: "dim2", Label: "label 2 (12 Categories)", IsAreaType: &areaTypeFalse},
+						{ID: "dim3", IsAreaType: &areaTypeTrue},
+						{ID: "dim4", Label: "label 4 (1 category)"},
+					},
 				},
 			}
 
@@ -167,6 +163,85 @@ func TestTransformMetadataDoc(t *testing.T) {
 				So(esModel, ShouldResemble, expected)
 
 				wg.Wait()
+			})
+		})
+	})
+}
+
+func TestExtractDatasets(t *testing.T) {
+	Convey("Given a dataset client that succeeds to return up to 3 datasets", t, func() {
+		items := []dataset.Dataset{
+			{ID: "dataset1"},
+			{ID: "dataset2"},
+			{ID: "dataset3"},
+		}
+		cli := &mocks.DatasetAPIClientMock{
+			GetDatasetsFunc: func(ctx context.Context, userAuthToken, serviceAuthToken, collectionID string, q *dataset.QueryParams) (dataset.List, error) {
+				getItems := func() []dataset.Dataset {
+					if q.Offset >= len(items) {
+						return []dataset.Dataset{}
+					}
+					if q.Offset+q.Limit < len(items) {
+						return items[q.Offset : q.Offset+q.Limit]
+					}
+					return items[q.Offset:]
+				}
+
+				it := getItems()
+				return dataset.List{
+					Items:      it,
+					Offset:     q.Offset,
+					Limit:      q.Limit,
+					Count:      len(it),
+					TotalCount: len(items),
+				}, nil
+			},
+		}
+
+		Convey("Then extractDatasets with a paginationLimit of 2 and TestSubset=true send only the 2 first datasets to the dataset channel", func() {
+			datasetChan, wg := extractDatasets(ctx, cli, cliConfig{
+				ServiceAuthToken: testAuthToken,
+				TestSubset:       true,
+				PaginationLimit:  2,
+			})
+
+			ds1 := <-datasetChan
+			So(ds1, ShouldResemble, dataset.Dataset{ID: "dataset1"})
+			ds2 := <-datasetChan
+			So(ds2, ShouldResemble, dataset.Dataset{ID: "dataset2"})
+			wg.Wait()
+
+			Convey("And dataset api has been called only once with the expected pagination parameters", func() {
+				So(cli.GetDatasetsCalls(), ShouldHaveLength, 1)
+				So(cli.GetDatasetsCalls()[0].Q.Offset, ShouldEqual, 0)
+				So(cli.GetDatasetsCalls()[0].Q.Limit, ShouldEqual, 2)
+				So(cli.GetDatasetsCalls()[0].ServiceAuthToken, ShouldEqual, testAuthToken)
+			})
+		})
+
+		Convey("Then extractDatasets with a paginationLimit of 2 and TestSubset=false send all the datasets to the dataset channel", func() {
+			datasetChan, wg := extractDatasets(ctx, cli, cliConfig{
+				ServiceAuthToken: testAuthToken,
+				TestSubset:       false,
+				PaginationLimit:  2,
+			})
+
+			ds1 := <-datasetChan
+			So(ds1, ShouldResemble, dataset.Dataset{ID: "dataset1"})
+			ds2 := <-datasetChan
+			So(ds2, ShouldResemble, dataset.Dataset{ID: "dataset2"})
+			ds3 := <-datasetChan
+			So(ds3, ShouldResemble, dataset.Dataset{ID: "dataset3"})
+			wg.Wait()
+
+			Convey("And dataset api has been called twice with the expected pagination parameters", func() {
+				So(cli.GetDatasetsCalls(), ShouldHaveLength, 2)
+				So(cli.GetDatasetsCalls()[0].Q.Offset, ShouldEqual, 0)
+				So(cli.GetDatasetsCalls()[0].Q.Limit, ShouldEqual, 2)
+				So(cli.GetDatasetsCalls()[0].ServiceAuthToken, ShouldEqual, testAuthToken)
+				So(cli.GetDatasetsCalls()[1].Q.Offset, ShouldEqual, 2)
+				So(cli.GetDatasetsCalls()[1].Q.Limit, ShouldEqual, 2)
+				So(cli.GetDatasetsCalls()[1].ServiceAuthToken, ShouldEqual, testAuthToken)
 			})
 		})
 	})
@@ -224,7 +299,6 @@ func TestRetrieveDatasetEditions(t *testing.T) {
 					id:        testDatasetID,
 					editionID: testEdition,
 					version:   testVersion,
-					isBasedOn: &testIsBasedOn,
 				})
 
 				Convey("And the expected call is performed against dataset api", func() {
@@ -246,10 +320,12 @@ func TestRetrieveLatestMetadata(t *testing.T) {
 				URL: "latestURL",
 			},
 		},
-	}
-	testIsBasedOn := dataset.IsBasedOn{
-		ID:   "UR_HH",
-		Type: "cantabular_flexible_table",
+		DatasetDetails: dataset.DatasetDetails{
+			IsBasedOn: &dataset.IsBasedOn{
+				ID:   "UR_HH",
+				Type: "cantabular_flexible_table",
+			},
+		},
 	}
 
 	Convey("Given a dataset client that succeeds to return valid metadata and an editionMetadata channel", t, func() {
@@ -265,7 +341,6 @@ func TestRetrieveLatestMetadata(t *testing.T) {
 				id:        testDatasetID,
 				editionID: testEdition,
 				version:   testVersion,
-				isBasedOn: &testIsBasedOn,
 			}
 			close(editionMetadata)
 
@@ -273,8 +348,7 @@ func TestRetrieveLatestMetadata(t *testing.T) {
 
 			Convey("Then the expected metadata and isBasedOn are sent to the metadataChannel", func() {
 				m := <-metadataChan
-				So(m.metadata, ShouldResemble, &testMetadata)
-				So(m.isBasedOn, ShouldResemble, &testIsBasedOn)
+				So(m, ShouldResemble, &testMetadata)
 
 				Convey("And the expected call is performed against dataset api", func() {
 					So(cli.GetVersionMetadataCalls(), ShouldHaveLength, 1)

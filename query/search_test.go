@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 	"text/template"
 	"time"
@@ -23,8 +23,8 @@ func TestBuildSearchQuery(t *testing.T) {
 			From: 1,
 		}
 		query, err := qb.BuildSearchQuery(context.Background(), reqParams, false)
-
 		So(err, ShouldNotBeNil)
+
 		So(query, ShouldBeNil)
 		So(err.Error(), ShouldContainSubstring, "creation of search from template failed")
 	})
@@ -50,8 +50,8 @@ func TestBuildSearchQuery(t *testing.T) {
 			Now:       time.Date(2023, 03, 10, 12, 15, 04, 05, time.UTC).UTC().Format(time.RFC3339),
 		}
 		query, err := qb.BuildSearchQuery(context.Background(), reqParams, false)
-
 		So(err, ShouldBeNil)
+
 		So(query, ShouldNotBeNil)
 		queryString := string(query)
 		So(queryString, ShouldContainSubstring, "Term=a")
@@ -81,6 +81,7 @@ func TestBuildSearchQueryContent(t *testing.T) {
 			Now:       time.Date(2023, 03, 10, 12, 15, 04, 05, time.UTC).UTC().Format(time.RFC3339),
 		}
 		query, err := qb.BuildSearchQuery(context.Background(), reqParams, true)
+		So(err, ShouldBeNil)
 
 		var searches []client.Search
 		err = json.Unmarshal(query, &searches)
@@ -370,7 +371,7 @@ func TestBuildCountQueryPopulationType(t *testing.T) {
 			b, err := qb.BuildCountQuery(context.Background(), reqParams)
 			So(err, ShouldBeNil)
 
-			query, err := minifyJson(b)
+			query, err := minifyJSON(b)
 			So(err, ShouldBeNil)
 
 			expectedQueryString := `{"query":{"bool":{"must":[{"match_all":{}},{"bool":{"must":{"exists":{"field":"topics"}}}}]}}}`
@@ -385,7 +386,7 @@ func TestBuildCountQueryPopulationType(t *testing.T) {
 			b, err := qb.BuildCountQuery(context.Background(), reqParams)
 			So(err, ShouldBeNil)
 
-			query, err := minifyJson(b)
+			query, err := minifyJSON(b)
 			So(err, ShouldBeNil)
 
 			expectedQueryString := `{"query":{"bool":{"must":[{"dis_max":{"queries":[{"bool":{"should":[{"match":{"title.title_no_dates":{"query":"someQuery","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"match":{"title.title_no_stem":{"query":"someQuery","boost":10.0,"minimum_should_match":"1<-2 3<80% 5<60%"}}},{"multi_match":{"query":"someQuery","fields":["title^10","edition","downloads.content^1"],"type":"cross_fields","minimum_should_match":"3<80% 5<60%"}},{"multi_match":{"query":"someQuery","fields":["title^10","summary","metaDescription","edition","downloads.content^1","pageData^1","keywords"],"type":"phrase","boost":10.0,"slop":2}}]}},{"multi_match":{"query":"someQuery","fields":["summary","metaDescription","downloads.content^1","pageData^1","keywords"],"type":"best_fields","minimum_should_match":"75%"}},{"match":{"keywords":{"query":"someQuery","operator":"AND","boost":10.0}}},{"multi_match":{"query":"someQuery","fields":["cdid","dataset_id"]}},{"match":{"searchBoost":{"query":"someQuery","operator":"AND","boost":100.0}}}]}},{"bool":{"must":{"exists":{"field":"topics"}}}}]}}}`
@@ -396,16 +397,15 @@ func TestBuildCountQueryPopulationType(t *testing.T) {
 
 // return a minified JSON input string
 // return an error encountered during minifiying or reading minified bytes
-func minifyJson(jsonB []byte) ([]byte, error) {
-
-	var buff *bytes.Buffer = new(bytes.Buffer)
+func minifyJSON(jsonB []byte) ([]byte, error) {
+	buff := new(bytes.Buffer)
 	errCompact := json.Compact(buff, jsonB)
 	if errCompact != nil {
 		newErr := fmt.Errorf("failure encountered compacting json := %v", errCompact)
 		return []byte{}, newErr
 	}
 
-	b, err := ioutil.ReadAll(buff)
+	b, err := io.ReadAll(buff)
 	if err != nil {
 		readErr := fmt.Errorf("read buffer error encountered := %v", err)
 		return []byte{}, readErr

@@ -77,10 +77,10 @@ github.com/ONSdigital/dp-rchttp v0.0.0-20190919143000-bb5699e6fd59/go.mod h1:KkW
 github.com/ONSdigital/dp-rchttp v0.0.0-20200114090501-463a529590e8/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
 github.com/ONSdigital/dp-rchttp v1.0.0 h1:K/1/gDtfMZCX1Mbmq80nZxzDirzneqA1c89ea26FqP4=
 github.com/ONSdigital/dp-rchttp v1.0.0/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
-github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230308144533-6ec5b21d7596 h1:Pk3JRu1+lc+i4kbrLqpQr6yPFJivBtn/W8Qdzfi5pU8=
-github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230308144533-6ec5b21d7596/go.mod h1:MpG+olMPeZNfYbvl2ve8fzsAgoxR7PmZV4smXKgti48=
-github.com/ONSdigital/dp-search-data-importer v0.10.1-0.20230308155119-d5d831b47f07 h1:jHi1gzcSxuOu07nVPYpw+rDB0sPGcXohYVBUb8Tw82M=
-github.com/ONSdigital/dp-search-data-importer v0.10.1-0.20230308155119-d5d831b47f07/go.mod h1:kKWYLjd5vS4C9tm7/86lNmTFAHJg2z1dI25PKjJAbx8=
+github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230302104007-3cf2c9ad4f52 h1:+nMQ4vV7NZN29ROiw9grQrzyrgkRMHN6zH9Z8TQmPnM=
+github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230302104007-3cf2c9ad4f52/go.mod h1:MpG+olMPeZNfYbvl2ve8fzsAgoxR7PmZV4smXKgti48=
+github.com/ONSdigital/dp-search-data-importer v0.10.1-0.20230317154853-8718b686237a h1:bCPcvst7dVQiFuGxt7WXJaoFocrqX7dmlKQHsszbgdI=
+github.com/ONSdigital/dp-search-data-importer v0.10.1-0.20230317154853-8718b686237a/go.mod h1:kwW5CKQiRvSJt2XbChOVqQKWAoutiFHOFZoRe7YgaDA=
 github.com/ONSdigital/go-ns v0.0.0-20191104121206-f144c4ec2e58/go.mod h1:iWos35il+NjbvDEqwtB736pyHru0MPFE/LqcwkV1wDc=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad h1:Axoxm5rF6j7LSZfm4AGBT5IwGhWIcfcOkkhy/su/UpA=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad/go.mod h1:uHT6LaUlRbJsJRrIlN31t+QLUB80tAbk6ZR9sfoHL8Y=

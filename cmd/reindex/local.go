@@ -33,6 +33,7 @@ func getConfig(ctx context.Context) cliConfig {
 		zebedeeURL:       "http://localhost:8082",
 		datasetURL:       "http://localhost:22000",
 		ServiceAuthToken: "",
+		PaginationLimit:  DefaultPaginationLimit,
 		TestSubset:       false,
 		IgnoreZebedee:    false,
 	}
