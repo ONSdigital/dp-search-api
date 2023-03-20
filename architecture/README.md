@@ -25,15 +25,21 @@ Source of truth for the application architecture of the ONS search service inclu
 
 ![Sitesearch](./sequence-diagrams/search-ui/sitesearch-ui.png)
 
+Sitesearch dataflow from user on the website making a search with query term and/or selecting filters to retrieving data from backing services and rendering the results.
+
 ### Release Calendar UI & API
 
 ![Release Calendar](./sequence-diagrams/search-ui/release-calendar-ui.png)
+
+Dataflow from user on the website hitting the release calendar page on the ONS website, or selecting filters on this page to retrieving data from backing services and rendering the results.
 
 ## Search Data Pipeline
 
 ### Add/update search documents when a collection is published
 
 ![Publish Search Data](./sequence-diagrams/publish-search-pipeline/publish-search-pipeline.png)
+
+The data pipleine from Florence user publishing some new or updated content or data to being stored in Elasticsearch, ready for web or API users to query (via API, e.g. [sitesearch sequence diagram](#sitesearch-ui--api))
 
 #### Steps
 
@@ -140,13 +146,16 @@ Record: {
 }
 ```
 
+See [Tracking Search Reindex Job](#tracking-search-reindex-job) to continue following this part of the "Search Reindex Pipeline" process.
+
 ## Search Reindex Pipeline
+
+The search reindex pipleine triggered by developer via Search Reindex API and the finding content and data before storing in Elasticsearch, ready for web or API users to query (via API, e.g. [sitesearch sequence diagram](#sitesearch-ui--api))
 
 Sequence diagram split between 3 parts:
 
 1. [Search Reindex Pipeline](#search-reindex-pipeline)
 1. [Search Data Pipeline](#search-data-pipeline)
- (#addupdate-search-documents-when-a-collection-is-published)
 1. [Tracking Search Reindex Job](#tracking-search-reindex-job)
 
 ### Trigger Search Reindex Pipeline
@@ -345,7 +354,7 @@ Record: {
 
 See schema [here](https://github.com/ONSdigital/dp-search-data-finder/blob/develop/schema/schema.go)
 
-Continuation of Search Reindex takes place by the Search Data Extractor consuming messages from the `content-updated` topic.
+Continuation of Search Reindex takes place by the Search Data Extractor consuming messages from the `content-updated` topic; see [Search Reindex Pipeline](#search-reindex-pipeline)
 
 ### Tracking Search Reindex Job
 
