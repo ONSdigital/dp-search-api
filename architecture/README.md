@@ -1,6 +1,6 @@
 # Search Service Architecture
 
-Source of truth for backend processing of search data for ONS search service.
+Source of truth for backend processing of search data for ONS search service. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/1usE1C-VzQIrymSJ7tJzXxXjZAmXLge2S).
 
 ## Contents
 
