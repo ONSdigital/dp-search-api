@@ -22,6 +22,8 @@ const (
 	buildTime     = "20"
 )
 
+const WaitEventTimeout = 5 * time.Second // maximum time that the component test consumer will wait for an elasticsearch call
+
 // Component contains all the information to create a component test
 type Component struct {
 	APIFeature           *componentTest.APIFeature
