@@ -7,8 +7,8 @@ Source of truth for the application architecture of the ONS search service inclu
 - [Search Service Architecture](#search-service-architecture)
   - [Contents](#contents)
   - [Sitesearch and other aggregated pages](#sitesearch-and-other-aggregated-pages)
-    - [Sitesearch](#sitesearch)
-    - [Release Calendar (Aggregated Search Page)](#release-calendar-aggregated-search-page)
+    - [Sitesearch UI \& API](#sitesearch-ui--api)
+    - [Release Calendar UI \& API](#release-calendar-ui--api)
   - [Search Data Pipeline](#search-data-pipeline)
     - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
       - [Steps](#steps)
@@ -21,19 +21,19 @@ Source of truth for the application architecture of the ONS search service inclu
 
 ## Sitesearch and other aggregated pages
 
-### Sitesearch
+### Sitesearch UI & API
 
-![Sitesearch](sequence/search-ui/sitesearch.png)
+![Sitesearch](./sequence-diagrams/search-ui/sitesearch-ui.png)
 
-### Release Calendar (Aggregated Search Page)
+### Release Calendar UI & API
 
-![Sitesearch](sequence/search-ui/release-calendar-ui.png)
+![Release Calendar](./sequence-diagrams/search-ui/release-calendar-ui.png)
 
 ## Search Data Pipeline
 
 ### Add/update search documents when a collection is published
 
-![Publish Search Data](sequence/publish-search-pipeline/publish-search-pipeline.png)
+![Publish Search Data](./sequence-diagrams/publish-search-pipeline/publish-search-pipeline.png)
 
 #### Steps
 
@@ -143,24 +143,15 @@ Record: {
 ## Search Reindex Pipeline
 
 Sequence diagram split between 3 parts:
-- [Search Service Architecture](#search-service-architecture)
-  - [Contents](#contents)
-  - [Sitesearch and other aggregated pages](#sitesearch-and-other-aggregated-pages)
-    - [Sitesearch](#sitesearch)
-    - [Release Calendar (Aggregated Search Page)](#release-calendar-aggregated-search-page)
-  - [Search Data Pipeline](#search-data-pipeline)
-    - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
-      - [Steps](#steps)
-  - [Search Reindex Pipeline](#search-reindex-pipeline)
-    - [Trigger Search Reindex Pipeline](#trigger-search-reindex-pipeline)
-      - [Steps](#steps-1)
-    - [Tracking Search Reindex Job](#tracking-search-reindex-job)
-      - [Steps](#steps-2)
-  - [Sequence diagrams](#sequence-diagrams)
+
+1. [Search Reindex Pipeline](#search-reindex-pipeline)
+1. [Search Data Pipeline](#search-data-pipeline)
+ (#addupdate-search-documents-when-a-collection-is-published)
+1. [Tracking Search Reindex Job](#tracking-search-reindex-job)
 
 ### Trigger Search Reindex Pipeline
 
-![Trigger Search Reindex](sequence/trigger-search-reindex-pipeline/trigger-search-reindex-pipeline.png)
+![Trigger Search Reindex](./sequence-diagrams/trigger-search-reindex-pipeline/trigger-search-reindex-pipeline.png)
 
 #### Steps
 
@@ -358,7 +349,7 @@ Continuation of Search Reindex takes place by the Search Data Extractor consumin
 
 ### Tracking Search Reindex Job
 
-![Tracking search reindex job](sequence/trigger-search-reindex-tracker/trigger-search-reindex-tracker.png)
+![Tracking search reindex job](./sequence-diagrams/trigger-search-reindex-tracker/trigger-search-reindex-tracker.png)
 
 #### Steps
 
