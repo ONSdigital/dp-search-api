@@ -1,18 +1,24 @@
-# Architecture
+# Search Service Architecture
 
-Source of truth for backend processing of search data for ONS sitewide search.
+Source of truth for backend processing of search data for ONS search service.
 
-## Sequence Diagrams
+## Contents
 
-The source script for the each diagram is maintained in sequence folder.
+- [Search Service Architecture](#search-service-architecture)
+  - [Contents](#contents)
+  - [Search Data Pipeline](#search-data-pipeline)
+    - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
+      - [Steps](#steps)
+  - [Search Reindex Pipeline](#search-reindex-pipeline)
+    - [Trigger Search Reindex Pipeline](#trigger-search-reindex-pipeline)
+      - [Steps](#steps-1)
+    - [Tracking Search Reindex Job](#tracking-search-reindex-job)
+      - [Steps](#steps-2)
+  - [Sequence diagrams](#sequence-diagrams)
 
-To update a diagram:
-- Copy the source script into [sequencediagram.org](http://sequencediagram.org)
-- Update a diagram as required
-- Export as an image on [sequencediagram.org](http://sequencediagram.org)
-- Copy the updated source script back into `sequence/<name>.txt` and commit.
+## Search Data Pipeline
 
-### Search Data Pipeline - Add/update search documents when a collection is published
+### Add/update search documents when a collection is published
 
 ![Publish Search Data](sequence/publish-search-pipeline/publish-search-pipeline.png)
 
@@ -124,9 +130,17 @@ Record: {
 ## Search Reindex Pipeline
 
 Sequence diagram split between 3 parts:
-- [Trigger Search Reindex Pipeline](#trigger-search-reindex-pipeline)
-- [Continuation using Search Data Pipeline](#search-data-pipeline---addupdate-search-documents-when-a-collection-is-published)
-- [Tracking Search Reindex](#tracking-search-reindex-job)
+- [Search Service Architecture](#search-service-architecture)
+  - [Contents](#contents)
+  - [Search Data Pipeline](#search-data-pipeline)
+    - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
+      - [Steps](#steps)
+  - [Search Reindex Pipeline](#search-reindex-pipeline)
+    - [Trigger Search Reindex Pipeline](#trigger-search-reindex-pipeline)
+      - [Steps](#steps-1)
+    - [Tracking Search Reindex Job](#tracking-search-reindex-job)
+      - [Steps](#steps-2)
+  - [Sequence diagrams](#sequence-diagrams)
 
 ### Trigger Search Reindex Pipeline
 
@@ -618,3 +632,7 @@ BSON Document update: {
     "state": "failed"
 }
 ```
+
+## Sequence diagrams
+
+To update the diagrams, see [sequence diagrams documnetation](sequence-diagrams/README.md)
