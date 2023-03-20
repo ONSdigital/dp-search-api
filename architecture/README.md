@@ -1,11 +1,14 @@
 # Search Service Architecture
 
-Source of truth for backend processing of search data for ONS search service. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/1usE1C-VzQIrymSJ7tJzXxXjZAmXLge2S).
+Source of truth for the application architecture of the ONS search service including backend processing of data. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/1usE1C-VzQIrymSJ7tJzXxXjZAmXLge2S).
 
 ## Contents
 
 - [Search Service Architecture](#search-service-architecture)
   - [Contents](#contents)
+  - [Sitesearch and other aggregated pages](#sitesearch-and-other-aggregated-pages)
+    - [Sitesearch](#sitesearch)
+    - [Release Calendar (Aggregated Search Page)](#release-calendar-aggregated-search-page)
   - [Search Data Pipeline](#search-data-pipeline)
     - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
       - [Steps](#steps)
@@ -15,6 +18,16 @@ Source of truth for backend processing of search data for ONS search service. C4
     - [Tracking Search Reindex Job](#tracking-search-reindex-job)
       - [Steps](#steps-2)
   - [Sequence diagrams](#sequence-diagrams)
+
+## Sitesearch and other aggregated pages
+
+### Sitesearch
+
+![Sitesearch](sequence/search-ui/sitesearch.png)
+
+### Release Calendar (Aggregated Search Page)
+
+![Sitesearch](sequence/search-ui/release-calendar-ui.png)
 
 ## Search Data Pipeline
 
@@ -132,6 +145,9 @@ Record: {
 Sequence diagram split between 3 parts:
 - [Search Service Architecture](#search-service-architecture)
   - [Contents](#contents)
+  - [Sitesearch and other aggregated pages](#sitesearch-and-other-aggregated-pages)
+    - [Sitesearch](#sitesearch)
+    - [Release Calendar (Aggregated Search Page)](#release-calendar-aggregated-search-page)
   - [Search Data Pipeline](#search-data-pipeline)
     - [Add/update search documents when a collection is published](#addupdate-search-documents-when-a-collection-is-published)
       - [Steps](#steps)

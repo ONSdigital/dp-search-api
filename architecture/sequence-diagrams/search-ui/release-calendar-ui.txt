@@ -1,0 +1,20 @@
+title Sitesearch UI and API
+
+autonumber
+entryspacing 1.0
+
+actor User
+
+note over User: User on ONS release calendar page\nselects filter(s) from possible options
+
+User->Frontend Router: Https GET: Render release\n   calendar results page
+
+Frontend Router->Frontend Release Calendar Controller: Https GET: Release calendar\n results and render template
+Frontend Release Calendar Controller->API Router: Https GET: Retrieve search\ndata from REST endpoint
+
+note over User: Makes request directly to API
+User->API Router: Https GET: Retrieve release\ndata from REST endpoint
+API Router->Search API: Reverse Proxy\n to correct API
+
+database Elasticsearch
+Search API->Elasticsearch: Https Get: Retrieve data\nbased on built query
