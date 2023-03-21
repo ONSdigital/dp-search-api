@@ -84,6 +84,10 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		"value": topics,
 	})
 
+	popTypeParam := paramGet(params, "population_type", "")
+
+	dimensionsParam := paramGet(params, "dimensions", "")
+
 	limitParam := paramGet(params, "limit", "10")
 	limit, err := validator.Validate(ctx, "limit", limitParam)
 	if err != nil {
@@ -100,21 +104,45 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		return "", nil, nil
 	}
 
-	typesParam := paramGet(params, "content_type", defaultContentTypes)
+	typesParam := paramGet(params, "content_type", "")
 
-	return q, &query.SearchRequest{
-			Term:      sanitisedQuery,
-			From:      offset.(int),
-			Size:      limit.(int),
-			Types:     strings.Split(typesParam, ","),
-			Topic:     topics,
-			SortBy:    sort.(string),
-			Highlight: highlight,
-			Now:       time.Now().UTC().Format(time.RFC3339),
-		}, &query.CountRequest{
-			Term:        sanitisedQuery,
-			CountEnable: true,
+	reqSearch := &query.SearchRequest{
+		Term:      sanitisedQuery,
+		From:      offset.(int),
+		Size:      limit.(int),
+		Topic:     topics,
+		SortBy:    sort.(string),
+		Highlight: highlight,
+		Now:       time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if typesParam != "" {
+		reqSearch.Types = strings.Split(typesParam, ",")
+	}
+
+	if popTypeParam != "" {
+		reqSearch.PopulationType = &query.PopulationTypeRequest{
+			Name: popTypeParam,
 		}
+	}
+
+	if dimensionsParam != "" {
+		dims := strings.Split(dimensionsParam, ",")
+		d := make([]*query.DimensionRequest, len(dims))
+		for i, dim := range dims {
+			d[i] = &query.DimensionRequest{
+				Name: dim,
+			}
+		}
+		reqSearch.Dimensions = d
+	}
+
+	reqCount := &query.CountRequest{
+		Term:        sanitisedQuery,
+		CountEnable: true,
+	}
+
+	return q, reqSearch, reqCount
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.

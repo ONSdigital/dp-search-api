@@ -33,7 +33,7 @@
       {{ if .Dimensions }}
       , {
         "bool": {
-          "should": [
+          "must": [
             {{ template "dimensionsFilters.tmpl". }}
           ]
         }

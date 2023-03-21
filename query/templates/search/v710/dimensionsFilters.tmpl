@@ -1,20 +1,26 @@
 {{range $i,$dim := .Dimensions}}
-    {{ if $dim.Name }}
+    {{if $i}},{{end}}
     {
-        "match":{
-            "dimensions.name": "{{$dim.Name}}"
-        }
-    },
-    {{ end }}
-    {
-        "match":{
-            "dimensions.label": "{{$dim.Label}}"
-        }
-    },
-    {
-        "match":{
-            "dimensions.raw_label": "{{$dim.RawLabel}}"
+        "bool": {
+            "should": [
+                {{ if $dim.Name }}
+                {
+                    "match":{
+                        "dimensions.name": "{{$dim.Name}}"
+                    }
+                },
+                {{ end }}
+                {
+                    "match":{
+                        "dimensions.label": "{{$dim.Label}}"
+                    }
+                },
+                {
+                    "match":{
+                        "dimensions.raw_label": "{{$dim.RawLabel}}"
+                    }
+                }
+            ]
         }
     }
-{{if $i}},{{end}}
 {{end}}

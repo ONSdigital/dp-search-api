@@ -43,8 +43,10 @@ type ESResponseHit struct {
 }
 
 type ESResponseAggregations struct {
-	ContentTypeCounts  ESDocCounts `json:"contentTypeCounts"`
-	TopicCounts        ESDocCounts `json:"topicCounts"`
+	ContentTypes       ESDocCounts `json:"content_types"`
+	Topic              ESDocCounts `json:"topic"`
+	PopulationType     ESDocCounts `json:"population_type"`
+	Dimensions         ESDocCounts `json:"dimensions"`
 	DistinctTopicCount CountValue  `json:"distinct_topics_count"`
 }
 
@@ -158,7 +160,7 @@ type SearchResponse struct {
 	Suggestions         []string      `json:"suggestions,omitempty"`
 	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
 	Dimensions          []FilterCount `json:"dimensions,omitempty"`
-	PopulationType      []FilterCount `json:"population_types,omitempty"`
+	PopulationType      []FilterCount `json:"population_type,omitempty"`
 }
 
 // ReleaseDateChange represent a date change of a release

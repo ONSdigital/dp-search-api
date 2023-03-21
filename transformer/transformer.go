@@ -267,18 +267,31 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 		for i := 0; i < len(response.Hits.Hits); i++ {
 			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
-		for j := 0; j < len(response.Aggregations.ContentTypeCounts.Buckets); j++ {
+		for j := 0; j < len(response.Aggregations.ContentTypes.Buckets); j++ {
 			search7xResponse.ContentTypes = append(search7xResponse.ContentTypes, models.FilterCount{
-				Type:  response.Aggregations.ContentTypeCounts.Buckets[j].Key,
-				Count: response.Aggregations.ContentTypeCounts.Buckets[j].Count,
+				Type:  response.Aggregations.ContentTypes.Buckets[j].Key,
+				Count: response.Aggregations.ContentTypes.Buckets[j].Count,
 			})
 		}
-		for z := 0; z < len(response.Aggregations.TopicCounts.Buckets); z++ {
+		for k := 0; k < len(response.Aggregations.Topic.Buckets); k++ {
 			search7xResponse.Topics = append(search7xResponse.Topics, models.FilterCount{
-				Type:  response.Aggregations.TopicCounts.Buckets[z].Key,
-				Count: response.Aggregations.TopicCounts.Buckets[z].Count,
+				Type:  response.Aggregations.Topic.Buckets[k].Key,
+				Count: response.Aggregations.Topic.Buckets[k].Count,
 			})
 		}
+		for l := 0; l < len(response.Aggregations.PopulationType.Buckets); l++ {
+			search7xResponse.PopulationType = append(search7xResponse.PopulationType, models.FilterCount{
+				Type:  response.Aggregations.PopulationType.Buckets[l].Key,
+				Count: response.Aggregations.PopulationType.Buckets[l].Count,
+			})
+		}
+		for m := 0; m < len(response.Aggregations.Dimensions.Buckets); m++ {
+			search7xResponse.Dimensions = append(search7xResponse.Dimensions, models.FilterCount{
+				Type:  response.Aggregations.Dimensions.Buckets[m].Key,
+				Count: response.Aggregations.Dimensions.Buckets[m].Count,
+			})
+		}
+
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			for _, option := range suggestion.Options {
 				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)

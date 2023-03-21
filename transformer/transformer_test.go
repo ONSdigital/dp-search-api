@@ -47,6 +47,16 @@ func TestTransform(t *testing.T) {
 	}
 	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
 
+	expectedDimensions := []models.FilterCount{
+		{Type: "dim1", Count: 246},
+		{Type: "dim2", Count: 642},
+	}
+
+	expectedPopulationTypes := []models.FilterCount{
+		{Type: "pop1", Count: 123},
+		{Type: "pop2", Count: 321},
+	}
+
 	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
 		transformer := New()
 		esResponse := prepareESMockResponse()
@@ -63,6 +73,8 @@ func TestTransform(t *testing.T) {
 					So(transformedResponse.Items[0], ShouldResemble, expectedItem1)
 					So(transformedResponse.Items[1], ShouldResemble, expectedItem2)
 					So(transformedResponse.Topics[0], ShouldResemble, expectedTopic1)
+					So(transformedResponse.Dimensions, ShouldResemble, expectedDimensions)
+					So(transformedResponse.PopulationType, ShouldResemble, expectedPopulationTypes)
 					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
 				})
 			}
@@ -116,14 +128,15 @@ func prepareESMockResponse() models.EsResponses {
 		Highlight: &models.ESHighlight{},
 	}
 
-	bucket1 := models.ESBucket{
+	contentTypeBucket1 := models.ESBucket{
 		Key:   "article",
 		Count: 1,
 	}
-	bucket2 := models.ESBucket{
+	contentTypeBucket2 := models.ESBucket{
 		Key:   "product_page",
 		Count: 1,
 	}
+
 	topicBucket1 := models.ESBucket{
 		Key:   "topic1",
 		Count: 1,
@@ -132,15 +145,25 @@ func prepareESMockResponse() models.EsResponses {
 		Key:   "topic2",
 		Count: 1,
 	}
-	buckets := []models.ESBucket{bucket1, bucket2}
 
-	esDoccount := models.ESDocCounts{
-		Buckets: buckets,
+	populationTypeBucket1 := models.ESBucket{
+		Key:   "pop1",
+		Count: 123,
 	}
 
-	topicBuckets := []models.ESBucket{topicBucket1, topicBucket2}
-	esTopicCount := models.ESDocCounts{
-		Buckets: topicBuckets,
+	populationTypeBucket2 := models.ESBucket{
+		Key:   "pop2",
+		Count: 321,
+	}
+
+	dimensionBucket1 := models.ESBucket{
+		Key:   "dim1",
+		Count: 246,
+	}
+
+	dimensionBucket2 := models.ESBucket{
+		Key:   "dim2",
+		Count: 642,
 	}
 
 	esResponse1 := models.EsResponse{
@@ -152,8 +175,30 @@ func prepareESMockResponse() models.EsResponses {
 			},
 		},
 		Aggregations: models.ESResponseAggregations{
-			ContentTypeCounts: esDoccount,
-			TopicCounts:       esTopicCount,
+			ContentTypes: models.ESDocCounts{
+				Buckets: []models.ESBucket{
+					contentTypeBucket1,
+					contentTypeBucket2,
+				},
+			},
+			Topic: models.ESDocCounts{
+				Buckets: []models.ESBucket{
+					topicBucket1,
+					topicBucket2,
+				},
+			},
+			PopulationType: models.ESDocCounts{
+				Buckets: []models.ESBucket{
+					populationTypeBucket1,
+					populationTypeBucket2,
+				},
+			},
+			Dimensions: models.ESDocCounts{
+				Buckets: []models.ESBucket{
+					dimensionBucket1,
+					dimensionBucket2,
+				},
+			},
 		},
 		Suggest: models.Suggest{
 			SearchSuggest: []models.SearchSuggest{

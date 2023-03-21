@@ -38,7 +38,7 @@
       "hits": []
     },
     "aggregations": {
-      "contentTypeCounts": {
+      "content_types": {
         "doc_count_error_upper_bound": 0,
         "sum_other_doc_count": 0,
         "buckets": [{
@@ -129,7 +129,7 @@
       "distinct_topics_count": {
         "value": 9
       },
-      "topicCounts": {
+      "topic": {
         "doc_count_error_upper_bound": 0,
         "sum_other_doc_count": 0,
         "buckets": [{

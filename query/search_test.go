@@ -166,19 +166,19 @@ func TestBuildSearchQueryAggregates(t *testing.T) {
 			So(searches, ShouldHaveLength, 5)
 
 			Convey("And the expected topics aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
 				So(searches[1].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[1].Query), ShouldEqual, expectedQueryString)
 			})
 
 			Convey("And the expected content types aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
 				So(searches[2].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[2].Query), ShouldEqual, expectedQueryString)
 			})
 
 			Convey("And the expected population type aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"population_type":{"terms":{"size":1000,"field":"population_type.name"}}}}`
 				So(searches[3].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[3].Query), ShouldEqual, expectedQueryString)
 			})
@@ -274,7 +274,7 @@ func TestBuildSearchQueryDimensions(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			searches := unmarshal(query)
-			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"dimensions.name":"workplace_travel_4a"}},{"match":{"dimensions.label":"Distance travelled to work"}},{"match":{"dimensions.raw_label":"Distance travelled to work (4 categories)"}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
+			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"workplace_travel_4a"}},{"match":{"dimensions.label":"Distance travelled to work"}},{"match":{"dimensions.raw_label":"Distance travelled to work (4 categories)"}}]}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
 
 			So(searches, ShouldHaveLength, 5)
 			So(searches[0].Header, ShouldResemble, client.Header{Index: "ons"})
@@ -294,7 +294,7 @@ func TestBuildSearchQueryDimensions(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			searches := unmarshal(query)
-			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"dimensions.name":"workplace_travel_4a"}},{"match":{"dimensions.label":""}},{"match":{"dimensions.raw_label":""}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
+			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"workplace_travel_4a"}},{"match":{"dimensions.label":""}},{"match":{"dimensions.raw_label":""}}]}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
 
 			So(searches, ShouldHaveLength, 5)
 			So(searches[0].Header, ShouldResemble, client.Header{Index: "ons"})
@@ -314,7 +314,7 @@ func TestBuildSearchQueryDimensions(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			searches := unmarshal(query)
-			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"dimensions.label":"Distance travelled to work"}},{"match":{"dimensions.raw_label":""}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
+			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.label":"Distance travelled to work"}},{"match":{"dimensions.raw_label":""}}]}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
 
 			So(searches, ShouldHaveLength, 5)
 			So(searches[0].Header, ShouldResemble, client.Header{Index: "ons"})
@@ -334,7 +334,7 @@ func TestBuildSearchQueryDimensions(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			searches := unmarshal(query)
-			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"dimensions.label":""}},{"match":{"dimensions.raw_label":"Distance travelled to work"}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
+			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.label":""}},{"match":{"dimensions.raw_label":"Distance travelled to work"}}]}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
 
 			So(searches, ShouldHaveLength, 5)
 			So(searches[0].Header, ShouldResemble, client.Header{Index: "ons"})
