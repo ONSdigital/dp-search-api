@@ -6,7 +6,7 @@ package models
 
 // EsResponse holds a response slice from ES
 type EsResponses struct {
-	Responses []EsResponse `json:"responses"`
+	Responses []*EsResponse `json:"responses"`
 }
 
 type EsResponse struct {

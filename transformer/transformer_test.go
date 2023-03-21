@@ -209,8 +209,8 @@ func prepareESMockResponse() models.EsResponses {
 
 	// Preparing ES response array
 	esResponse := models.EsResponses{
-		Responses: []models.EsResponse{
-			esResponse1,
+		Responses: []*models.EsResponse{
+			&esResponse1,
 		},
 	}
 
