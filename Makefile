@@ -46,6 +46,10 @@ build:
 debug: 
 	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
+.PHONY: debug-run
+debug-run:
+	HUMAN_LOG=1 DEBUG=1 go run -tags 'debug' -race $(LDFLAGS) main.go
+
 .PHONY: test
 test:
 	go test -cover -race ./...
