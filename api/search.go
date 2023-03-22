@@ -18,27 +18,53 @@ import (
 	"github.com/pkg/errors"
 )
 
-const defaultContentTypes string = "article," +
-	"article_download," +
-	"bulletin," +
-	"compendium_landing_page," +
-	"compendium_chapter," +
-	"compendium_data," +
-	"dataset," +
-	"dataset_landing_page," +
-	"product_page," +
-	"reference_tables," +
-	"release," +
-	"static_adhoc," +
-	"static_article," +
-	"static_foi," +
-	"static_landing_page," +
-	"static_methodology," +
-	"static_methodology_download," +
-	"static_page," +
-	"static_qmi," +
-	"timeseries," +
-	"timeseries_dataset"
+// defaultContentTypes is an array of all valid content types, which is the default param value
+var defaultContentTypes = []string{
+	"article",
+	"article_download",
+	"bulletin",
+	"compendium_landing_page",
+	"compendium_chapter",
+	"compendium_data",
+	"dataset",
+	"dataset_landing_page",
+	"cantabular_flexible_table",
+	"cantabular_multivariate_table",
+	"product_page",
+	"reference_tables",
+	"release",
+	"static_adhoc",
+	"static_article",
+	"static_foi",
+	"static_landing_page",
+	"static_methodology",
+	"static_methodology_download",
+	"static_page",
+	"static_qmi",
+	"timeseries",
+	"timeseries_dataset",
+}
+
+// validateContentTypes checks that all the provided content types are allowed
+// returns nil and an empty array if all of them are allowed,
+// returns error and a list of content types that are not allowed, if at least one is not allowed
+func validateContentTypes(contentTypes []string) (error, []string) {
+	validContentTypes := map[string]struct{}{}
+	for _, valid := range defaultContentTypes {
+		validContentTypes[valid] = struct{}{}
+	}
+
+	disallowed := []string{}
+	var err error
+	for _, t := range contentTypes {
+		if _, ok := validContentTypes[t]; !ok {
+			disallowed = append(disallowed, t)
+			err = errors.New("content type(s) not allowed")
+		}
+	}
+
+	return err, disallowed
+}
 
 var serverErrorMessage = "internal server error"
 
@@ -104,28 +130,39 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		return "", nil, nil
 	}
 
-	typesParam := paramGet(params, "content_type", "")
+	// read content type (expected CSV value), with default, to make sure some content types are
+	contentTypesParam := paramGet(params, "content_type", "")
+	contentTypes := defaultContentTypes
+	if contentTypesParam != "" {
+		contentTypes = strings.Split(contentTypesParam, ",")
+		err, disallowed := validateContentTypes(contentTypes)
+		if err != nil {
+			log.Warn(ctx, err.Error(), log.Data{"param": "content_type", "value": contentTypesParam, "disallowed": disallowed})
+			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
+			return "", nil, nil
+		}
+	}
 
+	// create SearchRequest with all the compulsory values
 	reqSearch := &query.SearchRequest{
 		Term:      sanitisedQuery,
 		From:      offset.(int),
 		Size:      limit.(int),
+		Types:     contentTypes,
 		Topic:     topics,
 		SortBy:    sort.(string),
 		Highlight: highlight,
 		Now:       time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if typesParam != "" {
-		reqSearch.Types = strings.Split(typesParam, ",")
-	}
-
+	// population type only used if provided
 	if popTypeParam != "" {
 		reqSearch.PopulationType = &query.PopulationTypeRequest{
 			Name: popTypeParam,
 		}
 	}
 
+	// dimensions only used if provided
 	if dimensionsParam != "" {
 		dims := strings.Split(dimensionsParam, ",")
 		d := make([]*query.DimensionRequest, len(dims))
@@ -137,6 +174,9 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		reqSearch.Dimensions = d
 	}
 
+	// create CountRequest with the sanitized query.
+	// Note that this is only used to generate the `distinct_items_count`.
+	// Other counts are done as aggregations of the search request.
 	reqCount := &query.CountRequest{
 		Term:        sanitisedQuery,
 		CountEnable: true,

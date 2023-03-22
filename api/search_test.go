@@ -25,6 +25,29 @@ const (
 	internalServerErrMsg            = "internal server error"
 )
 
+func TestValidateContentTypes(t *testing.T) {
+	Convey("An array of content types containing a subset of the default content types should be allowed", t, func() {
+		err, disallowed := validateContentTypes([]string{
+			"dataset",
+			"dataset_landing_page",
+			"cantabular_flexible_table",
+		})
+		So(err, ShouldBeNil)
+		So(disallowed, ShouldHaveLength, 0)
+	})
+
+	Convey("An array of content types containing a disallowed content type should return the expected error and list", t, func() {
+		err, disallowed := validateContentTypes([]string{
+			"dataset",
+			"dataset_landing_page",
+			"wrong_type",
+		})
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "content type(s) not allowed")
+		So(disallowed, ShouldResemble, []string{"wrong_type"})
+	})
+}
+
 func TestSearchHandlerFunc(t *testing.T) {
 	expectedQuery := "a valid query"
 	searches := []client.Search{
@@ -106,6 +129,24 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(resp.Code, ShouldEqual, http.StatusBadRequest)
 		So(resp.Body.String(), ShouldContainSubstring, "Invalid offset parameter")
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
+	})
+
+	Convey("ShouldReturn BadRequest for a content_type that is not allowed", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newDpElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?content_type=wrong1,wrong2", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid content_type(s): wrong1,wrong2")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
@@ -299,10 +340,12 @@ func TestSearchHandlerFunc(t *testing.T) {
 		req := httptest.NewRequest(
 			"GET",
 			"http://localhost:8080/search?q="+validQueryParam+
-				"&content_type=ta,tb"+
+				"&content_type=dataset,release"+
 				"&sort_order=relevance"+
 				"&limit=1"+
-				"&offset=2",
+				"&offset=2"+
+				"&dimensions=dim1,dim2"+
+				"&population_type=pop1",
 			nil)
 		resp := httptest.NewRecorder()
 
@@ -312,10 +355,16 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
-		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"ta", "tb"})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"dataset", "release"})
 		So(qbMock.BuildSearchQueryCalls()[0].Req.SortBy, ShouldResemble, "relevance")
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Size, ShouldEqual, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.From, ShouldEqual, 2)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Dimensions, ShouldResemble, []*query.DimensionRequest{
+			{Name: "dim1"}, {Name: "dim2"},
+		})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationType, ShouldResemble, &query.PopulationTypeRequest{
+			Name: "pop1",
+		})
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
@@ -594,7 +643,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		req := httptest.NewRequest(
 			"GET",
 			"http://localhost:8080/search?q="+validQueryParam+
-				"&content_type=ta,tb"+
+				"&content_type=article,release"+
 				"&sort_order=relevance"+
 				"&limit=1"+
 				"&offset=2",
@@ -607,7 +656,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
-		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"ta", "tb"})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"article", "release"})
 		So(qbMock.BuildSearchQueryCalls()[0].Req.SortBy, ShouldResemble, "relevance")
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Size, ShouldEqual, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.From, ShouldEqual, 2)
