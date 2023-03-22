@@ -48,14 +48,12 @@ var defaultContentTypes = []string{
 // validateContentTypes checks that all the provided content types are allowed
 // returns nil and an empty array if all of them are allowed,
 // returns error and a list of content types that are not allowed, if at least one is not allowed
-func validateContentTypes(contentTypes []string) (error, []string) {
+func validateContentTypes(contentTypes []string) (disallowed []string, err error) {
 	validContentTypes := map[string]struct{}{}
 	for _, valid := range defaultContentTypes {
 		validContentTypes[valid] = struct{}{}
 	}
 
-	disallowed := []string{}
-	var err error
 	for _, t := range contentTypes {
 		if _, ok := validContentTypes[t]; !ok {
 			disallowed = append(disallowed, t)
@@ -63,7 +61,7 @@ func validateContentTypes(contentTypes []string) (error, []string) {
 		}
 	}
 
-	return err, disallowed
+	return disallowed, err
 }
 
 var serverErrorMessage = "internal server error"
@@ -135,7 +133,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
-		err, disallowed := validateContentTypes(contentTypes)
+		disallowed, err := validateContentTypes(contentTypes)
 		if err != nil {
 			log.Warn(ctx, err.Error(), log.Data{"param": "content_type", "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)

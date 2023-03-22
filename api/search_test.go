@@ -27,7 +27,7 @@ const (
 
 func TestValidateContentTypes(t *testing.T) {
 	Convey("An array of content types containing a subset of the default content types should be allowed", t, func() {
-		err, disallowed := validateContentTypes([]string{
+		disallowed, err := validateContentTypes([]string{
 			"dataset",
 			"dataset_landing_page",
 			"cantabular_flexible_table",
@@ -37,7 +37,7 @@ func TestValidateContentTypes(t *testing.T) {
 	})
 
 	Convey("An array of content types containing a disallowed content type should return the expected error and list", t, func() {
-		err, disallowed := validateContentTypes([]string{
+		disallowed, err := validateContentTypes([]string{
 			"dataset",
 			"dataset_landing_page",
 			"wrong_type",
