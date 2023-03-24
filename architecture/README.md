@@ -1,6 +1,6 @@
 # Search Service Architecture
 
-Source of truth for the application architecture of the ONS search service including backend processing of data. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/1usE1C-VzQIrymSJ7tJzXxXjZAmXLge2S).
+Source of truth for the application architecture of the ONS search service including backend processing of data. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/15Qq3wgaULer96kXGuMDUo6D0-vAz7um1).
 
 ## Contents
 
@@ -651,4 +651,4 @@ BSON Document update: {
 
 ## Sequence diagrams
 
-To update the diagrams, see [sequence diagrams documnetation](sequence-diagrams/README.md)
+To update the diagrams, see [sequence diagrams documentation](sequence-diagrams/README.md)
