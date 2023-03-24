@@ -68,7 +68,7 @@ func (t *LegacyTransformer) legayTransform(source *models.ESResponseLegacy, high
 	sr := models.SearchResponseLegacy{
 		Count:        source.Responses[0].Hits.Total,
 		Items:        []models.ContentItemLegacy{},
-		ContentTypes: []models.ContentTypeCount{},
+		ContentTypes: []models.FilterCount{},
 	}
 	var took int
 	for _, response := range source.Responses {
@@ -166,8 +166,8 @@ func (t *LegacyTransformer) overlayItemList(hlList, defaultList []*string, highl
 	return overlaid
 }
 
-func buildContentTypes(bucket models.ESBucketLegacy) models.ContentTypeCount {
-	return models.ContentTypeCount{
+func buildContentTypes(bucket models.ESBucketLegacy) models.FilterCount {
+	return models.FilterCount{
 		Type:  bucket.Key,
 		Count: bucket.Count,
 	}
@@ -261,10 +261,10 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 	search7xResponse := models.SearchResponse{
 		Count:          esresponses.Responses[0].Hits.Total,
 		Items:          []models.Item{},
-		Topics:         []models.TopicCount{},
-		ContentTypes:   []models.ContentTypeCount{},
-		PopulationType: []models.PopulationTypeCount{},
-		Dimensions:     []models.DimensionCount{},
+		Topics:         []models.FilterCount{},
+		ContentTypes:   []models.FilterCount{},
+		PopulationType: []models.FilterCount{},
+		Dimensions:     []models.FilterCount{},
 	}
 	var took int
 	for _, response := range esresponses.Responses {
@@ -272,79 +272,55 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 			search7xResponse.Items = append(search7xResponse.Items, t.buildContentItem(response.Hits.Hits[i], highlight))
 		}
 
-		for j := 0; j < len(response.Aggregations.ContentTypes.Buckets); j++ {
-			search7xResponse.ContentTypes = append(
-				search7xResponse.ContentTypes,
-				transformContentTypes(response.Aggregations.ContentTypes.Buckets[j]),
-			)
-		}
+		search7xResponse.ContentTypes = append(
+			search7xResponse.ContentTypes,
+			transformCounts(response.Aggregations.ContentTypes)...,
+		)
 
-		for k := 0; k < len(response.Aggregations.Topic.Buckets); k++ {
-			search7xResponse.Topics = append(
-				search7xResponse.Topics,
-				transformTopics(response.Aggregations.Topic.Buckets[k]),
-			)
-		}
+		search7xResponse.Topics = append(
+			search7xResponse.Topics,
+			transformCounts(response.Aggregations.Topic)...,
+		)
 
-		for l := 0; l < len(response.Aggregations.PopulationType.Buckets); l++ {
-			search7xResponse.PopulationType = append(
-				search7xResponse.PopulationType,
-				transformPopulationTypes(response.Aggregations.PopulationType.Buckets[l]),
-			)
-		}
+		search7xResponse.PopulationType = append(
+			search7xResponse.PopulationType,
+			transformCounts(response.Aggregations.PopulationType)...,
+		)
 
-		for m := 0; m < len(response.Aggregations.Dimensions.Buckets); m++ {
-			search7xResponse.Dimensions = transformDimensions(response.Aggregations.Dimensions)
-		}
+		search7xResponse.Dimensions = append(
+			search7xResponse.Dimensions,
+			transformCounts(response.Aggregations.Dimensions)...,
+		)
 
 		for _, suggestion := range response.Suggest.SearchSuggest {
 			for _, option := range suggestion.Options {
 				search7xResponse.Suggestions = append(search7xResponse.Suggestions, option.Text)
 			}
 		}
+
 		took += response.Took
 	}
 	search7xResponse.Took = took
 	return search7xResponse
 }
 
-func transformContentTypes(bucket models.ESBucket) models.ContentTypeCount {
-	return models.ContentTypeCount{
-		Type:  bucket.Key,
-		Count: bucket.Count,
-	}
-}
-
-func transformTopics(bucket models.ESBucket) models.TopicCount {
-	return models.TopicCount{
-		Type:  bucket.Key,
-		Count: bucket.Count,
-	}
-}
-
-func transformPopulationTypes(bucket models.ESBucket) models.PopulationTypeCount {
-	return models.PopulationTypeCount{
-		Type:  bucket.Key,
-		Count: bucket.Count,
-	}
-}
-
-// transform map to array to be returned
-func transformDimensions(counts models.ESDocCounts) []models.DimensionCount {
-	ret := make([]models.DimensionCount, len(counts.Buckets))
+// transformCounts gets the type and label from the aggregation key (if available)
+// e.g. an aggregation key: myType###myLabel is converted in type=myType, label=myLabel
+func transformCounts(counts models.ESDocCounts) []models.FilterCount {
+	ret := make([]models.FilterCount, len(counts.Buckets))
 	for i, bucket := range counts.Buckets {
 		kv := strings.Split(bucket.Key, aggSep)
 
 		// if the aggregation key doesn't provide at least 2 items (name and label), then just return the key as type
 		if len(kv) < 2 {
-			ret[i] = models.DimensionCount{
+			ret[i] = models.FilterCount{
 				Type:  bucket.Key,
 				Count: bucket.Count,
 			}
 			continue
 		}
 
-		ret[i] = models.DimensionCount{
+		ret[i] = models.FilterCount{
 			Type:  kv[0],
 			Label: kv[1],
 			Count: bucket.Count,

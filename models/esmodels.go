@@ -8,7 +8,7 @@ type CreateIndexResponse struct {
 type SearchResponseLegacy struct {
 	Count               int                 `json:"count"`
 	Took                int                 `json:"took"`
-	ContentTypes        []ContentTypeCount  `json:"content_types"`
+	ContentTypes        []FilterCount       `json:"content_types"`
 	Items               []ContentItemLegacy `json:"items"`
 	Suggestions         []string            `json:"suggestions,omitempty"`
 	AdditionSuggestions []string            `json:"additional_suggestions,omitempty"`

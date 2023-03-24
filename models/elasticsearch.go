@@ -105,28 +105,10 @@ type ESHighlight struct {
 	DatasetID []*string `json:"dataset_id"`
 }
 
-// TopicCount represents the API response for an aggregation of topics
-type TopicCount struct {
-	Type  string `json:"type"`
-	Count int    `json:"count"`
-}
-
-// ContentTypeCount represents the API response for an aggregation of content types
-type ContentTypeCount struct {
-	Type  string `json:"type"`
-	Count int    `json:"count"`
-}
-
-// DimensionCount represents the API response for an aggregation of dimensions
-type DimensionCount struct {
+// FilterCount represents the API response for an aggregation
+type FilterCount struct {
 	Type  string `json:"type"`
 	Label string `json:"label"`
-	Count int    `json:"count"`
-}
-
-// PopulationTypeCount represents the API response for an aggregation of population types
-type PopulationTypeCount struct {
-	Type  string `json:"type"`
 	Count int    `json:"count"`
 }
 
@@ -171,16 +153,16 @@ type Item struct {
 }
 
 type SearchResponse struct {
-	Count               int                   `json:"count"`
-	Took                int                   `json:"took"`
-	DistinctItemsCount  int                   `json:"distinct_items_count"`
-	Topics              []TopicCount          `json:"topics"`
-	ContentTypes        []ContentTypeCount    `json:"content_types"`
-	Items               []Item                `json:"items"`
-	Suggestions         []string              `json:"suggestions,omitempty"`
-	AdditionSuggestions []string              `json:"additional_suggestions,omitempty"`
-	Dimensions          []DimensionCount      `json:"dimensions,omitempty"`
-	PopulationType      []PopulationTypeCount `json:"population_type,omitempty"`
+	Count               int           `json:"count"`
+	Took                int           `json:"took"`
+	DistinctItemsCount  int           `json:"distinct_items_count"`
+	Topics              []FilterCount `json:"topics"`
+	ContentTypes        []FilterCount `json:"content_types"`
+	Items               []Item        `json:"items"`
+	Suggestions         []string      `json:"suggestions,omitempty"`
+	AdditionSuggestions []string      `json:"additional_suggestions,omitempty"`
+	Dimensions          []FilterCount `json:"dimensions,omitempty"`
+	PopulationType      []FilterCount `json:"population_type,omitempty"`
 }
 
 // ReleaseDateChange represent a date change of a release

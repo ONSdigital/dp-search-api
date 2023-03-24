@@ -45,14 +45,14 @@ func TestTransform(t *testing.T) {
 			{Name: "Dim2", Label: "Lbl2", RawLabel: "RawLbl2"},
 		},
 	}
-	expectedTopic1 := models.TopicCount{Type: "topic1", Count: 1}
+	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
 
-	expectedDimensions := []models.DimensionCount{
+	expectedDimensions := []models.FilterCount{
 		{Type: "dim1", Count: 246},
 		{Type: "dim2", Count: 642},
 	}
 
-	expectedPopulationTypes := []models.PopulationTypeCount{
+	expectedPopulationTypes := []models.FilterCount{
 		{Type: "pop1", Count: 123},
 		{Type: "pop2", Count: 321},
 	}
@@ -82,21 +82,25 @@ func TestTransform(t *testing.T) {
 	})
 }
 
-func TestTransformDimensions(t *testing.T) {
-	Convey("asdf", t, func() {
+func TestTransformCounts(t *testing.T) {
+	Convey("Given an ESDocCounts with buckets containing keys formatted as aggregation keys and simple strings", t, func() {
 		counts := models.ESDocCounts{
 			Buckets: []models.ESBucket{
 				{Key: "dim1###Dimension one", Count: 10},
-				{Key: "dim2", Count: 20},
-				{Key: "", Count: 30},
+				{Key: "dim2###", Count: 20},
+				{Key: "dim3", Count: 30},
+				{Key: "", Count: 40},
 			},
 		}
 
-		d := transformDimensions(counts)
-		So(d, ShouldHaveLength, 3)
-		So(d, ShouldContain, models.DimensionCount{Type: "dim1", Label: "Dimension one", Count: 10})
-		So(d, ShouldContain, models.DimensionCount{Type: "dim2", Count: 20})
-		So(d, ShouldContain, models.DimensionCount{Count: 30})
+		Convey("Then transformCounts correctly extracts the type and label info where required", func() {
+			counts := transformCounts(counts)
+			So(counts, ShouldHaveLength, 4)
+			So(counts, ShouldContain, models.FilterCount{Type: "dim1", Label: "Dimension one", Count: 10})
+			So(counts, ShouldContain, models.FilterCount{Type: "dim2", Count: 20})
+			So(counts, ShouldContain, models.FilterCount{Type: "dim3", Count: 30})
+			So(counts, ShouldContain, models.FilterCount{Count: 40})
+		})
 	})
 }
 
