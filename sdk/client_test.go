@@ -31,13 +31,13 @@ var (
 	searchResults = models.SearchResponse{
 		Count: 1,
 		Took:  10,
-		Topics: []models.FilterCount{
+		Topics: []models.TopicCount{
 			{
 				Type:  "4443",
 				Count: 1,
 			},
 		},
-		ContentTypes: []models.FilterCount{
+		ContentTypes: []models.ContentTypeCount{
 			{
 				Type:  "dataset_landing_page",
 				Count: 1,

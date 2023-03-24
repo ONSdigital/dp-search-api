@@ -45,14 +45,14 @@ func TestTransform(t *testing.T) {
 			{Name: "Dim2", Label: "Lbl2", RawLabel: "RawLbl2"},
 		},
 	}
-	expectedTopic1 := models.FilterCount{Type: "topic1", Count: 1}
+	expectedTopic1 := models.TopicCount{Type: "topic1", Count: 1}
 
-	expectedDimensions := []models.FilterCount{
+	expectedDimensions := []models.DimensionCount{
 		{Type: "dim1", Count: 246},
 		{Type: "dim2", Count: 642},
 	}
 
-	expectedPopulationTypes := []models.FilterCount{
+	expectedPopulationTypes := []models.PopulationTypeCount{
 		{Type: "pop1", Count: 123},
 		{Type: "pop2", Count: 321},
 	}
@@ -79,6 +79,44 @@ func TestTransform(t *testing.T) {
 				})
 			}
 		})
+	})
+}
+
+func TestTransformDimensions(t *testing.T) {
+	Convey("asdf", t, func() {
+		counts := models.ESDocCounts{
+			Buckets: []models.ESBucket{
+				{Key: "dim1", Count: 10},
+				{Key: "dim2", Count: 20},
+				{Key: "dim3", Count: 30},
+			},
+		}
+		hits := models.ESResponseHits{
+			Total: 10,
+			Hits: []models.ESResponseHit{
+				{
+					Source: models.ESSourceDocument{
+						Dimensions: []models.ESDimensions{
+							{Name: "dim1", Label: "Dimension one"},
+							{Name: "dim3", Label: "Dimension three"},
+						},
+					},
+				}, {
+					Source: models.ESSourceDocument{
+						Dimensions: []models.ESDimensions{
+							{Name: "dim2", Label: "Dimension two"},
+							{Name: "dim3", Label: "Dimension three"},
+						},
+					},
+				},
+			},
+		}
+
+		d := transformDimensions(counts, hits)
+		So(d, ShouldHaveLength, 3)
+		So(d, ShouldContain, models.DimensionCount{Type: "dim1", Label: "Dimension one", Count: 10})
+		So(d, ShouldContain, models.DimensionCount{Type: "dim2", Label: "Dimension two", Count: 20})
+		So(d, ShouldContain, models.DimensionCount{Type: "dim3", Label: "Dimension three", Count: 30})
 	})
 }
 
