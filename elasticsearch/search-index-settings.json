@@ -310,6 +310,9 @@
           "label": {
             "type":"text",
             "analyzer":"ons_standard"
+          },
+          "agg_key": {
+            "type": "keyword"
           }
         }
       },
@@ -325,6 +328,9 @@
           "raw_label": {
             "type":"text",
             "analyzer":"ons_standard"
+          },
+          "agg_key": {
+            "type": "keyword"
           }
         }
       }

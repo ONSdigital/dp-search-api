@@ -133,13 +133,14 @@ func TestTransformMetadataDoc(t *testing.T) {
 				DatasetID: testDatasetID,
 				Edition:   testEdition,
 				PopulationType: &importerModels.EsPopulationType{
-					Name:  "UR_HH",
-					Label: "All usual residents in households",
+					Name:   "UR_HH",
+					Label:  "All usual residents in households",
+					AggKey: "UR_HH###All usual residents in households",
 				},
 				Dimensions: []importerModels.EsDimension{
-					{Name: "dim1", RawLabel: "label 1 (10 categories)", Label: "label 1"},
-					{Name: "dim2", RawLabel: "label 2 (12 Categories)", Label: "label 2"},
-					{Name: "dim4", RawLabel: "label 4 (1 category)", Label: "label 4"},
+					{Name: "dim1", RawLabel: "label 1 (10 categories)", Label: "label 1", AggKey: "dim1###label 1"},
+					{Name: "dim2", RawLabel: "label 2 (12 Categories)", Label: "label 2", AggKey: "dim2###label 2"},
+					{Name: "dim4", RawLabel: "label 4 (1 category)", Label: "label 4", AggKey: "dim4###label 4"},
 				},
 			}
 

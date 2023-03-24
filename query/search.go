@@ -20,8 +20,8 @@ const (
 var es710AggregationField = &AggregationFields{
 	Topics:          "topics",
 	ContentTypes:    "type",
-	PopulationTypes: "population_type.name",
-	Dimensions:      "dimensions.name",
+	PopulationTypes: "population_type.agg_key", // agg_key is {name}###{label} so aggregations on unique combinations of these will be obtained
+	Dimensions:      "dimensions.agg_key",      // agg_key is {name}###{label} so aggregations on unique combinations of these will be obtained
 }
 
 // SearchRequest holds the values provided by a request against Search API

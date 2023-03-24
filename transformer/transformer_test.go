@@ -86,37 +86,17 @@ func TestTransformDimensions(t *testing.T) {
 	Convey("asdf", t, func() {
 		counts := models.ESDocCounts{
 			Buckets: []models.ESBucket{
-				{Key: "dim1", Count: 10},
+				{Key: "dim1###Dimension one", Count: 10},
 				{Key: "dim2", Count: 20},
-				{Key: "dim3", Count: 30},
-			},
-		}
-		hits := models.ESResponseHits{
-			Total: 10,
-			Hits: []models.ESResponseHit{
-				{
-					Source: models.ESSourceDocument{
-						Dimensions: []models.ESDimensions{
-							{Name: "dim1", Label: "Dimension one"},
-							{Name: "dim3", Label: "Dimension three"},
-						},
-					},
-				}, {
-					Source: models.ESSourceDocument{
-						Dimensions: []models.ESDimensions{
-							{Name: "dim2", Label: "Dimension two"},
-							{Name: "dim3", Label: "Dimension three"},
-						},
-					},
-				},
+				{Key: "", Count: 30},
 			},
 		}
 
-		d := transformDimensions(counts, hits)
+		d := transformDimensions(counts)
 		So(d, ShouldHaveLength, 3)
 		So(d, ShouldContain, models.DimensionCount{Type: "dim1", Label: "Dimension one", Count: 10})
-		So(d, ShouldContain, models.DimensionCount{Type: "dim2", Label: "Dimension two", Count: 20})
-		So(d, ShouldContain, models.DimensionCount{Type: "dim3", Label: "Dimension three", Count: 30})
+		So(d, ShouldContain, models.DimensionCount{Type: "dim2", Count: 20})
+		So(d, ShouldContain, models.DimensionCount{Count: 30})
 	})
 }
 

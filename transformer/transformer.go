@@ -11,6 +11,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const aggSep = "###"
+
 // LegacyTransformer represents an instance of the ResponseTransformer interface
 type LegacyTransformer struct {
 	higlightReplacer *strings.Replacer
@@ -292,11 +294,7 @@ func (t *Transformer) transform(esresponses *models.EsResponses, highlight bool)
 		}
 
 		for m := 0; m < len(response.Aggregations.Dimensions.Buckets); m++ {
-			search7xResponse.Dimensions = transformDimensions(response.Aggregations.Dimensions, response.Hits)
-			// search7xResponse.Dimensions = append(
-			// 	search7xResponse.Dimensions,
-			// 	transformDimensions(response.Aggregations.Dimensions.Buckets[m], response.),
-			// )
+			search7xResponse.Dimensions = transformDimensions(response.Aggregations.Dimensions)
 		}
 
 		for _, suggestion := range response.Suggest.SearchSuggest {
@@ -331,30 +329,26 @@ func transformPopulationTypes(bucket models.ESBucket) models.PopulationTypeCount
 	}
 }
 
-func transformDimensions(counts models.ESDocCounts, hits models.ESResponseHits) []models.DimensionCount {
-	dimensionsCountMap := make(map[string]*models.DimensionCount, len(counts.Buckets))
-	for _, bucket := range counts.Buckets {
-		dimensionsCountMap[bucket.Key] = &models.DimensionCount{
-			Type:  bucket.Key,
+// transform map to array to be returned
+func transformDimensions(counts models.ESDocCounts) []models.DimensionCount {
+	ret := make([]models.DimensionCount, len(counts.Buckets))
+	for i, bucket := range counts.Buckets {
+		kv := strings.Split(bucket.Key, aggSep)
+
+		// if the aggregation key doesn't provide at least 2 items (name and label), then just return the key as type
+		if len(kv) < 2 {
+			ret[i] = models.DimensionCount{
+				Type:  bucket.Key,
+				Count: bucket.Count,
+			}
+			continue
+		}
+
+		ret[i] = models.DimensionCount{
+			Type:  kv[0],
+			Label: kv[1],
 			Count: bucket.Count,
 		}
-	}
-
-	// add dimension labels for each bucket, if found in provided hits
-	for _, hit := range hits.Hits {
-		for _, dim := range hit.Source.Dimensions {
-			if _, ok := dimensionsCountMap[dim.Name]; ok {
-				dimensionsCountMap[dim.Name].Label = dim.Label
-			}
-		}
-	}
-
-	// transform map to array to be returned
-	ret := make([]models.DimensionCount, len(counts.Buckets))
-	i := 0
-	for _, d := range dimensionsCountMap {
-		ret[i] = *d
-		i++
 	}
 	return ret
 }
