@@ -28,8 +28,6 @@ var defaultContentTypes = []string{
 	"compendium_data",
 	"dataset",
 	"dataset_landing_page",
-	"cantabular_flexible_table",
-	"cantabular_multivariate_table",
 	"product_page",
 	"reference_tables",
 	"release",

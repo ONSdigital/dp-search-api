@@ -30,7 +30,6 @@ func TestValidateContentTypes(t *testing.T) {
 		disallowed, err := validateContentTypes([]string{
 			"dataset",
 			"dataset_landing_page",
-			"cantabular_flexible_table",
 		})
 		So(err, ShouldBeNil)
 		So(disallowed, ShouldHaveLength, 0)
