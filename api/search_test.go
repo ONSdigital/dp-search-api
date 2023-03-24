@@ -345,7 +345,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 				"&limit=1"+
 				"&offset=2"+
 				"&dimensions=dim1,dim2"+
-				"&population_type=pop1",
+				"&population_types=pop1,pop2",
 			nil)
 		resp := httptest.NewRecorder()
 
@@ -362,8 +362,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Dimensions, ShouldResemble, []*query.DimensionRequest{
 			{Name: "dim1"}, {Name: "dim2"},
 		})
-		So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationType, ShouldResemble, &query.PopulationTypeRequest{
-			Name: "pop1",
+		So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationTypes, ShouldResemble, []*query.PopulationTypeRequest{
+			{Name: "pop1"}, {Name: "pop2"},
 		})
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)

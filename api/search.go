@@ -108,10 +108,6 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		"value": topics,
 	})
 
-	popTypeParam := paramGet(params, "population_type", "")
-
-	dimensionsParam := paramGet(params, "dimensions", "")
-
 	limitParam := paramGet(params, "limit", "10")
 	limit, err := validator.Validate(ctx, "limit", limitParam)
 	if err != nil {
@@ -153,14 +149,21 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		Now:       time.Now().UTC().Format(time.RFC3339),
 	}
 
-	// population type only used if provided
-	if popTypeParam != "" {
-		reqSearch.PopulationType = &query.PopulationTypeRequest{
-			Name: popTypeParam,
+	// population types only used if provided
+	popTypesParam := paramGet(params, "population_types", "")
+	if popTypesParam != "" {
+		popTypes := strings.Split(popTypesParam, ",")
+		p := make([]*query.PopulationTypeRequest, len(popTypes))
+		for i, popType := range popTypes {
+			p[i] = &query.PopulationTypeRequest{
+				Name: popType,
+			}
 		}
+		reqSearch.PopulationTypes = p
 	}
 
 	// dimensions only used if provided
+	dimensionsParam := paramGet(params, "dimensions", "")
 	if dimensionsParam != "" {
 		dims := strings.Split(dimensionsParam, ",")
 		d := make([]*query.DimensionRequest, len(dims))

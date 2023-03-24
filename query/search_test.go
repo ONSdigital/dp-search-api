@@ -149,9 +149,9 @@ func TestBuildSearchQueryAggregates(t *testing.T) {
 			reqParams := &SearchRequest{
 				Topic: []string{"test"},
 				Types: []string{"ta", "tb"},
-				PopulationType: &PopulationTypeRequest{
-					Name:  "pop1",
-					Label: "lbl1",
+				PopulationTypes: []*PopulationTypeRequest{
+					{Name: "pop1"},
+					{Label: "lbl1"},
 				},
 				Dimensions: []*DimensionRequest{
 					{Name: "dim1", Label: "lbl1", RawLabel: "rawLbl1"},
@@ -166,13 +166,13 @@ func TestBuildSearchQueryAggregates(t *testing.T) {
 			So(searches, ShouldHaveLength, 5)
 
 			Convey("And the expected topics aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":""}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"topic":{"terms":{"size":1000,"field":"topics"}}}}`
 				So(searches[1].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[1].Query), ShouldEqual, expectedQueryString)
 			})
 
 			Convey("And the expected content types aggregation (count) query is generated", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":""}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}},{"bool":{"must":[{"bool":{"should":[{"match":{"dimensions.name":"dim1"}},{"match":{"dimensions.label":"lbl1"}},{"match":{"dimensions.raw_label":"rawLbl1"}}]}}]}}]}}]}},"size":0,"aggregations":{"content_types":{"terms":{"size":1000,"field":"type"}}}}`
 				So(searches[2].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[2].Query), ShouldEqual, expectedQueryString)
 			})
@@ -184,7 +184,7 @@ func TestBuildSearchQueryAggregates(t *testing.T) {
 			})
 
 			Convey("And the expected dimensions aggregation (count) query is generated, filtering by the other parameters", func() {
-				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}}]}}]}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`
+				expectedQueryString := `{"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[{"match":{"type":"ta"}},{"match":{"type":"tb"}}]}},{"bool":{"should":[{"match":{"canonical_topic":"test"}},{"match":{"topics":"test"}}]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"pop1"}}},{"match":{"population_type.label":{"query":""}}},{"match":{"population_type.label":{"query":"lbl1"}}}]}}]}}]}},"size":0,"aggregations":{"dimensions":{"terms":{"size":1000,"field":"dimensions.name"}}}}`
 				So(searches[4].Header, ShouldResemble, client.Header{Index: "ons"})
 				So(string(searches[4].Query), ShouldEqual, expectedQueryString)
 			})
@@ -200,16 +200,16 @@ func TestBuildSearchQueryPopulationType(t *testing.T) {
 		Convey("Then the expected search query is generated for a full population type request", func() {
 			reqParams := &SearchRequest{
 				Size: 2,
-				PopulationType: &PopulationTypeRequest{
-					Name:  "UR",
-					Label: "usual residents",
+				PopulationTypes: []*PopulationTypeRequest{
+					{Name: "UR"},
+					{Label: "usual residents"},
 				},
 			}
 			query, err := qb.BuildSearchQuery(context.Background(), reqParams, true)
 			So(err, ShouldBeNil)
 
 			searches := unmarshal(query)
-			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"UR"}}},{"match":{"population_type.label":{"query":"usual residents"}}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
+			expectedQueryString := `{"size":2,"query":{"bool":{"must":{"match_all":{}},"filter":[{"bool":{"must":[{"bool":{"should":[]}},{"bool":{"should":[{"match":{"population_type.name":{"query":"UR"}}},{"match":{"population_type.label":{"query":""}}},{"match":{"population_type.label":{"query":"usual residents"}}}]}}]}}]}},"suggest":{"search_suggest":{"text":"","phrase":{"field":"title.title_no_synonym_no_stem"}}},"_source":{"includes":[],"excludes":["downloads.content","downloads*","pageData"]},"sort":[{"_score":{"order":"desc"}},{"release_date":{"order":"desc"}}]}`
 
 			So(searches, ShouldHaveLength, 5)
 			So(searches[0].Header, ShouldResemble, client.Header{Index: "ons"})
@@ -219,8 +219,8 @@ func TestBuildSearchQueryPopulationType(t *testing.T) {
 		Convey("Then the expected search query is generated for a population type name-only request", func() {
 			reqParams := &SearchRequest{
 				Size: 2,
-				PopulationType: &PopulationTypeRequest{
-					Name: "UR",
+				PopulationTypes: []*PopulationTypeRequest{
+					{Name: "UR"},
 				},
 			}
 			query, err := qb.BuildSearchQuery(context.Background(), reqParams, true)
@@ -237,8 +237,8 @@ func TestBuildSearchQueryPopulationType(t *testing.T) {
 		Convey("Then the expected search query is generated for a population type label-only request", func() {
 			reqParams := &SearchRequest{
 				Size: 2,
-				PopulationType: &PopulationTypeRequest{
-					Label: "usual residents",
+				PopulationTypes: []*PopulationTypeRequest{
+					{Label: "usual residents"},
 				},
 			}
 			query, err := qb.BuildSearchQuery(context.Background(), reqParams, true)

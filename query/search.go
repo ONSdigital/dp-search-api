@@ -18,10 +18,10 @@ const (
 )
 
 var es710AggregationField = &AggregationFields{
-	Topics:         "topics",
-	ContentTypes:   "type",
-	PopulationType: "population_type.name",
-	Dimensions:     "dimensions.name",
+	Topics:          "topics",
+	ContentTypes:    "type",
+	PopulationTypes: "population_type.name",
+	Dimensions:      "dimensions.name",
 }
 
 // SearchRequest holds the values provided by a request against Search API
@@ -39,7 +39,7 @@ type SearchRequest struct {
 	URIPrefix         string
 	Topic             []string
 	TopicWildcard     []string
-	PopulationType    *PopulationTypeRequest
+	PopulationTypes   []*PopulationTypeRequest
 	Dimensions        []*DimensionRequest
 	Now               string
 }
@@ -57,10 +57,10 @@ type DimensionRequest struct {
 
 // AggregationFields are the elasticsearch keys for which the aggregations will be done
 type AggregationFields struct {
-	Topics         string
-	ContentTypes   string
-	PopulationType string
-	Dimensions     string
+	Topics          string
+	ContentTypes    string
+	PopulationTypes string
+	Dimensions      string
 }
 
 type CountRequest struct {
