@@ -11,7 +11,7 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.5.0
 	github.com/ONSdigital/dp-net/v2 v2.8.1
-	github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230302104007-3cf2c9ad4f52
+	github.com/ONSdigital/dp-search-data-extractor v0.17.1-0.20230324131751-53efb665aa08
 	github.com/ONSdigital/dp-search-data-importer v0.10.1-0.20230317154853-8718b686237a
 	github.com/ONSdigital/log.go/v2 v2.3.0
 	github.com/cucumber/godog v0.12.5
