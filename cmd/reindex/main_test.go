@@ -128,7 +128,7 @@ func TestTransformMetadataDoc(t *testing.T) {
 			}
 
 			expected := &importerModels.EsModel{
-				DataType:  "cantabular_flexible_table",
+				DataType:  "dataset_landing_page", // dataset_landing_page type is used for cantabular types
 				URI:       testURI,
 				DatasetID: testDatasetID,
 				Edition:   testEdition,
