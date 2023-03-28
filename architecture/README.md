@@ -1,6 +1,6 @@
 # Search Service Architecture
 
-Source of truth for the application architecture of the ONS search service including backend processing of data. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/15Qq3wgaULer96kXGuMDUo6D0-vAz7um1).
+Source of truth for the application architecture of the ons search service including backend processing of data. C4 diagrams available via [ons google drive](https://drive.google.com/drive/folders/15Qq3wgaULer96kXGuMDUo6D0-vAz7um1).
 
 ## Contents
 
@@ -31,7 +31,7 @@ Sitesearch dataflow from user on the website making a search with query term and
 
 ![Release Calendar](./sequence-diagrams/search-ui/release-calendar-ui.png)
 
-Dataflow from user on the website hitting the release calendar page on the ONS website, or selecting filters on this page to retrieving data from backing services and rendering the results.
+Dataflow from user on the website hitting the release calendar page on the ons website, or selecting filters on this page to retrieving data from backing services and rendering the results.
 
 ## Search Data Pipeline
 
@@ -45,11 +45,12 @@ The data pipleine from Florence user publishing some new or updated content or d
 
 Pre-requisite steps to publishing data not in this workflow as we will not be changing that part of the process. The following steps follow
 on from a florence (DP internal user) publishes a collection that can contain 1 to many ons webpages or datasets by making a request to zebedee
-which does he publishing of new webpages or updates to existing pages and lastly triggering updates to sitewide search; which is where the flow begins.
+which does the publishing of new webpages or updates to existing pages and lastly triggering updates to sitewide search; which is where the flow begins.
 
 **1: Consume Kafka messages**
 
-On publishing a collection, consume kafka message
+When a user publishes a collection via Florence, the backend collection process in Zebedee will
+trigger an event to the content-updated topic for consumption by the search data extractor.
 
 ```
 Datastore: kafka
@@ -64,25 +65,27 @@ Record: {
 }
 ```
 
-The `search_index` field should be set to the search index alias, `ONS` for publishing new content. Only search reindexes will make use of the actual index name, e.g. `ons_<timestamp>`.
+See [full schema here](https://github.com/onsdigital/dp-search-data-extractor/blob/develop/schema/schema.go#L7)
+
+The `search_index` field should be set to the search index alias, `ons` for publishing new content. Only search reindexes will make use of the actual index name, e.g. `ons_<timestamp>`.
 
 **2: Retrieve Zebedee resource**
 
-Retrieve resource from Zebedee API endpoint based on the uri in kafka maessage.
+If message is of type `legacy` then retrieve resource from Zebedee API endpoint based on the uri in kafka message.
 
 **3: Read JSON file from disc**
 
-Retrieve single document from zebedee content (files on disc).
+Follows from step 3 only - retrieve single document from zebedee content (files on disc).
 
 **4: Retrieve dataset resource**
 
-Retrieve resource from Dataset API endpoint based on the uri in kafka maessage.
+If message is of type `datasest` retrieve resource from Dataset API endpoint based on the uri in kafka message.
 
 *Note: No parellisation with 2 as each of these are triggered by separate kafka messages*
 
 **5: Find latest version of dataset**
 
-Find one document from Mongo db representing the resource on given uri.
+Follows from step 4 only - find one document from Mongo db representing the resource on given uri.
 
 **6: Produce event to search-data-import**
 
@@ -93,7 +96,7 @@ Topic: search-data-import
 Record: {
     "data_type": string,
     "job_id": string, // empty
-    "search_index": string, // Should use search alias ONS
+    "search_index": string, // Should use search alias ons
     "cdid": string,
     "dataset_id": string,
     "description": string,
@@ -107,7 +110,7 @@ Record: {
 }
 ```
 
-See [full schema here](https://github.com/ONSdigital/dp-search-data-extractor/blob/develop/schema/schema.go#L25)
+See [full schema here](https://github.com/onsdigital/dp-search-data-extractor/blob/develop/schema/schema.go#L25)
 
 **7: Consume event from search-data-import**
 
@@ -124,7 +127,7 @@ Index: ons *or* ons_<timestamp> // should be using the value in consumed kafka e
 Method: POST
 Header: 'Content-Type: application/json'
 Path: /_bulk
-Body: { "update": { <search doc - Depends on data type>, "_index": "ONS" } }
+Body: { "update": { <search doc - Depends on data type>, "_index": "ons" } }
 ```
 
 The search document should set an `_id` field that matches the unique identifier for that document, either uuid or compound identifier (multiple fields to represent a documents uniqueness). Either way this should be determined by the data stored in Zebedee content and the dataset API.
@@ -132,7 +135,7 @@ The search document should set an `_id` field that matches the unique identifier
 
 See [Bulk API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html)
 
-**9: Produce event to search data imported**
+**9: Produce event to search-data-imported**
 
 If the batch of documents was for a reindex job, then produce event for the search reindex tracker.
 
@@ -142,7 +145,7 @@ Datastore: kafka
 Topic: search-data-imported
 Record: {
     "job_id": string, // mandatory
-    "number_of_search_documents // mandatory
+    "number_of_search_documents": int // mandatory
 }
 ```
 
@@ -214,7 +217,7 @@ BSON Document: {
     "reindex_completed": ISODate, // Empty
     "reindex_failed": ISODate, // Empty
     "reindex_started": ISODate, // ISO8601 timestamp
-    "search_index_name": string, // format: {ONS-<ISO8601 timestamp>}
+    "search_index_name": string, // format: {ons-<ISO8601 timestamp>}
     "state": string // set to in-progress
 }
 ```
@@ -230,12 +233,12 @@ Path: /search
 
 Response must include the search index name.
 
-**6: Create new sitewide search index (ONS_<timestamp>)**
+**6: Create new sitewide search index (ons_<timestamp>)**
 
 Call elasticsearch cluster to create new index.
 
 ```
-Index: ONS-<ISO8601 timestamp>
+Index: ons-<ISO8601 timestamp>
 ```
 
 **7: Update job document with search_index_name**
@@ -249,7 +252,7 @@ Document Identifier: job_id
 
 BSON Document: {
     "last_updated": ISODate, // ISO8601 timestamp
-    "search_index_name": string // format: {ONS-<ISO8601 timestamp>}
+    "search_index_name": string // format: {ons-<ISO8601 timestamp>}
 }
 ```
 
@@ -279,7 +282,7 @@ Body: {
         "tasks": string // format: http://localhost:<PORT>/jobs/<id>/tasks
     },
     "reindex_started": ISODate, // ISO8601 timestamp
-    "search_index_name": string, // format: {ONS-<ISO8601 timestamp>}
+    "search_index_name": string, // format: {ons-<ISO8601 timestamp>}
     "state": string // set to in-progress
     "total_search_documents": integer
 }
@@ -300,7 +303,7 @@ Record: {
 }
 ```
 
-See schema [here](https://github.com/ONSdigital/dp-search-data-finder/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-data-finder/blob/develop/schema/schema.go)
 
 **12: Retrieve a list of urls for all published data on Zebedee**
 
@@ -322,7 +325,7 @@ Record: {
 }
 ```
 
-See schema [here](https://github.com/ONSdigital/dp-search-data-finder/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-data-finder/blob/develop/schema/schema.go)
 
 Continuation of Search Reindex takes place by the Search Reindex Tracker consuming messages from the `reindex-task-counts` topic.
 
@@ -352,7 +355,7 @@ Record: {
 }
 ```
 
-See schema [here](https://github.com/ONSdigital/dp-search-data-finder/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-data-finder/blob/develop/schema/schema.go)
 
 Continuation of Search Reindex takes place by the Search Data Extractor consuming messages from the `content-updated` topic; see [Search Reindex Pipeline](#search-reindex-pipeline)
 
@@ -374,7 +377,7 @@ Record: {
 }
 ```
 
-See schema [here](https://github.com/ONSdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
 
 **2: Update Reindex job - state to in-progress**
 
@@ -390,7 +393,7 @@ Body: [
 ]
 ```
 
-See [Search Reindex API swagger spec](https://github.com/ONSdigital/dp-search-reindex-api/blob/develop/swagger.yaml)
+See [Search Reindex API swagger spec](https://github.com/onsdigital/dp-search-reindex-api/blob/develop/swagger.yaml)
 
 **3: Update reindex job document**
 
@@ -425,7 +428,7 @@ Record: {
 If the extraction_completed is set to true then the Search Reindex Tracker will
 need to update the flag against the reindex job. See next step.
 
-See schema [here](https://github.com/ONSdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
 
 **5: Create task for Reindex Job**
 
@@ -512,7 +515,7 @@ Record: {
 }
 ```
 
-See schema [here](https://github.com/ONSdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
+See schema [here](https://github.com/onsdigital/dp-search-reindex-tracker/blob/develop/schema/schema.go)
 
 **10: Get Reindex job**
 
@@ -583,7 +586,7 @@ BSON Document: {
 ```
 Headers: Authorisation
 Method: POST
-Path: /search/{index}/aliases/{alias} // alias should always be "ONS"
+Path: /search/{index}/aliases/{alias} // alias should always be "ons"
 Query Params
   - delete_current_aliased_index = bool (true/false)
 ```
@@ -606,8 +609,8 @@ Method: POST
 Path: /_aliases
 Body: {
     "actions" : [
-    {"remove": {"index" : "<old-index>", "alias" : "ONS"}},
-    {"add" : {"index" : "<new-index>", "alias" : "ONS" }},
+    {"remove": {"index" : "<old-index>", "alias" : "ons"}},
+    {"add" : {"index" : "<new-index>", "alias" : "ons" }},
     {"remove-index" : {"index" : "<old-index>"}}, // assuming `delete_current_aliased_index` was set to true otherwise dont include
   ]
 }
