@@ -5,7 +5,6 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -23,69 +22,6 @@ import (
 //go:embed templates/releasecalendar/*.tmpl
 //go:embed templates/search/v710/*.tmpl
 var releaseFS embed.FS
-
-type ParamValidator map[paramName]validator
-
-func (qpv ParamValidator) Validate(_ context.Context, name, value string) (interface{}, error) {
-	if v, ok := qpv[paramName(name)]; ok {
-		return v(value)
-	}
-
-	return nil, fmt.Errorf("cannot validate: no validator for %s", name)
-}
-
-type validator func(param string) (interface{}, error)
-type paramName string
-
-func NewReleaseQueryParamValidator() ParamValidator {
-	return ParamValidator{
-		"limit": func(param string) (interface{}, error) {
-			value, err := strconv.Atoi(param)
-			if err != nil {
-				return 0, errors.New("limit search parameter provided with non numeric characters")
-			}
-			if value < 0 {
-				return 0, errors.New("limit search parameter provided with negative value")
-			}
-			if value > 1000 {
-				return 0, errors.New("limit search parameter provided with a value that is too high")
-			}
-
-			return value, nil
-		},
-		"offset": func(param string) (interface{}, error) {
-			value, err := strconv.Atoi(param)
-			if err != nil {
-				return 0, errors.New("offset search parameter provided with non numeric characters")
-			}
-			if value < 0 {
-				return 0, errors.New("offset search parameter provided with negative value")
-			}
-			return value, nil
-		},
-		"date": func(param string) (interface{}, error) {
-			value, err := ParseDate(param)
-			if err != nil {
-				return nil, fmt.Errorf("date search parameter provided is invalid: %w", err)
-			}
-			return value, nil
-		},
-		"sort": func(param string) (interface{}, error) {
-			value, err := ParseSort(param)
-			if err != nil {
-				return nil, fmt.Errorf("sort search parameter provided is invalid: %w", err)
-			}
-			return value, nil
-		},
-		"release-type": func(param string) (interface{}, error) {
-			value, err := ParseReleaseType(param)
-			if err != nil {
-				return nil, fmt.Errorf("release-type parameter provided is invalid: %w", err)
-			}
-			return value, nil
-		},
-	}
-}
 
 type Date time.Time
 

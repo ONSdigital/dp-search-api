@@ -91,16 +91,16 @@ paths:
           required: false
         - in: query
           name: population_types
-          description: "Comma separated list of population types to be returned."
+          description: "Comma separated list of population type names to filter the results (or)."
           type: array
           uniqueItems: true
           items:
             type: string
-          required: false
           collectionFormat: csv
+          required: false
         - in: query
           name: dimensions
-          description: "Comma separated list of dimensions to be returned."
+          description: "Comma separated list of dimension names to filter the results (and)."
           type: array
           uniqueItems: true
           items:

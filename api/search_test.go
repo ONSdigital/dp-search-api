@@ -13,6 +13,7 @@ import (
 
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/models"
+	"github.com/ONSdigital/dp-search-api/query"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -24,22 +25,47 @@ const (
 	internalServerErrMsg            = "internal server error"
 )
 
-func TestSearchHandlerFunc(t *testing.T) {
-	var searches []client.Search
-	expectedQuery := "a valid query"
-	searches = append(searches, client.Search{
-		Header: client.Header{
-			Index: "valid index",
-		},
-		Query: []byte(expectedQuery),
+func TestValidateContentTypes(t *testing.T) {
+	Convey("An array of content types containing a subset of the default content types should be allowed", t, func() {
+		disallowed, err := validateContentTypes([]string{
+			"dataset",
+			"dataset_landing_page",
+		})
+		So(err, ShouldBeNil)
+		So(disallowed, ShouldHaveLength, 0)
 	})
+
+	Convey("An array of content types containing a disallowed content type should return the expected error and list", t, func() {
+		disallowed, err := validateContentTypes([]string{
+			"dataset",
+			"dataset_landing_page",
+			"wrong_type",
+		})
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "content type(s) not allowed")
+		So(disallowed, ShouldResemble, []string{"wrong_type"})
+	})
+}
+
+func TestSearchHandlerFunc(t *testing.T) {
+	expectedQuery := "a valid query"
+	searches := []client.Search{
+		{
+			Header: client.Header{
+				Index: "valid index",
+			},
+			Query: []byte(expectedQuery),
+		},
+	}
 	validQueryDocBytes, _ := json.Marshal(searches)
+	validator := query.NewSearchQueryParamValidator()
+
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
 		qbMock := newQueryBuilderMock(nil, nil)
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=a", nil)
 		resp := httptest.NewRecorder()
@@ -57,7 +83,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=-1", nil)
 		resp := httptest.NewRecorder()
@@ -75,7 +101,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=b", nil)
 		resp := httptest.NewRecorder()
@@ -93,7 +119,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=-1", nil)
 		resp := httptest.NewRecorder()
@@ -106,12 +132,30 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
+	Convey("ShouldReturn BadRequest for a content_type that is not allowed", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newDpElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?content_type=wrong1,wrong2", nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		So(resp.Body.String(), ShouldContainSubstring, "Invalid content_type(s): wrong1,wrong2")
+		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 0)
+		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
+	})
+
 	Convey("Should return InternalError for errors returned from query builder", t, func() {
 		qbMock := newQueryBuilderMock(nil, errors.New("Something"))
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -120,7 +164,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
@@ -129,7 +173,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, errors.New("Something"))
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -138,7 +182,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -149,7 +193,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -158,7 +202,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -169,7 +213,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock(nil, errors.New("Something"))
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -178,7 +222,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -192,7 +236,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q=a&raw=true", nil)
 		resp := httptest.NewRecorder()
@@ -202,7 +246,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, `{"dummy":"response"}`)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -215,7 +259,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -225,7 +269,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -240,7 +284,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=true", nil)
 		resp := httptest.NewRecorder()
@@ -250,7 +294,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -265,7 +309,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=false", nil)
 		resp := httptest.NewRecorder()
@@ -275,7 +319,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		So(actualRequest, ShouldResemble, expectedQuery)
@@ -290,15 +334,17 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest(
 			"GET",
 			"http://localhost:8080/search?q="+validQueryParam+
-				"&content_type=ta,tb"+
+				"&content_type=dataset,release"+
 				"&sort_order=relevance"+
 				"&limit=1"+
-				"&offset=2",
+				"&offset=2"+
+				"&dimensions=dim1,dim2"+
+				"&population_types=pop1,pop2",
 			nil)
 		resp := httptest.NewRecorder()
 
@@ -307,11 +353,17 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
-		So(qbMock.BuildSearchQueryCalls()[0].ContentTypes, ShouldResemble, "ta,tb")
-		So(qbMock.BuildSearchQueryCalls()[0].Sort, ShouldResemble, "relevance")
-		So(qbMock.BuildSearchQueryCalls()[0].Limit, ShouldEqual, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Offset, ShouldEqual, 2)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"dataset", "release"})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.SortBy, ShouldResemble, "relevance")
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Size, ShouldEqual, 1)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.From, ShouldEqual, 2)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Dimensions, ShouldResemble, []*query.DimensionRequest{
+			{Name: "dim1"}, {Name: "dim2"},
+		})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationTypes, ShouldResemble, []*query.PopulationTypeRequest{
+			{Name: "pop1"}, {Name: "pop2"},
+		})
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
@@ -324,12 +376,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 }
 
 func TestLegacySearchHandlerFunc(t *testing.T) {
+	validator := query.NewSearchQueryParamValidator()
+
 	Convey("Should return BadRequest for invalid limit parameter", t, func() {
 		qbMock := newQueryBuilderMock(nil, nil)
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=a", nil)
 		resp := httptest.NewRecorder()
@@ -347,7 +401,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=-1", nil)
 		resp := httptest.NewRecorder()
@@ -365,7 +419,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=b", nil)
 		resp := httptest.NewRecorder()
@@ -383,7 +437,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=-1", nil)
 		resp := httptest.NewRecorder()
@@ -401,7 +455,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -411,7 +465,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(resp.Body.String(), ShouldContainSubstring, "Failed to create search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 0)
 	})
 
@@ -420,7 +474,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, errors.New("Something"))
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -430,7 +484,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(resp.Body.String(), ShouldContainSubstring, "Failed to run search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -441,7 +495,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(`{"dummy":"response"`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -451,7 +505,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(resp.Body.String(), ShouldContainSubstring, "Failed to process search query")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -462,7 +516,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock(nil, errors.New("Something"))
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -472,7 +526,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusInternalServerError)
 		So(resp.Body.String(), ShouldContainSubstring, "Failed to transform search result")
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -486,7 +540,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q=a&raw=true", nil)
 		resp := httptest.NewRecorder()
@@ -496,7 +550,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, `{"dummy":"response"}`)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -508,7 +562,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
 		resp := httptest.NewRecorder()
@@ -518,7 +572,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -533,7 +587,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=true", nil)
 		resp := httptest.NewRecorder()
@@ -543,7 +597,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -558,7 +612,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam+"&highlight=false", nil)
 		resp := httptest.NewRecorder()
@@ -568,7 +622,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
 		So(actualRequest, ShouldResemble, validQueryDoc)
@@ -583,12 +637,12 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(qbMock, esMock, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, esMock, trMock)
 
 		req := httptest.NewRequest(
 			"GET",
 			"http://localhost:8080/search?q="+validQueryParam+
-				"&content_type=ta,tb"+
+				"&content_type=article,release"+
 				"&sort_order=relevance"+
 				"&limit=1"+
 				"&offset=2",
@@ -600,11 +654,11 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		So(resp.Code, ShouldEqual, http.StatusOK)
 		So(resp.Body.String(), ShouldResemble, validTransformedResponse)
 		So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Q, ShouldResemble, validQueryParam)
-		So(qbMock.BuildSearchQueryCalls()[0].ContentTypes, ShouldResemble, "ta,tb")
-		So(qbMock.BuildSearchQueryCalls()[0].Sort, ShouldResemble, "relevance")
-		So(qbMock.BuildSearchQueryCalls()[0].Limit, ShouldEqual, 1)
-		So(qbMock.BuildSearchQueryCalls()[0].Offset, ShouldEqual, 2)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Types, ShouldResemble, []string{"article", "release"})
+		So(qbMock.BuildSearchQueryCalls()[0].Req.SortBy, ShouldResemble, "relevance")
+		So(qbMock.BuildSearchQueryCalls()[0].Req.Size, ShouldEqual, 1)
+		So(qbMock.BuildSearchQueryCalls()[0].Req.From, ShouldEqual, 2)
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Request)
@@ -689,13 +743,13 @@ func newDpElasticSearcherMock(response []byte, err error) *DpElasticSearcherMock
 	}
 }
 
-func newQueryBuilderMock(query []byte, err error) *QueryBuilderMock {
+func newQueryBuilderMock(retQuery []byte, err error) *QueryBuilderMock {
 	return &QueryBuilderMock{
-		BuildSearchQueryFunc: func(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error) {
-			return query, err
+		BuildSearchQueryFunc: func(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error) {
+			return retQuery, err
 		},
-		BuildCountQueryFunc: func(ctx context.Context, q string) ([]byte, error) {
-			return query, err
+		BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
+			return retQuery, err
 		},
 	}
 }
@@ -713,10 +767,10 @@ func newResponseTransformerMock(response []byte, err error) *ResponseTransformer
 
 func TestSanitise(t *testing.T) {
 	Convey("Given a query term with quoted terms", t, func() {
-		query := `"education results for Wales" "education results for England"`
+		queryWithQuotes := `"education results for Wales" "education results for England"`
 
 		Convey("when sanitised the individual quotes in the query term should be escaped", func() {
-			sanitised := sanitiseDoubleQuotes(query)
+			sanitised := sanitiseDoubleQuotes(queryWithQuotes)
 			So(sanitised, ShouldEqual, `\"education results for Wales\" \"education results for England\"`)
 		})
 	})

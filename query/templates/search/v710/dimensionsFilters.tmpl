@@ -1,0 +1,26 @@
+{{range $i,$dim := .Dimensions}}
+    {{if $i}},{{end}}
+    {
+        "bool": {
+            "should": [
+                {{ if $dim.Name }}
+                {
+                    "match":{
+                        "dimensions.name": "{{$dim.Name}}"
+                    }
+                },
+                {{ end }}
+                {
+                    "match":{
+                        "dimensions.label": "{{$dim.Label}}"
+                    }
+                },
+                {
+                    "match":{
+                        "dimensions.raw_label": "{{$dim.RawLabel}}"
+                    }
+                }
+            ]
+        }
+    }
+{{end}}

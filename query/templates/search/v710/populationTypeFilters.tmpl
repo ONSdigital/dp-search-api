@@ -1,0 +1,19 @@
+{{range $i,$pop_type := .PopulationTypes}}
+    {{if $i}},{{end}}
+    {{ if $pop_type.Name }}
+    {
+        "match":{
+            "population_type.name": {
+                "query": "{{ $pop_type.Name }}"
+            }
+        }
+    },
+    {{ end }}
+    {
+        "match":{
+            "population_type.label": {
+                "query": "{{ $pop_type.Label }}"
+            }
+        }
+    }
+{{end}}

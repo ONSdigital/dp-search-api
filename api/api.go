@@ -19,10 +19,8 @@ var (
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
 	Router             *mux.Router
-	QueryBuilder       QueryBuilder
 	dpESClient         DpElasticSearcher
 	deprecatedESClient ElasticSearcher
-	Transformer        ResponseTransformer
 	permissions        AuthHandler
 }
 
@@ -52,8 +50,8 @@ type QueryParamValidator interface {
 
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
-	BuildSearchQuery(ctx context.Context, q, contentTypes, sort string, topics []string, limit, offset int, esVersion710 bool) ([]byte, error)
-	BuildCountQuery(ctx context.Context, query string) ([]byte, error)
+	BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
+	BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error)
 }
 
 // ReleaseQueryBuilder provides an interface to build a search query for the Release content type
@@ -72,23 +70,55 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, queryBuilder QueryBuilder, transformer ResponseTransformer, permissions AuthHandler) (*SearchAPI, error) {
-	api := &SearchAPI{
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, permissions AuthHandler) *SearchAPI {
+	return &SearchAPI{
 		Router:             router,
-		QueryBuilder:       queryBuilder,
 		dpESClient:         dpESClient,
 		deprecatedESClient: deprecatedESClient,
-		Transformer:        transformer,
 		permissions:        permissions,
 	}
-
-	router.HandleFunc("/search", SearchHandlerFunc(queryBuilder, api.dpESClient, api.Transformer)).Methods("GET")
-	createSearchIndexHandler := permissions.Require(update, api.CreateSearchIndexHandlerFunc)
-	router.HandleFunc("/search", createSearchIndexHandler).Methods("POST")
-	return api, nil
 }
 
-func (a *SearchAPI) AddSearchReleaseAPI(validator QueryParamValidator, builder ReleaseQueryBuilder, searcher DpElasticSearcher, transformer ReleaseResponseTransformer) *SearchAPI {
-	a.Router.HandleFunc("/search/releases", SearchReleasesHandlerFunc(validator, builder, searcher, transformer)).Methods("GET")
+// RegisterGetSearch registers the handler for GET /search endpoint
+// with the provided validator and query builder
+// as well as the API's elasticsearch client and response transformer
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc(
+		"/search",
+		SearchHandlerFunc(
+			validator,
+			builder,
+			a.dpESClient,
+			transformer,
+		),
+	).Methods(http.MethodGet)
+	return a
+}
+
+// RegisterPostSearch registers the handler for POST /search endpoint
+// enforcing required update permissions
+func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
+	a.Router.HandleFunc(
+		"/search",
+		a.permissions.Require(
+			update,
+			a.CreateSearchIndexHandlerFunc,
+		),
+	).Methods(http.MethodPost)
+	return a
+}
+
+// RegisterGetSearchRelease registers the handler for GET /search/releases endpoint
+// with the provided validator, query builder, searcher and validator
+func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, builder ReleaseQueryBuilder, transformer ReleaseResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc(
+		"/search/releases",
+		SearchReleasesHandlerFunc(
+			validator,
+			builder,
+			a.dpESClient,
+			transformer,
+		),
+	).Methods(http.MethodGet)
 	return a
 }

@@ -96,7 +96,16 @@ NB. The Dataset API requires a mongo database named 'datasets', which must conta
 
 The Dataset API also requires this environment variable to be set to true: DISABLE_GRAPH_DB_DEPENDENCY
 
-Please make sure your elasticsearch server is running locally on localhost:11200 and version of the server is 7.10, which is the current supported version.
+Please make sure your elasticsearch server is running locally on localhost:11200 and version of the server is 7.10, which is the current supported version. You may use `dp-compose/v2/stacks/search` stack for this.
+
+If you want to run the reindex script locally but loading data from an environment (e.g. `sandbox`), you may run `dp ssh` with port forwarding for dataset-api and zebedee (please check the services IPs and ports in `https://consul.dp.aws.onsdigital.uk/ui/eu/services`) For example:
+
+```sh
+dp ssh sandbox publishing 2 -p 22000:10.30.138.234:26020
+dp ssh sandbox publishing 1 -p 8082:10.30.138.93:25108
+```
+
+If you do this the auth token will need to be a valid token accepted in the environment you are using.
 
 ###### Steps
 

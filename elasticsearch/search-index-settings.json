@@ -301,6 +301,38 @@
         "analyzer":"ons_synonym_stem",
         "search_analyzer":"ons_stem",
         "norms":false
+      },
+      "population_type": {
+        "properties": {
+          "name": {
+            "type":"keyword"
+          },
+          "label": {
+            "type":"text",
+            "analyzer":"ons_standard"
+          },
+          "agg_key": {
+            "type": "keyword"
+          }
+        }
+      },
+      "dimensions": {
+        "properties": {
+          "name": {
+            "type":"keyword"
+          },
+          "label": {
+            "type":"text",
+            "analyzer":"ons_standard"
+          },
+          "raw_label": {
+            "type":"text",
+            "analyzer":"ons_standard"
+          },
+          "agg_key": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }

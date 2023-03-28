@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 
 	"github.com/ONSdigital/dp-search-api/models"
@@ -14,6 +15,7 @@ import (
 // RegisterSteps registers the specific steps needed to do component tests for the search api
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
+	ctx.Step(`^elasticsearch is healthy`, c.elasticSearchIsHealthy)
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.es7xSuccessfullyReturnSingleSearchResult)
 	ctx.Step(`^elasticsearch returns multiple items in search response with topics filter$`, c.es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter)
 	ctx.Step(`^elasticsearch returns multiple items with distinct topic count in search response$`, c.es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicCount)
@@ -25,6 +27,16 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.es7xSuccessfullyReturnNoSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.es7xFailureInternalServerError)
+}
+
+// elasticSearchIsHealthy generates a mocked healthy response for elasticsearch healthecheck
+func (c *Component) elasticSearchIsHealthy() error {
+	const res = `{"cluster_name": "docker-cluster", "status": "green"}`
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().
+		Get("/_cluster/health").
+		Reply(http.StatusOK).
+		BodyString(res)
+	return nil
 }
 
 func (c *Component) es7xSuccessfullyReturnSingleSearchResult() error {
@@ -188,6 +200,7 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponsefromes7x(expectedJSO
 
 func (c *Component) es7xFailureInternalServerError() error {
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(500)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200)
 
 	return nil
 }

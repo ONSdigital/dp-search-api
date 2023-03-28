@@ -28,10 +28,13 @@ func getConfig(ctx context.Context) cliConfig {
 			service:               "es",
 			tlsInsecureSkipVerify: true,
 		},
-		esURL:            "http://localhost:9200",
+		esURL:            "http://localhost:11200",
 		signRequests:     false,
 		zebedeeURL:       "http://localhost:8082",
 		datasetURL:       "http://localhost:22000",
 		ServiceAuthToken: "",
+		PaginationLimit:  DefaultPaginationLimit,
+		TestSubset:       false,
+		IgnoreZebedee:    false,
 	}
 }
