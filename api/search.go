@@ -18,6 +18,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var debug = false
+
 // defaultContentTypes is an array of all valid content types, which is the default param value
 var defaultContentTypes = []string{
 	"article",
@@ -101,10 +103,12 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 
 	topicsParam := paramGet(params, "topics", "")
 	topics := sanitiseURLParams(topicsParam)
-	log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
-		"param": "topics",
-		"value": topics,
-	})
+	if topics != nil {
+		log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
+			"param": "topics",
+			"value": topics,
+		})
+	}
 
 	limitParam := paramGet(params, "limit", "10")
 	limit, err := validator.Validate(ctx, "limit", limitParam)
@@ -179,6 +183,10 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	reqCount := &query.CountRequest{
 		Term:        sanitisedQuery,
 		CountEnable: true,
+	}
+
+	if debug {
+		log.Info(ctx, "[DEBUG]", log.Data{"search_request": reqSearch})
 	}
 
 	return q, reqSearch, reqCount
@@ -389,6 +397,12 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		log.Error(ctx, "creation of search query failed", marshalErr, log.Data{"q": reqParams.From, "sort": reqParams.From, "limit": reqParams.Size, "offset": reqParams.From})
 		responseDataChan <- nil
 		return
+	}
+
+	if debug {
+		for i, s := range searches {
+			log.Info(ctx, "[DEBUG] Search sent to elasticsearch", log.Data{"i": i, "header": s.Header, "query": string(s.Query)})
+		}
 	}
 
 	enableTotalHitsCount := true
