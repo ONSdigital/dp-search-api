@@ -1,6 +1,6 @@
 # Search Service Architecture
 
-Source of truth for the application architecture of the ons search service including backend processing of data. C4 diagrams available via [ons google drive](https://drive.google.com/drive/folders/15Qq3wgaULer96kXGuMDUo6D0-vAz7um1).
+Source of truth for the application architecture of the ons search service including backend processing of data. C4 diagrams available via [ONS google drive](https://drive.google.com/drive/folders/15Qq3wgaULer96kXGuMDUo6D0-vAz7um1).
 
 ## Contents
 
@@ -31,7 +31,7 @@ Sitesearch dataflow from user on the website making a search with query term and
 
 ![Release Calendar](./sequence-diagrams/search-ui/release-calendar-ui.png)
 
-Dataflow from user on the website hitting the release calendar page on the ons website, or selecting filters on this page to retrieving data from backing services and rendering the results.
+Dataflow from user on the website hitting the release calendar page on the ONS website, or selecting filters on this page to retrieving data from backing services and rendering the results.
 
 ## Search Data Pipeline
 
@@ -44,7 +44,7 @@ The data pipleine from Florence user publishing some new or updated content or d
 #### Steps
 
 Pre-requisite steps to publishing data not in this workflow as we will not be changing that part of the process. The following steps follow
-on from a florence (DP internal user) publishes a collection that can contain 1 to many ons webpages or datasets by making a request to zebedee
+on from a florence (DP internal user) publishes a collection that can contain 1 to many ONS webpages or datasets by making a request to zebedee
 which does the publishing of new webpages or updates to existing pages and lastly triggering updates to sitewide search; which is where the flow begins.
 
 **1: Consume Kafka messages**
