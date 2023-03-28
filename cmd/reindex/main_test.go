@@ -292,7 +292,7 @@ func TestRetrieveDatasetEditions(t *testing.T) {
 			}
 			close(datasetChan)
 
-			editionChan, wg := retrieveDatasetEditions(ctx, cli, datasetChan, testAuthToken)
+			editionChan, _ := retrieveDatasetEditions(ctx, cli, datasetChan, testAuthToken)
 
 			Convey("Then the expected editions and isBasedOn are sent to the edition channel returned by retrieveDatasetEditions", func() {
 				ed1 := <-editionChan
@@ -307,7 +307,6 @@ func TestRetrieveDatasetEditions(t *testing.T) {
 					So(cli.GetFullEditionsDetailsCalls()[0].DatasetID, ShouldEqual, testDatasetID)
 					So(cli.GetFullEditionsDetailsCalls()[0].CollectionID, ShouldEqual, testCollectionID)
 					So(cli.GetFullEditionsDetailsCalls()[0].ServiceAuthToken, ShouldEqual, testAuthToken)
-					wg.Wait()
 				})
 			})
 		})
@@ -345,7 +344,7 @@ func TestRetrieveLatestMetadata(t *testing.T) {
 			}
 			close(editionMetadata)
 
-			metadataChan, wg := retrieveLatestMetadata(ctx, cli, editionMetadata, testAuthToken)
+			metadataChan, _ := retrieveLatestMetadata(ctx, cli, editionMetadata, testAuthToken)
 
 			Convey("Then the expected metadata and isBasedOn are sent to the metadataChannel", func() {
 				m := <-metadataChan
@@ -357,7 +356,6 @@ func TestRetrieveLatestMetadata(t *testing.T) {
 					So(cli.GetVersionMetadataCalls()[0].Edition, ShouldEqual, testEdition)
 					So(cli.GetVersionMetadataCalls()[0].Version, ShouldEqual, testVersion)
 					So(cli.GetVersionMetadataCalls()[0].ServiceAuthToken, ShouldEqual, testAuthToken)
-					wg.Wait()
 				})
 			})
 		})

@@ -140,6 +140,10 @@ Then run the executable
   ./build/reindex
 ```
 
+### Architecture
+
+See [ARCHITECTURE](architecture/README.md) for details.
+
 ### Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details.

@@ -1,0 +1,27 @@
+title Sitesearch UI and API
+
+autonumber
+entryspacing 1.0
+
+actor User
+
+note over User: User on website enters search term\nin search box or filter(s) from\npossible options
+
+User->Frontend Router: Https GET: Render Search\n         results page
+
+Frontend Router->Frontend Search Controller: Https GET: Search results\n    and render template
+Frontend Search Controller->API Router: Https GET: Retrieve search\ndata from REST endpoint
+
+note over User: Makes request directly to API
+User->API Router: Https GET: Retrieve search\ndata from REST endpoint
+API Router->Search API: Reverse Proxy\n to correct API
+
+note over Search API: Next 3 requests can be switched off\nin the Search API
+Search API->NLP Scrubber API: Https Get: Identify Output Area and\nIndustry codes in query term
+Search API->NLP Berlin API: Https Get: Identify UN/LOCODE\nand ISO-3166-2 subdivisions
+Search API->NLP Category API: Https Get: Topic Category Matching
+
+note over Search API: The previous 3 API requests are\nmade concurrently to retrieve\nadditional data to add to query\nbefore sending to Elasticsearch below
+
+database Elasticsearch
+Search API->Elasticsearch: Https Get: Retrieve data based on built query
