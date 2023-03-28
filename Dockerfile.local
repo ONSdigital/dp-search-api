@@ -10,5 +10,5 @@ RUN PATH=$PATH:/bin
 RUN go clean -modcache
 
 # Map between the working directories of dev and live
-RUN ln -s /go /dp-search-data-importer
-WORKDIR /dp-search-data-importer
+RUN ln -s /go /dp-search-api
+WORKDIR /dp-search-api
