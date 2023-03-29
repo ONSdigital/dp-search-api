@@ -1,5 +1,23 @@
 {{range $i,$pop_type := .PopulationTypes}}
     {{if $i}},{{end}}
+    {{ if $pop_type.Key }}
+    {
+        "match":{
+            "population_type.key": {
+                "query": "{{ $pop_type.Key }}"
+            }
+        }
+    },
+    {{ end }}
+    {{ if $pop_type.AggKey }}
+    {
+        "match":{
+            "population_type.agg_key": {
+                "query": "{{ $pop_type.AggKey }}"
+            }
+        }
+    },
+    {{ end }}
     {{ if $pop_type.Name }}
     {
         "match":{

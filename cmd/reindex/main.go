@@ -598,16 +598,18 @@ func convertToSearchDataModel(searchDataImport extractorModels.SearchDataImport)
 		})
 	}
 	searchDIM.PopulationType = importerModels.PopulationType{
+		Key:    searchDataImport.PopulationType.Key,
+		AggKey: searchDataImport.PopulationType.AggKey,
 		Name:   searchDataImport.PopulationType.Name,
 		Label:  searchDataImport.PopulationType.Label,
-		AggKey: searchDataImport.PopulationType.AggKey,
 	}
 	for _, dim := range searchDataImport.Dimensions {
 		searchDIM.Dimensions = append(searchDIM.Dimensions, importerModels.Dimension{
+			Key:      dim.Key,
+			AggKey:   dim.AggKey,
 			Name:     dim.Name,
 			Label:    dim.Label,
 			RawLabel: dim.RawLabel,
-			AggKey:   dim.AggKey,
 		})
 	}
 	return searchDIM
