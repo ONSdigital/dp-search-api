@@ -401,7 +401,9 @@ func cleanOldIndices(ctx context.Context, dpEsIndexClient dpEsClient.Client) {
 		}
 	}
 
-	deleteIndicies(ctx, dpEsIndexClient, toDelete)
+	if len(toDelete) > 0 {
+		deleteIndicies(ctx, dpEsIndexClient, toDelete)
+	}
 }
 
 func doesIndexHaveAlias(details indexDetails, alias string) bool {
