@@ -20,8 +20,8 @@ const (
 var es710AggregationField = &AggregationFields{
 	Topics:          "topics",
 	ContentTypes:    "type",
-	PopulationTypes: "population_type.agg_key", // agg_key is {name}###{label} so aggregations on unique combinations of these will be obtained
-	Dimensions:      "dimensions.agg_key",      // agg_key is {name}###{label} so aggregations on unique combinations of these will be obtained
+	PopulationTypes: "population_type.agg_key", // agg_key is {key}###{label} so aggregations on unique combinations of these will be obtained
+	Dimensions:      "dimensions.agg_key",      // agg_key is {key}###{label} so aggregations on unique combinations of these will be obtained
 }
 
 // SearchRequest holds the values provided by a request against Search API
@@ -45,11 +45,15 @@ type SearchRequest struct {
 }
 
 type PopulationTypeRequest struct {
-	Name  string
-	Label string
+	Key    string
+	AggKey string
+	Name   string
+	Label  string
 }
 
 type DimensionRequest struct {
+	Key      string
+	AggKey   string
 	Name     string
 	Label    string
 	RawLabel string

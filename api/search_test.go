@@ -359,10 +359,10 @@ func TestSearchHandlerFunc(t *testing.T) {
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Size, ShouldEqual, 1)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.From, ShouldEqual, 2)
 		So(qbMock.BuildSearchQueryCalls()[0].Req.Dimensions, ShouldResemble, []*query.DimensionRequest{
-			{Name: "dim1"}, {Name: "dim2"},
+			{Key: "dim1"}, {Key: "dim2"},
 		})
 		So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationTypes, ShouldResemble, []*query.PopulationTypeRequest{
-			{Name: "pop1"}, {Name: "pop2"},
+			{Key: "pop1"}, {Key: "pop2"},
 		})
 
 		So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)

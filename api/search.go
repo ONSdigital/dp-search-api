@@ -158,7 +158,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		p := make([]*query.PopulationTypeRequest, len(popTypes))
 		for i, popType := range popTypes {
 			p[i] = &query.PopulationTypeRequest{
-				Name: popType,
+				Key: popType,
 			}
 		}
 		reqSearch.PopulationTypes = p
@@ -171,7 +171,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		d := make([]*query.DimensionRequest, len(dims))
 		for i, dim := range dims {
 			d[i] = &query.DimensionRequest{
-				Name: dim,
+				Key: dim,
 			}
 		}
 		reqSearch.Dimensions = d

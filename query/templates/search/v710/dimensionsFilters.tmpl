@@ -3,6 +3,20 @@
     {
         "bool": {
             "should": [
+                {{ if $dim.Key }}
+                {
+                    "match":{
+                        "dimensions.key": "{{$dim.Key}}"
+                    }
+                },
+                {{ end }}
+                {{ if $dim.AggKey }}
+                {
+                    "match":{
+                        "dimensions.agg_key": "{{$dim.AggKey}}"
+                    }
+                },
+                {{ end }}
                 {{ if $dim.Name }}
                 {
                     "match":{

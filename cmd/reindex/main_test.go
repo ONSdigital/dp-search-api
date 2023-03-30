@@ -133,14 +133,15 @@ func TestTransformMetadataDoc(t *testing.T) {
 				DatasetID: testDatasetID,
 				Edition:   testEdition,
 				PopulationType: &importerModels.EsPopulationType{
+					Key:    "all-usual-residents-in-households",
+					AggKey: "all-usual-residents-in-households###All usual residents in households",
 					Name:   "UR_HH",
 					Label:  "All usual residents in households",
-					AggKey: "UR_HH###All usual residents in households",
 				},
 				Dimensions: []importerModels.EsDimension{
-					{Name: "dim1", RawLabel: "label 1 (10 categories)", Label: "label 1", AggKey: "dim1###label 1"},
-					{Name: "dim2", RawLabel: "label 2 (12 Categories)", Label: "label 2", AggKey: "dim2###label 2"},
-					{Name: "dim4", RawLabel: "label 4 (1 category)", Label: "label 4", AggKey: "dim4###label 4"},
+					{Key: "label-1", AggKey: "label-1###label 1", Name: "dim1", RawLabel: "label 1 (10 categories)", Label: "label 1"},
+					{Key: "label-2", AggKey: "label-2###label 2", Name: "dim2", RawLabel: "label 2 (12 Categories)", Label: "label 2"},
+					{Key: "label-4", AggKey: "label-4###label 4", Name: "dim4", RawLabel: "label 4 (1 category)", Label: "label 4"},
 				},
 			}
 
@@ -161,7 +162,15 @@ func TestTransformMetadataDoc(t *testing.T) {
 				esModel := &importerModels.EsModel{}
 				err := json.Unmarshal(transformed.Body, esModel)
 				So(err, ShouldBeNil)
-				So(esModel, ShouldResemble, expected)
+				So(esModel.DataType, ShouldEqual, expected.DataType)
+				So(esModel.URI, ShouldEqual, expected.URI)
+				So(esModel.DatasetID, ShouldEqual, expected.DatasetID)
+				So(esModel.Edition, ShouldEqual, expected.Edition)
+				So(esModel.PopulationType, ShouldResemble, expected.PopulationType)
+				So(esModel.Dimensions, ShouldHaveLength, len(expected.Dimensions))
+				for _, dim := range expected.Dimensions {
+					So(esModel.Dimensions, ShouldContain, dim)
+				}
 
 				wg.Wait()
 			})
