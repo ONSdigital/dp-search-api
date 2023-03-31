@@ -17,26 +17,26 @@ func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator Qu
 	queryString := params.Get("query")
 	term, template := query.ParseQuery(queryString)
 
-	limitParam := paramGet(params, "limit", "10")
-	limit, err := validator.Validate(ctx, "limit", limitParam)
+	limitParam := paramGet(params, ParamLimit, "10")
+	limit, err := validator.Validate(ctx, ParamLimit, limitParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "limit", "value": limitParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamLimit, "value": limitParam})
 		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
 		return "", nil
 	}
 
-	offsetParam := paramGet(params, "offset", "0")
-	offset, err := validator.Validate(ctx, "offset", offsetParam)
+	offsetParam := paramGet(params, ParamOffset, "0")
+	offset, err := validator.Validate(ctx, ParamOffset, offsetParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "offset", "value": offsetParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamOffset, "value": offsetParam})
 		http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
 		return "", nil
 	}
 
-	sortParam := paramGet(params, "sort", query.RelDateAsc.String())
-	sort, err := validator.Validate(ctx, "sort", sortParam)
+	sortParam := paramGet(params, ParamSort, query.RelDateAsc.String())
+	sort, err := validator.Validate(ctx, ParamSort, sortParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "sort", "value": sortParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
 		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
 		return "", nil
 	}
@@ -70,11 +70,11 @@ func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator Qu
 		http.Error(w, "Invalid release-type parameter", http.StatusBadRequest)
 		return "", nil
 	}
-	provisional := paramGetBool(params, "subtype-provisional", false)
-	confirmed := paramGetBool(params, "subtype-confirmed", false)
-	postponed := paramGetBool(params, "subtype-postponed", false)
-	highlight := paramGetBool(params, "highlight", true)
-	census := paramGetBool(params, "census", false)
+	provisional := paramGetBool(params, ParamSubtypeProvisional, false)
+	confirmed := paramGetBool(params, ParamSubtypeConfirmed, false)
+	postponed := paramGetBool(params, ParamSubtypePostponed, false)
+	highlight := paramGetBool(params, ParamHighlight, true)
+	census := paramGetBool(params, ParamCensus, false)
 
 	return queryString, &query.ReleaseSearchRequest{
 		Term:           term,
@@ -106,7 +106,12 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 
 		searches, err := builder.BuildSearchQuery(ctx, searchReq)
 		if err != nil {
-			log.Error(ctx, "creation of search release query failed", err, log.Data{"q": queryString, "sort": searchReq.SortBy, "limit": searchReq.Size, "offset": searchReq.From})
+			log.Error(ctx, "creation of search release query failed", err, log.Data{
+				ParamQ:      queryString,
+				ParamSort:   searchReq.SortBy,
+				ParamLimit:  searchReq.Size,
+				ParamOffset: searchReq.From,
+			})
 			http.Error(w, "Failed to create search release query", http.StatusInternalServerError)
 			return
 		}

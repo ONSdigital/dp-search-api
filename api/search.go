@@ -20,6 +20,22 @@ import (
 
 var debug = false
 
+const (
+	ParamQ                  = "q"
+	ParamSort               = "sort"
+	ParamHighlight          = "highlight"
+	ParamTopics             = "topics"
+	ParamLimit              = "limit"
+	ParamOffset             = "offset"
+	ParamContentType        = "content_type"
+	ParamPopulationTypes    = "population_types"
+	ParamDimensions         = "dimensions"
+	ParamSubtypeProvisional = "subtype-provisional"
+	ParamSubtypeConfirmed   = "subtype-confirmed"
+	ParamSubtypePostponed   = "subtype-postponed"
+	ParamCensus             = "census"
+)
+
 // defaultContentTypes is an array of all valid content types, which is the default param value
 var defaultContentTypes = []string{
 	"article",
@@ -88,52 +104,52 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	ctx := req.Context()
 	params := req.URL.Query()
 
-	q := params.Get("q")
+	q := params.Get(ParamQ)
 	sanitisedQuery := sanitiseDoubleQuotes(q)
 
-	sortParam := paramGet(params, "sort", "relevance")
-	sort, err := validator.Validate(ctx, "sort", sortParam)
+	sortParam := paramGet(params, ParamSort, "relevance")
+	sort, err := validator.Validate(ctx, ParamSort, sortParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "sort", "value": sortParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
 		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
-	highlight := paramGetBool(params, "highlight", true)
+	highlight := paramGetBool(params, ParamHighlight, true)
 
-	topicsParam := paramGet(params, "topics", "")
+	topicsParam := paramGet(params, ParamTopics, "")
 	topics := sanitiseURLParams(topicsParam)
 	if topics != nil {
 		log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
-			"param": "topics",
+			"param": ParamTopics,
 			"value": topics,
 		})
 	}
 
-	limitParam := paramGet(params, "limit", "10")
-	limit, err := validator.Validate(ctx, "limit", limitParam)
+	limitParam := paramGet(params, ParamLimit, "10")
+	limit, err := validator.Validate(ctx, ParamLimit, limitParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "limit", "value": limitParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamLimit, "value": limitParam})
 		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
-	offsetParam := paramGet(params, "offset", "0")
-	offset, err := validator.Validate(ctx, "offset", offsetParam)
+	offsetParam := paramGet(params, ParamOffset, "0")
+	offset, err := validator.Validate(ctx, ParamOffset, offsetParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "offset", "value": offsetParam})
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamOffset, "value": offsetParam})
 		http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	// read content type (expected CSV value), with default, to make sure some content types are
-	contentTypesParam := paramGet(params, "content_type", "")
+	contentTypesParam := paramGet(params, ParamContentType, "")
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
 		disallowed, err := validateContentTypes(contentTypes)
 		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": "content_type", "value": contentTypesParam, "disallowed": disallowed})
+			log.Warn(ctx, err.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
 		}
@@ -152,7 +168,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	}
 
 	// population types only used if provided
-	popTypesParam := paramGet(params, "population_types", "")
+	popTypesParam := paramGet(params, ParamPopulationTypes, "")
 	if popTypesParam != "" {
 		popTypes := strings.Split(popTypesParam, ",")
 		p := make([]*query.PopulationTypeRequest, len(popTypes))
@@ -165,7 +181,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	}
 
 	// dimensions only used if provided
-	dimensionsParam := paramGet(params, "dimensions", "")
+	dimensionsParam := paramGet(params, ParamDimensions, "")
 	if dimensionsParam != "" {
 		dims := strings.Split(dimensionsParam, ",")
 		d := make([]*query.DimensionRequest, len(dims))
@@ -295,7 +311,12 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, searchReq, false)
 		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{"q": q, "sort": searchReq.SortBy, "limit": searchReq.Size, "offset": searchReq.From})
+			log.Error(ctx, "creation of search query failed", err, log.Data{
+				ParamQ:      q,
+				ParamSort:   searchReq.SortBy,
+				ParamLimit:  searchReq.Size,
+				ParamOffset: searchReq.From,
+			})
 			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
 			return
 		}
@@ -386,7 +407,12 @@ func sanitiseDoubleQuotes(str string) string {
 func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.SearchRequest, responseDataChan chan []byte) {
 	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, reqParams, true)
 	if err != nil {
-		log.Error(ctx, "creation of search query failed", err, log.Data{"q": reqParams.Term, "sort": reqParams.SortBy, "limit": reqParams.Size, "offset": reqParams.From})
+		log.Error(ctx, "creation of search query failed", err, log.Data{
+			ParamQ:      reqParams.Term,
+			ParamSort:   reqParams.SortBy,
+			ParamLimit:  reqParams.Size,
+			ParamOffset: reqParams.From,
+		})
 		responseDataChan <- nil
 		return
 	}
@@ -394,7 +420,12 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 	var searches []client.Search
 
 	if marshalErr := json.Unmarshal(formattedQuery, &searches); marshalErr != nil {
-		log.Error(ctx, "creation of search query failed", marshalErr, log.Data{"q": reqParams.From, "sort": reqParams.From, "limit": reqParams.Size, "offset": reqParams.From})
+		log.Error(ctx, "creation of search query failed", marshalErr, log.Data{
+			ParamQ:      reqParams.From,
+			ParamSort:   reqParams.From,
+			ParamLimit:  reqParams.Size,
+			ParamOffset: reqParams.From,
+		})
 		responseDataChan <- nil
 		return
 	}
@@ -426,7 +457,8 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.CountRequest, resCountChan chan []byte) {
 	countQBytes, err := queryBuilder.BuildCountQuery(ctx, reqParams)
 	if err != nil {
-		log.Error(ctx, "creation of count query failed", err, log.Data{"q": reqParams.Term})
+		log.Error(ctx, "creation of count query failed", err, log.Data{
+			ParamQ: reqParams.Term})
 		resCountChan <- nil
 		return
 	}
@@ -435,7 +467,8 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 		Query: countQBytes,
 	})
 	if err != nil {
-		log.Error(ctx, "call to elasticsearch count api failed", err, log.Data{"q": reqParams.Term})
+		log.Error(ctx, "call to elasticsearch count api failed", err, log.Data{
+			ParamQ: reqParams.Term})
 		resCountChan <- nil
 		return
 	}
