@@ -95,6 +95,22 @@ func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder Que
 	return a
 }
 
+// RegisterGetSearch registers the handler for GET /nlp/search endpoint
+// with the provided validator and query builder
+// as well as the API's elasticsearch client and response transformer
+func (a *SearchAPI) RegisterGetNLPSearch(validator QueryParamValidator, builder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc(
+		"/nlp/search",
+		NLPSearchHandlerFunc(
+			validator,
+			builder,
+			a.dpESClient,
+			transformer,
+		),
+	).Methods(http.MethodGet)
+	return a
+}
+
 // RegisterPostSearch registers the handler for POST /search endpoint
 // enforcing required update permissions
 func (a *SearchAPI) RegisterPostSearch() *SearchAPI {

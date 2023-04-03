@@ -208,6 +208,21 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	return q, reqSearch, reqCount
 }
 
+func NLPSearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		// ctx := req.Context()
+		// params := req.URL.Query()
+
+		resp := models.IndustryResp{
+			Code: "test",
+			Name: "test",
+		}
+		rsd, _ := json.Marshal(resp)
+
+		w.Write(rsd)
+	}
+}
+
 // SearchHandlerFunc returns a http handler function handling search api requests.
 func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {

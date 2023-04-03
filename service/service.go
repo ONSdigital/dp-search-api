@@ -136,7 +136,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	searchAPI := api.NewSearchAPI(router, esClient, deprecatedESClient, permissions).
 		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer).
 		RegisterPostSearch().
-		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
+		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer).
+		RegisterGetNLPSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer)
 
 	go func() {
 		log.Info(ctx, "search api starting")
