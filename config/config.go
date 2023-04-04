@@ -11,6 +11,9 @@ import (
 type Config struct {
 	AWS                        AWS
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
+	BerlinAPIURL               string        `envconfig:"BERLIN_API_URL"`
+	ScrubberAPIURL             string        `envconfig:"SCRUBBER_API_URL"`
+	CategoryAPIURL             string        `envconfig:"CATEGORY_API_URL"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
@@ -37,6 +40,9 @@ func Get() (*Config, error) {
 
 	cfg = &Config{
 		BindAddr:                   ":23900",
+		BerlinAPIURL:               "http://localhost:3001",
+		ScrubberAPIURL:             "http://localhost:3002",
+		CategoryAPIURL:             "http://localhost:3003",
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
