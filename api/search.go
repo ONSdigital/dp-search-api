@@ -8,11 +8,13 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/models"
+	"github.com/ONSdigital/dp-search-api/nlp"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
@@ -208,15 +210,51 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	return q, reqSearch, reqCount
 }
 
-func NLPSearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		// ctx := req.Context()
-		// params := req.URL.Query()
+		ctx := req.Context()
+		params := req.URL.Query()
 
-		resp := models.IndustryResp{
-			Code: "test",
-			Name: "test",
+		var berlin models.Berlin
+		var scrubber models.Scrubber
+		var category models.Category
+
+		var wg sync.WaitGroup
+		wg.Add(3)
+
+		go func() {
+			var err error
+
+			berlin, err = cli.GetBerlin(ctx, params)
+			if err != nil {
+				// TODO: error handling
+			}
+		}()
+
+		go func() {
+			var err error
+
+			scrubber, err = cli.GetScrubber(ctx, params)
+			if err != nil {
+				// TODO: error handling
+			}
+		}()
+
+		go func() {
+			var err error
+
+			category, err = cli.GetCategory(ctx, params)
+			if err != nil {
+				// TODO: error handling
+			}
+		}()
+
+		resp := models.Hub{
+			Berlin:   berlin,
+			Scrubber: scrubber,
+			Category: category,
 		}
+
 		rsd, _ := json.Marshal(resp)
 
 		w.Write(rsd)

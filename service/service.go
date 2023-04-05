@@ -10,6 +10,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
+	"github.com/ONSdigital/dp-search-api/nlp"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -61,6 +62,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esClientErr error
 	var esClient dpEsClient.Client
 
+	nlpClient := nlp.New(cfg.NLP)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -137,7 +139,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer).
 		RegisterPostSearch().
 		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer).
-		RegisterGetNLPSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer)
+		RegisterGetNLPSearch(nlpClient)
 
 	go func() {
 		log.Info(ctx, "search api starting")

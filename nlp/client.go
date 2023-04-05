@@ -12,32 +12,34 @@ import (
 )
 
 // Client represents an instance of the elasticsearch client - now deprecated
-type NLPClient struct {
-	BerlinBaseURL   string
-	ScrubberBaseURL string
-	CategoryBaseURL string
+type Client struct {
+	berlinBaseURL   string
+	scrubberBaseURL string
+	categoryBaseURL string
 	client          dphttp.Client
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
-func New(nlp config.NLP, client dphttp.Client) *NLPClient {
-	return &NLPClient{
-		BerlinBaseURL:   nlp.BerlinAPIURL,
-		ScrubberBaseURL: nlp.ScrubberAPIURL,
-		CategoryBaseURL: nlp.CategoryAPIURL,
+func New(nlp config.NLP) *Client {
+	client := dphttp.Client{}
+	return &Client{
+		berlinBaseURL:   nlp.BerlinAPIURL,
+		scrubberBaseURL: nlp.ScrubberAPIURL,
+		categoryBaseURL: nlp.CategoryAPIURL,
 		client:          client,
 	}
 }
 
-func (cli *NLPClient) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
+func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	url, err := buildURL(cli.BerlinBaseURL, params)
+	url, err := buildURL(cli.berlinBaseURL, params)
 	if err != nil {
 		// TODO: error handling
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
+	defer resp.Body.Close()
 	if err != nil {
 		// TODO: error handling
 	}
@@ -54,15 +56,16 @@ func (cli *NLPClient) GetBerlin(ctx context.Context, params url.Values) (models.
 	return berlin, nil
 }
 
-func (cli *NLPClient) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
+func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
 	var category models.Category
 
-	url, err := buildURL(cli.CategoryBaseURL, params)
+	url, err := buildURL(cli.categoryBaseURL, params)
 	if err != nil {
 		// TODO: error handling
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
+	defer resp.Body.Close()
 	if err != nil {
 		// TODO: error handling
 	}
@@ -79,15 +82,16 @@ func (cli *NLPClient) GetCategory(ctx context.Context, params url.Values) (model
 	return category, nil
 }
 
-func (cli *NLPClient) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
+func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
 	var scrubber models.Scrubber
 
-	url, err := buildURL(cli.ScrubberBaseURL, params)
+	url, err := buildURL(cli.scrubberBaseURL, params)
 	if err != nil {
 		// TODO: error handling
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
+	defer resp.Body.Close()
 	if err != nil {
 		// TODO: error handling
 	}
