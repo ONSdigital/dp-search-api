@@ -3,6 +3,7 @@ package nlp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/url"
 
@@ -33,7 +34,7 @@ func New(nlp config.NLP) *Client {
 func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	url, err := buildURL(cli.berlinBaseURL, params)
+	url, err := buildURL(cli.berlinBaseURL, params, "q")
 	if err != nil {
 		// TODO: error handling
 	}
@@ -59,7 +60,7 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
 	var category models.Category
 
-	url, err := buildURL(cli.categoryBaseURL, params)
+	url, err := buildURL(cli.categoryBaseURL+"/categories", params, "query")
 	if err != nil {
 		// TODO: error handling
 	}
@@ -85,7 +86,7 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
 	var scrubber models.Scrubber
 
-	url, err := buildURL(cli.scrubberBaseURL, params)
+	url, err := buildURL(cli.scrubberBaseURL+"/scrubber/search", params, "q")
 	if err != nil {
 		// TODO: error handling
 	}
@@ -108,16 +109,19 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	return scrubber, nil
 }
 
-func buildURL(baseURL string, params url.Values) (*url.URL, error) {
-	var catQuery url.Values
-	catQuery.Add("query", params.Get("q"))
+func buildURL(baseURL string, params url.Values, queryKey string) (*url.URL, error) {
+	query := url.Values{}
+
+	fmt.Println("115" + params.Get("q"))
+	query.Set(queryKey, params.Get("q"))
+	fmt.Println("117" + query.Get(queryKey))
 
 	requestURL, err := url.Parse(baseURL)
 	if err != nil {
 		// TODO: error handling
 	}
 
-	requestURL.RawQuery = catQuery.Encode()
+	requestURL.RawQuery = query.Encode()
 
 	return requestURL, nil
 }

@@ -220,18 +220,22 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		var category models.Category
 
 		var wg sync.WaitGroup
-		wg.Add(3)
+		wg.Add(2)
 
 		go func() {
+			defer wg.Done()
+
 			var err error
 
 			berlin, err = cli.GetBerlin(ctx, params)
 			if err != nil {
-				// TODO: error handling
+				// TODO: error handling handle 500 from the apis
 			}
 		}()
 
 		go func() {
+			defer wg.Done()
+
 			var err error
 
 			scrubber, err = cli.GetScrubber(ctx, params)
@@ -241,6 +245,8 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		}()
 
 		go func() {
+			defer wg.Done()
+
 			var err error
 
 			category, err = cli.GetCategory(ctx, params)
@@ -248,6 +254,8 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 				// TODO: error handling
 			}
 		}()
+
+		wg.Wait()
 
 		resp := models.Hub{
 			Berlin:   berlin,
