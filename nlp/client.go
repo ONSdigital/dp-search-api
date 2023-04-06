@@ -36,22 +36,22 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 
 	url, err := buildURL(cli.berlinBaseURL, params, "q")
 	if err != nil {
-		// TODO: error handling
+		return berlin, err
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
 	if err != nil {
-		// TODO: error handling
+		return berlin, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		// TODO: error handling
+		return berlin, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	if err := json.Unmarshal(b, &berlin); err != nil {
-		// TODO: error handling
+		return berlin, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
 	}
 
 	return berlin, nil
@@ -62,22 +62,22 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 
 	url, err := buildURL(cli.categoryBaseURL+"/categories", params, "query")
 	if err != nil {
-		// TODO: error handling
+		return category, err
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
 	if err != nil {
-		// TODO: error handling
+		return category, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		// TODO: error handling
+		return category, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	if err := json.Unmarshal(b, &category); err != nil {
-		// TODO: error handling
+		return category, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
 	}
 
 	return category, nil
@@ -88,22 +88,22 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 
 	url, err := buildURL(cli.scrubberBaseURL+"/scrubber/search", params, "q")
 	if err != nil {
-		// TODO: error handling
+		return scrubber, err
 	}
 
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
 	if err != nil {
-		// TODO: error handling
+		return scrubber, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		// TODO: error handling
+		return scrubber, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	if err := json.Unmarshal(b, &scrubber); err != nil {
-		// TODO: error handling
+		return scrubber, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
 	}
 
 	return scrubber, nil
@@ -112,16 +112,14 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 func buildURL(baseURL string, params url.Values, queryKey string) (*url.URL, error) {
 	query := url.Values{}
 
-	fmt.Println("115" + params.Get("q"))
 	query.Set(queryKey, params.Get("q"))
-	fmt.Println("117" + query.Get(queryKey))
 
 	requestURL, err := url.Parse(baseURL)
 	if err != nil {
-		// TODO: error handling
+		return nil, fmt.Errorf("error parsing baseURL: %w", err)
 	}
 
 	requestURL.RawQuery = query.Encode()
 
-	return requestURL, nil
+	return requestURL, err
 }
