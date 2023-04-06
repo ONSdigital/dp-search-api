@@ -11,6 +11,7 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/models"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Client represents an instance of the elasticsearch client - now deprecated
@@ -39,6 +40,8 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	if err != nil {
 		return berlin, err
 	}
+
+	log.Info(ctx, "successfully build berlin url", log.Data{"scrubber url": url.String()})
 
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
@@ -69,6 +72,8 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 		return category, err
 	}
 
+	log.Info(ctx, "successfully build category url", log.Data{"scrubber url": url.String()})
+
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
 	if err != nil {
@@ -97,6 +102,8 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	if err != nil {
 		return scrubber, err
 	}
+
+	log.Info(ctx, "successfully build scrubber url", log.Data{"scrubber url": url.String()})
 
 	resp, err := cli.client.Get(ctx, url.String())
 	defer resp.Body.Close()
