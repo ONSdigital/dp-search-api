@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
@@ -49,6 +50,9 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	if err != nil {
 		return berlin, fmt.Errorf("error reading response body: %w", err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		return berlin, fmt.Errorf("response returned non 200 status code: %d with body: %v", resp.StatusCode, b)
+	}
 
 	if err := json.Unmarshal(b, &berlin); err != nil {
 		return berlin, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
@@ -75,6 +79,9 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 	if err != nil {
 		return category, fmt.Errorf("error reading response body: %w", err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		return category, fmt.Errorf("response returned non 200 status code: %d with body: %v", resp.StatusCode, b)
+	}
 
 	if err := json.Unmarshal(b, &category); err != nil {
 		return category, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
@@ -100,6 +107,9 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return scrubber, fmt.Errorf("error reading response body: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return scrubber, fmt.Errorf("response returned non 200 status code: %d with body: %v", resp.StatusCode, b)
 	}
 
 	if err := json.Unmarshal(b, &scrubber); err != nil {

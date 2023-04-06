@@ -229,7 +229,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 			berlin, err = cli.GetBerlin(ctx, params)
 			if err != nil {
-				// TODO: error handling handle 500 from the apis
+				log.Error(ctx, "error making request to berlin: %w", err)
 			}
 		}()
 
@@ -240,7 +240,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 			scrubber, err = cli.GetScrubber(ctx, params)
 			if err != nil {
-				// TODO: error handling
+				log.Error(ctx, "error making request to berlin: %w", err)
 			}
 		}()
 
@@ -251,7 +251,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 			category, err = cli.GetCategory(ctx, params)
 			if err != nil {
-				// TODO: error handling
+				log.Error(ctx, "error making request to berlin: %w", err)
 			}
 		}()
 
