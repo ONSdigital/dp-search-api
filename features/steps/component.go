@@ -12,6 +12,7 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
+	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/service"
 	mocks "github.com/ONSdigital/dp-search-api/service/mock"
 )
@@ -31,6 +32,7 @@ type Component struct {
 	Cfg                  *config.Config
 	ErrorFeature         componentTest.ErrorFeature
 	FakeElasticSearchAPI *FakeAPI
+	FakeNLPSearchAPI     *FakeAPI
 	HTTPServer           *http.Server
 	ServiceRunning       bool
 	svc                  *service.Service
@@ -59,6 +61,8 @@ func SearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Com
 	c.AuthFeature = authFeature
 	c.Cfg.ZebedeeURL = c.AuthFeature.FakeAuthService.ResolveURL("")
 
+	c.setNLPFakeAPI()
+
 	c.FakeElasticSearchAPI = NewFakeAPI(&c.ErrorFeature)
 	c.Cfg.ElasticSearchAPIURL = c.FakeElasticSearchAPI.fakeHTTP.ResolveURL("/elasticsearch")
 
@@ -86,6 +90,40 @@ func SearchAPIComponent(authFeature *componentTest.AuthorizationFeature) (c *Com
 	c.ServiceRunning = true
 
 	return c, nil
+}
+
+func (c *Component) setNLPFakeAPI() {
+	scrubber := models.Scrubber{
+		Query: "dentist",
+		Time:  "1",
+	}
+	berlin := models.Berlin{
+		Time: "1",
+	}
+	category := models.Category{
+		struct {
+			Code  []string "json:\"c,omitempty\""
+			Score float32  "json:\"s,omitempty\""
+		}{
+			Score: 24.00,
+		},
+	}
+	c.FakeNLPSearchAPI = NewFakeAPI(&c.ErrorFeature)
+	c.Cfg.NLP.BerlinAPIURL = c.FakeNLPSearchAPI.fakeHTTP.Server.URL
+	c.Cfg.NLP.ScrubberAPIURL = c.FakeNLPSearchAPI.fakeHTTP.Server.URL
+	c.Cfg.NLP.CategoryAPIURL = c.FakeNLPSearchAPI.fakeHTTP.Server.URL
+	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
+		Get("/berlin/search").
+		Reply(200).
+		BodyStruct(berlin)
+	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
+		Get("/scrubber/search").
+		Reply(200).
+		BodyStruct(scrubber)
+	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
+		Get("/categories").
+		Reply(200).
+		BodyStruct(category)
 }
 
 // InitAPIFeature initialises the ApiFeature that's contained within a specific JobsFeature.
