@@ -240,7 +240,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 			scrubber, err = cli.GetScrubber(ctx, params)
 			if err != nil {
-				log.Error(ctx, "error making request to berlin: %w", err)
+				log.Error(ctx, "error making request to scrubber: %w", err)
 			}
 		}()
 
@@ -251,7 +251,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 			category, err = cli.GetCategory(ctx, params)
 			if err != nil {
-				log.Error(ctx, "error making request to berlin: %w", err)
+				log.Error(ctx, "error making request to category: %w", err)
 			}
 		}()
 
@@ -263,9 +263,17 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 			Category: category,
 		}
 
-		rsd, _ := json.Marshal(resp)
+		responseSearchData, err := json.Marshal(resp)
+		if err != nil {
+			log.Error(ctx, "marshaling response data failed", err)
+		}
 
-		w.Write(rsd)
+		w.Header().Set("Content-Type", "application/json;charset=utf-8")
+		if _, err := w.Write(responseSearchData); err != nil {
+			log.Error(ctx, "writing response failed", err)
+			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
