@@ -1,4 +1,18 @@
 {
-    "empty": "empty"
-
+    "Scrubber": {
+        "query": "dentist",
+        "results": {},
+        "time": "1"
+    },
+    "Category": [
+        {
+            "s": 24
+        }
+    ],
+    "Berlin": {
+        "query": {
+            "normalized": ""
+        },
+        "time": "1"
+    }
 }

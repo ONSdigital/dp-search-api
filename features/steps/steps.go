@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/cucumber/godog"
@@ -212,12 +213,23 @@ func (c *Component) theResponseBodyIsTheSameAsTheJsonIn(expected string) error {
 	responseBody := c.APIFeature.HttpResponse.Body
 	actual, err := ioutil.ReadAll(responseBody)
 	if err != nil {
-		return fmt.Errorf("error reading response body")
+		return fmt.Errorf("error reading response body %w", err)
 	}
-	expectedResponse := `{"Scrubber":{"query":"dentist","results":{},"time":"1"},"Category":[{"s":24}],"Berlin":{"query":{"normalized":""},"time":"1"}}`
 
-	if diff := cmp.Diff(expectedResponse, string(actual)); diff != "" {
+	expectedJSON, err := os.ReadFile(expected)
+	if err != nil {
+		return fmt.Errorf("failed to read file of expected results - error: %v", err)
+	}
+
+	expected = string(expectedJSON)
+	expected = strings.ReplaceAll(expected, " ", "")
+	expected = strings.ReplaceAll(expected, "\n", "")
+	expected = strings.ReplaceAll(expected, "\r", "")
+	expected = strings.ReplaceAll(expected, "\t", "")
+
+	if diff := cmp.Diff(expected, string(actual)); diff != "" {
 		return fmt.Errorf("expected response mismatch (-expected +actual):\n%s", diff)
 	}
+
 	return nil
 }
