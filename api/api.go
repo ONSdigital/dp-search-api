@@ -8,6 +8,7 @@ import (
 
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/nlp"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
@@ -91,6 +92,17 @@ func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder Que
 			a.dpESClient,
 			transformer,
 		),
+	).Methods(http.MethodGet)
+	return a
+}
+
+// RegisterGetSearch registers the handler for GET /nlp/search endpoint
+// with the provided validator and query builder
+// as well as the API's elasticsearch client and response transformer
+func (a *SearchAPI) RegisterGetNLPSearch(client *nlp.Client) *SearchAPI {
+	a.Router.HandleFunc(
+		"/nlp/search",
+		NLPSearchHandlerFunc(client),
 	).Methods(http.MethodGet)
 	return a
 }
