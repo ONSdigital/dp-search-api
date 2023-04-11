@@ -36,7 +36,7 @@ func New(nlp config.NLP) *Client {
 func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	url, err := buildURL(cli.berlinBaseURL, params, "q")
+	url, err := buildURL(cli.berlinBaseURL+"/berlin/search", params, "q")
 	if err != nil {
 		return berlin, err
 	}
@@ -44,10 +44,10 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	log.Info(ctx, "successfully build berlin url", log.Data{"scrubber url": url.String()})
 
 	resp, err := cli.client.Get(ctx, url.String())
-	defer resp.Body.Close()
 	if err != nil {
 		return berlin, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
+	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -75,10 +75,10 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 	log.Info(ctx, "successfully build category url", log.Data{"scrubber url": url.String()})
 
 	resp, err := cli.client.Get(ctx, url.String())
-	defer resp.Body.Close()
 	if err != nil {
 		return category, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
+	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -106,10 +106,10 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	log.Info(ctx, "successfully build scrubber url", log.Data{"scrubber url": url.String()})
 
 	resp, err := cli.client.Get(ctx, url.String())
-	defer resp.Body.Close()
 	if err != nil {
 		return scrubber, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
 	}
+	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {

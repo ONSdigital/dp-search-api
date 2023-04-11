@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -27,6 +28,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.es7xSuccessfullyReturnNoSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.es7xFailureInternalServerError)
+	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theResponseBodyIsTheSameAsTheJsonIn)
 }
 
 // elasticSearchIsHealthy generates a mocked healthy response for elasticsearch healthecheck
@@ -202,5 +204,20 @@ func (c *Component) es7xFailureInternalServerError() error {
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(500)
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200)
 
+	return nil
+}
+
+func (c *Component) theResponseBodyIsTheSameAsTheJsonIn(expected string) error {
+
+	responseBody := c.APIFeature.HttpResponse.Body
+	actual, err := ioutil.ReadAll(responseBody)
+	if err != nil {
+		return fmt.Errorf("error reading response body")
+	}
+	expectedResponse := `{"Scrubber":{"query":"dentist","results":{},"time":"1"},"Category":[{"s":24}],"Berlin":{"query":{"normalized":""},"time":"1"}}`
+
+	if diff := cmp.Diff(expectedResponse, string(actual)); diff != "" {
+		return fmt.Errorf("expected response mismatch (-expected +actual):\n%s", diff)
+	}
 	return nil
 }

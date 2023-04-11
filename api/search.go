@@ -220,7 +220,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		var category models.Category
 
 		var wg sync.WaitGroup
-		wg.Add(2)
+		wg.Add(3)
 
 		go func() {
 			defer wg.Done()
