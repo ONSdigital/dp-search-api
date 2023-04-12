@@ -37,6 +37,9 @@ environment variables, or with a link to a configuration guide.
 | AWS_TLS_INSECURE_SKIP_VERIFY | false                    | This should never be set to true, as it disables SSL certificate verification. Used only for development
 | BIND_ADDR                    | :23900                   | The host and port to bind to
 | ELASTIC_SEARCH_URL	       | "http://localhost:11200" | Http url of the ElasticSearch server
+| NLP_BERLIN_API_URL	       | "http://localhost:3001" | Http url of the Berlin server
+| NLP_SCRUBBER_API_URL	       | "http://localhost:3002" | Http url of the Scrubber server
+| NLP_CATEGORY_API_URL	       | "http://localhost:3003" | Http url of the Category server
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
 | HEALTHCHECK_INTERVAL         | 30s                      | Time between self-healthchecks (`time.Duration` format)
