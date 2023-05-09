@@ -35,32 +35,43 @@ type Category []struct {
 }
 
 type Berlin struct {
-	Query   SearchTermJson `json:"query,omitempty"`
-	Results []SearchResult `json:"results,omitempty"`
-	Time    string         `json:"time,omitempty"`
+	Matches []Matches `json:"matches,omitempty"`
 }
 
-type SearchTermJson struct {
-	Codes           []string    `json:"codes,omitempty"`
-	ExactMatches    []string    `json:"exact_matches,omitempty"`
-	Normalized      string      `json:"normalized"`
-	NotExactMatches []string    `json:"not_exact_matches,omitempty"`
-	Raw             string      `json:"raw,omitempty"`
-	StateFilter     interface{} `json:"state_filter,omitempty"`
-	StopWords       []string    `json:"stop_words,omitempty"`
+type Matches struct {
+	Encoding string `json:"encoding,omitempty"`
+	ID       string `json:"id,omitempty"`
+	Key      string `json:"key,omitempty"`
+	Words    string `json:"words,omitempty"`
 }
 
-type SearchResult struct {
-	Loc   LocJson `json:"loc,omitempty"`
-	Score int     `json:"score,omitempty"`
-}
+// type Berlin struct {
+// 	Query   SearchTermJson `json:"query,omitempty"`
+// 	Results []SearchResult `json:"results,omitempty"`
+// 	Time    string         `json:"time,omitempty"`
+// }
 
-type LocJson struct {
-	Codes    []string    `json:"codes,omitempty"`
-	Encoding string      `json:"encoding,omitempty"`
-	Id       string      `json:"id,omitempty"`
-	Key      string      `json:"key,omitempty"`
-	Names    []string    `json:"names,omitempty"`
-	State    []string    `json:"state,omitempty"`
-	Subdiv   interface{} `json:"subdiv,omitempty"`
-}
+// type SearchTermJson struct {
+// 	Codes           []string    `json:"codes,omitempty"`
+// 	ExactMatches    []string    `json:"exact_matches,omitempty"`
+// 	Normalized      string      `json:"normalized"`
+// 	NotExactMatches []string    `json:"not_exact_matches,omitempty"`
+// 	Raw             string      `json:"raw,omitempty"`
+// 	StateFilter     interface{} `json:"state_filter,omitempty"`
+// 	StopWords       []string    `json:"stop_words,omitempty"`
+// }
+
+// type SearchResult struct {
+// 	Loc   LocJson `json:"loc,omitempty"`
+// 	Score int     `json:"score,omitempty"`
+// }
+
+// type LocJson struct {
+// 	Codes    []string    `json:"codes,omitempty"`
+// 	Encoding string      `json:"encoding,omitempty"`
+// 	Id       string      `json:"id,omitempty"`
+// 	Key      string      `json:"key,omitempty"`
+// 	Names    []string    `json:"names,omitempty"`
+// 	State    []string    `json:"state,omitempty"`
+// 	Subdiv   interface{} `json:"subdiv,omitempty"`
+// }

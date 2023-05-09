@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -29,7 +28,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.es7xSuccessfullyReturnNoSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.es7xFailureInternalServerError)
-	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theResponseBodyIsTheSameAsTheJsonIn)
+	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theResponseBodyIsTheSameAsTheJSONIn)
 }
 
 // elasticSearchIsHealthy generates a mocked healthy response for elasticsearch healthecheck
@@ -208,28 +207,34 @@ func (c *Component) es7xFailureInternalServerError() error {
 	return nil
 }
 
-func (c *Component) theResponseBodyIsTheSameAsTheJsonIn(expected string) error {
-
+func (c *Component) theResponseBodyIsTheSameAsTheJSONIn(expected string) error {
 	responseBody := c.APIFeature.HttpResponse.Body
-	actual, err := ioutil.ReadAll(responseBody)
+	actualBytes, err := io.ReadAll(responseBody)
 	if err != nil {
 		return fmt.Errorf("error reading response body %w", err)
 	}
 
-	expectedJSON, err := os.ReadFile(expected)
+	expectedBytes, err := os.ReadFile(expected)
 	if err != nil {
 		return fmt.Errorf("failed to read file of expected results - error: %v", err)
 	}
 
-	expected = string(expectedJSON)
-	expected = strings.ReplaceAll(expected, " ", "")
-	expected = strings.ReplaceAll(expected, "\n", "")
-	expected = strings.ReplaceAll(expected, "\r", "")
-	expected = strings.ReplaceAll(expected, "\t", "")
+	expected = formatString(expectedBytes)
+	actual := formatString(actualBytes)
 
-	if diff := cmp.Diff(expected, string(actual)); diff != "" {
+	if diff := cmp.Diff(expected, actual); diff != "" {
 		return fmt.Errorf("expected response mismatch (-expected +actual):\n%s", diff)
 	}
 
 	return nil
+}
+
+func formatString(bytes []byte) string {
+	str := string(bytes)
+	str = strings.ReplaceAll(str, " ", "")
+	str = strings.ReplaceAll(str, "\n", "")
+	str = strings.ReplaceAll(str, "\r", "")
+	str = strings.ReplaceAll(str, "\t", "")
+
+	return str
 }
