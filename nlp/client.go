@@ -36,16 +36,16 @@ func New(nlp config.NLP) *Client {
 func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	url, err := buildURL(cli.berlinBaseURL+"/berlin/search", params, "q")
+	scrubberURL, err := buildURL(cli.berlinBaseURL+"/berlin/search", params, "q")
 	if err != nil {
 		return berlin, err
 	}
 
-	log.Info(ctx, "successfully build berlin url", log.Data{"scrubber url": url.String()})
+	log.Info(ctx, "successfully build berlin url", log.Data{"scrubber url": scrubberURL.String()})
 
-	resp, err := cli.client.Get(ctx, url.String())
+	resp, err := cli.client.Get(ctx, scrubberURL.String())
 	if err != nil {
-		return berlin, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
+		return berlin, fmt.Errorf("error making a get request to: %s err: %w", scrubberURL.String(), err)
 	}
 	defer resp.Body.Close()
 
@@ -53,6 +53,9 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	if err != nil {
 		return berlin, fmt.Errorf("error reading response body: %w", err)
 	}
+
+	log.Info(ctx, "bytes for berlin", log.Data{"bytes": b})
+
 	if resp.StatusCode != http.StatusOK {
 		return berlin, fmt.Errorf("response returned non 200 status code: %d with body: %v", resp.StatusCode, b)
 	}
@@ -67,16 +70,16 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
 	var category models.Category
 
-	url, err := buildURL(cli.categoryBaseURL+"/categories", params, "query")
+	categoryURL, err := buildURL(cli.categoryBaseURL+"/categories", params, "query")
 	if err != nil {
 		return category, err
 	}
 
-	log.Info(ctx, "successfully build category url", log.Data{"scrubber url": url.String()})
+	log.Info(ctx, "successfully build category url", log.Data{"scrubber url": categoryURL.String()})
 
-	resp, err := cli.client.Get(ctx, url.String())
+	resp, err := cli.client.Get(ctx, categoryURL.String())
 	if err != nil {
-		return category, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
+		return category, fmt.Errorf("error making a get request to: %s err: %w", categoryURL.String(), err)
 	}
 	defer resp.Body.Close()
 
@@ -98,16 +101,16 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
 	var scrubber models.Scrubber
 
-	url, err := buildURL(cli.scrubberBaseURL+"/scrubber/search", params, "q")
+	berlinURL, err := buildURL(cli.scrubberBaseURL+"/scrubber/search", params, "q")
 	if err != nil {
 		return scrubber, err
 	}
 
-	log.Info(ctx, "successfully build scrubber url", log.Data{"scrubber url": url.String()})
+	log.Info(ctx, "successfully build scrubber url", log.Data{"scrubber url": berlinURL.String()})
 
-	resp, err := cli.client.Get(ctx, url.String())
+	resp, err := cli.client.Get(ctx, berlinURL.String())
 	if err != nil {
-		return scrubber, fmt.Errorf("error making a get request to: %s err: %w", url.String(), err)
+		return scrubber, fmt.Errorf("error making a get request to: %s err: %w", berlinURL.String(), err)
 	}
 	defer resp.Body.Close()
 

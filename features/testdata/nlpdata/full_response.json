@@ -10,9 +10,13 @@
         }
     ],
     "Berlin": {
-        "query": {
-            "normalized": ""
-        },
-        "time": "1"
+        "matches": [
+            {
+                "encoding": "1",
+                "id": "1",
+                "key": "1",
+                "words": "1"
+            }
+        ]
     }
 }

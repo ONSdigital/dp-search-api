@@ -98,7 +98,14 @@ func (c *Component) setNLPFakeAPI() {
 		Time:  "1",
 	}
 	berlin := models.Berlin{
-		Time: "1",
+		Matches: []models.Matches{
+			{
+				Encoding: "1",
+				ID:       "1",
+				Key:      "1",
+				Words:    "1",
+			},
+		},
 	}
 	category := models.Category{
 		struct {
