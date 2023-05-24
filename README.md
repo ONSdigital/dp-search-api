@@ -79,7 +79,7 @@ The Bulk Indexer creates an Elastic Search 7.10 index with the alias "ons". It l
 
 ### Locally
 
-#### Prerequisites 2
+#### Local Prerequisites
 
 * Requires ElasticSearch 7.10 running on port 11200
 * Requires Zebedee running on port 8082 (and this has a dependency on vault)
@@ -120,7 +120,7 @@ NB. To run the executable ./reindex is not necessary in the local environment
 
 ### Remote Environment
 
-#### Prerequisites 3
+#### Remote Prerequisites
 
 * Requires dp tool setup locally. For more info on setting up the dp tool: <https://github.com/ONSdigital/dp-cli#build-and-run>
 * Requires the domain endpoint, for the relevant AWS Open Search site cluster, to be put in line 18 (the esURL) of cmd/reindex/aws.go  (see below)
@@ -192,6 +192,6 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### License
 
-Copyright © 2016-2022, Office for National Statistics (<https://www.ons.gov.uk>)
+Copyright © 2016-2023, Office for National Statistics (<https://www.ons.gov.uk>)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.
