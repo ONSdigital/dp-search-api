@@ -38,7 +38,7 @@ type cliConfig struct {
 	datasetURL       string
 	esURL            string
 	signRequests     bool
-	ServiceAuthToken string
+	ServiceAuthToken string `json:"-"`
 	PaginationLimit  int
 	TestSubset       bool // Set this flag to true to request only one batch of datasets from Dataset API
 	IgnoreZebedee    bool // Set this flag to true to avoid requesting zebedee datasets
