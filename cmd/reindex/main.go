@@ -42,6 +42,8 @@ type cliConfig struct {
 	PaginationLimit  int
 	TestSubset       bool // Set this flag to true to request only one batch of datasets from Dataset API
 	IgnoreZebedee    bool // Set this flag to true to avoid requesting zebedee datasets
+	Timeout          time.Duration
+	MaxRetries       int
 }
 
 type AWSConfig struct {
@@ -76,8 +78,8 @@ func main() {
 		log.Fatal(ctx, err.Error(), err)
 		panic(err)
 	}
-	hcClienter.SetMaxRetries(2)
-	hcClienter.SetTimeout(30 * time.Second) // Published Index takes about 10s to return so add a bit more
+	hcClienter.SetMaxRetries(cfg.MaxRetries)
+	hcClienter.SetTimeout(cfg.Timeout)
 
 	zebClient := zebedee.NewClientWithClienter(cfg.zebedeeURL, hcClienter)
 	if !cfg.IgnoreZebedee && zebClient == nil {
