@@ -22,6 +22,7 @@ func TestBuildSearchQuery(t *testing.T) {
 			Size: 2,
 			From: 1,
 		}
+
 		query, err := qb.BuildSearchQuery(context.Background(), reqParams, false)
 		So(err, ShouldNotBeNil)
 
@@ -49,6 +50,7 @@ func TestBuildSearchQuery(t *testing.T) {
 			Highlight: true,
 			Now:       time.Date(2023, 03, 10, 12, 15, 04, 05, time.UTC).UTC().Format(time.RFC3339),
 		}
+
 		query, err := qb.BuildSearchQuery(context.Background(), reqParams, false)
 		So(err, ShouldBeNil)
 

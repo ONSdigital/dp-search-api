@@ -1,7 +1,6 @@
 {
     "Scrubber": {
         "query": "dentist",
-        "results": {},
         "time": "1"
     },
     "Category": [
@@ -15,7 +14,23 @@
                 "encoding": "1",
                 "id": "1",
                 "key": "1",
-                "words": "1"
+                "words": [
+                    "1",
+                    "2"
+                ],
+                "codes": "codes",
+                "names": [
+                    "1",
+                    "2"
+                ],
+                "subdiv": [
+                    "1",
+                    "2"
+                ],
+                "state": [
+                    "1",
+                    "2"
+                ]
             }
         ]
     }

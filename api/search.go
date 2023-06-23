@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/nlp"
@@ -102,7 +103,7 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 
 // CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator) (string, *query.SearchRequest, *query.CountRequest) {
+func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCritiria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
@@ -167,6 +168,14 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		SortBy:    sort.(string),
 		Highlight: highlight,
 		Now:       time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if nlpCritiria != nil && nlpCritiria.UseCategory {
+		reqSearch.NlpCategories = nlpCritiria.Categories
+	}
+
+	if nlpCritiria != nil && nlpCritiria.UseSubdivision {
+		reqSearch.NlpSubdivisionWords = nlpCritiria.SubdivisionWords
 	}
 
 	// population types only used if provided
@@ -257,7 +266,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 
 		wg.Wait()
 
-		resp := models.Hub{
+		resp := models.NLPResp{
 			Berlin:   berlin,
 			Scrubber: scrubber,
 			Category: category,
@@ -278,12 +287,29 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
-func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, nlpCLI *nlp.Client, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q, searchReq, countReq := CreateRequests(w, req, validator)
+		var nlpCriteria *query.NlpCriteria
+		q := params.Get("q")
+		if params.Get("c") == "1" {
+			nlpSettings := query.NlpSettings{}
+
+			// Load default settings
+			// FIXME: move this somewhere better
+			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
+
+			// Load settings for this request
+			nlpSettingsRequest := params.Get("nlpSettings")
+			if nlpSettingsRequest != "" {
+				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
+			}
+			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
+		}
+
+		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
 			return // error already handled
 		}
@@ -368,12 +394,29 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.
 // TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, cli *nlp.Client, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q, searchReq, countReq := CreateRequests(w, req, validator)
+		var nlpCriteria *query.NlpCriteria
+		q := params.Get("q")
+		if params.Get("c") == "1" {
+			nlpSettings := query.NlpSettings{}
+
+			// Load default settings
+			// FIXME: move this somewhere better
+			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
+
+			// Load settings for this request
+			nlpSettingsRequest := params.Get("nlpSettings")
+			if nlpSettingsRequest != "" {
+				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
+			}
+			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *cli)
+		}
+
+		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
 			return
 		}
@@ -542,4 +585,77 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 		return
 	}
 	resCountChan <- countRes
+}
+
+func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.Values, nlpApis config.NLP, nlpSettings query.NlpSettings, cli nlp.Client) *query.NlpCriteria {
+	var berlin models.Berlin
+	var scrubber models.Scrubber
+	var category models.Category
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+
+		var err error
+
+		berlin, err = cli.GetBerlin(ctx, params)
+		if err != nil {
+			log.Error(ctx, "error making request to berlin: %w", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		var err error
+
+		scrubber, err = cli.GetScrubber(ctx, params)
+		if err != nil {
+			log.Error(ctx, "error making request to scrubber: %w", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		var err error
+
+		category, err = cli.GetCategory(ctx, params)
+		if err != nil {
+			log.Error(ctx, "error making request to category: %w", err)
+		}
+	}()
+
+	wg.Wait()
+
+	nlpHub := models.NLPResp{
+		Berlin:   berlin,
+		Scrubber: scrubber,
+		Category: category,
+	}
+
+	var nlpCriteria *query.NlpCriteria
+	if len(nlpHub.Category) > 0 {
+		for i, cat := range nlpHub.Category {
+			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {
+				break
+			}
+			log.Warn(ctx, cat.Code[0])
+			log.Warn(ctx, cat.Code[1])
+			nlpCriteria = queryBuilder.AddNlpCategorySearch(
+				nlpCriteria,
+				cat.Code[0],
+				cat.Code[1],
+				nlpSettings.CategoryWeighting,
+			)
+		}
+	}
+
+	if len(nlpHub.Berlin.Matches) > 0 && len(nlpHub.Berlin.Matches[0].Subdivision[0]) == 2 {
+		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, nlpHub.Berlin.Matches[0].Subdivision[1])
+	}
+
+	return nlpCriteria
 }

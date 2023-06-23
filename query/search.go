@@ -27,21 +27,23 @@ var es710AggregationField = &AggregationFields{
 // SearchRequest holds the values provided by a request against Search API
 // The values are used to build the elasticsearch query using the corresponding template/s
 type SearchRequest struct {
-	Term              string
-	From              int
-	Size              int
-	Types             []string
-	Index             string
-	SortBy            string
-	AggregationField  string // Deprecated (used only in legacy templates for aggregations)
-	AggregationFields *AggregationFields
-	Highlight         bool
-	URIPrefix         string
-	Topic             []string
-	TopicWildcard     []string
-	PopulationTypes   []*PopulationTypeRequest
-	Dimensions        []*DimensionRequest
-	Now               string
+	Term                string
+	From                int
+	Size                int
+	Types               []string
+	Index               string
+	SortBy              string
+	AggregationField    string // Deprecated (used only in legacy templates for aggregations)
+	AggregationFields   *AggregationFields
+	Highlight           bool
+	URIPrefix           string
+	NlpCategories       []NlpCriteriaCategory
+	NlpSubdivisionWords string
+	Topic               []string
+	TopicWildcard       []string
+	PopulationTypes     []*PopulationTypeRequest
+	Dimensions          []*DimensionRequest
+	Now                 string
 }
 
 type PopulationTypeRequest struct {
@@ -70,6 +72,38 @@ type AggregationFields struct {
 type CountRequest struct {
 	Term        string
 	CountEnable bool
+}
+
+func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category string, subCategory string, categoryWeighting float32) *NlpCriteria {
+	if nlpCriteria == nil {
+		nlpCriteria = new(NlpCriteria)
+	}
+
+	nlpCriteria.UseCategory = true
+	for _, cat := range nlpCriteria.Categories {
+		if category == cat.Category && subCategory == cat.SubCategory {
+			cat.Weighting = categoryWeighting
+			return nlpCriteria
+		}
+	}
+	newCat := NlpCriteriaCategory{
+		Category:    category,
+		SubCategory: subCategory,
+		Weighting:   categoryWeighting,
+	}
+	nlpCriteria.Categories = append(nlpCriteria.Categories, newCat)
+	return nlpCriteria
+}
+
+func (sb *Builder) AddNlpSubdivisionSearch(nlpCriteria *NlpCriteria, subdivisionWords string) *NlpCriteria {
+	if nlpCriteria == nil {
+		nlpCriteria = new(NlpCriteria)
+	}
+
+	sb.nlpCriteria.UseSubdivision = true
+	sb.nlpCriteria.SubdivisionWords = subdivisionWords
+
+	return nlpCriteria
 }
 
 // SetupSearch loads templates for use by the search handler and should be done only once

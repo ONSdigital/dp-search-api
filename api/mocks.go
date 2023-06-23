@@ -12,6 +12,78 @@ import (
 	"sync"
 )
 
+// Ensure, that AuthHandlerMock does implement AuthHandler.
+// If this is not the case, regenerate this file with moq.
+var _ AuthHandler = &AuthHandlerMock{}
+
+// AuthHandlerMock is a mock implementation of AuthHandler.
+//
+//	func TestSomethingThatUsesAuthHandler(t *testing.T) {
+//
+//		// make and configure a mocked AuthHandler
+//		mockedAuthHandler := &AuthHandlerMock{
+//			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+//				panic("mock out the Require method")
+//			},
+//		}
+//
+//		// use mockedAuthHandler in code that requires AuthHandler
+//		// and then make assertions.
+//
+//	}
+type AuthHandlerMock struct {
+	// RequireFunc mocks the Require method.
+	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Require holds details about calls to the Require method.
+		Require []struct {
+			// Required is the required argument value.
+			Required auth.Permissions
+			// Handler is the handler argument value.
+			Handler http.HandlerFunc
+		}
+	}
+	lockRequire sync.RWMutex
+}
+
+// Require calls RequireFunc.
+func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+	if mock.RequireFunc == nil {
+		panic("AuthHandlerMock.RequireFunc: method is nil but AuthHandler.Require was just called")
+	}
+	callInfo := struct {
+		Required auth.Permissions
+		Handler  http.HandlerFunc
+	}{
+		Required: required,
+		Handler:  handler,
+	}
+	mock.lockRequire.Lock()
+	mock.calls.Require = append(mock.calls.Require, callInfo)
+	mock.lockRequire.Unlock()
+	return mock.RequireFunc(required, handler)
+}
+
+// RequireCalls gets all the calls that were made to Require.
+// Check the length with:
+//
+//	len(mockedAuthHandler.RequireCalls())
+func (mock *AuthHandlerMock) RequireCalls() []struct {
+	Required auth.Permissions
+	Handler  http.HandlerFunc
+} {
+	var calls []struct {
+		Required auth.Permissions
+		Handler  http.HandlerFunc
+	}
+	mock.lockRequire.RLock()
+	calls = mock.calls.Require
+	mock.lockRequire.RUnlock()
+	return calls
+}
+
 // Ensure, that ElasticSearcherMock does implement ElasticSearcher.
 // If this is not the case, regenerate this file with moq.
 var _ ElasticSearcher = &ElasticSearcherMock{}
@@ -430,6 +502,12 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //		// make and configure a mocked QueryBuilder
 //		mockedQueryBuilder := &QueryBuilderMock{
+//			AddNlpCategorySearchFunc: func(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria {
+//				panic("mock out the AddNlpCategorySearch method")
+//			},
+//			AddNlpSubdivisionSearchFunc: func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
+//				panic("mock out the AddNlpSubdivisionSearch method")
+//			},
 //			BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 //				panic("mock out the BuildCountQuery method")
 //			},
@@ -443,6 +521,12 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //	}
 type QueryBuilderMock struct {
+	// AddNlpCategorySearchFunc mocks the AddNlpCategorySearch method.
+	AddNlpCategorySearchFunc func(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria
+
+	// AddNlpSubdivisionSearchFunc mocks the AddNlpSubdivisionSearch method.
+	AddNlpSubdivisionSearchFunc func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
+
 	// BuildCountQueryFunc mocks the BuildCountQuery method.
 	BuildCountQueryFunc func(ctx context.Context, req *query.CountRequest) ([]byte, error)
 
@@ -451,6 +535,24 @@ type QueryBuilderMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// AddNlpCategorySearch holds details about calls to the AddNlpCategorySearch method.
+		AddNlpCategorySearch []struct {
+			// NlpCriteria is the nlpCriteria argument value.
+			NlpCriteria *query.NlpCriteria
+			// Category is the category argument value.
+			Category string
+			// SubCategory is the subCategory argument value.
+			SubCategory string
+			// CategoryWeighting is the categoryWeighting argument value.
+			CategoryWeighting float32
+		}
+		// AddNlpSubdivisionSearch holds details about calls to the AddNlpSubdivisionSearch method.
+		AddNlpSubdivisionSearch []struct {
+			// NlpCriteria is the nlpCriteria argument value.
+			NlpCriteria *query.NlpCriteria
+			// SubdivisionWords is the subdivisionWords argument value.
+			SubdivisionWords string
+		}
 		// BuildCountQuery holds details about calls to the BuildCountQuery method.
 		BuildCountQuery []struct {
 			// Ctx is the ctx argument value.
@@ -468,8 +570,90 @@ type QueryBuilderMock struct {
 			EsVersion710 bool
 		}
 	}
-	lockBuildCountQuery  sync.RWMutex
-	lockBuildSearchQuery sync.RWMutex
+	lockAddNlpCategorySearch    sync.RWMutex
+	lockAddNlpSubdivisionSearch sync.RWMutex
+	lockBuildCountQuery         sync.RWMutex
+	lockBuildSearchQuery        sync.RWMutex
+}
+
+// AddNlpCategorySearch calls AddNlpCategorySearchFunc.
+func (mock *QueryBuilderMock) AddNlpCategorySearch(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria {
+	if mock.AddNlpCategorySearchFunc == nil {
+		panic("QueryBuilderMock.AddNlpCategorySearchFunc: method is nil but QueryBuilder.AddNlpCategorySearch was just called")
+	}
+	callInfo := struct {
+		NlpCriteria       *query.NlpCriteria
+		Category          string
+		SubCategory       string
+		CategoryWeighting float32
+	}{
+		NlpCriteria:       nlpCriteria,
+		Category:          category,
+		SubCategory:       subCategory,
+		CategoryWeighting: categoryWeighting,
+	}
+	mock.lockAddNlpCategorySearch.Lock()
+	mock.calls.AddNlpCategorySearch = append(mock.calls.AddNlpCategorySearch, callInfo)
+	mock.lockAddNlpCategorySearch.Unlock()
+	return mock.AddNlpCategorySearchFunc(nlpCriteria, category, subCategory, categoryWeighting)
+}
+
+// AddNlpCategorySearchCalls gets all the calls that were made to AddNlpCategorySearch.
+// Check the length with:
+//
+//	len(mockedQueryBuilder.AddNlpCategorySearchCalls())
+func (mock *QueryBuilderMock) AddNlpCategorySearchCalls() []struct {
+	NlpCriteria       *query.NlpCriteria
+	Category          string
+	SubCategory       string
+	CategoryWeighting float32
+} {
+	var calls []struct {
+		NlpCriteria       *query.NlpCriteria
+		Category          string
+		SubCategory       string
+		CategoryWeighting float32
+	}
+	mock.lockAddNlpCategorySearch.RLock()
+	calls = mock.calls.AddNlpCategorySearch
+	mock.lockAddNlpCategorySearch.RUnlock()
+	return calls
+}
+
+// AddNlpSubdivisionSearch calls AddNlpSubdivisionSearchFunc.
+func (mock *QueryBuilderMock) AddNlpSubdivisionSearch(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
+	if mock.AddNlpSubdivisionSearchFunc == nil {
+		panic("QueryBuilderMock.AddNlpSubdivisionSearchFunc: method is nil but QueryBuilder.AddNlpSubdivisionSearch was just called")
+	}
+	callInfo := struct {
+		NlpCriteria      *query.NlpCriteria
+		SubdivisionWords string
+	}{
+		NlpCriteria:      nlpCriteria,
+		SubdivisionWords: subdivisionWords,
+	}
+	mock.lockAddNlpSubdivisionSearch.Lock()
+	mock.calls.AddNlpSubdivisionSearch = append(mock.calls.AddNlpSubdivisionSearch, callInfo)
+	mock.lockAddNlpSubdivisionSearch.Unlock()
+	return mock.AddNlpSubdivisionSearchFunc(nlpCriteria, subdivisionWords)
+}
+
+// AddNlpSubdivisionSearchCalls gets all the calls that were made to AddNlpSubdivisionSearch.
+// Check the length with:
+//
+//	len(mockedQueryBuilder.AddNlpSubdivisionSearchCalls())
+func (mock *QueryBuilderMock) AddNlpSubdivisionSearchCalls() []struct {
+	NlpCriteria      *query.NlpCriteria
+	SubdivisionWords string
+} {
+	var calls []struct {
+		NlpCriteria      *query.NlpCriteria
+		SubdivisionWords string
+	}
+	mock.lockAddNlpSubdivisionSearch.RLock()
+	calls = mock.calls.AddNlpSubdivisionSearch
+	mock.lockAddNlpSubdivisionSearch.RUnlock()
+	return calls
 }
 
 // BuildCountQuery calls BuildCountQueryFunc.
@@ -754,74 +938,86 @@ func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	return calls
 }
 
-// Ensure, that AuthHandlerMock does implement AuthHandler.
+// Ensure, that ReleaseResponseTransformerMock does implement ReleaseResponseTransformer.
 // If this is not the case, regenerate this file with moq.
-var _ AuthHandler = &AuthHandlerMock{}
+var _ ReleaseResponseTransformer = &ReleaseResponseTransformerMock{}
 
-// AuthHandlerMock is a mock implementation of AuthHandler.
+// ReleaseResponseTransformerMock is a mock implementation of ReleaseResponseTransformer.
 //
-//	func TestSomethingThatUsesAuthHandler(t *testing.T) {
+//	func TestSomethingThatUsesReleaseResponseTransformer(t *testing.T) {
 //
-//		// make and configure a mocked AuthHandler
-//		mockedAuthHandler := &AuthHandlerMock{
-//			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-//				panic("mock out the Require method")
+//		// make and configure a mocked ReleaseResponseTransformer
+//		mockedReleaseResponseTransformer := &ReleaseResponseTransformerMock{
+//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
+//				panic("mock out the TransformSearchResponse method")
 //			},
 //		}
 //
-//		// use mockedAuthHandler in code that requires AuthHandler
+//		// use mockedReleaseResponseTransformer in code that requires ReleaseResponseTransformer
 //		// and then make assertions.
 //
 //	}
-type AuthHandlerMock struct {
-	// RequireFunc mocks the Require method.
-	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
+type ReleaseResponseTransformerMock struct {
+	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// Require holds details about calls to the Require method.
-		Require []struct {
-			// Required is the required argument value.
-			Required auth.Permissions
-			// Handler is the handler argument value.
-			Handler http.HandlerFunc
+		// TransformSearchResponse holds details about calls to the TransformSearchResponse method.
+		TransformSearchResponse []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ResponseData is the responseData argument value.
+			ResponseData []byte
+			// Req is the req argument value.
+			Req query.ReleaseSearchRequest
+			// Highlight is the highlight argument value.
+			Highlight bool
 		}
 	}
-	lockRequire sync.RWMutex
+	lockTransformSearchResponse sync.RWMutex
 }
 
-// Require calls RequireFunc.
-func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-	if mock.RequireFunc == nil {
-		panic("AuthHandlerMock.RequireFunc: method is nil but AuthHandler.Require was just called")
+// TransformSearchResponse calls TransformSearchResponseFunc.
+func (mock *ReleaseResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
+	if mock.TransformSearchResponseFunc == nil {
+		panic("ReleaseResponseTransformerMock.TransformSearchResponseFunc: method is nil but ReleaseResponseTransformer.TransformSearchResponse was just called")
 	}
 	callInfo := struct {
-		Required auth.Permissions
-		Handler  http.HandlerFunc
+		Ctx          context.Context
+		ResponseData []byte
+		Req          query.ReleaseSearchRequest
+		Highlight    bool
 	}{
-		Required: required,
-		Handler:  handler,
+		Ctx:          ctx,
+		ResponseData: responseData,
+		Req:          req,
+		Highlight:    highlight,
 	}
-	mock.lockRequire.Lock()
-	mock.calls.Require = append(mock.calls.Require, callInfo)
-	mock.lockRequire.Unlock()
-	return mock.RequireFunc(required, handler)
+	mock.lockTransformSearchResponse.Lock()
+	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
+	mock.lockTransformSearchResponse.Unlock()
+	return mock.TransformSearchResponseFunc(ctx, responseData, req, highlight)
 }
 
-// RequireCalls gets all the calls that were made to Require.
+// TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
 // Check the length with:
 //
-//	len(mockedAuthHandler.RequireCalls())
-func (mock *AuthHandlerMock) RequireCalls() []struct {
-	Required auth.Permissions
-	Handler  http.HandlerFunc
+//	len(mockedReleaseResponseTransformer.TransformSearchResponseCalls())
+func (mock *ReleaseResponseTransformerMock) TransformSearchResponseCalls() []struct {
+	Ctx          context.Context
+	ResponseData []byte
+	Req          query.ReleaseSearchRequest
+	Highlight    bool
 } {
 	var calls []struct {
-		Required auth.Permissions
-		Handler  http.HandlerFunc
+		Ctx          context.Context
+		ResponseData []byte
+		Req          query.ReleaseSearchRequest
+		Highlight    bool
 	}
-	mock.lockRequire.RLock()
-	calls = mock.calls.Require
-	mock.lockRequire.RUnlock()
+	mock.lockTransformSearchResponse.RLock()
+	calls = mock.calls.TransformSearchResponse
+	mock.lockTransformSearchResponse.RUnlock()
 	return calls
 }
