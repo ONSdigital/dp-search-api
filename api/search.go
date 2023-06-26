@@ -286,20 +286,19 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		var nlpCriteria *query.NlpCriteria
 		q := params.Get("q")
+
+		var nlpCriteria *query.NlpCriteria
 		if params.Get("c") == "1" {
 			nlpSettings := query.NlpSettings{}
 
-			// Load default settings
-			// FIXME: move this somewhere better
 			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
 
-			// Load settings for this request
 			nlpSettingsRequest := params.Get("nlpSettings")
 			if nlpSettingsRequest != "" {
 				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
 			}
+
 			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
 		}
 
