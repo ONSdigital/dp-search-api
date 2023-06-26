@@ -229,38 +229,32 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		var category models.Category
 
 		var wg sync.WaitGroup
-		wg.Add(3)
+		wg.Add(2)
+
+		scrubber, err := cli.GetScrubber(ctx, params.Get("q"))
+		if err != nil {
+			log.Error(ctx, "error making request to scrubber: %w", err)
+		}
 
 		go func() {
 			defer wg.Done()
 
 			var err error
 
-			berlin, err = cli.GetBerlin(ctx, params)
-			if err != nil {
-				log.Error(ctx, "error making request to berlin: %w", err)
-			}
-		}()
-
-		go func() {
-			defer wg.Done()
-
-			var err error
-
-			scrubber, err = cli.GetScrubber(ctx, params)
-			if err != nil {
-				log.Error(ctx, "error making request to scrubber: %w", err)
-			}
-		}()
-
-		go func() {
-			defer wg.Done()
-
-			var err error
-
-			category, err = cli.GetCategory(ctx, params)
+			category, err = cli.GetCategory(ctx, scrubber.Query)
 			if err != nil {
 				log.Error(ctx, "error making request to category: %w", err)
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			var err error
+
+			berlin, err = cli.GetBerlin(ctx, scrubber.Query)
+			if err != nil {
+				log.Error(ctx, "error making request to berlin: %w", err)
 			}
 		}()
 
@@ -593,52 +587,46 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	var category models.Category
 
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(2)
+
+	scrubber, err := cli.GetScrubber(ctx, params.Get("q"))
+	if err != nil {
+		log.Error(ctx, "error making request to scrubber: %w", err)
+	}
 
 	go func() {
 		defer wg.Done()
 
 		var err error
 
-		berlin, err = cli.GetBerlin(ctx, params)
-		if err != nil {
-			log.Error(ctx, "error making request to berlin: %w", err)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		var err error
-
-		scrubber, err = cli.GetScrubber(ctx, params)
-		if err != nil {
-			log.Error(ctx, "error making request to scrubber: %w", err)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		var err error
-
-		category, err = cli.GetCategory(ctx, params)
+		category, err = cli.GetCategory(ctx, scrubber.Query)
 		if err != nil {
 			log.Error(ctx, "error making request to category: %w", err)
 		}
 	}()
 
+	go func() {
+		defer wg.Done()
+
+		var err error
+
+		berlin, err = cli.GetBerlin(ctx, scrubber.Query)
+		if err != nil {
+			log.Error(ctx, "error making request to berlin: %w", err)
+		}
+	}()
+
 	wg.Wait()
 
-	nlpHub := models.NLPResp{
+	nlpResponse := models.NLPResp{
 		Berlin:   berlin,
 		Scrubber: scrubber,
 		Category: category,
 	}
 
 	var nlpCriteria *query.NlpCriteria
-	if len(nlpHub.Category) > 0 {
-		for i, cat := range nlpHub.Category {
+	if len(nlpResponse.Category) > 0 {
+		for i, cat := range nlpResponse.Category {
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {
 				break
 			}
@@ -653,8 +641,8 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		}
 	}
 
-	if len(nlpHub.Berlin.Matches) > 0 && len(nlpHub.Berlin.Matches[0].Subdivision[0]) == 2 {
-		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, nlpHub.Berlin.Matches[0].Subdivision[1])
+	if len(nlpResponse.Berlin.Matches) > 0 && len(nlpResponse.Berlin.Matches[0].Subdivision[0]) == 2 {
+		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, nlpResponse.Berlin.Matches[0].Subdivision[1])
 	}
 
 	return nlpCriteria

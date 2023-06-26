@@ -39,10 +39,10 @@ func New(nlp config.NLP) *Client {
 	}
 }
 
-func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
+func (cli *Client) GetBerlin(ctx context.Context, query string) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	berlinURL, err := buildURL(cli.berlinBaseURL+cli.berlinEndpoint, params, "q")
+	berlinURL, err := buildURL(cli.berlinBaseURL+cli.berlinEndpoint, query, "q")
 	if err != nil {
 		return berlin, err
 	}
@@ -73,10 +73,10 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	return berlin, nil
 }
 
-func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
+func (cli *Client) GetCategory(ctx context.Context, query string) (models.Category, error) {
 	var category models.Category
 
-	categoryURL, err := buildURL(cli.categoryBaseURL+cli.categoryEndpoint, params, "query")
+	categoryURL, err := buildURL(cli.categoryBaseURL+cli.categoryEndpoint, query, "query")
 	if err != nil {
 		return category, err
 	}
@@ -104,10 +104,10 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 	return category, nil
 }
 
-func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
+func (cli *Client) GetScrubber(ctx context.Context, query string) (models.Scrubber, error) {
 	var scrubber models.Scrubber
 
-	berlinURL, err := buildURL(cli.scrubberBaseURL+cli.scrubberEndpoint, params, "q")
+	berlinURL, err := buildURL(cli.scrubberBaseURL+cli.scrubberEndpoint, query, "q")
 	if err != nil {
 		return scrubber, err
 	}
@@ -135,17 +135,17 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	return scrubber, nil
 }
 
-func buildURL(baseURL string, params url.Values, queryKey string) (*url.URL, error) {
-	query := url.Values{}
+func buildURL(baseURL string, query string, queryKey string) (*url.URL, error) {
+	params := url.Values{}
 
-	query.Set(queryKey, params.Get("q"))
+	params.Set(queryKey, query)
 
 	requestURL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing baseURL: %w", err)
 	}
 
-	requestURL.RawQuery = query.Encode()
+	requestURL.RawQuery = params.Encode()
 
 	return requestURL, err
 }
