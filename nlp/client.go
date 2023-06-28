@@ -16,36 +16,42 @@ import (
 
 // Client represents an instance of the elasticsearch client - now deprecated
 type Client struct {
-	berlinBaseURL   string
-	scrubberBaseURL string
-	categoryBaseURL string
-	client          dphttp.Client
+	berlinBaseURL    string
+	berlinEndpoint   string
+	categoryBaseURL  string
+	categoryEndpoint string
+	scrubberBaseURL  string
+	scrubberEndpoint string
+	client           dphttp.Client
 }
 
 // New creates a new elasticsearch client. Any trailing slashes from the URL are removed.
 func New(nlp config.NLP) *Client {
 	client := dphttp.Client{}
 	return &Client{
-		berlinBaseURL:   nlp.BerlinAPIURL,
-		scrubberBaseURL: nlp.ScrubberAPIURL,
-		categoryBaseURL: nlp.CategoryAPIURL,
-		client:          client,
+		berlinBaseURL:    nlp.BerlinAPIURL,
+		berlinEndpoint:   nlp.BerlinAPIEndpoint,
+		scrubberBaseURL:  nlp.ScrubberAPIURL,
+		scrubberEndpoint: nlp.ScrubberAPIEndpoint,
+		categoryBaseURL:  nlp.CategoryAPIURL,
+		categoryEndpoint: nlp.CategoryAPIEndpoint,
+		client:           client,
 	}
 }
 
-func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Berlin, error) {
+func (cli *Client) GetBerlin(ctx context.Context, query string) (models.Berlin, error) {
 	var berlin models.Berlin
 
-	scrubberURL, err := buildURL(cli.berlinBaseURL+"/berlin/search", params, "q")
+	berlinURL, err := buildURL(cli.berlinBaseURL+cli.berlinEndpoint, query, "q")
 	if err != nil {
 		return berlin, err
 	}
 
-	log.Info(ctx, "successfully build berlin url", log.Data{"scrubber url": scrubberURL.String()})
+	log.Info(ctx, "successfully build berlin url", log.Data{"berlin url": berlinURL.String()})
 
-	resp, err := cli.client.Get(ctx, scrubberURL.String())
+	resp, err := cli.client.Get(ctx, berlinURL.String())
 	if err != nil {
-		return berlin, fmt.Errorf("error making a get request to: %s err: %w", scrubberURL.String(), err)
+		return berlin, fmt.Errorf("error making a get request to: %s err: %w", berlinURL.String(), err)
 	}
 	defer resp.Body.Close()
 
@@ -61,21 +67,21 @@ func (cli *Client) GetBerlin(ctx context.Context, params url.Values) (models.Ber
 	}
 
 	if err := json.Unmarshal(b, &berlin); err != nil {
-		return berlin, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
+		return berlin, fmt.Errorf("error unmarshaling resp body to berlin model: %w", err)
 	}
 
 	return berlin, nil
 }
 
-func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.Category, error) {
+func (cli *Client) GetCategory(ctx context.Context, query string) (models.Category, error) {
 	var category models.Category
 
-	categoryURL, err := buildURL(cli.categoryBaseURL+"/categories", params, "query")
+	categoryURL, err := buildURL(cli.categoryBaseURL+cli.categoryEndpoint, query, "query")
 	if err != nil {
 		return category, err
 	}
 
-	log.Info(ctx, "successfully build category url", log.Data{"scrubber url": categoryURL.String()})
+	log.Info(ctx, "successfully build category url", log.Data{"category url": categoryURL.String()})
 
 	resp, err := cli.client.Get(ctx, categoryURL.String())
 	if err != nil {
@@ -92,16 +98,16 @@ func (cli *Client) GetCategory(ctx context.Context, params url.Values) (models.C
 	}
 
 	if err := json.Unmarshal(b, &category); err != nil {
-		return category, fmt.Errorf("error unmarshaling resp body to scrubber model: %w", err)
+		return category, fmt.Errorf("error unmarshaling resp body to category model: %w", err)
 	}
 
 	return category, nil
 }
 
-func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.Scrubber, error) {
+func (cli *Client) GetScrubber(ctx context.Context, query string) (models.Scrubber, error) {
 	var scrubber models.Scrubber
 
-	berlinURL, err := buildURL(cli.scrubberBaseURL+"/scrubber/search", params, "q")
+	berlinURL, err := buildURL(cli.scrubberBaseURL+cli.scrubberEndpoint, query, "q")
 	if err != nil {
 		return scrubber, err
 	}
@@ -129,17 +135,17 @@ func (cli *Client) GetScrubber(ctx context.Context, params url.Values) (models.S
 	return scrubber, nil
 }
 
-func buildURL(baseURL string, params url.Values, queryKey string) (*url.URL, error) {
-	query := url.Values{}
+func buildURL(baseURL string, query string, queryKey string) (*url.URL, error) {
+	params := url.Values{}
 
-	query.Set(queryKey, params.Get("q"))
+	params.Set(queryKey, query)
 
 	requestURL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing baseURL: %w", err)
 	}
 
-	requestURL.RawQuery = query.Encode()
+	requestURL.RawQuery = params.Encode()
 
 	return requestURL, err
 }

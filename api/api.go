@@ -8,6 +8,7 @@ import (
 
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/nlp"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
@@ -51,6 +52,8 @@ type QueryParamValidator interface {
 
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
+	AddNlpCategorySearch(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria
+	AddNlpSubdivisionSearch(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
 	BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
 	BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error)
 }
@@ -83,12 +86,14 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 // RegisterGetSearch registers the handler for GET /search endpoint
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP config.NLP, cli *nlp.Client, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
 		SearchHandlerFunc(
 			validator,
 			builder,
+			settingsNLP,
+			cli,
 			a.dpESClient,
 			transformer,
 		),

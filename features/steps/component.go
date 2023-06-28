@@ -103,7 +103,23 @@ func (c *Component) setNLPFakeAPI() {
 				Encoding: "1",
 				ID:       "1",
 				Key:      "1",
-				Words:    "1",
+				Words: []string{
+					"1",
+					"2",
+				},
+				Codes: "codes",
+				Names: []string{
+					"1",
+					"2",
+				},
+				Subdivision: []string{
+					"1",
+					"2",
+				},
+				State: []string{
+					"1",
+					"2",
+				},
 			},
 		},
 	}
@@ -120,11 +136,11 @@ func (c *Component) setNLPFakeAPI() {
 	c.Cfg.NLP.ScrubberAPIURL = c.FakeNLPSearchAPI.fakeHTTP.Server.URL
 	c.Cfg.NLP.CategoryAPIURL = c.FakeNLPSearchAPI.fakeHTTP.Server.URL
 	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
-		Get("/berlin/search").
+		Get("/v1/berlin/search").
 		Reply(200).
 		BodyStruct(berlin)
 	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
-		Get("/scrubber/search").
+		Get("/v1/scrubber").
 		Reply(200).
 		BodyStruct(scrubber)
 	c.FakeNLPSearchAPI.fakeHTTP.NewHandler().
