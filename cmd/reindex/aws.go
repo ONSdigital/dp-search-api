@@ -3,7 +3,10 @@
 
 package main
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 var Name = "aws"
 
@@ -22,5 +25,7 @@ func getConfig(ctx context.Context) cliConfig {
 		PaginationLimit:  DefaultPaginationLimit,
 		TestSubset:       false,
 		IgnoreZebedee:    false,
+		MaxRetries:       2,
+		Timeout:          30 * time.Second,
 	}
 }

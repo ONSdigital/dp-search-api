@@ -7,6 +7,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ONSdigital/dp-search-api/config"
 )
@@ -36,5 +37,7 @@ func getConfig(ctx context.Context) cliConfig {
 		PaginationLimit:  DefaultPaginationLimit,
 		TestSubset:       false,
 		IgnoreZebedee:    false,
+		MaxRetries:       2,
+		Timeout:          60 * time.Second,
 	}
 }
