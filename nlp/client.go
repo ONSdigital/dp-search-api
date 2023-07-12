@@ -93,6 +93,7 @@ func (cli *Client) GetCategory(ctx context.Context, query string) (models.Catego
 	if err != nil {
 		return category, fmt.Errorf("error reading response body: %w", err)
 	}
+
 	if resp.StatusCode != http.StatusOK {
 		return category, fmt.Errorf("response returned non 200 status code: %d with body: %v", resp.StatusCode, b)
 	}

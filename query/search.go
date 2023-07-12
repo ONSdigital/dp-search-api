@@ -6,6 +6,7 @@ import (
 	"embed"
 	"text/template"
 
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -120,6 +121,8 @@ func SetupSearch() (*template.Template, error) {
 		"templates/search/countQuery.tmpl",
 		"templates/search/coreQuery.tmpl",
 		"templates/search/weightedQuery.tmpl",
+		"templates/search/nlpCategory.tmpl",
+		"templates/search/nlpLocation.tmpl",
 		"templates/search/contentFilters.tmpl",
 		"templates/search/contentFilterOnURIPrefix.tmpl",
 		"templates/search/contentFilterOnTopic.tmpl",
@@ -194,6 +197,10 @@ func SetupV710Count() (*template.Template, error) {
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
+	log.Info(ctx, "kamen", log.Data{
+		"esVersion710": esVersion710,
+	})
+
 	if esVersion710 {
 		reqParams.AggregationFields = es710AggregationField
 	} else {

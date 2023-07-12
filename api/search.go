@@ -103,7 +103,7 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 
 // CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCritiria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
+func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCriteria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
@@ -170,12 +170,12 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		Now:       time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if nlpCritiria != nil && nlpCritiria.UseCategory {
-		reqSearch.NlpCategories = nlpCritiria.Categories
+	if nlpCriteria != nil && nlpCriteria.UseCategory {
+		reqSearch.NlpCategories = nlpCriteria.Categories
 	}
 
-	if nlpCritiria != nil && nlpCritiria.UseSubdivision {
-		reqSearch.NlpSubdivisionWords = nlpCritiria.SubdivisionWords
+	if nlpCriteria != nil && nlpCriteria.UseSubdivision {
+		reqSearch.NlpSubdivisionWords = nlpCriteria.SubdivisionWords
 	}
 
 	// population types only used if provided
@@ -394,6 +394,9 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		var nlpCriteria *query.NlpCriteria
 		q := params.Get("q")
+		log.Info(ctx, "kamen", log.Data{
+			"is it 1 ": params.Get("c") == "1",
+		})
 		if params.Get("c") == "1" {
 			nlpSettings := query.NlpSettings{}
 
@@ -624,6 +627,14 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	}
 
 	var nlpCriteria *query.NlpCriteria
+
+	log.Info(ctx, "kamen", log.Data{
+		"len(nlpResponse.Category) > 0": len(nlpResponse.Category) > 0,
+		"Berlin":                        berlin,
+		"Scrubber":                      scrubber,
+		"Category":                      category,
+	})
+
 	if len(nlpResponse.Category) > 0 {
 		for i, cat := range nlpResponse.Category {
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {

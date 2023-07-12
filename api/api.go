@@ -101,6 +101,22 @@ func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder Que
 	return a
 }
 
+// For NLP testing purposes re-introduce legacy search
+func (a *SearchAPI) RegisterLegacyGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP config.NLP, cli *nlp.Client, transformer ResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc(
+		"/legacy/search",
+		LegacySearchHandlerFunc(
+			validator,
+			builder,
+			settingsNLP,
+			cli,
+			a.deprecatedESClient,
+			transformer,
+		),
+	).Methods(http.MethodGet)
+	return a
+}
+
 // RegisterGetSearch registers the handler for GET /nlp/search endpoint
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
