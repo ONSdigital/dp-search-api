@@ -47,6 +47,20 @@ func TestValidateContentTypes(t *testing.T) {
 	})
 }
 
+func TestCheckForSpecialCharacters(t *testing.T) {
+	Convey("A string containing no special characters should return false", t, func() {
+		expected := false
+		actual := checkForSpecialCharacters("Test string")
+		So(actual, ShouldEqual, expected)
+	})
+
+	Convey("A string containing special characters should return true", t, func() {
+		expected := true
+		actual := checkForSpecialCharacters("Test 怎么开 string")
+		So(actual, ShouldEqual, expected)
+	})
+}
+
 func TestSearchHandlerFunc(t *testing.T) {
 	expectedQuery := "a valid query"
 	searches := []client.Search{
