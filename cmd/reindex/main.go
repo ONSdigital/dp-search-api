@@ -223,6 +223,10 @@ func transformZebedeeDoc(ctx context.Context, extractedChan chan Document, trans
 				log.Fatal(ctx, "error while attempting to unmarshal zebedee response into zebedeeData", err) // TODO proper error handling
 				panic(err)
 			}
+			if zebedeeData.Description.Title == "" {
+				// Don't want to index things without title
+				return
+			}
 			exporterEventData := extractorModels.MapZebedeeDataToSearchDataImport(zebedeeData, -1)
 			importerEventData := convertToSearchDataModel(exporterEventData)
 			esModel := transform.NewTransformer().TransformEventModelToEsModel(&importerEventData)

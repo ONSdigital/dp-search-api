@@ -4,13 +4,15 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/ONSdigital/dp-net/v2/request"
 	"github.com/ONSdigital/dp-search-api/api"
 )
 
 const (
 	// List of available headers
-	Authorization string = "Authorization"
-	CollectionID  string = "Collection-Id"
+	Authorization string = request.AuthHeaderKey
+	CollectionID  string = request.CollectionIDHeaderKey
+	FlorenceToken string = request.FlorenceHeaderKey
 )
 
 // Options is a struct containing for customised options for the API client

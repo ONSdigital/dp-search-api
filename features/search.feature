@@ -29,3 +29,13 @@ Feature: Search endpoint should return data for requested search parameter
         When I GET "/search?q=CPI"
         Then the HTTP status code should be "500"
         And the response header "Content-Type" should be "text/plain; charset=utf-8"
+
+    Scenario: When Searching with invalid characters I get a bad request response
+        Given elasticsearch is healthy
+        When I GET "/search?q=tiktok%E6%80%8E%E4%B9%88%E5%BC%80%E9"
+        Then the HTTP status code should be "400"
+        And the response header "Content-Type" should be "text/plain; charset=utf-8"
+        And I should receive the following response:
+            """
+            Invalid characters in query
+            """
