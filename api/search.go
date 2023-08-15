@@ -394,9 +394,6 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		var nlpCriteria *query.NlpCriteria
 		q := params.Get("q")
-		log.Info(ctx, "kamen", log.Data{
-			"is it 1 ": params.Get("c") == "1",
-		})
 		if params.Get("c") == "1" {
 			nlpSettings := query.NlpSettings{}
 

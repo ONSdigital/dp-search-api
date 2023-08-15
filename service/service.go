@@ -135,9 +135,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create Search API and register HTTP handlers
-	searchAPI := api.NewSearchAPI(router, esClient, deprecatedESClient, permissions).
+	searchAPI := api.NewSearchAPI(router, esClient, permissions).
 		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg.NLP, nlpClient, searchTransformer).
-		RegisterLegacyGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg.NLP, nlpClient, searchTransformer).
 		RegisterPostSearch().
 		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer).
 		RegisterGetNLPSearch(nlpClient)

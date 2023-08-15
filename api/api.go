@@ -20,10 +20,9 @@ var (
 
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	Router             *mux.Router
-	dpESClient         DpElasticSearcher
-	deprecatedESClient ElasticSearcher
-	permissions        AuthHandler
+	Router      *mux.Router
+	dpESClient  DpElasticSearcher
+	permissions AuthHandler
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -74,12 +73,11 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, permissions AuthHandler) *SearchAPI {
+func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, permissions AuthHandler) *SearchAPI {
 	return &SearchAPI{
-		Router:             router,
-		dpESClient:         dpESClient,
-		deprecatedESClient: deprecatedESClient,
-		permissions:        permissions,
+		Router:      router,
+		dpESClient:  dpESClient,
+		permissions: permissions,
 	}
 }
 
@@ -95,22 +93,6 @@ func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder Que
 			settingsNLP,
 			cli,
 			a.dpESClient,
-			transformer,
-		),
-	).Methods(http.MethodGet)
-	return a
-}
-
-// For NLP testing purposes re-introduce legacy search
-func (a *SearchAPI) RegisterLegacyGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP config.NLP, cli *nlp.Client, transformer ResponseTransformer) *SearchAPI {
-	a.Router.HandleFunc(
-		"/legacy/search",
-		LegacySearchHandlerFunc(
-			validator,
-			builder,
-			settingsNLP,
-			cli,
-			a.deprecatedESClient,
 			transformer,
 		),
 	).Methods(http.MethodGet)
