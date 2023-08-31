@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -109,6 +110,13 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 
 	q := params.Get(ParamQ)
 	sanitisedQuery := sanitiseDoubleQuotes(q)
+	queryHasSpecialChars := checkForSpecialCharacters(sanitisedQuery)
+
+	if queryHasSpecialChars {
+		log.Info(ctx, "rejecting query as contained special characters", log.Data{"query": sanitisedQuery})
+		http.Error(w, "Invalid characters in query", http.StatusBadRequest)
+		return "", nil, nil
+	}
 
 	sortParam := paramGet(params, ParamSort, "relevance")
 	sort, err := validator.Validate(ctx, ParamSort, sortParam)
@@ -506,6 +514,11 @@ func sanitiseURLParams(str string) []string {
 func sanitiseDoubleQuotes(str string) string {
 	b := strconv.Quote(str)
 	return b[1 : len(b)-1]
+}
+
+func checkForSpecialCharacters(str string) bool {
+	re := regexp.MustCompile("[[:^ascii:]]")
+	return re.MatchString(str)
 }
 
 // func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery, typesParam, sort string, topics []string, limit, offset int, responseDataChan chan []byte) {
