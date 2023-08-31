@@ -44,7 +44,7 @@ func NewQueryBuilder() (*Builder, error) {
 	var countTemplates *template.Template
 	var err, countErr error
 
-	searchTemplates, err = SetupSearch()
+	searchTemplates, err = SetupV710Search()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load search templates")
 	}

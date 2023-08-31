@@ -548,6 +548,9 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		return
 	}
 
+	log.Info(ctx, "ACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERY", log.Data{
+		"formattedQuery": searches,
+	})
 	if debug {
 		for i, s := range searches {
 			log.Info(ctx, "[DEBUG] Search sent to elasticsearch", log.Data{"i": i, "header": s.Header, "query": string(s.Query)})
@@ -563,6 +566,10 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		responseDataChan <- nil
 		return
 	}
+
+	log.Info(ctx, "ACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERY", log.Data{
+		"responseData": string(responseData),
+	})
 
 	if !json.Valid(responseData) {
 		log.Error(ctx, "elasticsearch returned invalid JSON for search query", errors.New("elasticsearch returned invalid JSON for search query"))
