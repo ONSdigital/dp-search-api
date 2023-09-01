@@ -74,7 +74,7 @@ type CountRequest struct {
 	CountEnable bool
 }
 
-func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category string, subCategory string, categoryWeighting float32) *NlpCriteria {
+func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category, subCategory string, categoryWeighting float32) *NlpCriteria {
 	if nlpCriteria == nil {
 		nlpCriteria = new(NlpCriteria)
 	}

@@ -247,22 +247,22 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		go func() {
 			defer wg.Done()
 
-			var err error
+			var respErr error
 
-			category, err = cli.GetCategory(ctx, scrubber.Query)
-			if err != nil {
-				log.Error(ctx, "error making request to category: %w", err)
+			category, respErr = cli.GetCategory(ctx, scrubber.Query)
+			if respErr != nil {
+				log.Error(ctx, "error making request to category: %w", respErr)
 			}
 		}()
 
 		go func() {
 			defer wg.Done()
 
-			var err error
+			var respErr error
 
-			berlin, err = cli.GetBerlin(ctx, scrubber.Query)
-			if err != nil {
-				log.Error(ctx, "error making request to berlin: %w", err)
+			berlin, respErr = cli.GetBerlin(ctx, scrubber.Query)
+			if respErr != nil {
+				log.Error(ctx, "error making request to berlin: %w", respErr)
 			}
 		}()
 
@@ -294,21 +294,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q := params.Get("q")
-
-		var nlpCriteria *query.NlpCriteria
-		if params.Get("c") == "1" {
-			nlpSettings := query.NlpSettings{}
-
-			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
-
-			nlpSettingsRequest := params.Get("nlpSettings")
-			if nlpSettingsRequest != "" {
-				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
-			}
-
-			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
-		}
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, nlpCLI)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -398,24 +384,10 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, cli *nlp.Client, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
+
 		params := req.URL.Query()
 
-		var nlpCriteria *query.NlpCriteria
-		q := params.Get("q")
-		if params.Get("c") == "1" {
-			nlpSettings := query.NlpSettings{}
-
-			// Load default settings
-			// FIXME: move this somewhere better
-			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
-
-			// Load settings for this request
-			nlpSettingsRequest := params.Get("nlpSettings")
-			if nlpSettingsRequest != "" {
-				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
-			}
-			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *cli)
-		}
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, cli)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -464,6 +436,28 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 			return
 		}
 	}
+}
+
+func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP, queryBuilder QueryBuilder, nlpCLI *nlp.Client) *query.NlpCriteria {
+	if params.Get("c") == "1" {
+		nlpSettings := query.NlpSettings{}
+
+		if err := json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings); err != nil {
+			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
+		}
+
+		nlpSettingsRequest := params.Get("nlpSettings")
+
+		if nlpSettingsRequest != "" {
+			if err := json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings); err != nil {
+				log.Error(ctx, "problem unmarshaling nlpSettingsRequest", err)
+			}
+		}
+
+		return AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
+	}
+
+	return nil
 }
 
 func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http.Request) {

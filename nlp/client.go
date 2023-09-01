@@ -136,7 +136,7 @@ func (cli *Client) GetScrubber(ctx context.Context, query string) (models.Scrubb
 	return scrubber, nil
 }
 
-func buildURL(baseURL string, query string, queryKey string) (*url.URL, error) {
+func buildURL(baseURL, query, queryKey string) (*url.URL, error) {
 	params := url.Values{}
 
 	params.Set(queryKey, query)
