@@ -181,13 +181,13 @@ paths:
           type: string
           required: false
         - in: query
-          name: dateFrom
-          description: "Specifies candidate Releases by their ReleaseDate, which must be on or after the dateFrom"
+          name: fromDate
+          description: "Specifies candidate Releases by their ReleaseDate, which must be on or after the fromDate"
           type: string
           required: false
         - in: query
-          name: dateTo
-          description: "Specifies candidate Releases by their ReleaseDate, which must be on or before the dateTo"
+          name: toDate
+          description: "Specifies candidate Releases by their ReleaseDate, which must be on or before the toDate"
           type: string
           required: false
         - in: query

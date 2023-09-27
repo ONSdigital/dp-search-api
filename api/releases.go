@@ -45,7 +45,7 @@ func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator Qu
 	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
-		http.Error(w, "Invalid dateFrom parameter", http.StatusBadRequest)
+		http.Error(w, "Invalid fromDate parameter", http.StatusBadRequest)
 		return "", nil
 	}
 
@@ -53,7 +53,7 @@ func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator Qu
 	toDate, err := validator.Validate(ctx, "date", toDateParam)
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
-		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		http.Error(w, "Invalid toDate parameter", http.StatusBadRequest)
 		return "", nil
 	}
 
