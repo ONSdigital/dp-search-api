@@ -118,14 +118,6 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		return "", nil, nil
 	}
 
-	sortParam := paramGet(params, ParamSort, "relevance")
-	sort, err := validator.Validate(ctx, ParamSort, sortParam)
-	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
-		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
-		return "", nil, nil
-	}
-
 	highlight := paramGetBool(params, ParamHighlight, true)
 
 	topicsParam := paramGet(params, ParamTopics, "")
@@ -166,16 +158,42 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		}
 	}
 
+	sortParam := paramGet(params, ParamSort, "relevance")
+	sort, err := validator.Validate(ctx, ParamSort, sortParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
+		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	fromDateParam := paramGet(params, "fromDate", "")
+	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	toDateParam := paramGet(params, "toDate", "")
+	toDate, err := validator.Validate(ctx, "date", toDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
+		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
 	// create SearchRequest with all the compulsory values
 	reqSearch := &query.SearchRequest{
-		Term:      sanitisedQuery,
-		From:      offset.(int),
-		Size:      limit.(int),
-		Types:     contentTypes,
-		Topic:     topics,
-		SortBy:    sort.(string),
-		Highlight: highlight,
-		Now:       time.Now().UTC().Format(time.RFC3339),
+		Term:           sanitisedQuery,
+		From:           offset.(int),
+		Size:           limit.(int),
+		Types:          contentTypes,
+		ReleasedAfter:  fromDate.(query.Date),
+		ReleasedBefore: toDate.(query.Date),
+		Topic:          topics,
+		SortBy:         sort.(string),
+		Highlight:      highlight,
+		Now:            time.Now().UTC().Format(time.RFC3339),
 	}
 
 	if nlpCriteria != nil && nlpCriteria.UseCategory {
