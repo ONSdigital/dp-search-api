@@ -102,10 +102,11 @@ func (sb *Builder) AddNlpSubdivisionSearch(nlpCriteria *NlpCriteria, subdivision
 		nlpCriteria = new(NlpCriteria)
 	}
 
+	sb.nlpCriteria = nlpCriteria
 	sb.nlpCriteria.UseSubdivision = true
 	sb.nlpCriteria.SubdivisionWords = subdivisionWords
 
-	return nlpCriteria
+	return sb.nlpCriteria
 }
 
 // SetupSearch loads templates for use by the search handler and should be done only once
@@ -177,6 +178,8 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByFirstLetter.tmpl",
 		"templates/search/v710/populationTypeFilters.tmpl",
 		"templates/search/v710/dimensionsFilters.tmpl",
+		"templates/search/v710/nlpCategory.tmpl",
+		"templates/search/v710/nlpLocation.tmpl",
 	)
 
 	return templates, err
@@ -206,6 +209,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchReques
 
 	var doc bytes.Buffer
 	err := sb.searchTemplates.Execute(&doc, reqParams)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}

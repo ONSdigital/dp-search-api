@@ -6,17 +6,23 @@
  "size" : {{.Size}},
  "query" : {
      "bool" : {
-             "must" : {
-                  {{- if .Term}}
-                      {{- template "weightedQuery.tmpl" .}}
-                   {{- else}}
-                      {{- template "matchAll.tmpl" .}}
-                   {{- end}}
-              }
-             {{template "contentFilters.tmpl" .}}
-         }
+			"should": [
+				{{template "nlpCategory.tmpl" .}}
+			],
+			"must" : {
+				{{- if .Term}}
+					{{- template "weightedQuery.tmpl" .}}
+				{{- else}}
+					{{- template "matchAll.tmpl" .}}
+				{{- end}}
+			}
+			{{template "contentFilters.tmpl" .}}
+		}
     },
  "suggest":{
+ 	"search_suggest":{
+ 		"text":"{{.Term}}",
+ 		"phrase":{"field":"title.title_no_synonym_no_stem"}}
  },
  "_source":{
  			"includes":[],

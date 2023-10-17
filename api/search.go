@@ -460,6 +460,8 @@ func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP
 	if params.Get("c") == "1" {
 		nlpSettings := query.NlpSettings{}
 
+		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
+
 		if err := json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings); err != nil {
 			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
 		}
@@ -467,6 +469,8 @@ func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP
 		nlpSettingsRequest := params.Get("nlpSettings")
 
 		if nlpSettingsRequest != "" {
+			log.Info(ctx, "Using the category weighing setting from the request query to enhance search results relevance")
+
 			if err := json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings); err != nil {
 				log.Error(ctx, "problem unmarshaling nlpSettingsRequest", err)
 			}
@@ -560,9 +564,6 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		return
 	}
 
-	log.Info(ctx, "ACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERY", log.Data{
-		"formattedQuery": searches,
-	})
 	if debug {
 		for i, s := range searches {
 			log.Info(ctx, "[DEBUG] Search sent to elasticsearch", log.Data{"i": i, "header": s.Header, "query": string(s.Query)})
@@ -578,10 +579,6 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		responseDataChan <- nil
 		return
 	}
-
-	log.Info(ctx, "ACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERYACTUAL QUERY", log.Data{
-		"responseData": string(responseData),
-	})
 
 	if !json.Valid(responseData) {
 		log.Error(ctx, "elasticsearch returned invalid JSON for search query", errors.New("elasticsearch returned invalid JSON for search query"))
@@ -657,7 +654,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	var nlpCriteria *query.NlpCriteria
 
-	log.Info(ctx, "kamen", log.Data{
+	log.Info(ctx, "NLP full response", log.Data{
 		"len(nlpResponse.Category) > 0": len(nlpResponse.Category) > 0,
 		"Berlin":                        berlin,
 		"Scrubber":                      scrubber,

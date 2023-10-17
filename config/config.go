@@ -56,7 +56,7 @@ func Get() (*Config, error) {
 	}
 
 	cfg.NLP = NLP{
-		NlpHubSettings:      "{\"categoryWeighting\": 10000000.0, \"categoryLimit\": 1, \"defaultState\": \"gb\"}",
+		NlpHubSettings:      "{\"categoryWeighting\": 10000000000000000000000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		BerlinAPIEndpoint:   "/v1/berlin/search",
 		BerlinAPIURL:        "http://localhost:28900",
 		CategoryAPIEndpoint: "/categories",
