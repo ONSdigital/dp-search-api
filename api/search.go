@@ -150,8 +150,8 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, err := validateContentTypes(contentTypes)
-		if err != nil {
+		disallowed, er := validateContentTypes(contentTypes)
+		if er != nil {
 			log.Warn(ctx, err.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
