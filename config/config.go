@@ -30,11 +30,11 @@ type AWS struct {
 
 type NLP struct {
 	NlpHubSettings      string `envconfig:"NLP_HUB_SETTINGS"`
-	BerlinAPIEndpoint   string `envconfig:"NLP_CATEGORY_API_URL"`
+	BerlinAPIEndpoint   string `envconfig:"NLP_BERLIN_API_ENDPOINT"`
 	BerlinAPIURL        string `envconfig:"NLP_BERLIN_API_URL"`
-	ScrubberAPIEndpoint string `envconfig:"NLP_CATEGORY_API_URL"`
+	ScrubberAPIEndpoint string `envconfig:"NLP_SCRUBBER_API_ENDPOINT"`
 	ScrubberAPIURL      string `envconfig:"NLP_SCRUBBER_API_URL"`
-	CategoryAPIEndpoint string `envconfig:"NLP_CATEGORY_API_URL"`
+	CategoryAPIEndpoint string `envconfig:"NLP_CATEGORY_API_ENDPOINT"`
 	CategoryAPIURL      string `envconfig:"NLP_CATEGORY_API_URL"`
 }
 
@@ -56,7 +56,7 @@ func Get() (*Config, error) {
 	}
 
 	cfg.NLP = NLP{
-		NlpHubSettings:      "{\"categoryWeighting\": 10000000.0, \"categoryLimit\": 1, \"defaultState\": \"gb\"}",
+		NlpHubSettings:      "{\"categoryWeighting\": 10000000000000000000000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		BerlinAPIEndpoint:   "/v1/berlin/search",
 		BerlinAPIURL:        "http://localhost:28900",
 		CategoryAPIEndpoint: "/categories",

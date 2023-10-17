@@ -27,7 +27,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.es7xSuccessfullyReturnNoSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.es7xFailureInternalServerError)
-	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theNlpResponseIsTheSameAsInJson)
+	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theNlpResponseIsTheSameAsInJSON)
 }
 
 // elasticSearchIsHealthy generates a mocked healthy response for elasticsearch healthecheck
@@ -206,7 +206,7 @@ func (c *Component) es7xFailureInternalServerError() error {
 	return nil
 }
 
-func (c *Component) theNlpResponseIsTheSameAsInJson(expectedFile string) error {
+func (c *Component) theNlpResponseIsTheSameAsInJSON(expectedFile string) error {
 	responseBody := c.APIFeature.HttpResponse.Body
 
 	actualBytes, err := io.ReadAll(responseBody)

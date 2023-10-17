@@ -39,7 +39,7 @@ type Berlin struct {
 }
 
 type Matches struct {
-	Codes       string   `json:"codes,omitempty"`
+	Codes       []string `json:"codes,omitempty"`
 	Encoding    string   `json:"encoding,omitempty"`
 	ID          string   `json:"id,omitempty"`
 	Key         string   `json:"key,omitempty"`

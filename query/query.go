@@ -53,6 +53,7 @@ func NewQueryBuilder() (*Builder, error) {
 	if countErr != nil {
 		return nil, errors.Wrap(countErr, "failed to load count templates")
 	}
+
 	return &Builder{
 		searchTemplates: searchTemplates,
 		countTemplates:  countTemplates,

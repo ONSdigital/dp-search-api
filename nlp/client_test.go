@@ -10,7 +10,6 @@ func TestBuildURL(t *testing.T) {
 	baseURL := "https://example.com/api"
 	queryKey := "search"
 	Convey("Given a base URL, query parameters, and a query key", t, func() {
-
 		Convey("When buildURL is called", func() {
 			resultURL, err := buildURL(baseURL, "example", queryKey)
 
@@ -22,7 +21,6 @@ func TestBuildURL(t *testing.T) {
 	})
 
 	Convey("Given an invalid base URL", t, func() {
-
 		Convey("When buildURL is called", func() {
 			resultURL, err := buildURL(":", "example", queryKey)
 
@@ -34,7 +32,6 @@ func TestBuildURL(t *testing.T) {
 	})
 
 	Convey("Given an empty query parameter", t, func() {
-
 		Convey("When buildURL is called", func() {
 			resultURL, err := buildURL(baseURL, "", queryKey)
 

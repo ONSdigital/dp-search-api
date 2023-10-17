@@ -107,7 +107,9 @@ func (c *Component) setNLPFakeAPI() {
 					"1",
 					"2",
 				},
-				Codes: "codes",
+				Codes: []string{
+					"codes",
+				},
 				Names: []string{
 					"1",
 					"2",

@@ -104,7 +104,7 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 
 // CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCritiria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
+func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCriteria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
@@ -115,14 +115,6 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	if queryHasSpecialChars {
 		log.Info(ctx, "rejecting query as contained special characters", log.Data{"query": sanitisedQuery})
 		http.Error(w, "Invalid characters in query", http.StatusBadRequest)
-		return "", nil, nil
-	}
-
-	sortParam := paramGet(params, ParamSort, "relevance")
-	sort, err := validator.Validate(ctx, ParamSort, sortParam)
-	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
-		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
@@ -158,32 +150,58 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, err := validateContentTypes(contentTypes)
-		if err != nil {
+		disallowed, er := validateContentTypes(contentTypes)
+		if er != nil {
 			log.Warn(ctx, err.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
 		}
 	}
 
+	sortParam := paramGet(params, ParamSort, "relevance")
+	sort, err := validator.Validate(ctx, ParamSort, sortParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
+		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	fromDateParam := paramGet(params, "fromDate", "")
+	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	toDateParam := paramGet(params, "toDate", "")
+	toDate, err := validator.Validate(ctx, "date", toDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
+		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
 	// create SearchRequest with all the compulsory values
 	reqSearch := &query.SearchRequest{
-		Term:      sanitisedQuery,
-		From:      offset.(int),
-		Size:      limit.(int),
-		Types:     contentTypes,
-		Topic:     topics,
-		SortBy:    sort.(string),
-		Highlight: highlight,
-		Now:       time.Now().UTC().Format(time.RFC3339),
+		Term:           sanitisedQuery,
+		From:           offset.(int),
+		Size:           limit.(int),
+		Types:          contentTypes,
+		ReleasedAfter:  fromDate.(query.Date),
+		ReleasedBefore: toDate.(query.Date),
+		Topic:          topics,
+		SortBy:         sort.(string),
+		Highlight:      highlight,
+		Now:            time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if nlpCritiria != nil && nlpCritiria.UseCategory {
-		reqSearch.NlpCategories = nlpCritiria.Categories
+	if nlpCriteria != nil && nlpCriteria.UseCategory {
+		reqSearch.NlpCategories = nlpCriteria.Categories
 	}
 
-	if nlpCritiria != nil && nlpCritiria.UseSubdivision {
-		reqSearch.NlpSubdivisionWords = nlpCritiria.SubdivisionWords
+	if nlpCriteria != nil && nlpCriteria.UseSubdivision {
+		reqSearch.NlpSubdivisionWords = nlpCriteria.SubdivisionWords
 	}
 
 	// population types only used if provided
@@ -247,22 +265,22 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 		go func() {
 			defer wg.Done()
 
-			var err error
+			var respErr error
 
-			category, err = cli.GetCategory(ctx, scrubber.Query)
-			if err != nil {
-				log.Error(ctx, "error making request to category: %w", err)
+			category, respErr = cli.GetCategory(ctx, scrubber.Query)
+			if respErr != nil {
+				log.Error(ctx, "error making request to category: %w", respErr)
 			}
 		}()
 
 		go func() {
 			defer wg.Done()
 
-			var err error
+			var respErr error
 
-			berlin, err = cli.GetBerlin(ctx, scrubber.Query)
-			if err != nil {
-				log.Error(ctx, "error making request to berlin: %w", err)
+			berlin, respErr = cli.GetBerlin(ctx, scrubber.Query)
+			if respErr != nil {
+				log.Error(ctx, "error making request to berlin: %w", respErr)
 			}
 		}()
 
@@ -294,21 +312,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		q := params.Get("q")
-
-		var nlpCriteria *query.NlpCriteria
-		if params.Get("c") == "1" {
-			nlpSettings := query.NlpSettings{}
-
-			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
-
-			nlpSettingsRequest := params.Get("nlpSettings")
-			if nlpSettingsRequest != "" {
-				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
-			}
-
-			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
-		}
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, nlpCLI)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -398,24 +402,10 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, cli *nlp.Client, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
+
 		params := req.URL.Query()
 
-		var nlpCriteria *query.NlpCriteria
-		q := params.Get("q")
-		if params.Get("c") == "1" {
-			nlpSettings := query.NlpSettings{}
-
-			// Load default settings
-			// FIXME: move this somewhere better
-			json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings)
-
-			// Load settings for this request
-			nlpSettingsRequest := params.Get("nlpSettings")
-			if nlpSettingsRequest != "" {
-				json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings)
-			}
-			nlpCriteria = AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *cli)
-		}
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, cli)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -464,6 +454,32 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 			return
 		}
 	}
+}
+
+func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP, queryBuilder QueryBuilder, nlpCLI *nlp.Client) *query.NlpCriteria {
+	if params.Get("c") == "1" {
+		nlpSettings := query.NlpSettings{}
+
+		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
+
+		if err := json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings); err != nil {
+			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
+		}
+
+		nlpSettingsRequest := params.Get("nlpSettings")
+
+		if nlpSettingsRequest != "" {
+			log.Info(ctx, "Using the category weighing setting from the request query to enhance search results relevance")
+
+			if err := json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings); err != nil {
+				log.Error(ctx, "problem unmarshaling nlpSettingsRequest", err)
+			}
+		}
+
+		return AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
+	}
+
+	return nil
 }
 
 func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http.Request) {
@@ -637,6 +653,14 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	}
 
 	var nlpCriteria *query.NlpCriteria
+
+	log.Info(ctx, "NLP full response", log.Data{
+		"len(nlpResponse.Category) > 0": len(nlpResponse.Category) > 0,
+		"Berlin":                        berlin,
+		"Scrubber":                      scrubber,
+		"Category":                      category,
+	})
+
 	if len(nlpResponse.Category) > 0 {
 		for i, cat := range nlpResponse.Category {
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {

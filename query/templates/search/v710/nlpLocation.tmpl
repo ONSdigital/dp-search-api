@@ -1,0 +1,7 @@
+ {{if .NlpSubdivisionWords }}
+     { "match_all" :
+            // The boost must be large (>1e5) to make a noticeable impact in uncommon terms as
+            // the IDF score can be ~10 and is boosted by x100, with x100 again if it is a bulletin
+           { "value": "{{.NlpSubdivisionWords}}" , "boost": 1.0e6 }
+     }
+ {{end}}

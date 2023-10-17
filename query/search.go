@@ -33,6 +33,8 @@ type SearchRequest struct {
 	Types               []string
 	Index               string
 	SortBy              string
+	ReleasedAfter       Date
+	ReleasedBefore      Date
 	AggregationField    string // Deprecated (used only in legacy templates for aggregations)
 	AggregationFields   *AggregationFields
 	Highlight           bool
@@ -74,7 +76,7 @@ type CountRequest struct {
 	CountEnable bool
 }
 
-func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category string, subCategory string, categoryWeighting float32) *NlpCriteria {
+func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category, subCategory string, categoryWeighting float32) *NlpCriteria {
 	if nlpCriteria == nil {
 		nlpCriteria = new(NlpCriteria)
 	}
@@ -100,10 +102,11 @@ func (sb *Builder) AddNlpSubdivisionSearch(nlpCriteria *NlpCriteria, subdivision
 		nlpCriteria = new(NlpCriteria)
 	}
 
+	sb.nlpCriteria = nlpCriteria
 	sb.nlpCriteria.UseSubdivision = true
 	sb.nlpCriteria.SubdivisionWords = subdivisionWords
 
-	return nlpCriteria
+	return sb.nlpCriteria
 }
 
 // SetupSearch loads templates for use by the search handler and should be done only once
@@ -120,6 +123,8 @@ func SetupSearch() (*template.Template, error) {
 		"templates/search/countQuery.tmpl",
 		"templates/search/coreQuery.tmpl",
 		"templates/search/weightedQuery.tmpl",
+		"templates/search/nlpCategory.tmpl",
+		"templates/search/nlpLocation.tmpl",
 		"templates/search/contentFilters.tmpl",
 		"templates/search/contentFilterOnURIPrefix.tmpl",
 		"templates/search/contentFilterOnTopic.tmpl",
@@ -173,6 +178,8 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByFirstLetter.tmpl",
 		"templates/search/v710/populationTypeFilters.tmpl",
 		"templates/search/v710/dimensionsFilters.tmpl",
+		"templates/search/v710/nlpCategory.tmpl",
+		"templates/search/v710/nlpLocation.tmpl",
 	)
 
 	return templates, err
@@ -202,6 +209,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchReques
 
 	var doc bytes.Buffer
 	err := sb.searchTemplates.Execute(&doc, reqParams)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}
