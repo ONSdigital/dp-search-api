@@ -35,11 +35,18 @@ environment variables, or with a link to a configuration guide.
 | AWS_SERVICE                  | "es"                      | The AWS service that the AWS SDK signing mechanism needs to sign a request
 | AWS_SIGNER                   | false                     | The AWS signer flag will determine if requests to Elasticsearch contain round tripper for signing requests
 | AWS_TLS_INSECURE_SKIP_VERIFY | false                     | This should never be set to true, as it disables SSL certificate verification. Used only for development
+| -------------------          | -------------------       | -----------------------------------
 | BIND_ADDR                    | :23900                    | The host and port to bind to
 | ELASTIC_SEARCH_URL           | "<http://localhost:11200>"| Http url of the ElasticSearch server
+| -------------------          | -------------------       | -----------------------------------
+| NLP_BERLIN_API_ENDPOINT      | "/v1/berlin/search"       | Http url of the Berlin server
 | NLP_BERLIN_API_URL	         | "http://localhost:28900"  | Http url of the Berlin server
+| NLP_CATEGORY_API_ENDPOINT    | "/categories"             | Http url of the Category server
 | NLP_CATEGORY_API_URL	       | "http://localhost:28800"  | Http url of the Category server
+| NlpToggle           	       | "true"                    | Toggles NLP querying on/off
+| NLP_SCRUBBER_API_ENDPOINT    | "/v1/scrubber"            | Http url of the Scrubber server
 | NLP_SCRUBBER_API_URL	       | "http://localhost:28700"  | Http url of the Scrubber server
+| -------------------          | -------------------       | -----------------------------------
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                        | The graceful shutdown timeout in seconds (`time.Duration` format)
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                       | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)
 | HEALTHCHECK_INTERVAL         | 30s                       | Time between self-healthchecks (`time.Duration` format)

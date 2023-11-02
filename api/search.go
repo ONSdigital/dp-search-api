@@ -457,7 +457,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 }
 
 func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP, queryBuilder QueryBuilder, nlpCLI *nlp.Client) *query.NlpCriteria {
-	if params.Get("c") == "1" {
+	if nlpConfig.NlpToggle {
 		nlpSettings := query.NlpSettings{}
 
 		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
