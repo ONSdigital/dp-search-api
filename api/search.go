@@ -16,7 +16,6 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/models"
-	"github.com/ONSdigital/dp-search-api/nlp"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
@@ -245,7 +244,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	return q, reqSearch, reqCount
 }
 
-func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
+func NLPSearchHandlerFunc(cli NlpClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
@@ -307,7 +306,7 @@ func NLPSearchHandlerFunc(cli *nlp.Client) http.HandlerFunc {
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
-func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, nlpCLI *nlp.Client, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, nlpCLI NlpClient, elasticSearchClient DpElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
@@ -399,7 +398,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.
 // TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, cli *nlp.Client, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig config.NLP, cli NlpClient, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
@@ -456,7 +455,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 	}
 }
 
-func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP, queryBuilder QueryBuilder, nlpCLI *nlp.Client) *query.NlpCriteria {
+func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP, queryBuilder QueryBuilder, nlpCLI NlpClient) *query.NlpCriteria {
 	if nlpConfig.NlpToggle {
 		nlpSettings := query.NlpSettings{}
 
@@ -476,7 +475,7 @@ func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig config.NLP
 			}
 		}
 
-		return AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, *nlpCLI)
+		return AddNlpToSearch(ctx, queryBuilder, params, nlpConfig, nlpSettings, nlpCLI)
 	}
 
 	return nil
@@ -609,7 +608,7 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 	resCountChan <- countRes
 }
 
-func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.Values, nlpApis config.NLP, nlpSettings query.NlpSettings, cli nlp.Client) *query.NlpCriteria {
+func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.Values, nlpApis config.NLP, nlpSettings query.NlpSettings, cli NlpClient) *query.NlpCriteria {
 	var berlin models.Berlin
 	var scrubber models.Scrubber
 	var category models.Category
