@@ -9,6 +9,20 @@
             {{ template "contentTypeFilter.tmpl". }}
           ]
         }
+      },
+      {
+        "bool": {
+          "should": [
+            {
+              "range": {
+                "release_date": {
+                  "gte": {{.ReleasedAfter.ESString}},
+                  "lte": {{.ReleasedBefore.ESString}}
+                }
+              }
+            }
+          ]
+        }
       }
       {{if or .URIPrefix .TopicWildcard .Topic}}
       , {
