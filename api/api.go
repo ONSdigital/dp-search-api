@@ -6,10 +6,10 @@ import (
 	"context"
 	"net/http"
 
+	nlpCfg "github.com/ONSdigital/dp-api-clients-go/v2/nlp/config"
+	nlpModels "github.com/ONSdigital/dp-api-clients-go/v2/nlp/models"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
-	"github.com/ONSdigital/dp-search-api/config"
-	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
@@ -45,9 +45,9 @@ type DpElasticSearcher interface {
 }
 
 type NlpClient interface {
-	GetBerlin(ctx context.Context, query string) (models.Berlin, error)
-	GetCategory(ctx context.Context, query string) (models.Category, error)
-	GetScrubber(ctx context.Context, query string) (models.Scrubber, error)
+	GetBerlin(ctx context.Context, query string) (nlpModels.Berlin, error)
+	GetCategory(ctx context.Context, query string) (nlpModels.Category, error)
+	GetScrubber(ctx context.Context, query string) (nlpModels.Scrubber, error)
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
@@ -90,7 +90,7 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, permissions 
 // RegisterGetSearch registers the handler for GET /search endpoint
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP config.NLP, cli NlpClient, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP nlpCfg.NLP, cli NlpClient, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
 		SearchHandlerFunc(

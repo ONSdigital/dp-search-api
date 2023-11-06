@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/config"
 	"github.com/kelseyhightower/envconfig"
 )
 
 // Config is the search API handler config
 type Config struct {
 	AWS                        AWS
-	NLP                        NLP
+	NLP                        config.NLP
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
@@ -26,17 +27,6 @@ type AWS struct {
 	Service               string `envconfig:"AWS_SERVICE"`
 	Signer                bool   `envconfig:"AWS_SIGNER"`
 	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
-}
-
-type NLP struct {
-	BerlinAPIEndpoint   string `envconfig:"NLP_BERLIN_API_ENDPOINT"`
-	BerlinAPIURL        string `envconfig:"NLP_BERLIN_API_URL"`
-	CategoryAPIEndpoint string `envconfig:"NLP_CATEGORY_API_ENDPOINT"`
-	CategoryAPIURL      string `envconfig:"NLP_CATEGORY_API_URL"`
-	NlpHubSettings      string `envconfig:"NLP_HUB_SETTINGS"`
-	NlpToggle           bool   `envconfig:"NLP_TOGGLE"`
-	ScrubberAPIEndpoint string `envconfig:"NLP_SCRUBBER_API_ENDPOINT"`
-	ScrubberAPIURL      string `envconfig:"NLP_SCRUBBER_API_URL"`
 }
 
 var cfg *Config
@@ -56,7 +46,7 @@ func Get() (*Config, error) {
 		ZebedeeURL:                 "http://localhost:8082",
 	}
 
-	cfg.NLP = NLP{
+	cfg.NLP = config.NLP{
 		BerlinAPIEndpoint:   "/v1/berlin/search",
 		BerlinAPIURL:        "http://localhost:28900",
 		CategoryAPIEndpoint: "/categories",
