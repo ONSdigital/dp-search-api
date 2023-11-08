@@ -167,7 +167,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid dateFrom parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
