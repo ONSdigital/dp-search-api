@@ -128,6 +128,16 @@ paths:
           description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
           type: integer
           required: false
+        - in: query
+          name: fromDate
+          description: "Specifies candidate results by their ReleaseDate, which must be on or after the fromDate"
+          type: string
+          required: false
+        - in: query
+          name: toDate
+          description: "Specifies candidate results by their ReleaseDate, which must be on or before the toDate"
+          type: string
+          required: false
       responses:
         200:
           description: OK
