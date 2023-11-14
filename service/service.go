@@ -3,7 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-api-clients-go/v2/nlp"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
@@ -13,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
+	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 
 	"github.com/gorilla/mux"
@@ -21,6 +23,8 @@ import (
 
 type Service struct {
 	api                 *api.SearchAPI
+	berlinClient        *berlin.Client
+	categoryClient      *category.Client
 	config              *config.Config
 	elasticSearchClient elasticsearch.Client
 	healthCheck         HealthChecker
@@ -62,7 +66,9 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esClientErr error
 	var esClient dpEsClient.Client
 
-	nlpClient := nlp.New(cfg.NLP)
+	berlinClient := berlin.New(cfg.BerlinAPIURL)
+	categoryClient := category.New(cfg.CategoryAPIURL)
+	scrubberClient := scrubber.New(cfg.ScrubberAPIURL)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -134,12 +140,14 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
+	// Create a ClientList that is required in Search handler
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient)
+
 	// Create Search API and register HTTP handlers
-	searchAPI := api.NewSearchAPI(router, esClient, permissions).
-		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg.NLP, nlpClient, searchTransformer).
+	searchAPI := api.NewSearchAPI(router, clList, permissions).
+		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
 		RegisterPostSearch().
-		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer).
-		RegisterGetNLPSearch(nlpClient)
+		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
 
 	go func() {
 		log.Info(ctx, "search api starting")

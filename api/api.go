@@ -6,11 +6,13 @@ import (
 	"context"
 	"net/http"
 
-	nlpCfg "github.com/ONSdigital/dp-api-clients-go/v2/nlp/config"
-	nlpModels "github.com/ONSdigital/dp-api-clients-go/v2/nlp/models"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/query"
+	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/gorilla/mux"
 )
 
@@ -20,9 +22,16 @@ var (
 
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
+	clList      ClientList
 	Router      *mux.Router
-	dpESClient  DpElasticSearcher
 	permissions AuthHandler
+}
+
+type ClientList struct {
+	berlinClient   berlin.Clienter
+	categoryClient category.Clienter
+	dpESClient     DpElasticSearcher
+	scrubberClient scrubber.Clienter
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -42,12 +51,6 @@ type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
 	MultiSearch(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error)
 	Count(ctx context.Context, count client.Count) ([]byte, error)
-}
-
-type NlpClient interface {
-	GetBerlin(ctx context.Context, query string) (nlpModels.Berlin, error)
-	GetCategory(ctx context.Context, query string) (nlpModels.Category, error)
-	GetScrubber(ctx context.Context, query string) (nlpModels.Scrubber, error)
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
@@ -78,40 +81,36 @@ type ReleaseResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
 }
 
+func NewClientList(berlin berlin.Clienter, category category.Clienter, dpEsClient DpElasticSearcher, scrubber scrubber.Clienter) ClientList {
+	return ClientList{
+		berlinClient:   berlin,
+		categoryClient: category,
+		dpESClient:     dpEsClient,
+		scrubberClient: scrubber,
+	}
+}
+
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, permissions AuthHandler) *SearchAPI {
+func NewSearchAPI(router *mux.Router, clientList ClientList, permissions AuthHandler) *SearchAPI {
 	return &SearchAPI{
 		Router:      router,
-		dpESClient:  dpESClient,
+		clList:      clientList,
 		permissions: permissions,
 	}
 }
 
 // RegisterGetSearch registers the handler for GET /search endpoint
-// with the provided validator and query builder
-// as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP nlpCfg.NLP, cli NlpClient, transformer ResponseTransformer) *SearchAPI {
+// with the provided validator and query buildernse transformer
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
 		SearchHandlerFunc(
 			validator,
 			builder,
 			settingsNLP,
-			cli,
-			a.dpESClient,
+			a.clList,
 			transformer,
 		),
-	).Methods(http.MethodGet)
-	return a
-}
-
-// RegisterGetSearch registers the handler for GET /nlp/search endpoint
-// with the provided validator and query builder
-// as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetNLPSearch(nlpClient NlpClient) *SearchAPI {
-	a.Router.HandleFunc(
-		"/nlp/search",
-		NLPSearchHandlerFunc(nlpClient),
 	).Methods(http.MethodGet)
 	return a
 }
@@ -137,9 +136,11 @@ func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, bui
 		SearchReleasesHandlerFunc(
 			validator,
 			builder,
-			a.dpESClient,
+			a.clList.dpESClient,
 			transformer,
 		),
 	).Methods(http.MethodGet)
 	return a
 }
+
+// as well as the API's elasticsearch client and respo
