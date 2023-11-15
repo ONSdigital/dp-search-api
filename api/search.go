@@ -343,7 +343,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.
 // TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList ClientList, elasticSearchClient ElasticSearcher, transformer ResponseTransformer) http.HandlerFunc {
+func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
@@ -368,7 +368,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 			return
 		}
 
-		responseData, err := elasticSearchClient.MultiSearch(ctx, "ons", "", formattedQuery)
+		responseData, err := clList.deprecatedESClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)

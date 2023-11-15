@@ -2,15 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/service"
-	"github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -27,16 +24,8 @@ var (
 )
 
 func main() {
-	cl := sdk.New("http://localhost:28700")
 	log.Namespace = serviceName
 	ctx := context.Background()
-
-	opt := sdk.Options{
-		Query: url.Values{},
-	}
-	result, err := cl.GetSearch(ctx, *opt.Q("dentist"))
-	fmt.Println(err)
-	fmt.Println(result)
 
 	if err := run(ctx); err != nil {
 		log.Error(ctx, "application unexpectedly failed", err)

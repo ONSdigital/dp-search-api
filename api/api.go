@@ -32,6 +32,8 @@ type ClientList struct {
 	categoryClient category.Clienter
 	dpESClient     DpElasticSearcher
 	scrubberClient scrubber.Clienter
+	// Remove deprecatedESClient once the legacy handler is removed
+	deprecatedESClient ElasticSearcher
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -81,7 +83,7 @@ type ReleaseResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
 }
 
-func NewClientList(berlin berlin.Clienter, category category.Clienter, dpEsClient DpElasticSearcher, scrubber scrubber.Clienter) ClientList {
+func NewClientList(berlin berlin.Clienter, category category.Clienter, dpEsClient DpElasticSearcher, scrubber scrubber.Clienter, deprecatedEs ElasticSearcher) ClientList {
 	return ClientList{
 		berlinClient:   berlin,
 		categoryClient: category,

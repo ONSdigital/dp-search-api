@@ -141,7 +141,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	healthCheck.Start(ctx)
 
 	// Create a ClientList that is required in Search handler
-	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient)
+	// Remove deprecatedESClient once the legacy handler is removed
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
 
 	// Create Search API and register HTTP handlers
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
