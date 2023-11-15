@@ -157,7 +157,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		contentTypes = strings.Split(contentTypesParam, ",")
 		disallowed, er := validateContentTypes(contentTypes)
 		if er != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
+			log.Warn(ctx, er.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
 		}
@@ -568,7 +568,6 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	fmt.Println(params.Get("q"))
 	scrubber, err := clList.scrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
-		fmt.Println("iuasdhfiaushdfihusjd + %s", err)
 		log.Error(ctx, "error making request to scrubber: %w", err)
 	}
 
