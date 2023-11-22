@@ -410,16 +410,6 @@ func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig *config.Co
 			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
 		}
 
-		nlpSettingsRequest := params.Get("nlpSettings")
-
-		if nlpSettingsRequest != "" {
-			log.Info(ctx, "Using the category weighing setting from the request query to enhance search results relevance")
-
-			if err := json.Unmarshal([]byte(nlpSettingsRequest), &nlpSettings); err != nil {
-				log.Error(ctx, "problem unmarshaling nlpSettingsRequest", err)
-			}
-		}
-
 		return AddNlpToSearch(ctx, queryBuilder, params, nlpSettings, clList)
 	}
 
@@ -433,9 +423,7 @@ func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http
 
 	err := a.clList.dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 	if err != nil {
-		if err != nil {
-			log.Error(ctx, "creating index failed with this error", err)
-		}
+		log.Error(ctx, "creating index failed with this error", err)
 		http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 		return
 	}
@@ -559,10 +547,11 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		Query: url.Values{},
 	}
 
-	fmt.Println(params.Get("q"))
+	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
 	scrubber, err := clList.scrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
 		log.Error(ctx, "error making request to scrubber: %w", err)
+		return nil
 	}
 
 	go func() {
@@ -598,14 +587,13 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	var nlpCriteria *query.NlpCriteria
 
 	log.Info(ctx, "NLP full response", log.Data{
-		"len(nlpResponse.Category) > 0": len(*category) > 0,
-		"Berlin":                        berlin,
-		"Scrubber":                      scrubber,
-		"Category":                      category,
+		"Does category exist": category != nil,
+		"Berlin":              berlin,
+		"Scrubber":            scrubber,
+		"Category":            category,
 	})
 
-	if len(*category) > 0 {
-		fmt.Println(berlin)
+	if category != nil {
 		for i, cat := range *category {
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {
 				break
