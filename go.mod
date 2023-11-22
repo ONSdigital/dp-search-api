@@ -22,8 +22,6 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.6.1
 	github.com/ONSdigital/dp-net/v2 v2.11.0
-	github.com/ONSdigital/dp-search-data-extractor v1.1.0
-	github.com/ONSdigital/dp-search-data-importer v1.0.0
 	github.com/ONSdigital/dp-search-scrubber-api v0.1.0
 	github.com/ONSdigital/log.go/v2 v2.4.1
 	github.com/cucumber/godog v0.12.6
@@ -40,7 +38,6 @@ require (
 require (
 	github.com/ONSdigital/dp-mongodb-in-memory v1.6.0 // indirect
 	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
-	github.com/ONSdigital/dp-topic-api v0.21.0 // indirect
 	github.com/ONSdigital/go-ns v0.0.0-20210916104633-ac1c1c52327e // indirect
 	github.com/aws/aws-sdk-go v1.44.190 // indirect
 	github.com/chromedp/cdproto v0.0.0-20230419194459-b5ff65bc57a3 // indirect
@@ -58,6 +55,7 @@ require (
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-memdb v1.3.4 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

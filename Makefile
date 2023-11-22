@@ -68,15 +68,6 @@ local: ## Exports various configurations and then runs the application locally
 	export AWS_FILENAME=$(HOME)/.aws/credentials; \
 	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
 
-.PHONY: build-reindex
-build-reindex: ## Builds binary of the search reindex script and stores in build directory
-	@mkdir -p $(BUILD)
-	GOOS=linux GOARCH=amd64 go build -tags=aws -ldflags "-w -s" -o $(BUILD)/reindex cmd/reindex/main.go cmd/reindex/aws.go
-
-.PHONY: reindex
-reindex: ## Runs search reindex script with local configurations
-	HUMAN_LOG=1 go run -ldflags "-w -s" cmd/reindex/main.go cmd/reindex/local.go
-
 .PHONY: test
 test: ## Runs unit tests including checks for race conditions and returns coverage
 	go test -count=1 -race -cover ./...
