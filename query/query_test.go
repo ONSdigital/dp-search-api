@@ -60,6 +60,8 @@ func TestNewQueryBuilder(t *testing.T) {
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "canonicalFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "subTopicsFilters.tmpl")
 		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentTypeFilter.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "nlpLocation.tmpl")
+		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "nlpCategory.tmpl")
 
 		So(builderObject.countTemplates, ShouldNotBeNil)
 		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "distinctItemCountQuery.tmpl")

@@ -27,7 +27,6 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns zero items in search response$`, c.es7xSuccessfullyReturnNoSearchResults)
 	ctx.Step(`^elasticsearch returns zero items in search/release response$`, c.successfullyReturnNoSearchReleaseResults)
 	ctx.Step(`^elasticsearch returns internal server error$`, c.es7xFailureInternalServerError)
-	ctx.Step(`^nlp response is the same as in "([^"]*)"$`, c.theNlpResponseIsTheSameAsInJSON)
 }
 
 // elasticSearchIsHealthy generates a mocked healthy response for elasticsearch healthecheck
@@ -202,38 +201,6 @@ func (c *Component) iShouldReceiveTheFollowingSearchResponsefromes7x(expectedJSO
 func (c *Component) es7xFailureInternalServerError() error {
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(500)
 	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200)
-
-	return nil
-}
-
-func (c *Component) theNlpResponseIsTheSameAsInJSON(expectedFile string) error {
-	responseBody := c.APIFeature.HttpResponse.Body
-
-	actualBytes, err := io.ReadAll(responseBody)
-	if err != nil {
-		return fmt.Errorf("error reading response body %w", err)
-	}
-
-	expectedBytes, err := os.ReadFile(expectedFile)
-	if err != nil {
-		return fmt.Errorf("failed to read file of expected results - error: %v", err)
-	}
-
-	var expected models.NLPResp
-	err = json.Unmarshal(expectedBytes, &expected)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal file into struct - error: %v", err)
-	}
-
-	var actual models.NLPResp
-	err = json.Unmarshal(actualBytes, &actual)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal file into struct - error: %v", err)
-	}
-
-	if diff := cmp.Diff(expected, actual); diff != "" {
-		return fmt.Errorf("expected response mismatch (-expected +actual):\n%s", diff)
-	}
 
 	return nil
 }

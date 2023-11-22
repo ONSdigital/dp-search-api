@@ -88,12 +88,15 @@ func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category, subC
 			return nlpCriteria
 		}
 	}
+
 	newCat := NlpCriteriaCategory{
 		Category:    category,
 		SubCategory: subCategory,
 		Weighting:   categoryWeighting,
 	}
+
 	nlpCriteria.Categories = append(nlpCriteria.Categories, newCat)
+
 	return nlpCriteria
 }
 

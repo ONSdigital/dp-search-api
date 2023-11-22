@@ -10,12 +10,16 @@ import (
 // Config is the search API handler config
 type Config struct {
 	AWS                        AWS
-	NLP                        NLP
+	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
+	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	NlpHubSettings             string        `envconfig:"NLP_HUB_SETTINGS"`
+	NlpToggle                  bool          `envconfig:"NLP_TOGGLE"`
+	ScrubberAPIURL             string        `envconfig:"SCRUBBER_URL"`
 	ZebedeeURL                 string        `envconfig:"ZEBEDEE_URL"`
 }
 
@@ -28,17 +32,6 @@ type AWS struct {
 	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
-type NLP struct {
-	BerlinAPIEndpoint   string `envconfig:"NLP_BERLIN_API_ENDPOINT"`
-	BerlinAPIURL        string `envconfig:"NLP_BERLIN_API_URL"`
-	CategoryAPIEndpoint string `envconfig:"NLP_CATEGORY_API_ENDPOINT"`
-	CategoryAPIURL      string `envconfig:"NLP_CATEGORY_API_URL"`
-	NlpHubSettings      string `envconfig:"NLP_HUB_SETTINGS"`
-	NlpToggle           bool   `envconfig:"NLP_TOGGLE"`
-	ScrubberAPIEndpoint string `envconfig:"NLP_SCRUBBER_API_ENDPOINT"`
-	ScrubberAPIURL      string `envconfig:"NLP_SCRUBBER_API_URL"`
-}
-
 var cfg *Config
 
 // Get configures the application and returns the Config
@@ -49,22 +42,16 @@ func Get() (*Config, error) {
 
 	cfg = &Config{
 		BindAddr:                   ":23900",
+		BerlinAPIURL:               "http://localhost:28900",
+		CategoryAPIURL:             "http://localhost:28800",
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
+		NlpHubSettings:             "{\"categoryWeighting\": 1000000000000000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+		NlpToggle:                  false,
+		ScrubberAPIURL:             "http://localhost:28700",
 		ZebedeeURL:                 "http://localhost:8082",
-	}
-
-	cfg.NLP = NLP{
-		BerlinAPIEndpoint:   "/v1/berlin/search",
-		BerlinAPIURL:        "http://localhost:28900",
-		CategoryAPIEndpoint: "/categories",
-		CategoryAPIURL:      "http://localhost:28800",
-		NlpHubSettings:      "{\"categoryWeighting\": 10000000000000000000000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
-		NlpToggle:           true,
-		ScrubberAPIEndpoint: "/v1/scrubber",
-		ScrubberAPIURL:      "http://localhost:28700",
 	}
 
 	cfg.AWS = AWS{
