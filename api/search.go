@@ -430,15 +430,9 @@ func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http
 	ctx := req.Context()
 	indexName := createIndexName("ons")
 	fmt.Printf("Index created: %s\n", indexName)
-	indexCreated := true
 
 	err := a.clList.dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 	if err != nil {
-		log.Error(ctx, "error creating index", err, log.Data{"index_name": indexName})
-		indexCreated = false
-	}
-
-	if !indexCreated {
 		if err != nil {
 			log.Error(ctx, "creating index failed with this error", err)
 		}

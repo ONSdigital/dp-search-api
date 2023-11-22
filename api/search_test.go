@@ -11,10 +11,20 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	brErr "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin/errors"
+	brModels "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin/models"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
+	catErr "github.com/ONSdigital/dp-api-clients-go/v2/nlp/category/errors"
+	catModels "github.com/ONSdigital/dp-api-clients-go/v2/nlp/category/models"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
+	scrModels "github.com/ONSdigital/dp-search-scrubber-api/models"
+	scr "github.com/ONSdigital/dp-search-scrubber-api/sdk"
+	scrErr "github.com/ONSdigital/dp-search-scrubber-api/sdk/errors"
+	scrMock "github.com/ONSdigital/dp-search-scrubber-api/sdk/mocks"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -683,6 +693,69 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
 		So(actualResponse, ShouldResemble, validESResponse)
 	})
+
+	Convey("Should return OK for valid search result with NLP = true", t, func() {
+		qbMock := newQueryBuilderMock([]byte(validQueryDoc), nil)
+
+		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
+
+		brMock := newBerlinClienterMock(&brModels.Berlin{
+			Matches: []brModels.Matches{
+				{
+					Subdivision: []string{
+						"subdiv1",
+						"subdiv2",
+					},
+				},
+			},
+		}, nil)
+
+		catMock := newCategorylienterMock(&[]catModels.Category{
+			{
+				Code:  []string{"sth", "sth"},
+				Score: 100,
+			},
+		}, nil)
+
+		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+			Results: scrModels.Results{
+				Areas: []scrModels.AreaResp{
+					{
+						Name:   "Area1",
+						Region: "region1",
+					},
+				},
+			},
+		}, nil)
+
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		clList := ClientList{
+			scrubberClient: scrMock,
+			categoryClient: catMock,
+			berlinClient:   brMock,
+			dpESClient:     esMock,
+		}
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{NlpToggle: true}, clList, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?q="+validQueryParam, nil)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		So(resp.Code, ShouldEqual, http.StatusOK)
+		// So(resp.Body.String(), ShouldResemble, validTransformedResponse)
+		// So(qbMock.BuildSearchQueryCalls(), ShouldHaveLength, 1)
+		// So(qbMock.BuildSearchQueryCalls()[0].Req.Term, ShouldResemble, validQueryParam)
+		// So(esMock.MultiSearchCalls(), ShouldHaveLength, 1)
+		// actualRequest := string(esMock.MultiSearchCalls()[0])
+		// So(actualRequest, ShouldResemble, validQueryDoc)
+		// So(trMock.TransformSearchResponseCalls(), ShouldHaveLength, 1)
+		// So(trMock.TransformSearchResponseCalls()[0].Highlight, ShouldBeFalse)
+		// actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
+		// So(actualResponse, ShouldResemble, validESResponse)
+	})
 }
 
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
@@ -744,6 +817,30 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	})
 }
 
+func newBerlinClienterMock(response *brModels.Berlin, err brErr.Error) *berlin.ClienterMock {
+	return &berlin.ClienterMock{
+		GetBerlinFunc: func(ctx context.Context, options berlin.Options) (*brModels.Berlin, brErr.Error) {
+			return response, err
+		},
+	}
+}
+
+func newCategorylienterMock(response *[]catModels.Category, err catErr.Error) *category.ClienterMock {
+	return &category.ClienterMock{
+		GetCategoryFunc: func(ctx context.Context, options category.Options) (*[]catModels.Category, catErr.Error) {
+			return response, err
+		},
+	}
+}
+
+func newCScrubberClienterMock(response *scrModels.ScrubberResp, err catErr.Error) *scrMock.ClienterMock {
+	return &scrMock.ClienterMock{
+		GetSearchFunc: func(ctx context.Context, options scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
+			return response, err
+		},
+	}
+}
+
 func newElasticSearcherMock(response []byte, err error) *ElasticSearcherMock {
 	return &ElasticSearcherMock{
 		MultiSearchFunc: func(ctx context.Context, index string, docType string, request []byte) ([]byte, error) {
@@ -773,6 +870,23 @@ func newQueryBuilderMock(retQuery []byte, err error) *QueryBuilderMock {
 		},
 		BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 			return retQuery, err
+		},
+		AddNlpCategorySearchFunc: func(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria {
+			return &query.NlpCriteria{
+				UseCategory: true,
+				Categories: []query.NlpCriteriaCategory{
+					{
+						Category:    category,
+						SubCategory: subCategory,
+						Weighting:   categoryWeighting,
+					},
+				},
+				UseSubdivision: true,
+			}
+		},
+		AddNlpSubdivisionSearchFunc: func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
+			nlpCriteria.SubdivisionWords = subdivisionWords
+			return nlpCriteria
 		},
 	}
 }
