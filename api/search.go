@@ -593,13 +593,16 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		"Category":            category,
 	})
 
+	// Process NLP Criteria based on the provided category data.
+	// If categories exist, iterate through them, limiting the loop based on the configuration
+	// NLP category limit. For each category, build NLP criteria to be used in the query to ElasticSearch.
 	if category != nil {
 		for i, cat := range *category {
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {
 				break
 			}
-			log.Warn(ctx, cat.Code[0])
-			log.Warn(ctx, cat.Code[1])
+			log.Info(ctx, cat.Code[0])
+			log.Info(ctx, cat.Code[1])
 			nlpCriteria = queryBuilder.AddNlpCategorySearch(
 				nlpCriteria,
 				cat.Code[0],
@@ -609,6 +612,8 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		}
 	}
 
+	// If berlin exists, add the subdivisions to NLP criteria.
+	// They'll be used later in the query to ElasticSearch
 	if berlin != nil && len(berlin.Matches[0].Subdivision) == 2 {
 		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Subdivision[1])
 	}
