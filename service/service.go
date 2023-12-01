@@ -13,6 +13,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	"github.com/ONSdigital/log.go/v2/log"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -127,7 +128,9 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	router := mux.NewRouter()
-	server := serviceList.GetHTTPServer(cfg.BindAddr, router)
+	otelHandler := otelhttp.NewHandler(router, "/")
+
+	server := serviceList.GetHTTPServer(cfg.BindAddr, otelHandler)
 
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)

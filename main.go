@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	goErrors "errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +11,8 @@ import (
 	"github.com/ONSdigital/dp-search-api/service"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
+
+	dpotelgo "github.com/ONSdigital/dp-otel-go"
 )
 
 const serviceName = "dp-search-api"
@@ -26,6 +29,24 @@ var (
 func main() {
 	log.Namespace = serviceName
 	ctx := context.Background()
+
+	//Set up OpenTelemetry
+	cfg, err := config.Get()
+
+	otelConfig := dpotelgo.Config{
+		OtelServiceName:          cfg.OTServiceName,
+		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+	}
+
+	otelShutdown, oErr := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+	if oErr != nil {
+		log.Fatal(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", oErr)
+		return
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = goErrors.Join(err, otelShutdown(context.Background()))
+	}()
 
 	if err := run(ctx); err != nil {
 		log.Error(ctx, "application unexpectedly failed", err)
