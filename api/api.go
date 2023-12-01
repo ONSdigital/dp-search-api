@@ -10,7 +10,6 @@ import (
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 var (
@@ -84,15 +83,14 @@ func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedES
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
 func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
-	a.Router.Handle(
+	a.Router.HandleFunc(
 		"/search",
-		otelhttp.NewHandler(
-			SearchHandlerFunc(
-				validator,
-				builder,
-				a.dpESClient,
-				transformer,
-			), "/search"),
+		SearchHandlerFunc(
+			validator,
+			builder,
+			a.dpESClient,
+			transformer,
+		),
 	).Methods(http.MethodGet)
 	return a
 }
@@ -100,12 +98,12 @@ func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder Que
 // RegisterPostSearch registers the handler for POST /search endpoint
 // enforcing required update permissions
 func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
-	a.Router.Handle(
+	a.Router.HandleFunc(
 		"/search",
-		otelhttp.NewHandler(a.permissions.Require(
+		a.permissions.Require(
 			update,
 			a.CreateSearchIndexHandlerFunc,
-		), "/search"),
+		),
 	).Methods(http.MethodPost)
 	return a
 }
@@ -113,15 +111,14 @@ func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
 // RegisterGetSearchRelease registers the handler for GET /search/releases endpoint
 // with the provided validator, query builder, searcher and validator
 func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, builder ReleaseQueryBuilder, transformer ReleaseResponseTransformer) *SearchAPI {
-	a.Router.Handle(
+	a.Router.HandleFunc(
 		"/search/releases",
-		otelhttp.NewHandler(
-			SearchReleasesHandlerFunc(
-				validator,
-				builder,
-				a.dpESClient,
-				transformer,
-			), "/search/releases"),
+		SearchReleasesHandlerFunc(
+			validator,
+			builder,
+			a.dpESClient,
+			transformer,
+		),
 	).Methods(http.MethodGet)
 	return a
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	goErrors "errors"
+	goerrors "errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,31 +30,16 @@ func main() {
 	log.Namespace = serviceName
 	ctx := context.Background()
 
-	//Set up OpenTelemetry
-	cfg, err := config.Get()
-
-	otelConfig := dpotelgo.Config{
-		OtelServiceName:          cfg.OTServiceName,
-		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
-	}
-
-	otelShutdown, oErr := dpotelgo.SetupOTelSDK(ctx, otelConfig)
-	if oErr != nil {
-		log.Fatal(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", oErr)
-		return
-	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = goErrors.Join(err, otelShutdown(context.Background()))
-	}()
-
-	if err := run(ctx); err != nil {
+	if isSvcError, err := run(ctx); err != nil {
+		if isSvcError {
+			log.Fatal(ctx, "search api error received", err)
+		}
 		log.Error(ctx, "application unexpectedly failed", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func run(ctx context.Context) (bool, error) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
@@ -66,24 +51,40 @@ func run(ctx context.Context) error {
 	cfg, err := config.Get()
 	if err != nil {
 		log.Fatal(ctx, "error retrieving Config", err)
-		return err
+		return false, err
 	}
 
 	log.Info(ctx, "config on startup", log.Data{"config": cfg, "build_time": BuildTime, "git-commit": GitCommit})
 
+	// Set up OpenTelemetry
+	otelConfig := dpotelgo.Config{
+		OtelServiceName:          cfg.OTServiceName,
+		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+	}
+
+	otelShutdown, oErr := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+	if oErr != nil {
+		log.Fatal(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", oErr)
+		return false, oErr
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = goerrors.Join(err, otelShutdown(context.Background()))
+	}()
+
 	// Run the service
 	svc, err := service.Run(ctx, cfg, svcList, BuildTime, GitCommit, Version, svcErrors)
 	if err != nil {
-		return errors.Wrap(err, "running service failed")
+		return false, errors.Wrap(err, "running service failed")
 	}
 
 	// Blocks until a fatal error occurs
 	select {
 	case err := <-svcErrors:
-		log.Fatal(ctx, "search api error received", err)
+		return true, err
 	case <-signals:
 		log.Info(ctx, "os signal received")
 	}
 
-	return svc.Close(ctx)
+	return false, svc.Close(ctx)
 }

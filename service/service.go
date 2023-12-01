@@ -17,6 +17,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
 type Service struct {
@@ -129,6 +130,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	router := mux.NewRouter()
 	otelHandler := otelhttp.NewHandler(router, "/")
+	router.Use(otelmux.Middleware(cfg.OTServiceName))
 
 	server := serviceList.GetHTTPServer(cfg.BindAddr, otelHandler)
 

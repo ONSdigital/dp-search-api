@@ -44,7 +44,7 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",
-		OTServiceName:              "DP Search API",
+		OTServiceName:              "dp-search-api",
 		ZebedeeURL:                 "http://localhost:8082",
 	}
 
