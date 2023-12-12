@@ -32,12 +32,12 @@ func New() api.ResponseTransformer {
 }
 
 // TransformCountResponse is not supported for legacy transformer.
-func (t *LegacyTransformer) TransformCountResponse(ctx context.Context, responseData []byte) (int, error) {
+func (t *LegacyTransformer) TransformCountResponse(_ context.Context, _ []byte) (int, error) {
 	return 0, nil
 }
 
 // TransformSearchResponse transforms an elastic search response into a structure that matches the v1 api specification
-func (t *LegacyTransformer) TransformSearchResponse(ctx context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
+func (t *LegacyTransformer) TransformSearchResponse(_ context.Context, responseData []byte, query string, highlight bool) ([]byte, error) {
 	var source models.ESResponseLegacy
 
 	err := json.Unmarshal(responseData, &source)
@@ -138,7 +138,7 @@ func (t *LegacyTransformer) buildDescription(doc models.ESResponseHitLegacy, hig
 	return des
 }
 
-func (t *LegacyTransformer) overlaySingleItem(hl []*string, def string, highlight bool) (overlaid string) {
+func (t *LegacyTransformer) overlaySingleItem(hl []*string, _ string, highlight bool) (overlaid string) {
 	if highlight && hl != nil && len(hl) > 0 {
 		overlaid = *(hl)[0]
 	}
@@ -214,7 +214,7 @@ func numberOfSearchTerms(query string) int {
 
 // TransformSearchResponse transforms an elastic search 7.x response
 func (t *Transformer) TransformSearchResponse(
-	ctx context.Context, responseData []byte,
+	_ context.Context, responseData []byte,
 	query string, highlight bool) ([]byte, error) {
 	var esResponse models.EsResponses
 
@@ -244,7 +244,7 @@ func (t *Transformer) TransformSearchResponse(
 
 // TransformCountResponse transforms an elastic search 7.x response
 func (t *Transformer) TransformCountResponse(
-	ctx context.Context, responseData []byte) (int, error) {
+	_ context.Context, responseData []byte) (int, error) {
 	var data struct {
 		Count int `json:"count"`
 	}
@@ -368,7 +368,7 @@ func (t *Transformer) buildContentItem(doc models.ESResponseHit, highlight bool)
 	return esDoc
 }
 
-func (t *Transformer) overlaySingleItem(hl []*string, def string, highlight bool) (overlaid string) {
+func (t *Transformer) overlaySingleItem(hl []*string, _ string, highlight bool) (overlaid string) {
 	if highlight && hl != nil && len(hl) > 0 {
 		overlaid = *(hl)[0]
 	}

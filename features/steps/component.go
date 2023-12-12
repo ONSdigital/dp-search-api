@@ -117,7 +117,7 @@ func (c *Component) InitialiseService() (http.Handler, error) {
 	return c.HTTPServer.Handler, nil
 }
 
-func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {
+func getHealthCheckOK(_ *config.Config, _, _, _ string) (service.HealthChecker, error) {
 	return &mocks.HealthCheckerMock{
 		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
 		StartFunc:    func(ctx context.Context) {},
@@ -125,7 +125,7 @@ func getHealthCheckOK(cfg *config.Config, buildTime, gitCommit, version string) 
 	}, nil
 }
 
-func (c *Component) getHealthClient(name, url string) *health.Client {
+func (c *Component) getHealthClient(_, url string) *health.Client {
 	return &health.Client{
 		URL:    url,
 		Name:   "elasticsearch",
