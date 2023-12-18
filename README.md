@@ -39,7 +39,10 @@ environment variables, or with a link to a configuration guide.
 | ELASTIC_SEARCH_URL           | "<http://localhost:11200>" | Http url of the ElasticSearch server                                                                               
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                         | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                        | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) 
-| HEALTHCHECK_INTERVAL         | 30s                        | Time between self-healthchecks (`time.Duration` format)                                                            
+| HEALTHCHECK_INTERVAL         | 30s                        | Time between self-healthchecks (`time.Duration` format)                                       
+| OTEL_BATCH_TIMEOUT           | 5s                         | Interval between pushes to OT Collector                                                                           
+| OTEL_EXPORTER_OTLP_ENDPOINT  | http://localhost:4317      | URL for OpenTelemetry endpoint                                                                                
+| OTEL_SERVICE_NAME            | "dp-search-api"            | Service name to report to telemetry tools                                                                         
 | SERVICE_AUTH_TOKEN           | ""                         | The service auth token only gets used by the bulk indexer [Running Bulk Indexer](#running-bulk-indexer)            
 | ZEBEDEE_URL                  | <http://localhost:8082>    | The URL to Zebedee (for authorisation)                                                                             
 
