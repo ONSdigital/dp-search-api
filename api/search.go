@@ -155,24 +155,48 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, err := validateContentTypes(contentTypes)
-		if err != nil {
-			log.Warn(ctx, err.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
+		disallowed, validationErr := validateContentTypes(contentTypes)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
 		}
 	}
 
+	fromDateParam := paramGet(params, "fromDate", "")
+	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
+		http.Error(w, "Invalid dateFrom parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	toDateParam := paramGet(params, "toDate", "")
+	toDate, err := validator.Validate(ctx, "date", toDateParam)
+	if err != nil {
+		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
+		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
+		log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
+		http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
 	// create SearchRequest with all the compulsory values
 	reqSearch := &query.SearchRequest{
-		Term:      sanitisedQuery,
-		From:      offset.(int),
-		Size:      limit.(int),
-		Types:     contentTypes,
-		Topic:     topics,
-		SortBy:    sort.(string),
-		Highlight: highlight,
-		Now:       time.Now().UTC().Format(time.RFC3339),
+		Term:           sanitisedQuery,
+		From:           offset.(int),
+		Size:           limit.(int),
+		Types:          contentTypes,
+		ReleasedAfter:  fromDate.(query.Date),
+		ReleasedBefore: toDate.(query.Date),
+		Topic:          topics,
+		SortBy:         sort.(string),
+		Highlight:      highlight,
+		Now:            time.Now().UTC().Format(time.RFC3339),
 	}
 
 	// population types only used if provided

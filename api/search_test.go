@@ -364,8 +364,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 				limit1+
 				offset2+
 				"&dimensions=dim1,dim2"+
-				"&population_types=pop1,pop2",
+				"&population_types=pop1,pop2"+
+				"&fromDate=2020-10-10"+
+				"&toDate=2023-10-10",
 			http.NoBody)
+
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
@@ -378,6 +381,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.SortBy, c.ShouldResemble, "relevance")
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.Size, c.ShouldEqual, 1)
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.From, c.ShouldEqual, 2)
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.ReleasedAfter, c.ShouldResemble, query.MustParseDate("2020-10-10"))
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.ReleasedBefore, c.ShouldResemble, query.MustParseDate("2023-10-10"))
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.Dimensions, c.ShouldResemble, []*query.DimensionRequest{
 			{Key: "dim1"}, {Key: "dim2"},
 		})
