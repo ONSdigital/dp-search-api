@@ -514,8 +514,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle: true,
-			// NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpToggle:      true,
+			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)

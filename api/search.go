@@ -155,9 +155,9 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	contentTypes := defaultContentTypes
 	if contentTypesParam != "" {
 		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, er := validateContentTypes(contentTypes)
-		if er != nil {
-			log.Warn(ctx, er.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
+		disallowed, validationErr := validateContentTypes(contentTypes)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
 			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
 			return "", nil, nil
 		}
@@ -175,15 +175,15 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 	fromDate, err := validator.Validate(ctx, "date", fromDateParam)
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{"param": "fromDate", "value": fromDateParam})
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid fromDate parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	toDateParam := paramGet(params, "toDate", "")
 	toDate, err := validator.Validate(ctx, "date", toDateParam)
 	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": "toDate", "value": toDateParam})
-		http.Error(w, "Invalid dateTo parameter", http.StatusBadRequest)
+		log.Warn(ctx, err.Error(), log.Data{"param": "toDateParam", "value": toDateParam})
+		http.Error(w, "Invalid toDate parameter", http.StatusBadRequest)
 		return "", nil, nil
 	}
 

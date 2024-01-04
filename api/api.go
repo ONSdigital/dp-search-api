@@ -144,5 +144,3 @@ func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, bui
 	).Methods(http.MethodGet)
 	return a
 }
-
-// as well as the API's elasticsearch client and respo

@@ -48,7 +48,7 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
-		NlpHubSettings:             "{\"categoryWeighting\": 1000000000000000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+		NlpHubSettings:             "{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		NlpToggle:                  false,
 		ScrubberAPIURL:             "http://localhost:28700",
 		ZebedeeURL:                 "http://localhost:8082",
