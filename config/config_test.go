@@ -30,6 +30,8 @@ func TestSpec(t *testing.T) {
 				So(cfg.GracefulShutdownTimeout, ShouldEqual, 5*time.Second)
 				So(cfg.HealthCheckCriticalTimeout, ShouldEqual, 90*time.Second)
 				So(cfg.HealthCheckInterval, ShouldEqual, 30*time.Second)
+				So(cfg.NlpHubSettings, ShouldEqual, "{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}")
+				So(cfg.NlpToggle, ShouldEqual, false)
 			})
 		})
 
@@ -43,7 +45,10 @@ func TestSpec(t *testing.T) {
 
 			Convey("The string should contain configured data", func() {
 				So(cfgString, ShouldContainSubstring, `"BindAddr"`)
-				So(cfgString, ShouldContainSubstring, `":23900"`)
+				So(cfgString, ShouldContainSubstring, `"{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}"`)
+				So(cfgString, ShouldContainSubstring, `"http://localhost:28700"`)
+				So(cfgString, ShouldContainSubstring, `"http://localhost:28800"`)
+				So(cfgString, ShouldContainSubstring, `"http://localhost:28900"`)
 			})
 		})
 	})

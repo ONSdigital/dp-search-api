@@ -1,5 +1,4 @@
 {
-explain: true,
 {{/* content query */}}
  {{- if .From -}}
  	"from" : {{- .From}},
@@ -10,7 +9,6 @@ explain: true,
      "should": [
              {{template "nlpCategory.tmpl" .}}
         ],
-
        "must" : {
                   {{- if .Term}}
                       {{- template "weightedQuery.tmpl" .}}

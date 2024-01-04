@@ -59,28 +59,6 @@ paths:
         500:
           description: Internal Server Error
 
-  /nlp/search:
-    get:
-      tags:
-        - public
-      summary: Provided a query returns payload with search information about that query
-      description: Returns payload.
-      parameters:
-        - name: q
-          in: query
-          description: The query string
-          required: true
-          type: string
-      produces:
-        - application/json
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/Hub"
-        500:
-          $ref: '#/responses/InternalError'
-
   /search:
     get:
       tags:
