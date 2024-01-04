@@ -102,7 +102,8 @@ func NewSearchAPI(router *mux.Router, clientList ClientList, permissions AuthHan
 }
 
 // RegisterGetSearch registers the handler for GET /search endpoint
-// with the provided validator and query buildernse transformer
+// with the provided validator and query builder
+// as well as the API's elasticsearch client and response transformer
 func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
