@@ -44,6 +44,9 @@ environment variables, or with a link to a configuration guide.
 | HEALTHCHECK_INTERVAL         | 30s                                                                                           | Time between self-healthchecks (`time.Duration` format)                                                            
 | NLP_HUB_SETTINGS             | {\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}        | Http url of the Berlin server
 | NLP_TOGGLE           	       | "true"                                                                                        | Toggles NLP querying on/off
+| OTEL_BATCH_TIMEOUT           | 5s                                                                                            | Interval between pushes to OT Collector                                                                           
+| OTEL_EXPORTER_OTLP_ENDPOINT  | http://localhost:4317                                                                         | URL for OpenTelemetry endpoint                                                                                
+| OTEL_SERVICE_NAME            | "dp-search-api"                                                                               | Service name to report to telemetry tools   
 | SERVICE_AUTH_TOKEN           | ""                                                                                            | The service auth token only gets used by the bulk indexer [Running Bulk Indexer](#running-bulk-indexer)            
 | SCRUBBER_URL	               | "http://localhost:28700"                                                                      | Http url of the Scrubber server
 | ZEBEDEE_URL                  | "http://localhost:8082"                                                                       | The URL to Zebedee (for authorisation)                                                                             

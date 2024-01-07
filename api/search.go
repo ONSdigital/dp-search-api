@@ -187,6 +187,12 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		return "", nil, nil
 	}
 
+	if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
+		log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
+		http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
+		return "", nil, nil
+	}
+
 	// create SearchRequest with all the compulsory values
 	reqSearch := &query.SearchRequest{
 		Term:           sanitisedQuery,

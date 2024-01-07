@@ -3,69 +3,69 @@ package query
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	c "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSetupSearch(t *testing.T) {
-	Convey("Should return templates and error should be nil", t, func() {
+	c.Convey("Should return templates and error should be nil", t, func() {
 		searchTemplates, err := SetupSearch()
 
-		So(err, ShouldBeNil)
-		So(searchTemplates, ShouldNotBeNil)
+		c.So(err, c.ShouldBeNil)
+		c.So(searchTemplates, c.ShouldNotBeNil)
 	})
 }
 
 func TestNewQueryBuilder(t *testing.T) {
-	Convey("Should return a Builder object with templates", t, func() {
+	c.Convey("Should return a Builder object with templates", t, func() {
 		builderObject, err := NewQueryBuilder()
 
-		So(builderObject.searchTemplates, ShouldNotBeNil)
-		So(err, ShouldBeNil)
+		c.So(builderObject.searchTemplates, c.ShouldNotBeNil)
+		c.So(err, c.ShouldBeNil)
 	})
 
-	Convey("Should return a Builder object with elastic v710 templates", t, func() {
+	c.Convey("Should return a Builder object with elastic v710 templates", t, func() {
 		builderObject, err := NewQueryBuilder()
-		So(err, ShouldBeNil)
+		c.So(err, c.ShouldBeNil)
 
-		So(builderObject.searchTemplates, ShouldNotBeNil)
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "search.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "matchAll.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countContentTypeHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countContentTypeQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countContentTypeFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countTopicHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countTopicQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countTopicFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countPopulationTypeHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countPopulationTypeQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countPopulationTypeFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countDimensionsHeader.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countDimensionsQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "countDimensionsFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "coreQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "weightedQuery.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilterOnURIPrefix.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentFilterOnTopicWildcard.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByTitle.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByRelevance.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByReleaseDate.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByReleaseDateAsc.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "sortByFirstLetter.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "topicFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "canonicalFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "subTopicsFilters.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "contentTypeFilter.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "nlpLocation.tmpl")
-		So(builderObject.searchTemplates.DefinedTemplates(), ShouldContainSubstring, "nlpCategory.tmpl")
+		c.So(builderObject.searchTemplates, c.ShouldNotBeNil)
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "search.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "matchAll.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countContentTypeHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countContentTypeQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countContentTypeFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countTopicHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countTopicQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countTopicFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countPopulationTypeHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countPopulationTypeQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countPopulationTypeFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countDimensionsHeader.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countDimensionsQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "countDimensionsFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "coreQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "weightedQuery.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentFilterOnURIPrefix.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentFilterOnTopicWildcard.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "sortByTitle.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "sortByRelevance.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "sortByReleaseDate.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "sortByReleaseDateAsc.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "sortByFirstLetter.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "topicFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "canonicalFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "subTopicsFilters.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "contentTypeFilter.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "nlpLocation.tmpl")
+		c.So(builderObject.searchTemplates.DefinedTemplates(), c.ShouldContainSubstring, "nlpCategory.tmpl")
 
-		So(builderObject.countTemplates, ShouldNotBeNil)
-		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "distinctItemCountQuery.tmpl")
-		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "coreQuery.tmpl")
-		So(builderObject.countTemplates.DefinedTemplates(), ShouldContainSubstring, "matchAll.tmpl")
+		c.So(builderObject.countTemplates, c.ShouldNotBeNil)
+		c.So(builderObject.countTemplates.DefinedTemplates(), c.ShouldContainSubstring, "distinctItemCountQuery.tmpl")
+		c.So(builderObject.countTemplates.DefinedTemplates(), c.ShouldContainSubstring, "coreQuery.tmpl")
+		c.So(builderObject.countTemplates.DefinedTemplates(), c.ShouldContainSubstring, "matchAll.tmpl")
 	})
 }

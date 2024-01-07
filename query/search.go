@@ -203,7 +203,7 @@ func SetupV710Count() (*template.Template, error) {
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
+func (sb *Builder) BuildSearchQuery(_ context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
 	if esVersion710 {
 		reqParams.AggregationFields = es710AggregationField
 	} else {
@@ -232,7 +232,7 @@ func (sb *Builder) BuildSearchQuery(ctx context.Context, reqParams *SearchReques
 }
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
-func (sb *Builder) BuildCountQuery(ctx context.Context, reqParams *CountRequest) ([]byte, error) {
+func (sb *Builder) BuildCountQuery(_ context.Context, reqParams *CountRequest) ([]byte, error) {
 	var doc bytes.Buffer
 	err := sb.countTemplates.Execute(&doc, reqParams)
 	if err != nil {

@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
-	. "github.com/smartystreets/goconvey/convey"
+	c "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGetDefaultMappings_ValidJson(t *testing.T) {
-	Convey("File `search-index-settings.json` is valid jason", t, func() {
-		Convey("When we get the default search index settings json", func() {
+	c.Convey("File `search-index-settings.json` is valid jason", t, func() {
+		c.Convey("When we get the default search index settings json", func() {
 			mappingsJSON := elasticsearch.GetSearchIndexSettings()
-			Convey("Then the json returned should be valid", func() {
-				So(json.Valid(mappingsJSON), ShouldBeTrue)
+			c.Convey("Then the json returned should be valid", func() {
+				c.So(json.Valid(mappingsJSON), c.ShouldBeTrue)
 			})
 		})
 	})

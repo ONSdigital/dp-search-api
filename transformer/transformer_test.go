@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ONSdigital/dp-search-api/models"
-	. "github.com/smartystreets/goconvey/convey"
+	c "github.com/smartystreets/goconvey/convey"
 )
 
 func TestTransform(t *testing.T) {
@@ -57,25 +57,25 @@ func TestTransform(t *testing.T) {
 		{Type: "pop2", Count: 321},
 	}
 
-	Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
+	c.Convey("Given a new instance of Transformer for ES7x with search responses successfully", t, func() {
 		transformer := New()
 		esResponse := prepareESMockResponse()
 
-		Convey("When calling a transformer", func() {
+		c.Convey("When calling a transformer", func() {
 			if transformer, ok := transformer.(*Transformer); !ok {
 				t.Error("failed to retrieve transfromer")
 			} else {
 				transformedResponse := transformer.transform(&esResponse, true)
-				Convey("Then transforms unmarshalled search responses successfully", func() {
-					So(transformedResponse, ShouldNotBeNil)
-					So(transformedResponse.Took, ShouldEqual, 10)
-					So(len(transformedResponse.Items), ShouldEqual, 2)
-					So(transformedResponse.Items[0], ShouldResemble, expectedItem1)
-					So(transformedResponse.Items[1], ShouldResemble, expectedItem2)
-					So(transformedResponse.Topics[0], ShouldResemble, expectedTopic1)
-					So(transformedResponse.Dimensions, ShouldResemble, expectedDimensions)
-					So(transformedResponse.PopulationType, ShouldResemble, expectedPopulationTypes)
-					So(transformedResponse.Suggestions[0], ShouldResemble, "testSuggestion")
+				c.Convey("Then transforms unmarshalled search responses successfully", func() {
+					c.So(transformedResponse, c.ShouldNotBeNil)
+					c.So(transformedResponse.Took, c.ShouldEqual, 10)
+					c.So(len(transformedResponse.Items), c.ShouldEqual, 2)
+					c.So(transformedResponse.Items[0], c.ShouldResemble, expectedItem1)
+					c.So(transformedResponse.Items[1], c.ShouldResemble, expectedItem2)
+					c.So(transformedResponse.Topics[0], c.ShouldResemble, expectedTopic1)
+					c.So(transformedResponse.Dimensions, c.ShouldResemble, expectedDimensions)
+					c.So(transformedResponse.PopulationType, c.ShouldResemble, expectedPopulationTypes)
+					c.So(transformedResponse.Suggestions[0], c.ShouldResemble, "testSuggestion")
 				})
 			}
 		})
@@ -83,7 +83,7 @@ func TestTransform(t *testing.T) {
 }
 
 func TestTransformCounts(t *testing.T) {
-	Convey("Given an ESDocCounts with buckets containing keys formatted as aggregation keys and simple strings", t, func() {
+	c.Convey("Given an ESDocCounts with buckets containing keys formatted as aggregation keys and simple strings", t, func() {
 		counts := models.ESDocCounts{
 			Buckets: []models.ESBucket{
 				{Key: "dim1###Dimension one", Count: 10},
@@ -93,13 +93,13 @@ func TestTransformCounts(t *testing.T) {
 			},
 		}
 
-		Convey("Then transformCounts correctly extracts the type and label info where required", func() {
+		c.Convey("Then transformCounts correctly extracts the type and label info where required", func() {
 			counts := transformCounts(counts)
-			So(counts, ShouldHaveLength, 4)
-			So(counts, ShouldContain, models.FilterCount{Type: "dim1", Label: "Dimension one", Count: 10})
-			So(counts, ShouldContain, models.FilterCount{Type: "dim2", Count: 20})
-			So(counts, ShouldContain, models.FilterCount{Type: "dim3", Count: 30})
-			So(counts, ShouldContain, models.FilterCount{Count: 40})
+			c.So(counts, c.ShouldHaveLength, 4)
+			c.So(counts, c.ShouldContain, models.FilterCount{Type: "dim1", Label: "Dimension one", Count: 10})
+			c.So(counts, c.ShouldContain, models.FilterCount{Type: "dim2", Count: 20})
+			c.So(counts, c.ShouldContain, models.FilterCount{Type: "dim3", Count: 30})
+			c.So(counts, c.ShouldContain, models.FilterCount{Count: 40})
 		})
 	})
 }
