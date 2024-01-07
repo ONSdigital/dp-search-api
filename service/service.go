@@ -35,6 +35,7 @@ type Service struct {
 	server              HTTPServer
 	serviceList         *ExternalServiceList
 	searchTransformer   api.ResponseTransformer
+	scrubberClient      *scrubber.Client
 	releaseTransformer  api.ReleaseResponseTransformer
 }
 
@@ -82,14 +83,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	// Initialise release transformer
 	releaseTransformer := transformer.NewReleaseTransformer()
 
-	// Initialse AWS signer
-
 	esConfig := dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.ElasticSearchAPIURL,
 		Transport: dphttp.DefaultTransport,
 	}
 
+	// Initialse AWS signer
 	if cfg.AWS.Signer {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
@@ -165,6 +165,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	return &Service{
 		api:                 searchAPI,
+		berlinClient:        berlinClient,
+		categoryClient:      categoryClient,
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,
@@ -173,6 +175,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		server:              server,
 		serviceList:         serviceList,
 		searchTransformer:   searchTransformer,
+		scrubberClient:      scrubberClient,
 		releaseTransformer:  releaseTransformer,
 	}, nil
 }

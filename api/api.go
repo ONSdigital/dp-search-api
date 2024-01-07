@@ -83,12 +83,14 @@ type ReleaseResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
 }
 
-func NewClientList(berlin berlin.Clienter, category category.Clienter, dpEsClient DpElasticSearcher, scrubber scrubber.Clienter, deprecatedEs ElasticSearcher) ClientList {
+// NewClientList returns a new ClientList obj with all available clients
+func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter, deprecatedEs ElasticSearcher) ClientList {
 	return ClientList{
-		berlinClient:   berlin,
-		categoryClient: category,
-		dpESClient:     dpEsClient,
-		scrubberClient: scrubber,
+		berlinClient:       brl,
+		categoryClient:     cat,
+		dpESClient:         dpEsClient,
+		scrubberClient:     scr,
+		deprecatedESClient: deprecatedEs,
 	}
 }
 
