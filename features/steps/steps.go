@@ -172,7 +172,7 @@ func (c *Component) successfullyReturnNoSearchReleaseResults() error {
 func (c *Component) iShouldReceiveTheFollowingSearchResponsefromes7x(expectedJSONFile string) error {
 	var searchResponse, expectedSearchResponse models.SearchResponse
 
-	responseBody, err := io.ReadAll(c.APIFeature.HTTPResponse.Body)
+	responseBody, err := io.ReadAll(c.APIFeature.HttpResponse.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response of search api component - error: %v", err)
 	}

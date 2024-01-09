@@ -145,7 +145,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
-	// Create a ClientList that is required in Search handler
+	// Create a ClientList to store all the required clients
 	// Remove deprecatedESClient once the legacy handler is removed
 	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
 

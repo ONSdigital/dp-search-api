@@ -27,6 +27,7 @@ type SearchAPI struct {
 	permissions AuthHandler
 }
 
+// ClientList is a struct obj of all the clients the service is dependent on
 type ClientList struct {
 	berlinClient   berlin.Clienter
 	categoryClient category.Clienter
