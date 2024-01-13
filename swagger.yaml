@@ -228,6 +228,8 @@ definitions:
   Hub:
     type: object
     properties:
+      Category:
+        $ref: '#/definitions/Category'
       Berlin:
         $ref: '#/definitions/Berlin'
   Results:
@@ -237,6 +239,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/AreaResp'
+      industries:
+        type: array
+        items:
+          $ref: '#/definitions/IndustryResp'
   AreaResp:
     type: object
     properties:
@@ -248,6 +254,17 @@ definitions:
         type: string
       region_code:
         type: string
+  Category:
+    type: array
+    items:
+      type: object
+      properties:
+        code:
+          type: array
+          items:
+            type: string
+        score:
+          type: number
   Berlin:
     type: object
     properties:

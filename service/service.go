@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
@@ -24,6 +25,7 @@ import (
 type Service struct {
 	api                 *api.SearchAPI
 	berlinClient        *berlin.Client
+	categoryClient      *category.Client
 	config              *config.Config
 	elasticSearchClient elasticsearch.Client
 	healthCheck         HealthChecker
@@ -66,6 +68,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esClient dpEsClient.Client
 
 	berlinClient := berlin.New(cfg.BerlinAPIURL)
+	categoryClient := category.New(cfg.CategoryAPIURL)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -141,7 +144,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Create a ClientList to store all the required clients
 	// Remove deprecatedESClient once the legacy handler is removed
-	clList := api.NewClientList(berlinClient, esClient, deprecatedESClient)
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, deprecatedESClient)
 
 	// Create Search API and register HTTP handlers
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
@@ -160,6 +163,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	return &Service{
 		api:                 searchAPI,
 		berlinClient:        berlinClient,
+		categoryClient:      categoryClient,
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,

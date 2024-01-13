@@ -11,6 +11,7 @@ import (
 type Config struct {
 	AWS                        AWS
 	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
+	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
@@ -44,10 +45,12 @@ func Get() (*Config, error) {
 	cfg = &Config{
 		BindAddr:                   ":23900",
 		BerlinAPIURL:               "http://localhost:28900",
+		CategoryAPIURL:             "http://localhost:28800",
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
+		NlpHubSettings:             "{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		NlpToggle:                  false,
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",

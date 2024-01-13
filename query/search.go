@@ -39,6 +39,7 @@ type SearchRequest struct {
 	AggregationFields   *AggregationFields
 	Highlight           bool
 	URIPrefix           string
+	NlpCategories       []NlpCriteriaCategory
 	NlpSubdivisionWords string
 	Topic               []string
 	TopicWildcard       []string
@@ -75,6 +76,30 @@ type CountRequest struct {
 	CountEnable bool
 }
 
+func (sb *Builder) AddNlpCategorySearch(nlpCriteria *NlpCriteria, category, subCategory string, categoryWeighting float32) *NlpCriteria {
+	if nlpCriteria == nil {
+		nlpCriteria = new(NlpCriteria)
+	}
+
+	nlpCriteria.UseCategory = true
+	for _, cat := range nlpCriteria.Categories {
+		if category == cat.Category && subCategory == cat.SubCategory {
+			cat.Weighting = categoryWeighting
+			return nlpCriteria
+		}
+	}
+
+	newCat := NlpCriteriaCategory{
+		Category:    category,
+		SubCategory: subCategory,
+		Weighting:   categoryWeighting,
+	}
+
+	nlpCriteria.Categories = append(nlpCriteria.Categories, newCat)
+
+	return nlpCriteria
+}
+
 func (sb *Builder) AddNlpSubdivisionSearch(nlpCriteria *NlpCriteria, subdivisionWords string) *NlpCriteria {
 	if nlpCriteria == nil {
 		nlpCriteria = new(NlpCriteria)
@@ -101,6 +126,7 @@ func SetupSearch() (*template.Template, error) {
 		"templates/search/countQuery.tmpl",
 		"templates/search/coreQuery.tmpl",
 		"templates/search/weightedQuery.tmpl",
+		"templates/search/nlpCategory.tmpl",
 		"templates/search/nlpLocation.tmpl",
 		"templates/search/contentFilters.tmpl",
 		"templates/search/contentFilterOnURIPrefix.tmpl",
@@ -155,6 +181,7 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByFirstLetter.tmpl",
 		"templates/search/v710/populationTypeFilters.tmpl",
 		"templates/search/v710/dimensionsFilters.tmpl",
+		"templates/search/v710/nlpCategory.tmpl",
 		"templates/search/v710/nlpLocation.tmpl",
 	)
 
