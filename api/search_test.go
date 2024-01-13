@@ -21,6 +21,10 @@ import (
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
+	scrModels "github.com/ONSdigital/dp-search-scrubber-api/models"
+	scr "github.com/ONSdigital/dp-search-scrubber-api/sdk"
+	scrErr "github.com/ONSdigital/dp-search-scrubber-api/sdk/errors"
+	scrMocks "github.com/ONSdigital/dp-search-scrubber-api/sdk/mocks"
 	c "github.com/smartystreets/goconvey/convey"
 )
 

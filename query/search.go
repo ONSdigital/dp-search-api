@@ -212,6 +212,7 @@ func (sb *Builder) BuildSearchQuery(_ context.Context, reqParams *SearchRequest,
 
 	var doc bytes.Buffer
 	err := sb.searchTemplates.Execute(&doc, reqParams)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}

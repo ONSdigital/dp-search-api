@@ -21,6 +21,8 @@ import (
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
+	scrModel "github.com/ONSdigital/dp-search-scrubber-api/models"
+	"github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )

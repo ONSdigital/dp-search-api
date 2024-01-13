@@ -14,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
+	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
@@ -34,6 +35,7 @@ type Service struct {
 	server              HTTPServer
 	serviceList         *ExternalServiceList
 	searchTransformer   api.ResponseTransformer
+	scrubberClient      *scrubber.Client
 	releaseTransformer  api.ReleaseResponseTransformer
 }
 
@@ -69,6 +71,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	berlinClient := berlin.New(cfg.BerlinAPIURL)
 	categoryClient := category.New(cfg.CategoryAPIURL)
+	scrubberClient := scrubber.New(cfg.ScrubberAPIURL)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -144,7 +147,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Create a ClientList to store all the required clients
 	// Remove deprecatedESClient once the legacy handler is removed
-	clList := api.NewClientList(berlinClient, categoryClient, esClient, deprecatedESClient)
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
 
 	// Create Search API and register HTTP handlers
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
@@ -172,6 +175,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		server:              server,
 		serviceList:         serviceList,
 		searchTransformer:   searchTransformer,
+		scrubberClient:      scrubberClient,
 		releaseTransformer:  releaseTransformer,
 	}, nil
 }

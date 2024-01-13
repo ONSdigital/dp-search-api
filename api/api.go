@@ -12,6 +12,7 @@ import (
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/query"
+	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/gorilla/mux"
 )
 
@@ -31,6 +32,7 @@ type ClientList struct {
 	berlinClient   berlin.Clienter
 	categoryClient category.Clienter
 	dpESClient     DpElasticSearcher
+	scrubberClient scrubber.Clienter
 	// Remove deprecatedESClient once the legacy handler is removed
 	deprecatedESClient ElasticSearcher
 }
