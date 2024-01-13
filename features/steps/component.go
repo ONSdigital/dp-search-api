@@ -31,6 +31,7 @@ type Component struct {
 	Cfg                  *config.Config
 	ErrorFeature         componentTest.ErrorFeature
 	FakeElasticSearchAPI *FakeAPI
+	FakeNLPSearchAPI     *FakeAPI
 	HTTPServer           *http.Server
 	ServiceRunning       bool
 	svc                  *service.Service

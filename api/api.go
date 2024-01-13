@@ -6,8 +6,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/gorilla/mux"
 )
@@ -18,10 +20,17 @@ var (
 
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	Router             *mux.Router
-	dpESClient         DpElasticSearcher
+	clList      ClientList
+	Router      *mux.Router
+	permissions AuthHandler
+}
+
+// ClientList is a struct obj of all the clients the service is dependent on
+type ClientList struct {
+	berlinClient   berlin.Clienter
+	dpESClient     DpElasticSearcher
+	// Remove deprecatedESClient once the legacy handler is removed
 	deprecatedESClient ElasticSearcher
-	permissions        AuthHandler
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -50,6 +59,7 @@ type QueryParamValidator interface {
 
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
+	AddNlpSubdivisionSearch(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
 	BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
 	BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error)
 }
@@ -69,26 +79,37 @@ type ReleaseResponseTransformer interface {
 	TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
 }
 
+// NewClientList returns a new ClientList obj with all available clients
+func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter, deprecatedEs ElasticSearcher) ClientList {
+	return ClientList{
+		berlinClient:       brl,
+		categoryClient:     cat,
+		dpESClient:         dpEsClient,
+		scrubberClient:     scr,
+		deprecatedESClient: deprecatedEs,
+	}
+}
+
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, dpESClient DpElasticSearcher, deprecatedESClient ElasticSearcher, permissions AuthHandler) *SearchAPI {
+func NewSearchAPI(router *mux.Router, clientList ClientList, permissions AuthHandler) *SearchAPI {
 	return &SearchAPI{
-		Router:             router,
-		dpESClient:         dpESClient,
-		deprecatedESClient: deprecatedESClient,
-		permissions:        permissions,
+		Router:      router,
+		clList:      clientList,
+		permissions: permissions,
 	}
 }
 
 // RegisterGetSearch registers the handler for GET /search endpoint
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
 		SearchHandlerFunc(
 			validator,
 			builder,
-			a.dpESClient,
+			settingsNLP,
+			a.clList,
 			transformer,
 		),
 	).Methods(http.MethodGet)
@@ -116,7 +137,7 @@ func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, bui
 		SearchReleasesHandlerFunc(
 			validator,
 			builder,
-			a.dpESClient,
+			a.clList.dpESClient,
 			transformer,
 		),
 	).Methods(http.MethodGet)

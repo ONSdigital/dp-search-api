@@ -24,9 +24,11 @@ func TestSpec(t *testing.T) {
 				c.So(cfg.AWS.TLSInsecureSkipVerify, c.ShouldEqual, false)
 				c.So(cfg.BindAddr, c.ShouldEqual, ":23900")
 				c.So(cfg.ElasticSearchAPIURL, c.ShouldEqual, "http://localhost:11200")
+				c.So(cfg.BerlinAPIURL, c.ShouldEqual, "http://localhost:28900")
 				c.So(cfg.GracefulShutdownTimeout, c.ShouldEqual, 5*time.Second)
 				c.So(cfg.HealthCheckCriticalTimeout, c.ShouldEqual, 90*time.Second)
 				c.So(cfg.HealthCheckInterval, c.ShouldEqual, 30*time.Second)
+				c.So(cfg.NlpToggle, c.ShouldEqual, false)
 			})
 		})
 
@@ -41,6 +43,7 @@ func TestSpec(t *testing.T) {
 			c.Convey("The string should contain configured data", func() {
 				c.So(cfgString, c.ShouldContainSubstring, `"BindAddr"`)
 				c.So(cfgString, c.ShouldContainSubstring, `":23900"`)
+				c.So(cfgString, c.ShouldContainSubstring, `"http://localhost:28900"`)
 			})
 		})
 	})
