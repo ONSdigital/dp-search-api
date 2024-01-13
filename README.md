@@ -29,22 +29,27 @@ environment variables, or with a link to a configuration guide.
 
 | Environment variable         | Default                    | Description                                                                                                        
 |------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------
-| AWS_FILENAME                 | ""                         | The AWS file location for finding credentials to sign AWS http requests                                            
-| AWS_PROFILE                  | ""                         | The AWS profile to use from credentials file to sign AWS http requests                                             
-| AWS_REGION                   | eu-west-2                  | The AWS region to use when signing requests with AWS SDK                                                           
-| AWS_SERVICE                  | "es"                       | The AWS service that the AWS SDK signing mechanism needs to sign a request                                         
-| AWS_SIGNER                   | false                      | The AWS signer flag will determine if requests to Elasticsearch contain round tripper for signing requests         
-| AWS_TLS_INSECURE_SKIP_VERIFY | false                      | This should never be set to true, as it disables SSL certificate verification. Used only for development           
-| BIND_ADDR                    | :23900                     | The host and port to bind to                                                                                       
-| ELASTIC_SEARCH_URL           | "<http://localhost:11200>" | Http url of the ElasticSearch server                                                                               
-| GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                         | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  
-| HEALTHCHECK_CRITICAL_TIMEOUT | 90s                        | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) 
-| HEALTHCHECK_INTERVAL         | 30s                        | Time between self-healthchecks (`time.Duration` format)                                       
-| OTEL_BATCH_TIMEOUT           | 5s                         | Interval between pushes to OT Collector                                                                           
-| OTEL_EXPORTER_OTLP_ENDPOINT  | http://localhost:4317      | URL for OpenTelemetry endpoint                                                                                
-| OTEL_SERVICE_NAME            | "dp-search-api"            | Service name to report to telemetry tools                                                                         
-| SERVICE_AUTH_TOKEN           | ""                         | The service auth token only gets used by the bulk indexer [Running Bulk Indexer](#running-bulk-indexer)            
-| ZEBEDEE_URL                  | <http://localhost:8082>    | The URL to Zebedee (for authorisation)                                                                             
+| AWS_FILENAME                 | ""                                                                                            | The AWS file location for finding credentials to sign AWS http requests                                            
+| AWS_PROFILE                  | ""                                                                                            | The AWS profile to use from credentials file to sign AWS http requests                                             
+| AWS_REGION                   | eu-west-2                                                                                     | The AWS region to use when signing requests with AWS SDK                                                           
+| AWS_SERVICE                  | "es"                                                                                          | The AWS service that the AWS SDK signing mechanism needs to sign a request                                         
+| AWS_SIGNER                   | false                                                                                         | The AWS signer flag will determine if requests to Elasticsearch contain round tripper for signing requests         
+| AWS_TLS_INSECURE_SKIP_VERIFY | false                                                                                         | This should never be set to true, as it disables SSL certificate verification. Used only for development           
+| BIND_ADDR                    | :23900                                                                                        | The host and port to bind to                                                                                       
+| BERLIN_URL	                 | "http://localhost:28900"                                                                      | Http url of the Berlin server
+| CATEGORY_URL	               | "http://localhost:28800"                                                                      | Http url of the Category server
+| ELASTIC_SEARCH_URL           | "http://localhost:11200"                                                                      | Http url of the ElasticSearch server                                                                               
+| GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                                                                                            | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  
+| HEALTHCHECK_CRITICAL_TIMEOUT | 90s                                                                                           | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) 
+| HEALTHCHECK_INTERVAL         | 30s                                                                                           | Time between self-healthchecks (`time.Duration` format)                                                            
+| NLP_HUB_SETTINGS             | {\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}        | Http url of the Berlin server
+| NLP_TOGGLE           	       | "true"                                                                                        | Toggles NLP querying on/off
+| OTEL_BATCH_TIMEOUT           | 5s                                                                                            | Interval between pushes to OT Collector                                                                           
+| OTEL_EXPORTER_OTLP_ENDPOINT  | http://localhost:4317                                                                         | URL for OpenTelemetry endpoint                                                                                
+| OTEL_SERVICE_NAME            | "dp-search-api"                                                                               | Service name to report to telemetry tools   
+| SERVICE_AUTH_TOKEN           | ""                                                                                            | The service auth token only gets used by the bulk indexer [Running Bulk Indexer](#running-bulk-indexer)            
+| SCRUBBER_URL	               | "http://localhost:28700"                                                                      | Http url of the Scrubber server
+| ZEBEDEE_URL                  | "http://localhost:8082"                                                                       | The URL to Zebedee (for authorisation)                                                                             
 
 ## API documentation
 
