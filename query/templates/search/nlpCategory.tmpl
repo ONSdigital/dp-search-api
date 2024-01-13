@@ -1,0 +1,14 @@
+{{if .NlpCategories}}
+    {{range .NlpCategories}}
+        {{if and .Category .SubCategory}}
+            { "prefix" :
+                {
+                    "uri" : {
+                    "value": "/{{.Category}}/{{.SubCategory}}",
+                    "boost": {{.Weighting}}
+                    }
+                }
+            }
+        {{end}}
+    {{end}}
+{{end}}

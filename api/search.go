@@ -14,6 +14,8 @@ import (
 
 	brlCli "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
 	brModel "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin/models"
+	catCli "github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
+	catModel "github.com/ONSdigital/dp-api-clients-go/v2/nlp/category/models"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"

@@ -19,12 +19,22 @@ type Builder struct {
 	countTemplates  *template.Template
 }
 
+type NlpCriteriaCategory struct {
+	Category    string
+	SubCategory string
+	Weighting   float32
+}
+
 type NlpCriteria struct {
+	UseCategory      bool
+	Categories       []NlpCriteriaCategory
 	UseSubdivision   bool
 	SubdivisionWords string
 }
 
 type NlpSettings struct {
+	CategoryWeighting float32 `json:"categoryWeighting"`
+	CategoryLimit     int     `json:"categoryLimit"`
 	DefaultState      string  `json:"defaultState"`
 }
 

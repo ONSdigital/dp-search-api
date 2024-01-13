@@ -430,6 +430,9 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //		// make and configure a mocked QueryBuilder
 //		mockedQueryBuilder := &QueryBuilderMock{
+//			AddNlpCategorySearchFunc: func(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria {
+//				panic("mock out the AddNlpCategorySearch method")
+//			},
 //			AddNlpSubdivisionSearchFunc: func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
 //				panic("mock out the AddNlpSubdivisionSearch method")
 //			},
@@ -446,6 +449,9 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //	}
 type QueryBuilderMock struct {
+	// AddNlpCategorySearchFunc mocks the AddNlpCategorySearch method.
+	AddNlpCategorySearchFunc func(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria
+
 	// AddNlpSubdivisionSearchFunc mocks the AddNlpSubdivisionSearch method.
 	AddNlpSubdivisionSearchFunc func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
 
@@ -457,6 +463,17 @@ type QueryBuilderMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// AddNlpCategorySearch holds details about calls to the AddNlpCategorySearch method.
+		AddNlpCategorySearch []struct {
+			// NlpCriteria is the nlpCriteria argument value.
+			NlpCriteria *query.NlpCriteria
+			// Category is the category argument value.
+			Category string
+			// SubCategory is the subCategory argument value.
+			SubCategory string
+			// CategoryWeighting is the categoryWeighting argument value.
+			CategoryWeighting float32
+		}
 		// AddNlpSubdivisionSearch holds details about calls to the AddNlpSubdivisionSearch method.
 		AddNlpSubdivisionSearch []struct {
 			// NlpCriteria is the nlpCriteria argument value.
@@ -481,9 +498,54 @@ type QueryBuilderMock struct {
 			EsVersion710 bool
 		}
 	}
+	lockAddNlpCategorySearch    sync.RWMutex
 	lockAddNlpSubdivisionSearch sync.RWMutex
 	lockBuildCountQuery         sync.RWMutex
 	lockBuildSearchQuery        sync.RWMutex
+}
+
+// AddNlpCategorySearch calls AddNlpCategorySearchFunc.
+func (mock *QueryBuilderMock) AddNlpCategorySearch(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria {
+	if mock.AddNlpCategorySearchFunc == nil {
+		panic("QueryBuilderMock.AddNlpCategorySearchFunc: method is nil but QueryBuilder.AddNlpCategorySearch was just called")
+	}
+	callInfo := struct {
+		NlpCriteria       *query.NlpCriteria
+		Category          string
+		SubCategory       string
+		CategoryWeighting float32
+	}{
+		NlpCriteria:       nlpCriteria,
+		Category:          category,
+		SubCategory:       subCategory,
+		CategoryWeighting: categoryWeighting,
+	}
+	mock.lockAddNlpCategorySearch.Lock()
+	mock.calls.AddNlpCategorySearch = append(mock.calls.AddNlpCategorySearch, callInfo)
+	mock.lockAddNlpCategorySearch.Unlock()
+	return mock.AddNlpCategorySearchFunc(nlpCriteria, category, subCategory, categoryWeighting)
+}
+
+// AddNlpCategorySearchCalls gets all the calls that were made to AddNlpCategorySearch.
+// Check the length with:
+//
+//	len(mockedQueryBuilder.AddNlpCategorySearchCalls())
+func (mock *QueryBuilderMock) AddNlpCategorySearchCalls() []struct {
+	NlpCriteria       *query.NlpCriteria
+	Category          string
+	SubCategory       string
+	CategoryWeighting float32
+} {
+	var calls []struct {
+		NlpCriteria       *query.NlpCriteria
+		Category          string
+		SubCategory       string
+		CategoryWeighting float32
+	}
+	mock.lockAddNlpCategorySearch.RLock()
+	calls = mock.calls.AddNlpCategorySearch
+	mock.lockAddNlpCategorySearch.RUnlock()
+	return calls
 }
 
 // AddNlpSubdivisionSearch calls AddNlpSubdivisionSearchFunc.

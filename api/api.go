@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-search-api/config"
@@ -28,6 +29,7 @@ type SearchAPI struct {
 // ClientList is a struct obj of all the clients the service is dependent on
 type ClientList struct {
 	berlinClient   berlin.Clienter
+	categoryClient category.Clienter
 	dpESClient     DpElasticSearcher
 	// Remove deprecatedESClient once the legacy handler is removed
 	deprecatedESClient ElasticSearcher
@@ -59,6 +61,7 @@ type QueryParamValidator interface {
 
 // QueryBuilder provides methods for the search package
 type QueryBuilder interface {
+	AddNlpCategorySearch(nlpCriteria *query.NlpCriteria, category string, subCategory string, categoryWeighting float32) *query.NlpCriteria
 	AddNlpSubdivisionSearch(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
 	BuildSearchQuery(ctx context.Context, req *query.SearchRequest, esVersion710 bool) ([]byte, error)
 	BuildCountQuery(ctx context.Context, req *query.CountRequest) ([]byte, error)
