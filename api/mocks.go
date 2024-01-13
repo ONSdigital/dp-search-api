@@ -430,6 +430,9 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //		// make and configure a mocked QueryBuilder
 //		mockedQueryBuilder := &QueryBuilderMock{
+//			AddNlpSubdivisionSearchFunc: func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
+//				panic("mock out the AddNlpSubdivisionSearch method")
+//			},
 //			BuildCountQueryFunc: func(ctx context.Context, req *query.CountRequest) ([]byte, error) {
 //				panic("mock out the BuildCountQuery method")
 //			},
@@ -443,6 +446,9 @@ var _ QueryBuilder = &QueryBuilderMock{}
 //
 //	}
 type QueryBuilderMock struct {
+	// AddNlpSubdivisionSearchFunc mocks the AddNlpSubdivisionSearch method.
+	AddNlpSubdivisionSearchFunc func(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria
+
 	// BuildCountQueryFunc mocks the BuildCountQuery method.
 	BuildCountQueryFunc func(ctx context.Context, req *query.CountRequest) ([]byte, error)
 
@@ -451,6 +457,13 @@ type QueryBuilderMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// AddNlpSubdivisionSearch holds details about calls to the AddNlpSubdivisionSearch method.
+		AddNlpSubdivisionSearch []struct {
+			// NlpCriteria is the nlpCriteria argument value.
+			NlpCriteria *query.NlpCriteria
+			// SubdivisionWords is the subdivisionWords argument value.
+			SubdivisionWords string
+		}
 		// BuildCountQuery holds details about calls to the BuildCountQuery method.
 		BuildCountQuery []struct {
 			// Ctx is the ctx argument value.
@@ -468,8 +481,45 @@ type QueryBuilderMock struct {
 			EsVersion710 bool
 		}
 	}
-	lockBuildCountQuery  sync.RWMutex
-	lockBuildSearchQuery sync.RWMutex
+	lockAddNlpSubdivisionSearch sync.RWMutex
+	lockBuildCountQuery         sync.RWMutex
+	lockBuildSearchQuery        sync.RWMutex
+}
+
+// AddNlpSubdivisionSearch calls AddNlpSubdivisionSearchFunc.
+func (mock *QueryBuilderMock) AddNlpSubdivisionSearch(nlpCriteria *query.NlpCriteria, subdivisionWords string) *query.NlpCriteria {
+	if mock.AddNlpSubdivisionSearchFunc == nil {
+		panic("QueryBuilderMock.AddNlpSubdivisionSearchFunc: method is nil but QueryBuilder.AddNlpSubdivisionSearch was just called")
+	}
+	callInfo := struct {
+		NlpCriteria      *query.NlpCriteria
+		SubdivisionWords string
+	}{
+		NlpCriteria:      nlpCriteria,
+		SubdivisionWords: subdivisionWords,
+	}
+	mock.lockAddNlpSubdivisionSearch.Lock()
+	mock.calls.AddNlpSubdivisionSearch = append(mock.calls.AddNlpSubdivisionSearch, callInfo)
+	mock.lockAddNlpSubdivisionSearch.Unlock()
+	return mock.AddNlpSubdivisionSearchFunc(nlpCriteria, subdivisionWords)
+}
+
+// AddNlpSubdivisionSearchCalls gets all the calls that were made to AddNlpSubdivisionSearch.
+// Check the length with:
+//
+//	len(mockedQueryBuilder.AddNlpSubdivisionSearchCalls())
+func (mock *QueryBuilderMock) AddNlpSubdivisionSearchCalls() []struct {
+	NlpCriteria      *query.NlpCriteria
+	SubdivisionWords string
+} {
+	var calls []struct {
+		NlpCriteria      *query.NlpCriteria
+		SubdivisionWords string
+	}
+	mock.lockAddNlpSubdivisionSearch.RLock()
+	calls = mock.calls.AddNlpSubdivisionSearch
+	mock.lockAddNlpSubdivisionSearch.RUnlock()
+	return calls
 }
 
 // BuildCountQuery calls BuildCountQueryFunc.

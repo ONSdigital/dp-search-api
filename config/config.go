@@ -10,11 +10,14 @@ import (
 // Config is the search API handler config
 type Config struct {
 	AWS                        AWS
+	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
+	NlpHubSettings             string        `envconfig:"NLP_HUB_SETTINGS"`
+	NlpToggle                  bool          `envconfig:"NLP_TOGGLE"`
 	OTBatchTimeout             time.Duration `encconfig:"OTEL_BATCH_TIMEOUT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
 	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
@@ -40,10 +43,12 @@ func Get() (*Config, error) {
 
 	cfg = &Config{
 		BindAddr:                   ":23900",
+		BerlinAPIURL:               "http://localhost:28900",
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
+		NlpToggle:                  false,
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",
 		OTServiceName:              "dp-search-api",

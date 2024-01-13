@@ -27,23 +27,24 @@ var es710AggregationField = &AggregationFields{
 // SearchRequest holds the values provided by a request against Search API
 // The values are used to build the elasticsearch query using the corresponding template/s
 type SearchRequest struct {
-	Term              string
-	From              int
-	Size              int
-	Types             []string
-	Index             string
-	SortBy            string
-	ReleasedAfter     Date
-	ReleasedBefore    Date
-	AggregationField  string // Deprecated (used only in legacy templates for aggregations)
-	AggregationFields *AggregationFields
-	Highlight         bool
-	URIPrefix         string
-	Topic             []string
-	TopicWildcard     []string
-	PopulationTypes   []*PopulationTypeRequest
-	Dimensions        []*DimensionRequest
-	Now               string
+	Term                string
+	From                int
+	Size                int
+	Types               []string
+	Index               string
+	SortBy              string
+	ReleasedAfter       Date
+	ReleasedBefore      Date
+	AggregationField    string // Deprecated (used only in legacy templates for aggregations)
+	AggregationFields   *AggregationFields
+	Highlight           bool
+	URIPrefix           string
+	NlpSubdivisionWords string
+	Topic               []string
+	TopicWildcard       []string
+	PopulationTypes     []*PopulationTypeRequest
+	Dimensions          []*DimensionRequest
+	Now                 string
 }
 
 type PopulationTypeRequest struct {
@@ -74,6 +75,18 @@ type CountRequest struct {
 	CountEnable bool
 }
 
+func (sb *Builder) AddNlpSubdivisionSearch(nlpCriteria *NlpCriteria, subdivisionWords string) *NlpCriteria {
+	if nlpCriteria == nil {
+		nlpCriteria = new(NlpCriteria)
+	}
+
+	sb.nlpCriteria = nlpCriteria
+	sb.nlpCriteria.UseSubdivision = true
+	sb.nlpCriteria.SubdivisionWords = subdivisionWords
+
+	return sb.nlpCriteria
+}
+
 // SetupSearch loads templates for use by the search handler and should be done only once
 func SetupSearch() (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
@@ -88,6 +101,7 @@ func SetupSearch() (*template.Template, error) {
 		"templates/search/countQuery.tmpl",
 		"templates/search/coreQuery.tmpl",
 		"templates/search/weightedQuery.tmpl",
+		"templates/search/nlpLocation.tmpl",
 		"templates/search/contentFilters.tmpl",
 		"templates/search/contentFilterOnURIPrefix.tmpl",
 		"templates/search/contentFilterOnTopic.tmpl",
@@ -141,6 +155,7 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/sortByFirstLetter.tmpl",
 		"templates/search/v710/populationTypeFilters.tmpl",
 		"templates/search/v710/dimensionsFilters.tmpl",
+		"templates/search/v710/nlpLocation.tmpl",
 	)
 
 	return templates, err

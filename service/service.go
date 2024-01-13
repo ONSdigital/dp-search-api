@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
@@ -22,6 +23,7 @@ import (
 
 type Service struct {
 	api                 *api.SearchAPI
+	berlinClient        *berlin.Client
 	config              *config.Config
 	elasticSearchClient elasticsearch.Client
 	healthCheck         HealthChecker
@@ -63,6 +65,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esClientErr error
 	var esClient dpEsClient.Client
 
+	berlinClient := berlin.New(cfg.BerlinAPIURL)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -74,14 +77,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	// Initialise release transformer
 	releaseTransformer := transformer.NewReleaseTransformer()
 
-	// Initialse AWS signer
-
 	esConfig := dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.ElasticSearchAPIURL,
 		Transport: dphttp.DefaultTransport,
 	}
 
+	// Initialse AWS signer
 	if cfg.AWS.Signer {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
@@ -137,9 +139,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
+	// Create a ClientList to store all the required clients
+	// Remove deprecatedESClient once the legacy handler is removed
+	clList := api.NewClientList(berlinClient, esClient, deprecatedESClient)
+
 	// Create Search API and register HTTP handlers
-	searchAPI := api.NewSearchAPI(router, esClient, deprecatedESClient, permissions).
-		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer).
+	searchAPI := api.NewSearchAPI(router, clList, permissions).
+		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
 		RegisterPostSearch().
 		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
 
@@ -153,6 +159,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	return &Service{
 		api:                 searchAPI,
+		berlinClient:        berlinClient,
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,
