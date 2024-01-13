@@ -19,6 +19,7 @@ type Config struct {
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	NlpHubSettings             string        `envconfig:"NLP_HUB_SETTINGS"`
 	NlpToggle                  bool          `envconfig:"NLP_TOGGLE"`
+	ScrubberAPIURL             string        `envconfig:"SCRUBBER_URL"`
 	OTBatchTimeout             time.Duration `encconfig:"OTEL_BATCH_TIMEOUT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
 	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
@@ -52,6 +53,7 @@ func Get() (*Config, error) {
 		HealthCheckInterval:        30 * time.Second,
 		NlpHubSettings:             "{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
 		NlpToggle:                  false,
+		ScrubberAPIURL:             "http://localhost:28700",
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",
 		OTServiceName:              "dp-search-api",

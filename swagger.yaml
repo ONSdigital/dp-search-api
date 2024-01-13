@@ -228,10 +228,24 @@ definitions:
   Hub:
     type: object
     properties:
+      Scrubber:
+        $ref: '#/definitions/Scrubber'
       Category:
         $ref: '#/definitions/Category'
       Berlin:
         $ref: '#/definitions/Berlin'
+  Scrubber:
+    type: object
+    properties:
+      query:
+        type: string
+      results:
+        $ref: '#/definitions/Results'
+      time:
+        type: string
+    required:
+      - query
+      - time
   Results:
     type: object
     properties:
@@ -253,6 +267,13 @@ definitions:
       region:
         type: string
       region_code:
+        type: string
+  IndustryResp:
+    type: object
+    properties:
+      code:
+        type: string
+      name:
         type: string
   Category:
     type: array
