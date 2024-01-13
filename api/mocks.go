@@ -825,3 +825,87 @@ func (mock *AuthHandlerMock) RequireCalls() []struct {
 	mock.lockRequire.RUnlock()
 	return calls
 }
+
+// Ensure, that ReleaseResponseTransformerMock does implement ReleaseResponseTransformer.
+// If this is not the case, regenerate this file with moq.
+var _ ReleaseResponseTransformer = &ReleaseResponseTransformerMock{}
+
+// ReleaseResponseTransformerMock is a mock implementation of ReleaseResponseTransformer.
+//
+//	func TestSomethingThatUsesReleaseResponseTransformer(t *testing.T) {
+//
+//		// make and configure a mocked ReleaseResponseTransformer
+//		mockedReleaseResponseTransformer := &ReleaseResponseTransformerMock{
+//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
+//				panic("mock out the TransformSearchResponse method")
+//			},
+//		}
+//
+//		// use mockedReleaseResponseTransformer in code that requires ReleaseResponseTransformer
+//		// and then make assertions.
+//
+//	}
+type ReleaseResponseTransformerMock struct {
+	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
+	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// TransformSearchResponse holds details about calls to the TransformSearchResponse method.
+		TransformSearchResponse []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ResponseData is the responseData argument value.
+			ResponseData []byte
+			// Req is the req argument value.
+			Req query.ReleaseSearchRequest
+			// Highlight is the highlight argument value.
+			Highlight bool
+		}
+	}
+	lockTransformSearchResponse sync.RWMutex
+}
+
+// TransformSearchResponse calls TransformSearchResponseFunc.
+func (mock *ReleaseResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
+	if mock.TransformSearchResponseFunc == nil {
+		panic("ReleaseResponseTransformerMock.TransformSearchResponseFunc: method is nil but ReleaseResponseTransformer.TransformSearchResponse was just called")
+	}
+	callInfo := struct {
+		Ctx          context.Context
+		ResponseData []byte
+		Req          query.ReleaseSearchRequest
+		Highlight    bool
+	}{
+		Ctx:          ctx,
+		ResponseData: responseData,
+		Req:          req,
+		Highlight:    highlight,
+	}
+	mock.lockTransformSearchResponse.Lock()
+	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
+	mock.lockTransformSearchResponse.Unlock()
+	return mock.TransformSearchResponseFunc(ctx, responseData, req, highlight)
+}
+
+// TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
+// Check the length with:
+//
+//	len(mockedReleaseResponseTransformer.TransformSearchResponseCalls())
+func (mock *ReleaseResponseTransformerMock) TransformSearchResponseCalls() []struct {
+	Ctx          context.Context
+	ResponseData []byte
+	Req          query.ReleaseSearchRequest
+	Highlight    bool
+} {
+	var calls []struct {
+		Ctx          context.Context
+		ResponseData []byte
+		Req          query.ReleaseSearchRequest
+		Highlight    bool
+	}
+	mock.lockTransformSearchResponse.RLock()
+	calls = mock.calls.TransformSearchResponse
+	mock.lockTransformSearchResponse.RUnlock()
+	return calls
+}
