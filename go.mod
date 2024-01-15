@@ -11,19 +11,15 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.55.0
 //     - sonatype-2019-0890 # pkg:golang/github.com/pkg/sftp@v1.10.1
 replace github.com/spf13/cobra => github.com/spf13/cobra v1.7.0
 
-replace github.com/ONSdigital/dp-api-clients-go/v2 => ./../dp-api-clients-go
-
-replace github.com/ONSdigital/dp-search-scrubber-api => ./../onyx-dp-search-scrubber-api
-
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.252.1
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.255.0
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.9.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.6.1
 	github.com/ONSdigital/dp-net/v2 v2.11.0
 	github.com/ONSdigital/dp-otel-go v0.0.6
-	github.com/ONSdigital/dp-search-scrubber-api v0.0.0-00010101000000-000000000000
+	github.com/ONSdigital/dp-search-scrubber-api v0.1.0
 	github.com/ONSdigital/log.go/v2 v2.4.1
 	github.com/cucumber/godog v0.12.6
 	github.com/elastic/go-elasticsearch/v7 v7.10.0
