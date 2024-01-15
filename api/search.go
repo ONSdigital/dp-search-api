@@ -262,7 +262,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, clList)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -355,7 +355,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, clList)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -406,7 +406,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 	}
 }
 
-func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
+func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
 	if nlpConfig.NlpToggle {
 		nlpSettings := query.NlpSettings{}
 
@@ -556,7 +556,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
 	scrubber, err := clList.scrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
-		log.Error(ctx, "error making request to scrubber: %w", err)
+		log.Error(ctx, "error making request to scrubber", err)
 		return nil
 	}
 
@@ -570,7 +570,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		}
 		berlin, err = clList.berlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
 		if err != nil {
-			log.Error(ctx, "error making request to berlin: %w", err)
+			log.Error(ctx, "error making request to berlin", err)
 		}
 	}()
 
@@ -584,7 +584,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		}
 		category, err = clList.categoryClient.GetCategory(ctx, *catOpt.Q(scrubber.Query))
 		if err != nil {
-			log.Error(ctx, "error making request to category: %w", err)
+			log.Error(ctx, "error making request to category", err)
 		}
 	}()
 

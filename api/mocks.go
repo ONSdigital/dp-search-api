@@ -12,78 +12,6 @@ import (
 	"sync"
 )
 
-// Ensure, that AuthHandlerMock does implement AuthHandler.
-// If this is not the case, regenerate this file with moq.
-var _ AuthHandler = &AuthHandlerMock{}
-
-// AuthHandlerMock is a mock implementation of AuthHandler.
-//
-//	func TestSomethingThatUsesAuthHandler(t *testing.T) {
-//
-//		// make and configure a mocked AuthHandler
-//		mockedAuthHandler := &AuthHandlerMock{
-//			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-//				panic("mock out the Require method")
-//			},
-//		}
-//
-//		// use mockedAuthHandler in code that requires AuthHandler
-//		// and then make assertions.
-//
-//	}
-type AuthHandlerMock struct {
-	// RequireFunc mocks the Require method.
-	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
-
-	// calls tracks calls to the methods.
-	calls struct {
-		// Require holds details about calls to the Require method.
-		Require []struct {
-			// Required is the required argument value.
-			Required auth.Permissions
-			// Handler is the handler argument value.
-			Handler http.HandlerFunc
-		}
-	}
-	lockRequire sync.RWMutex
-}
-
-// Require calls RequireFunc.
-func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
-	if mock.RequireFunc == nil {
-		panic("AuthHandlerMock.RequireFunc: method is nil but AuthHandler.Require was just called")
-	}
-	callInfo := struct {
-		Required auth.Permissions
-		Handler  http.HandlerFunc
-	}{
-		Required: required,
-		Handler:  handler,
-	}
-	mock.lockRequire.Lock()
-	mock.calls.Require = append(mock.calls.Require, callInfo)
-	mock.lockRequire.Unlock()
-	return mock.RequireFunc(required, handler)
-}
-
-// RequireCalls gets all the calls that were made to Require.
-// Check the length with:
-//
-//	len(mockedAuthHandler.RequireCalls())
-func (mock *AuthHandlerMock) RequireCalls() []struct {
-	Required auth.Permissions
-	Handler  http.HandlerFunc
-} {
-	var calls []struct {
-		Required auth.Permissions
-		Handler  http.HandlerFunc
-	}
-	mock.lockRequire.RLock()
-	calls = mock.calls.Require
-	mock.lockRequire.RUnlock()
-	return calls
-}
-
 // Ensure, that ElasticSearcherMock does implement ElasticSearcher.
 // If this is not the case, regenerate this file with moq.
 var _ ElasticSearcher = &ElasticSearcherMock{}
@@ -938,87 +866,75 @@ func (mock *ResponseTransformerMock) TransformSearchResponseCalls() []struct {
 	return calls
 }
 
-// Ensure, that ReleaseResponseTransformerMock does implement ReleaseResponseTransformer.
+// Ensure, that AuthHandlerMock does implement AuthHandler.
 // If this is not the case, regenerate this file with moq.
-var _ ReleaseResponseTransformer = &ReleaseResponseTransformerMock{}
+var _ AuthHandler = &AuthHandlerMock{}
 
-// ReleaseResponseTransformerMock is a mock implementation of ReleaseResponseTransformer.
+// AuthHandlerMock is a mock implementation of AuthHandler.
 //
-//	func TestSomethingThatUsesReleaseResponseTransformer(t *testing.T) {
+//	func TestSomethingThatUsesAuthHandler(t *testing.T) {
 //
-//		// make and configure a mocked ReleaseResponseTransformer
-//		mockedReleaseResponseTransformer := &ReleaseResponseTransformerMock{
-//			TransformSearchResponseFunc: func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
-//				panic("mock out the TransformSearchResponse method")
+//		// make and configure a mocked AuthHandler
+//		mockedAuthHandler := &AuthHandlerMock{
+//			RequireFunc: func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+//				panic("mock out the Require method")
 //			},
 //		}
 //
-//		// use mockedReleaseResponseTransformer in code that requires ReleaseResponseTransformer
+//		// use mockedAuthHandler in code that requires AuthHandler
 //		// and then make assertions.
 //
 //	}
-type ReleaseResponseTransformerMock struct {
-	// TransformSearchResponseFunc mocks the TransformSearchResponse method.
-	TransformSearchResponseFunc func(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error)
+type AuthHandlerMock struct {
+	// RequireFunc mocks the Require method.
+	RequireFunc func(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// TransformSearchResponse holds details about calls to the TransformSearchResponse method.
-		TransformSearchResponse []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// ResponseData is the responseData argument value.
-			ResponseData []byte
-			// Req is the req argument value.
-			Req query.ReleaseSearchRequest
-			// Highlight is the highlight argument value.
-			Highlight bool
+		// Require holds details about calls to the Require method.
+		Require []struct {
+			// Required is the required argument value.
+			Required auth.Permissions
+			// Handler is the handler argument value.
+			Handler http.HandlerFunc
 		}
 	}
-	lockTransformSearchResponse sync.RWMutex
+	lockRequire sync.RWMutex
 }
 
-// TransformSearchResponse calls TransformSearchResponseFunc.
-func (mock *ReleaseResponseTransformerMock) TransformSearchResponse(ctx context.Context, responseData []byte, req query.ReleaseSearchRequest, highlight bool) ([]byte, error) {
-	if mock.TransformSearchResponseFunc == nil {
-		panic("ReleaseResponseTransformerMock.TransformSearchResponseFunc: method is nil but ReleaseResponseTransformer.TransformSearchResponse was just called")
+// Require calls RequireFunc.
+func (mock *AuthHandlerMock) Require(required auth.Permissions, handler http.HandlerFunc) http.HandlerFunc {
+	if mock.RequireFunc == nil {
+		panic("AuthHandlerMock.RequireFunc: method is nil but AuthHandler.Require was just called")
 	}
 	callInfo := struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Req          query.ReleaseSearchRequest
-		Highlight    bool
+		Required auth.Permissions
+		Handler  http.HandlerFunc
 	}{
-		Ctx:          ctx,
-		ResponseData: responseData,
-		Req:          req,
-		Highlight:    highlight,
+		Required: required,
+		Handler:  handler,
 	}
-	mock.lockTransformSearchResponse.Lock()
-	mock.calls.TransformSearchResponse = append(mock.calls.TransformSearchResponse, callInfo)
-	mock.lockTransformSearchResponse.Unlock()
-	return mock.TransformSearchResponseFunc(ctx, responseData, req, highlight)
+	mock.lockRequire.Lock()
+	mock.calls.Require = append(mock.calls.Require, callInfo)
+	mock.lockRequire.Unlock()
+	return mock.RequireFunc(required, handler)
 }
 
-// TransformSearchResponseCalls gets all the calls that were made to TransformSearchResponse.
+// RequireCalls gets all the calls that were made to Require.
 // Check the length with:
 //
-//	len(mockedReleaseResponseTransformer.TransformSearchResponseCalls())
-func (mock *ReleaseResponseTransformerMock) TransformSearchResponseCalls() []struct {
-	Ctx          context.Context
-	ResponseData []byte
-	Req          query.ReleaseSearchRequest
-	Highlight    bool
+//	len(mockedAuthHandler.RequireCalls())
+func (mock *AuthHandlerMock) RequireCalls() []struct {
+	Required auth.Permissions
+	Handler  http.HandlerFunc
 } {
 	var calls []struct {
-		Ctx          context.Context
-		ResponseData []byte
-		Req          query.ReleaseSearchRequest
-		Highlight    bool
+		Required auth.Permissions
+		Handler  http.HandlerFunc
 	}
-	mock.lockTransformSearchResponse.RLock()
-	calls = mock.calls.TransformSearchResponse
-	mock.lockTransformSearchResponse.RUnlock()
+	mock.lockRequire.RLock()
+	calls = mock.calls.Require
+	mock.lockRequire.RUnlock()
 	return calls
 }
 
