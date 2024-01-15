@@ -11,6 +11,10 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.55.0
 //     - sonatype-2019-0890 # pkg:golang/github.com/pkg/sftp@v1.10.1
 replace github.com/spf13/cobra => github.com/spf13/cobra v1.7.0
 
+replace github.com/ONSdigital/dp-api-clients-go/v2 => ./../dp-api-clients-go
+
+replace github.com/ONSdigital/dp-search-scrubber-api => ./../onyx-dp-search-scrubber-api
+
 require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.255.0
 	github.com/ONSdigital/dp-authorisation v0.2.0
