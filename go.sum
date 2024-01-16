@@ -551,8 +551,8 @@ github.com/ONSdigital/dp-rchttp v0.0.0-20190919143000-bb5699e6fd59/go.mod h1:KkW
 github.com/ONSdigital/dp-rchttp v0.0.0-20200114090501-463a529590e8/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
 github.com/ONSdigital/dp-rchttp v1.0.0 h1:K/1/gDtfMZCX1Mbmq80nZxzDirzneqA1c89ea26FqP4=
 github.com/ONSdigital/dp-rchttp v1.0.0/go.mod h1:821jZtK0oBsV8hjIkNr8vhAWuv0FxJBPJuAHa2B70Gk=
-github.com/ONSdigital/dp-search-scrubber-api v0.1.0 h1:l8oXxTnrodY/xYPSdLrWF2mWTpxrDiWjt70L7+omhsU=
-github.com/ONSdigital/dp-search-scrubber-api v0.1.0/go.mod h1:mmuoXZkEx5GJ8W5hq15SkNEpUV9AE82ez/1vUDMFKcA=
+github.com/ONSdigital/dp-search-scrubber-api v0.2.0 h1:0TXUGeyuUeaVPQM6m23014C6hm9ORijYhp3O21tIAyQ=
+github.com/ONSdigital/dp-search-scrubber-api v0.2.0/go.mod h1:eQ+MFFCnZhfgfuHPejuQDD3KJE0yYnmQEgeZpti8rwc=
 github.com/ONSdigital/go-ns v0.0.0-20191104121206-f144c4ec2e58/go.mod h1:iWos35il+NjbvDEqwtB736pyHru0MPFE/LqcwkV1wDc=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad h1:Axoxm5rF6j7LSZfm4AGBT5IwGhWIcfcOkkhy/su/UpA=
 github.com/ONSdigital/go-ns v0.0.0-20200205115900-a11716f93bad/go.mod h1:uHT6LaUlRbJsJRrIlN31t+QLUB80tAbk6ZR9sfoHL8Y=
