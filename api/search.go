@@ -262,7 +262,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -355,7 +355,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCritiria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
 
 		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
@@ -406,7 +406,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 	}
 }
 
-func getNLPCritiria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
+func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
 	if nlpConfig.NlpToggle {
 		nlpSettings := query.NlpSettings{}
 
