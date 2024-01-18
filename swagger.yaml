@@ -220,7 +220,208 @@ paths:
         500:
           description: Internal server error
 
+responses:
+  InternalError:
+    description: "Failed to process the request due to an internal error"
+
 definitions:
+  Hub:
+    type: object
+    properties:
+      Scrubber:
+        $ref: '#/definitions/Scrubber'
+      Category:
+        $ref: '#/definitions/Category'
+      Berlin:
+        $ref: '#/definitions/Berlin'
+  Scrubber:
+    type: object
+    properties:
+      query:
+        type: string
+      results:
+        $ref: '#/definitions/Results'
+      time:
+        type: string
+    required:
+      - query
+      - time
+  Results:
+    type: object
+    properties:
+      areas:
+        type: array
+        items:
+          $ref: '#/definitions/AreaResp'
+      industries:
+        type: array
+        items:
+          $ref: '#/definitions/IndustryResp'
+  AreaResp:
+    type: object
+    properties:
+      codes:
+        type: object
+      name:
+        type: string
+      region:
+        type: string
+      region_code:
+        type: string
+  IndustryResp:
+    type: object
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+  Category:
+    type: array
+    items:
+      type: object
+      properties:
+        code:
+          type: array
+          items:
+            type: string
+        score:
+          type: number
+  Berlin:
+    type: object
+    properties:
+      query:
+        $ref: '#/definitions/SearchTermJson'
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/SearchResult'
+      time:
+        type: string
+  SearchTermJson:
+    type: object
+    properties:
+      codes:
+        type: array
+        items:
+          type: string
+      exact_matches:
+        type: array
+        items:
+          type: string
+      normalized:
+        type: string
+      not_exact_matches:
+        type: array
+        items:
+          type: string
+      raw:
+        type: string
+      state_filter:
+        type: object
+      stop_words:
+        type: array
+        items:
+          type: string
+  SearchResult:
+    type: object
+    properties:
+      loc:
+        $ref: '#/definitions/LocJson'
+      score:
+        type: number
+  LocJson:
+    type: object
+    properties:
+      codes:
+        type: array
+        items:
+          type: string
+      encoding:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      names:
+        type: array
+        items:
+          type: string
+      state:
+        type: array
+        items:
+          type: string
+      subdiv:
+        type: object
+  Health:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "The status of the API"
+        enum: ["OK", "WARNING", "CRITICAL"]
+      version:
+        type: object
+        properties:
+          build_time:
+            type: string
+            description: "The build date and time of the API"
+            example: "2020-06-11T12:49:20+01:00"
+          git_commit:
+            type: string
+            description: "The git commit hash of the API"
+            example: "7c2febbf2b818175112478d4ffbadbee1b654f63"
+          language:
+            type: string
+            description: "The programming language used to implement API"
+            example: "go"
+          language_version:
+            type: string
+            description: "The version of the programming language used to implement API"
+            example: "go1.14.3"
+          version:
+            type: string
+            description: "The version of API"
+            example: "1.0.0"
+      uptime:
+        type: string
+        description: "The uptime of API"
+        example: "34516"
+      start_time:
+        type: string
+        description: "The start date and time of API running"
+        example: "2020-06-11T11:49:21.520922Z"
+      checks:
+        type: array
+        items:
+          $ref: '#/definitions/HealthChecker'
+
+  HealthChecker:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "The name of external service used by API"
+        enum: ["mongodb"]
+      status:
+        type: string
+        description: "The status of the external service"
+        enum: ["OK", "WARNING", "CRITICAL"]
+      message:
+        type: string
+        description: "The message status of the external service"
+        example: "mongodb is OK"
+      last_checked:
+        type: string
+        description: "The last health check date and time of the external service"
+        example: "2020-06-11T11:49:50.330089Z"
+      last_success:
+        type: string
+        description: "The last successful health check date and time of the external service"
+        example: "2020-06-11T11:49:50.330089Z"
+      last_failure:
+        type: string
+        description: "The last failed health check date and time of the external service"
+        example: "2019-09-22T11:48:51.0000001Z"
 
   GetSearchResponse:
     type: object
@@ -602,12 +803,3 @@ definitions:
               type: array
               items:
                 type: string
-
-  Health:
-    type: object
-    properties:
-      elasticsearch:
-        type: string
-      dp_fasttext:
-        type: string
-        example: available

@@ -14,8 +14,28 @@ import (
 
 // Builder represents an instance of a query builder
 type Builder struct {
+	nlpCriteria     *NlpCriteria
 	searchTemplates *template.Template
 	countTemplates  *template.Template
+}
+
+type NlpCriteriaCategory struct {
+	Category    string
+	SubCategory string
+	Weighting   float32
+}
+
+type NlpCriteria struct {
+	UseCategory      bool
+	Categories       []NlpCriteriaCategory
+	UseSubdivision   bool
+	SubdivisionWords string
+}
+
+type NlpSettings struct {
+	CategoryWeighting float32 `json:"categoryWeighting"`
+	CategoryLimit     int     `json:"categoryLimit"`
+	DefaultState      string  `json:"defaultState"`
 }
 
 // NewQueryBuilder loads the elastic search templates and returns a query builder instance
@@ -33,6 +53,7 @@ func NewQueryBuilder() (*Builder, error) {
 	if countErr != nil {
 		return nil, errors.Wrap(countErr, "failed to load count templates")
 	}
+
 	return &Builder{
 		searchTemplates: searchTemplates,
 		countTemplates:  countTemplates,

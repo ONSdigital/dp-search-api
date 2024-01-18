@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
+	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
@@ -12,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/dp-search-api/transformer"
+	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
@@ -22,6 +25,8 @@ import (
 
 type Service struct {
 	api                 *api.SearchAPI
+	berlinClient        *berlin.Client
+	categoryClient      *category.Client
 	config              *config.Config
 	elasticSearchClient elasticsearch.Client
 	healthCheck         HealthChecker
@@ -30,6 +35,7 @@ type Service struct {
 	server              HTTPServer
 	serviceList         *ExternalServiceList
 	searchTransformer   api.ResponseTransformer
+	scrubberClient      *scrubber.Client
 	releaseTransformer  api.ReleaseResponseTransformer
 }
 
@@ -63,6 +69,9 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	var esClientErr error
 	var esClient dpEsClient.Client
 
+	berlinClient := berlin.New(cfg.BerlinAPIURL)
+	categoryClient := category.New(cfg.CategoryAPIURL)
+	scrubberClient := scrubber.New(cfg.ScrubberAPIURL)
 	elasticHTTPClient := dphttp.NewClient()
 
 	// Initialise deprecatedESClient
@@ -74,14 +83,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	// Initialise release transformer
 	releaseTransformer := transformer.NewReleaseTransformer()
 
-	// Initialse AWS signer
-
 	esConfig := dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.ElasticSearchAPIURL,
 		Transport: dphttp.DefaultTransport,
 	}
 
+	// Initialse AWS signer
 	if cfg.AWS.Signer {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
@@ -137,9 +145,13 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
+	// Create a ClientList to store all the required clients
+	// Remove deprecatedESClient once the legacy handler is removed
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
+
 	// Create Search API and register HTTP handlers
-	searchAPI := api.NewSearchAPI(router, esClient, deprecatedESClient, permissions).
-		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, searchTransformer).
+	searchAPI := api.NewSearchAPI(router, clList, permissions).
+		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
 		RegisterPostSearch().
 		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
 
@@ -153,6 +165,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	return &Service{
 		api:                 searchAPI,
+		berlinClient:        berlinClient,
+		categoryClient:      categoryClient,
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,
@@ -161,6 +175,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		server:              server,
 		serviceList:         serviceList,
 		searchTransformer:   searchTransformer,
+		scrubberClient:      scrubberClient,
 		releaseTransformer:  releaseTransformer,
 	}, nil
 }
