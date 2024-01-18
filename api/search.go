@@ -607,8 +607,10 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 			if nlpSettings.CategoryLimit > 0 && nlpSettings.CategoryLimit <= i {
 				break
 			}
-			log.Info(ctx, cat.Code[0])
-			log.Info(ctx, cat.Code[1])
+			log.Info(ctx, "category codes", log.Data{
+				"category_code_1": cat.Code[0],
+				"category_code_2": cat.Code[1],
+			})
 			nlpCriteria = queryBuilder.AddNlpCategorySearch(
 				nlpCriteria,
 				cat.Code[0],

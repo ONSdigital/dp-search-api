@@ -33,9 +33,9 @@ type NlpCriteria struct {
 }
 
 type NlpSettings struct {
-	CategoryWeighting float32 `json:"categoryWeighting"`
-	CategoryLimit     int     `json:"categoryLimit"`
-	DefaultState      string  `json:"defaultState"`
+	CategoryWeighting float32 `json:"category_weighting"`
+	CategoryLimit     int     `json:"category_limit"`
+	DefaultState      string  `json:"default_state"`
 }
 
 // NewQueryBuilder loads the elastic search templates and returns a query builder instance

@@ -30,7 +30,7 @@ func TestSpec(t *testing.T) {
 				c.So(cfg.GracefulShutdownTimeout, c.ShouldEqual, 5*time.Second)
 				c.So(cfg.HealthCheckCriticalTimeout, c.ShouldEqual, 90*time.Second)
 				c.So(cfg.HealthCheckInterval, c.ShouldEqual, 30*time.Second)
-				c.So(cfg.NlpHubSettings, c.ShouldEqual, "{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}")
+				c.So(cfg.NlpHubSettings, c.ShouldEqual, "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}")
 				c.So(cfg.NlpToggle, c.ShouldEqual, false)
 			})
 		})
@@ -46,7 +46,7 @@ func TestSpec(t *testing.T) {
 			c.Convey("The string should contain configured data", func() {
 				c.So(cfgString, c.ShouldContainSubstring, `"BindAddr"`)
 				c.So(cfgString, c.ShouldContainSubstring, `":23900"`)
-				c.So(cfgString, c.ShouldContainSubstring, `"{\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}"`)
+				c.So(cfgString, c.ShouldContainSubstring, `"{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}"`)
 				c.So(cfgString, c.ShouldContainSubstring, `"http://localhost:28700"`)
 				c.So(cfgString, c.ShouldContainSubstring, `"http://localhost:28800"`)
 				c.So(cfgString, c.ShouldContainSubstring, `"http://localhost:28900"`)

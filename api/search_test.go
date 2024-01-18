@@ -458,7 +458,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		cfg := &config.Config{
 			NlpToggle:      true,
-			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -527,7 +527,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		cfg := &config.Config{
 			NlpToggle:      true,
-			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -597,7 +597,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		cfg := &config.Config{
 			NlpToggle:      true,
-			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -659,7 +659,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		cfg := &config.Config{
 			NlpToggle:      true,
-			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -725,7 +725,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		cfg := &config.Config{
 			NlpToggle:      true,
-			NlpHubSettings: "{\"categoryWeighting\": 1000000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}",
+			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)

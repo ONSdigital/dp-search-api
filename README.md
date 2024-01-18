@@ -42,7 +42,7 @@ environment variables, or with a link to a configuration guide.
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                                                                                            | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                                                                                           | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) 
 | HEALTHCHECK_INTERVAL         | 30s                                                                                           | Time between self-healthchecks (`time.Duration` format)                                                            
-| NLP_HUB_SETTINGS             | {\"categoryWeighting\": 100000000.0, \"categoryLimit\": 100, \"defaultState\": \"gb\"}        | Http url of the Berlin server
+| NLP_HUB_SETTINGS             | {\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}     | Http url of the Berlin server
 | NLP_TOGGLE           	       | "true"                                                                                        | Toggles NLP querying on/off
 | OTEL_BATCH_TIMEOUT           | 5s                                                                                            | Interval between pushes to OT Collector                                                                           
 | OTEL_EXPORTER_OTLP_ENDPOINT  | http://localhost:4317                                                                         | URL for OpenTelemetry endpoint                                                                                
