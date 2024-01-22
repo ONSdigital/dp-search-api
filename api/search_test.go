@@ -432,14 +432,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 			},
 		}, nil)
 
-		catMock := newCategorylienterMock(&[]catModels.Category{
+		catMock := newCategoryClienterMock(&[]catModels.Category{
 			{
 				Code:  []string{"sth", "sth"},
 				Score: 100,
 			},
 		}, nil)
 
-		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
 			Results: scrModels.Results{
 				Areas: []scrModels.AreaResp{
 					{
@@ -503,14 +503,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 			},
 		}, nil)
 
-		catMock := newCategorylienterMock(&[]catModels.Category{
+		catMock := newCategoryClienterMock(&[]catModels.Category{
 			{
 				Code:  []string{"sth", "sth"},
 				Score: 100,
 			},
 		}, nil)
 
-		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
 			Results: scrModels.Results{
 				Areas: []scrModels.AreaResp{
 					{
@@ -575,14 +575,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 			},
 		}, nil)
 
-		catMock := newCategorylienterMock(&[]catModels.Category{
+		catMock := newCategoryClienterMock(&[]catModels.Category{
 			{
 				Code:  []string{"sth", "sth"},
 				Score: 100,
 			},
 		}, nil)
 
-		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
 			Results: scrModels.Results{
 				Areas: []scrModels.AreaResp{
 					{
@@ -637,14 +637,14 @@ func TestSearchHandlerFunc(t *testing.T) {
 			Err: errors.New("Berlin error"),
 		})
 
-		catMock := newCategorylienterMock(&[]catModels.Category{
+		catMock := newCategoryClienterMock(&[]catModels.Category{
 			{
 				Code:  []string{"sth", "sth"},
 				Score: 100,
 			},
 		}, nil)
 
-		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
 			Results: scrModels.Results{
 				Areas: []scrModels.AreaResp{
 					{
@@ -708,11 +708,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 			},
 		}, nil)
 
-		catMock := newCategorylienterMock(nil, catErr.StatusError{
+		catMock := newCategoryClienterMock(nil, catErr.StatusError{
 			Err: errors.New("Category error"),
 		})
 
-		scrMock := newCScrubberClienterMock(&scrModels.ScrubberResp{
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
 			Results: scrModels.Results{
 				Areas: []scrModels.AreaResp{
 					{
@@ -1120,7 +1120,7 @@ func newBerlinClienterMock(response *brModels.Berlin, err brErr.Error) *berlin.C
 	}
 }
 
-func newCategorylienterMock(response *[]catModels.Category, err catErr.Error) *category.ClienterMock {
+func newCategoryClienterMock(response *[]catModels.Category, err catErr.Error) *category.ClienterMock {
 	return &category.ClienterMock{
 		GetCategoryFunc: func(ctx context.Context, options category.Options) (*[]catModels.Category, catErr.Error) {
 			return response, err
@@ -1128,7 +1128,7 @@ func newCategorylienterMock(response *[]catModels.Category, err catErr.Error) *c
 	}
 }
 
-func newCScrubberClienterMock(response *scrModels.ScrubberResp, err catErr.Error) *scrMocks.ClienterMock {
+func newScrubberClienterMock(response *scrModels.ScrubberResp, err catErr.Error) *scrMocks.ClienterMock {
 	return &scrMocks.ClienterMock{
 		GetSearchFunc: func(ctx context.Context, options scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
 			return response, err
