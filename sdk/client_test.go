@@ -312,7 +312,6 @@ func TestGetSearch(t *testing.T) {
 				})
 			})
 		})
-
 	})
 }
 
