@@ -138,6 +138,11 @@ paths:
           description: "Specifies candidate results by their ReleaseDate, which must be on or before the toDate"
           type: string
           required: false
+        - in: query
+          name: nlp_weighting
+          description: "Runs query through NLP processors to influence search weighting"
+          type: boolean
+          required: false
       responses:
         200:
           description: OK
