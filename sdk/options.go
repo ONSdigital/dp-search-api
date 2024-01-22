@@ -99,6 +99,12 @@ func (o *Options) Census(val string) *Options {
 	return o
 }
 
+// NLPWeighting sets the 'census' Query parameter to the request
+func (o *Options) NLPWeighting(val string) *Options {
+	o.Query.Set(api.ParamNLPWeighting, val)
+	return o
+}
+
 func setHeaders(req *http.Request, headers http.Header) {
 	for name, values := range headers {
 		for _, value := range values {

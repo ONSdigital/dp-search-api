@@ -273,6 +273,47 @@ func TestGetSearch(t *testing.T) {
 			})
 		})
 	})
+	c.Convey("Given a request to find search results with NLP weighting enabled", t, func() {
+		body, err := json.Marshal(searchResults)
+		if err != nil {
+			t.Errorf("failed to setup test data, error: %v", err)
+		}
+
+		httpClient := newMockHTTPClient(
+			&http.Response{
+				StatusCode: http.StatusCreated,
+				Body:       io.NopCloser(bytes.NewReader(body)),
+			},
+			nil)
+
+		searchAPIClient := newSearchAPIClient(t, httpClient)
+
+		c.Convey("When GetSearch is called", func() {
+			query := url.Values{}
+			query.Add("q", "census")
+			query.Add("nlp_weighting", "true")
+			resp, err := searchAPIClient.GetSearch(ctx, Options{Query: query})
+
+			c.Convey("Then the expected response body is returned", func() {
+				c.So(*resp, c.ShouldResemble, searchResults)
+
+				c.Convey("And no error is returned", func() {
+					c.So(err, c.ShouldBeNil)
+
+					c.Convey("And client.Do should be called once with the expected parameters", func() {
+						doCalls := httpClient.DoCalls()
+						c.So(doCalls, c.ShouldHaveLength, 1)
+						c.So(doCalls[0].Req.Method, c.ShouldEqual, "GET")
+						c.So(doCalls[0].Req.URL.Path, c.ShouldEqual, "/search")
+						c.So(doCalls[0].Req.URL.Query().Get("q"), c.ShouldEqual, "census")
+						c.So(doCalls[0].Req.URL.Query().Get("nlp_weighting"), c.ShouldEqual, "true")
+						c.So(doCalls[0].Req.Header["Authorization"], c.ShouldBeEmpty)
+					})
+				})
+			})
+		})
+
+	})
 }
 
 func TestGetReleaseCalendar(t *testing.T) {
