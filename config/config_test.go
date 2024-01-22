@@ -30,8 +30,8 @@ func TestSpec(t *testing.T) {
 				c.So(cfg.GracefulShutdownTimeout, c.ShouldEqual, 5*time.Second)
 				c.So(cfg.HealthCheckCriticalTimeout, c.ShouldEqual, 90*time.Second)
 				c.So(cfg.HealthCheckInterval, c.ShouldEqual, 30*time.Second)
-				c.So(cfg.NlpHubSettings, c.ShouldEqual, "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}")
-				c.So(cfg.NlpToggle, c.ShouldEqual, false)
+				c.So(cfg.NLPSettings, c.ShouldEqual, "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}")
+				c.So(cfg.EnableNLPWeighting, c.ShouldEqual, false)
 			})
 		})
 

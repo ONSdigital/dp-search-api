@@ -407,13 +407,13 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 }
 
 func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
-	if nlpConfig.NlpToggle {
+	if nlpConfig.EnableNLPWeighting {
 		nlpSettings := query.NlpSettings{}
 
 		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
 
-		if err := json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings); err != nil {
-			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
+		if err := json.Unmarshal([]byte(nlpConfig.NLPSettings), &nlpSettings); err != nil {
+			log.Error(ctx, "problem unmarshaling NLPSettings", err)
 		}
 
 		return AddNlpToSearch(ctx, queryBuilder, params, nlpSettings, clList)

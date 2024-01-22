@@ -17,8 +17,8 @@ type Config struct {
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
-	NlpHubSettings             string        `envconfig:"NLP_HUB_SETTINGS"`
-	NlpToggle                  bool          `envconfig:"NLP_TOGGLE"`
+	NLPSettings                string        `envconfig:"NLP_SETTINGS"`
+	EnableNLPWeighting         bool          `envconfig:"ENABLE_NLP_WEIGHTING"`
 	ScrubberAPIURL             string        `envconfig:"SCRUBBER_URL"`
 	OTBatchTimeout             time.Duration `encconfig:"OTEL_BATCH_TIMEOUT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
@@ -51,8 +51,8 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
-		NlpHubSettings:             "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
-		NlpToggle:                  false,
+		NLPSettings:                "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+		EnableNLPWeighting:         false,
 		ScrubberAPIURL:             "http://localhost:28700",
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",

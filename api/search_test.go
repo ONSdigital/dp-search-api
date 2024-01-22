@@ -41,6 +41,7 @@ const (
 	validESResponse          string = `{"raw":"response"}`
 	validTransformedResponse string = `{"count":0,"took":0,"distinct_items_count":0,"topics":null,"content_types":null,"items":null}`
 	internalServerErrMsg            = "internal server error"
+	defaultNLPSettings       string = "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}"
 )
 
 func TestValidateContentTypes(t *testing.T) {
@@ -457,8 +458,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle:      true,
-			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -526,8 +527,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle:      true,
-			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -596,8 +597,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle:      true,
-			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -658,8 +659,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle:      true,
-			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
@@ -724,8 +725,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 		}
 
 		cfg := &config.Config{
-			NlpToggle:      true,
-			NlpHubSettings: "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
 		}
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
