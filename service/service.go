@@ -132,7 +132,11 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	if regErr := registerCheckers(ctx, healthCheck, esClient); regErr != nil {
+	// Create a ClientList to store all the required clients
+	// Remove deprecatedESClient once the legacy handler is removed
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
+
+	if regErr := registerCheckers(ctx, healthCheck, clList); regErr != nil {
 		return nil, errors.Wrap(regErr, "unable to register checkers")
 	}
 
@@ -144,10 +148,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
-
-	// Create a ClientList to store all the required clients
-	// Remove deprecatedESClient once the legacy handler is removed
-	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
 
 	// Create Search API and register HTTP handlers
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
@@ -224,10 +224,16 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context, hc HealthChecker, dpESClient dpEsClient.Client) (err error) {
-	if err = hc.AddCheck("Elasticsearch", dpESClient.Checker); err != nil {
+func registerCheckers(ctx context.Context, hc HealthChecker, clList *api.ClientList) (err error) {
+	if err = hc.AddCheck("Elasticsearch", clList.DpESClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		err = errors.New("Error(s) registering checkers for health check")
 	}
+
+	if err = hc.AddCheck("Scrubber-API", clList.ScrubberClient.Checker); err != nil {
+		log.Error(ctx, "error creating elasticsearch health check", err)
+		err = errors.New("Error(s) registering checkers for health check")
+	}
+
 	return err
 }
