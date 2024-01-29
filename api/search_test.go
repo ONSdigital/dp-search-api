@@ -421,7 +421,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
-				brModels.Matches{
+				{
 					Loc: brModels.Locations{
 						Subdivision: []string{
 							"subdiv1",
@@ -506,7 +506,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
-				brModels.Matches{
+				{
 					Loc: brModels.Locations{
 						Subdivision: []string{
 							"subdiv1",
@@ -591,7 +591,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
-				brModels.Matches{
+				{
 					Loc: brModels.Locations{
 						Subdivision: []string{
 							"subdiv1",
@@ -748,7 +748,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
-				brModels.Matches{
+				{
 					Loc: brModels.Locations{
 						Subdivision: []string{
 							"subdiv1",
