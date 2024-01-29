@@ -550,17 +550,9 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	scrOpt := scrSdk.Options{
 		Query: url.Values{},
 	}
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
-	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
 
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
-	scrubber, err := clList.ScrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
+	scrubber, err := clList.ScrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
 		log.Error(ctx, "error making request to scrubber", err)
 		return nil
@@ -576,51 +568,10 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		berlin = &brModel.Berlin{
 			Query: scrubber.Query,
 		}
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
-		fmt.Println("err in berlin ")
 	}
 
 	catOpt := catCli.OptInit()
 
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
-	fmt.Println(berlin.Query)
 	category, err = clList.CategoryClient.GetCategory(ctx, *catOpt.Q(berlin.Query))
 	if err != nil {
 		log.Error(ctx, "error making request to category", err)
