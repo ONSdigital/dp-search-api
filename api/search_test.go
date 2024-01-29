@@ -477,7 +477,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("And it should make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 1)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
 			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 1)
 			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 1)
 		})
@@ -560,7 +560,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("And it should make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 1)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
 			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 1)
 			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 1)
 		})
@@ -636,7 +636,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Then it should make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 1)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
 
 			c.Convey("When the scrubber call fails, the category and berlin APIs should not be called", func() {
 				c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 0)
@@ -715,7 +715,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Then it should make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 1)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
 			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 1)
 			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 1)
 		})
@@ -795,7 +795,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Then it should make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 1)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
 			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 1)
 			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 1)
 		})
@@ -855,7 +855,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Then it should not make calls to NLP APIs", func() {
-			c.So(scrMock.GetSearchCalls(), c.ShouldHaveLength, 0)
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 0)
 			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 0)
 			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 0)
 		})
@@ -1247,7 +1247,7 @@ func newCategoryClienterMock(response *[]catModels.Category, err catErr.Error) *
 
 func newScrubberClienterMock(response *scrModels.ScrubberResp, err catErr.Error) *scrMocks.ClienterMock {
 	return &scrMocks.ClienterMock{
-		GetSearchFunc: func(ctx context.Context, options scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
+		GetScrubberFunc: func(ctx context.Context, options scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
 			return response, err
 		},
 	}

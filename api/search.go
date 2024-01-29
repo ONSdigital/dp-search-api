@@ -557,7 +557,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	}
 
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
-	scrubber, err := clList.scrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
+	scrubber, err := clList.scrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
 		log.Error(ctx, "error making request to scrubber", err)
 		return nil
