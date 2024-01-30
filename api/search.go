@@ -625,7 +625,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	// If berlin exists, add the subdivisions to NLP criteria.
 	// They'll be used later in the query to ElasticSearch
-	if berlin != nil && len(berlin.Matches[0].Subdivision) == 2 {
+	if berlin != nil && len(berlin.Matches) > 0 && len(berlin.Matches[0].Subdivision) == 2 {
 		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Subdivision[1])
 	}
 
