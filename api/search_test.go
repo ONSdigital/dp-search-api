@@ -740,6 +740,81 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 	})
 
+	c.Convey("When NLP features are enabled, a valid request is made but the Berlin API gives an empty response", t, func() {
+		searchBytes, _ := json.Marshal(searches)
+		qbMock := newQueryBuilderMock(searchBytes, nil)
+
+		esMock := newDpElasticSearcherMock([]byte(`{"raw":"response"}`), nil)
+
+		brMock := newBerlinClienterMock(&brModels.Berlin{
+			Matches: []brModels.Matches{},
+		}, nil)
+
+		catMock := newCategoryClienterMock(&[]catModels.Category{
+			{
+				Code:  []string{"sth", "sth"},
+				Score: 100,
+			},
+		}, nil)
+
+		scrMock := newScrubberClienterMock(&scrModels.ScrubberResp{
+			Results: scrModels.Results{
+				Areas: []scrModels.AreaResp{
+					{
+						Name:   "Area1",
+						Region: "region1",
+					},
+				},
+			},
+		}, nil)
+
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		clList := ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
+		}
+
+		cfg := &config.Config{
+			EnableNLPWeighting: true,
+			NLPSettings:        defaultNLPSettings,
+		}
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, &clList, trMock)
+
+		req := httptest.NewRequest("GET", baseURL+validQueryParam+nlpParamEnabled, http.NoBody)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		c.Convey("Then the request should be processed OK", func() {
+			c.So(resp.Code, c.ShouldEqual, http.StatusOK)
+			c.So(resp.Body.String(), c.ShouldResemble, validTransformedResponse)
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 1)
+			c.So(qbMock.BuildSearchQueryCalls()[0].Req.Term, c.ShouldResemble, validQueryParam)
+		})
+
+		c.Convey("Then it should make calls to NLP APIs", func() {
+			c.So(scrMock.GetScrubberCalls(), c.ShouldHaveLength, 1)
+			c.So(catMock.GetCategoryCalls(), c.ShouldHaveLength, 1)
+			c.So(brMock.GetBerlinCalls(), c.ShouldHaveLength, 1)
+		})
+
+		c.Convey("Then the request to ES should be processed correctly", func() {
+			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
+			actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
+			c.So(actualRequest, c.ShouldResemble, expectedQuery)
+		})
+
+		c.Convey("Then the response to ES should be processed correctly", func() {
+			c.So(trMock.TransformSearchResponseCalls(), c.ShouldHaveLength, 1)
+			c.So(trMock.TransformSearchResponseCalls()[0].Highlight, c.ShouldBeTrue)
+			actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
+			c.So(actualResponse, c.ShouldResemble, validESResponse)
+		})
+	})
 	c.Convey("When NLP features are enabled, a valid request is made but the Category API is unresponsive", t, func() {
 		searchBytes, _ := json.Marshal(searches)
 		qbMock := newQueryBuilderMock(searchBytes, nil)
