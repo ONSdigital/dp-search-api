@@ -47,6 +47,7 @@ environment variables, or with a link to a configuration guide.
 | OTEL_BATCH_TIMEOUT           | 5s                       | Interval between pushes to OT Collector                                                                            |
 | OTEL_EXPORTER_OTLP_ENDPOINT  | "http://localhost:4317"  | URL for OpenTelemetry endpoint                                                                                     |
 | OTEL_SERVICE_NAME            | "dp-search-api"          | Service name to report to telemetry tools                                                                          |
+| OTEL_ENABLED                 | false                    | Feature flag to enable OpenTelemetry
 | SCRUBBER_URL                 | "http://localhost:28700" |                                                                                                                    |
 | ZEBEDEE_URL                  | "http://localhost:8082"  | The URL to Zebedee (for authorisation)                                                                             |
 
