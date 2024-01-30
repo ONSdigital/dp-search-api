@@ -141,11 +141,15 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	router := mux.NewRouter()
-	otelHandler := otelhttp.NewHandler(router, "/")
-	router.Use(otelmux.Middleware(cfg.OTServiceName))
+	var server HTTPServer
 
-	server := serviceList.GetHTTPServer(cfg.BindAddr, otelHandler)
-
+	if cfg.OtelEnabled {
+		otelHandler := otelhttp.NewHandler(router, "/")
+		router.Use(otelmux.Middleware(cfg.OTServiceName))
+		server = serviceList.GetHTTPServer(cfg.BindAddr, otelHandler)
+	} else {
+		server = serviceList.GetHTTPServer(cfg.BindAddr, router)
+	}
 	router.StrictSlash(true).Path("/health").HandlerFunc(healthCheck.Handler)
 	healthCheck.Start(ctx)
 
