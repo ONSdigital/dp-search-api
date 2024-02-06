@@ -225,10 +225,6 @@ paths:
         500:
           description: Internal server error
 
-responses:
-  InternalError:
-    description: "Failed to process the request due to an internal error"
-
 definitions:
   Health:
     type: object
@@ -379,11 +375,9 @@ definitions:
         type: number
         description: "The offset of the first Release in the releases payload from the first Release in the complete ordered set of Releases which match the query"
         example: 130
-      breakdwon:
-        type: object
+      breakdown:
         description: "Breakdown of the total number of Releases into defined categories"
-        items:
-          $ref: "#/definitions/Breakdown"
+        $ref: "#/definitions/Breakdown"
       releases:
           type: array
           description: "List of matching Releases"
@@ -393,7 +387,7 @@ definitions:
       - took
       - limit
       - offset
-      - breakdwon
+      - breakdown
       - releases
 
   Breakdown:
