@@ -560,10 +560,11 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	brOpt := brlCli.OptInit()
 
 	// If berlin is down for any reason,
-	// we need to change the query from berlin.Query to scrubber.Query from interfering with regular dp-search-api resp
+	// We need to change the query from berlin.Query to scrubber.Query from interfering with regular dp-search-api resp
 	berlin, err = clList.BerlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
 	if err != nil {
 		log.Error(ctx, "error making request to berlin", err)
+		// if berlin isn't working we need to make sure the query is accessible to category
 		berlin = &brModel.Berlin{
 			Query: scrubber.Query,
 		}
@@ -608,7 +609,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	// If berlin exists, add the subdivisions to NLP criteria.
 	// They'll be used later in the query to ElasticSearch
-	if berlin != nil && len(berlin.Matches) > 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
+	if len(berlin.Matches) > 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
 		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Loc.Subdivision[1])
 	}
 
