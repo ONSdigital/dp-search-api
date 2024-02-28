@@ -12,7 +12,7 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.55.0
 replace github.com/spf13/cobra => github.com/spf13/cobra v1.7.0
 
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.256.0
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.258.0
 	github.com/ONSdigital/dp-authorisation v0.2.0
 	github.com/ONSdigital/dp-component-test v0.9.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c

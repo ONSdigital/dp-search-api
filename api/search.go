@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	brlCli "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
@@ -22,7 +21,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
 	scrModel "github.com/ONSdigital/dp-search-scrubber-api/models"
-	"github.com/ONSdigital/dp-search-scrubber-api/sdk"
+	scrSdk "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -407,13 +406,13 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 }
 
 func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
-	if nlpConfig.NlpToggle {
+	if nlpConfig.EnableNLPWeighting {
 		nlpSettings := query.NlpSettings{}
 
 		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
 
-		if err := json.Unmarshal([]byte(nlpConfig.NlpHubSettings), &nlpSettings); err != nil {
-			log.Error(ctx, "problem unmarshaling nlphubsettings", err)
+		if err := json.Unmarshal([]byte(nlpConfig.NLPSettings), &nlpSettings); err != nil {
+			log.Error(ctx, "problem unmarshaling NLPSettings", err)
 		}
 
 		return AddNlpToSearch(ctx, queryBuilder, params, nlpSettings, clList)
@@ -425,7 +424,6 @@ func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Co
 func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	indexName := createIndexName("ons")
-	fmt.Printf("Index created: %s\n", indexName)
 
 	err := a.clList.DpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 	if err != nil {
@@ -546,12 +544,17 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	var category *[]catModel.Category
 	var scrubber *scrModel.ScrubberResp
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	scrOpt := sdk.Options{
+	scrOpt := scrSdk.Options{
 		Query: url.Values{},
 	}
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
+	fmt.Println("iuadfhgpiuahdfpiguhadfpuighapdiufghiuapdfhgouid")
 
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
 	scrubber, err := clList.ScrubberClient.GetSearch(ctx, *scrOpt.Q(params.Get("q")))
@@ -560,35 +563,65 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 		return nil
 	}
 
-	go func() {
-		defer wg.Done()
+	brOpt := brlCli.OptInit()
 
-		var err error
-
-		brOpt := brlCli.Options{
-			Query: url.Values{},
+	// If berlin is down for any reason,
+	// we need to change the query from berlin.Query to scrubber.Query from interfering with regular dp-search-api resp
+	berlin, err = clList.BerlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
+	if err != nil {
+		log.Error(ctx, "error making request to berlin", err)
+		berlin = &brModel.Berlin{
+			Query: scrubber.Query,
 		}
-		berlin, err = clList.BerlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
-		if err != nil {
-			log.Error(ctx, "error making request to berlin", err)
-		}
-	}()
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+		fmt.Println("err in berlin ")
+	}
 
-	go func() {
-		defer wg.Done()
+	catOpt := catCli.OptInit()
 
-		var err error
-
-		catOpt := catCli.Options{
-			Query: url.Values{},
-		}
-		category, err = clList.CategoryClient.GetCategory(ctx, *catOpt.Q(scrubber.Query))
-		if err != nil {
-			log.Error(ctx, "error making request to category", err)
-		}
-	}()
-
-	wg.Wait()
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	fmt.Println(berlin.Query)
+	category, err = clList.CategoryClient.GetCategory(ctx, *catOpt.Q(berlin.Query))
+	if err != nil {
+		log.Error(ctx, "error making request to category", err)
+	}
 
 	var nlpCriteria *query.NlpCriteria
 
@@ -622,8 +655,8 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	// If berlin exists, add the subdivisions to NLP criteria.
 	// They'll be used later in the query to ElasticSearch
-	if berlin != nil && len(berlin.Matches[0].Subdivision) == 2 {
-		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Subdivision[1])
+	if len(berlin.Matches) != 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
+		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Loc.Subdivision[1])
 	}
 
 	return nlpCriteria
