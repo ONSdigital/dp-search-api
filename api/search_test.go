@@ -770,7 +770,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
+		clList := &ClientList{
 			ScrubberClient: scrMock,
 			CategoryClient: catMock,
 			BerlinClient:   brMock,
@@ -782,7 +782,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			NLPSettings:        defaultNLPSettings,
 		}
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, &clList, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+nlpParamEnabled, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -911,11 +911,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			BerlinClient:   brMock,
-			CategoryClient: catMock,
-			DpESClient:     esMock,
+		clList := &ClientList{
 			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -923,7 +923,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			NLPSettings:        defaultNLPSettings,
 		}
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, &clList, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, cfg, clList, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1255,11 +1255,11 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 
 func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 	c.Convey("Given a Search API that is pointing to the Site Wide version of Elastic Search", t, func() {
-		DpESClient := newDpElasticSearcherMock(nil, nil)
+		dpESClient := newDpElasticSearcherMock(nil, nil)
 
 		searchAPI := &SearchAPI{
 			clList: &ClientList{
-				DpESClient: DpESClient,
+				DpESClient: dpESClient,
 			},
 		}
 
@@ -1290,11 +1290,11 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 
 	c.Convey("Given a Search API that is pointing to the old version of Elastic Search", t, func() {
 		// The new ES client will return an error if the Search API config is pointing at the old version of ES
-		DpESClient := newDpElasticSearcherMock(nil, errors.New("unexpected status code from api"))
+		dpESClient := newDpElasticSearcherMock(nil, errors.New("unexpected status code from api"))
 
 		searchAPI := &SearchAPI{
 			clList: &ClientList{
-				DpESClient: DpESClient,
+				DpESClient: dpESClient,
 			},
 		}
 

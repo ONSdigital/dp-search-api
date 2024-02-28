@@ -550,7 +550,6 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	scrOpt := scrSdk.Options{
 		Query: url.Values{},
 	}
-
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
 	scrubber, err := clList.ScrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
@@ -609,7 +608,7 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	// If berlin exists, add the subdivisions to NLP criteria.
 	// They'll be used later in the query to ElasticSearch
-	if len(berlin.Matches) != 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
+	if berlin != nil && len(berlin.Matches) > 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
 		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Loc.Subdivision[1])
 	}
 

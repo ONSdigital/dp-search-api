@@ -53,7 +53,7 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		NLPSettings:                "{\"category_weighting\": 100000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}",
-		EnableNLPWeighting:         true,
+		EnableNLPWeighting:         false,
 		ScrubberAPIURL:             "http://localhost:28700",
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",
