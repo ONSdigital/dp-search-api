@@ -42,6 +42,7 @@ const (
 	ParamSubtypeConfirmed   = "subtype-confirmed"
 	ParamSubtypePostponed   = "subtype-postponed"
 	ParamCensus             = "census"
+	ParamNLPWeighting       = "nlp_weighting"
 )
 
 // defaultContentTypes is an array of all valid content types, which is the default param value
@@ -406,7 +407,9 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 }
 
 func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
-	if nlpConfig.EnableNLPWeighting {
+	nlpWeightingRequested := paramGetBool(params, ParamNLPWeighting, false)
+
+	if nlpConfig.EnableNLPWeighting && nlpWeightingRequested {
 		nlpSettings := query.NlpSettings{}
 
 		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
