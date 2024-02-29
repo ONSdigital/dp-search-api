@@ -1330,7 +1330,7 @@ func newCategoryClienterMock(response *[]catModels.Category, err catErr.Error) *
 
 func newScrubberClienterMock(response *scrModels.ScrubberResp, err catErr.Error) *scrMocks.ClienterMock {
 	return &scrMocks.ClienterMock{
-		GetScrubberFunc: func(ctx context.Context, options scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
+		GetScrubberFunc: func(ctx context.Context, options *scr.Options) (*scrModels.ScrubberResp, scrErr.Error) {
 			return response, err
 		},
 	}
