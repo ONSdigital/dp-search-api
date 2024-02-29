@@ -547,11 +547,10 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 	var category *[]catModel.Category
 	var scrubber *scrModel.ScrubberResp
 
-	scrOpt := scrSdk.Options{
-		Query: url.Values{},
-	}
+	scrOpt := scrSdk.OptInit()
+
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
-	scrubber, err := clList.ScrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
+	scrubber, err := clList.ScrubberClient.GetScrubber(ctx, scrOpt.Q(params.Get("q")))
 	if err != nil {
 		log.Error(ctx, "error making request to scrubber", err)
 		return nil
@@ -559,12 +558,11 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	brOpt := brlCli.OptInit()
 
-	// If berlin is down for any reason,
-	// We need to change the query from berlin.Query to scrubber.Query from interfering with regular dp-search-api resp
 	berlin, err = clList.BerlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
-	if err != nil {
+	if err != nil || berlin == nil {
 		log.Error(ctx, "error making request to berlin", err)
-		// if berlin isn't working we need to make sure the query is accessible to category
+		// If berlin isn't working or gives an empty response
+		// We need to make sure the query is accessible to category
 		berlin = &brModel.Berlin{
 			Query: scrubber.Query,
 		}

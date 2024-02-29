@@ -229,25 +229,7 @@ func (svc *Service) Close(ctx context.Context) error {
 }
 
 func registerCheckers(ctx context.Context, hc HealthChecker, clList *api.ClientList) (err error) {
-	if err = hc.AddCheck("Berlin-API", clList.BerlinClient.Checker); err != nil {
-		log.Error(ctx, "error creating elasticsearch health check", err)
-		err = errors.New("Error(s) registering checkers for health check")
-		return err
-	}
-
-	if err = hc.AddCheck("Category-API", clList.ScrubberClient.Checker); err != nil {
-		log.Error(ctx, "error creating elasticsearch health check", err)
-		err = errors.New("Error(s) registering checkers for health check")
-		return err
-	}
-
 	if err = hc.AddCheck("Elasticsearch", clList.DpESClient.Checker); err != nil {
-		log.Error(ctx, "error creating elasticsearch health check", err)
-		err = errors.New("Error(s) registering checkers for health check")
-		return err
-	}
-
-	if err = hc.AddCheck("Scrubber-API", clList.ScrubberClient.Checker); err != nil {
 		log.Error(ctx, "error creating elasticsearch health check", err)
 		err = errors.New("Error(s) registering checkers for health check")
 		return err
