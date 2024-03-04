@@ -1,6 +1,6 @@
 package api
 
-//go:generate moq -out mocks.go -pkg api . ElasticSearcher DpElasticSearcher QueryParamValidator QueryBuilder ReleaseQueryBuilder ResponseTransformer AuthHandler
+//go:generate moq -out mocks.go -pkg api . ElasticSearcher DpElasticSearcher QueryParamValidator QueryBuilder ReleaseQueryBuilder ResponseTransformer AuthHandler ReleaseResponseTransformer
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/query"
 	scrubber "github.com/ONSdigital/dp-search-scrubber-api/sdk"
@@ -22,19 +23,19 @@ var (
 
 // SearchAPI provides an API around elasticseach
 type SearchAPI struct {
-	clList      ClientList
+	clList      *ClientList
 	Router      *mux.Router
 	permissions AuthHandler
 }
 
 // ClientList is a struct obj of all the clients the service is dependent on
 type ClientList struct {
-	berlinClient   berlin.Clienter
-	categoryClient category.Clienter
-	dpESClient     DpElasticSearcher
-	scrubberClient scrubber.Clienter
+	BerlinClient   berlin.Clienter
+	CategoryClient category.Clienter
+	DpESClient     DpElasticSearcher
+	ScrubberClient scrubber.Clienter
 	// Remove deprecatedESClient once the legacy handler is removed
-	deprecatedESClient ElasticSearcher
+	DeprecatedESClient ElasticSearcher
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -54,6 +55,7 @@ type DpElasticSearcher interface {
 	CreateIndex(ctx context.Context, indexName string, indexSettings []byte) error
 	MultiSearch(ctx context.Context, searches []client.Search, params *client.QueryParams) ([]byte, error)
 	Count(ctx context.Context, count client.Count) ([]byte, error)
+	Checker(ctx context.Context, state *health.CheckState) error
 }
 
 // QueryParamValidator provides an interface to validate api query parameters (used for /search/releases)
@@ -85,18 +87,18 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewClientList returns a new ClientList obj with all available clients
-func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter, deprecatedEs ElasticSearcher) ClientList {
-	return ClientList{
-		berlinClient:       brl,
-		categoryClient:     cat,
-		dpESClient:         dpEsClient,
-		scrubberClient:     scr,
-		deprecatedESClient: deprecatedEs,
+func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter, deprecatedEs ElasticSearcher) *ClientList {
+	return &ClientList{
+		BerlinClient:       brl,
+		CategoryClient:     cat,
+		DpESClient:         dpEsClient,
+		ScrubberClient:     scr,
+		DeprecatedESClient: deprecatedEs,
 	}
 }
 
 // NewSearchAPI returns a new Search API struct after registering the routes
-func NewSearchAPI(router *mux.Router, clientList ClientList, permissions AuthHandler) *SearchAPI {
+func NewSearchAPI(router *mux.Router, clientList *ClientList, permissions AuthHandler) *SearchAPI {
 	return &SearchAPI{
 		Router:      router,
 		clList:      clientList,
@@ -142,7 +144,7 @@ func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, bui
 		SearchReleasesHandlerFunc(
 			validator,
 			builder,
-			a.clList.dpESClient,
+			a.clList.DpESClient,
 			transformer,
 		),
 	).Methods(http.MethodGet)

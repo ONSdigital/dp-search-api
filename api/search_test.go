@@ -99,7 +99,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=a", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -117,7 +117,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=-1", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -135,7 +135,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=b", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -153,7 +153,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=-1", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -171,7 +171,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?content_type=wrong1,wrong2", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -189,7 +189,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -207,7 +207,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock(nil, errors.New("Something"))
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -227,7 +227,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -247,7 +247,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock(nil, errors.New("Something"))
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -270,7 +270,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+rawTrue, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -293,7 +293,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -318,7 +318,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+highlightTrue, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -343,7 +343,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+highlightFalse, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -368,7 +368,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{dpESClient: esMock}, trMock)
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		req := httptest.NewRequest(
 			"GET",
@@ -422,9 +422,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
 				{
-					Subdivision: []string{
-						"subdiv1",
-						"subdiv2",
+					Loc: brModels.Locations{
+						Subdivision: []string{
+							"subdiv1",
+							"subdiv2",
+						},
 					},
 				},
 			},
@@ -450,11 +452,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -505,9 +507,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
 				{
-					Subdivision: []string{
-						"subdiv1",
-						"subdiv2",
+					Loc: brModels.Locations{
+						Subdivision: []string{
+							"subdiv1",
+							"subdiv2",
+						},
 					},
 				},
 			},
@@ -533,11 +537,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -588,9 +592,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
 				{
-					Subdivision: []string{
-						"subdiv1",
-						"subdiv2",
+					Loc: brModels.Locations{
+						Subdivision: []string{
+							"subdiv1",
+							"subdiv2",
+						},
 					},
 				},
 			},
@@ -609,11 +615,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -688,11 +694,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -764,11 +770,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -818,9 +824,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 		brMock := newBerlinClienterMock(&brModels.Berlin{
 			Matches: []brModels.Matches{
 				{
-					Subdivision: []string{
-						"subdiv1",
-						"subdiv2",
+					Loc: brModels.Locations{
+						Subdivision: []string{
+							"subdiv1",
+							"subdiv2",
+						},
 					},
 				},
 			},
@@ -843,11 +851,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -903,11 +911,11 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		clList := ClientList{
-			scrubberClient: scrMock,
-			categoryClient: catMock,
-			berlinClient:   brMock,
-			dpESClient:     esMock,
+		clList := &ClientList{
+			ScrubberClient: scrMock,
+			CategoryClient: catMock,
+			BerlinClient:   brMock,
+			DpESClient:     esMock,
 		}
 
 		cfg := &config.Config{
@@ -958,7 +966,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=a", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -976,7 +984,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?limit=-1", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -994,7 +1002,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=b", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1012,7 +1020,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", "http://localhost:8080/search?offset=-1", http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1030,7 +1038,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1049,7 +1057,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock(nil, errors.New("Something"))
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1070,7 +1078,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(`{"dummy":"response"`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1091,7 +1099,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock(nil, errors.New("Something"))
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1115,7 +1123,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(`{"dummy":"response"}`), nil)
 		trMock := newResponseTransformerMock(nil, nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+rawTrue, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1137,7 +1145,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1162,7 +1170,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+highlightTrue, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1187,7 +1195,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest("GET", baseURL+validQueryParam+highlightFalse, http.NoBody)
 		resp := httptest.NewRecorder()
@@ -1212,7 +1220,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		esMock := newElasticSearcherMock([]byte(validESResponse), nil)
 		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
 
-		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, ClientList{deprecatedESClient: esMock}, trMock)
+		searchHandler := LegacySearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DeprecatedESClient: esMock}, trMock)
 
 		req := httptest.NewRequest(
 			"GET",
@@ -1250,8 +1258,8 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 		dpESClient := newDpElasticSearcherMock(nil, nil)
 
 		searchAPI := &SearchAPI{
-			clList: ClientList{
-				dpESClient: dpESClient,
+			clList: &ClientList{
+				DpESClient: dpESClient,
 			},
 		}
 
@@ -1285,8 +1293,8 @@ func TestCreateSearchIndexHandlerFunc(t *testing.T) {
 		dpESClient := newDpElasticSearcherMock(nil, errors.New("unexpected status code from api"))
 
 		searchAPI := &SearchAPI{
-			clList: ClientList{
-				dpESClient: dpESClient,
+			clList: &ClientList{
+				DpESClient: dpESClient,
 			},
 		}
 

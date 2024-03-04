@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	brlCli "github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
@@ -22,7 +21,7 @@ import (
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/query"
 	scrModel "github.com/ONSdigital/dp-search-scrubber-api/models"
-	"github.com/ONSdigital/dp-search-scrubber-api/sdk"
+	scrSdk "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
@@ -258,7 +257,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
-func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
@@ -280,11 +279,11 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		)
 
 		go func() {
-			processCountQuery(ctx, clList.dpESClient, queryBuilder, countReq, resCountChan)
+			processCountQuery(ctx, clList.DpESClient, queryBuilder, countReq, resCountChan)
 		}()
 
 		go func() {
-			processSearchQuery(ctx, clList.dpESClient, queryBuilder, searchReq, resDataChan)
+			processSearchQuery(ctx, clList.DpESClient, queryBuilder, searchReq, resDataChan)
 		}()
 
 		for i := 0; i < 2; i++ {
@@ -350,7 +349,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.
 // TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
@@ -375,7 +374,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 			return
 		}
 
-		responseData, err := clList.deprecatedESClient.MultiSearch(ctx, "ons", "", formattedQuery)
+		responseData, err := clList.DeprecatedESClient.MultiSearch(ctx, "ons", "", formattedQuery)
 		if err != nil {
 			log.Error(ctx, "elasticsearch query failed", err)
 			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
@@ -407,7 +406,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 	}
 }
 
-func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList ClientList) *query.NlpCriteria {
+func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
 	nlpWeightingRequested := paramGetBool(params, ParamNLPWeighting, false)
 
 	if nlpConfig.EnableNLPWeighting && nlpWeightingRequested {
@@ -428,9 +427,8 @@ func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Co
 func (a SearchAPI) CreateSearchIndexHandlerFunc(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	indexName := createIndexName("ons")
-	fmt.Printf("Index created: %s\n", indexName)
 
-	err := a.clList.dpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
+	err := a.clList.DpESClient.CreateIndex(ctx, indexName, elasticsearch.GetSearchIndexSettings())
 	if err != nil {
 		log.Error(ctx, "creating index failed with this error", err)
 		http.Error(w, serverErrorMessage, http.StatusInternalServerError)
@@ -544,54 +542,39 @@ func processCountQuery(ctx context.Context, elasticSearchClient DpElasticSearche
 	resCountChan <- countRes
 }
 
-func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.Values, nlpSettings query.NlpSettings, clList ClientList) *query.NlpCriteria {
+func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.Values, nlpSettings query.NlpSettings, clList *ClientList) *query.NlpCriteria {
 	var berlin *brModel.Berlin
 	var category *[]catModel.Category
 	var scrubber *scrModel.ScrubberResp
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	scrOpt := sdk.Options{
+	scrOpt := scrSdk.Options{
 		Query: url.Values{},
 	}
-
 	// If scrubber is down for any reason, we need to stop the NLP feature from interfering with regular dp-search-api resp
-	scrubber, err := clList.scrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
+	scrubber, err := clList.ScrubberClient.GetScrubber(ctx, *scrOpt.Q(params.Get("q")))
 	if err != nil {
 		log.Error(ctx, "error making request to scrubber", err)
 		return nil
 	}
 
-	go func() {
-		defer wg.Done()
+	brOpt := brlCli.OptInit()
 
-		var err error
-
-		brOpt := brlCli.Options{
-			Query: url.Values{},
+	// If berlin is down for any reason,
+	// we need to change the query from berlin.Query to scrubber.Query from interfering with regular dp-search-api resp
+	berlin, err = clList.BerlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
+	if err != nil {
+		log.Error(ctx, "error making request to berlin", err)
+		berlin = &brModel.Berlin{
+			Query: scrubber.Query,
 		}
-		berlin, err = clList.berlinClient.GetBerlin(ctx, *brOpt.Q(scrubber.Query))
-		if err != nil {
-			log.Error(ctx, "error making request to berlin", err)
-		}
-	}()
+	}
 
-	go func() {
-		defer wg.Done()
+	catOpt := catCli.OptInit()
 
-		var err error
-
-		catOpt := catCli.Options{
-			Query: url.Values{},
-		}
-		category, err = clList.categoryClient.GetCategory(ctx, *catOpt.Q(scrubber.Query))
-		if err != nil {
-			log.Error(ctx, "error making request to category", err)
-		}
-	}()
-
-	wg.Wait()
+	category, err = clList.CategoryClient.GetCategory(ctx, *catOpt.Q(berlin.Query))
+	if err != nil {
+		log.Error(ctx, "error making request to category", err)
+	}
 
 	var nlpCriteria *query.NlpCriteria
 
@@ -625,8 +608,8 @@ func AddNlpToSearch(ctx context.Context, queryBuilder QueryBuilder, params url.V
 
 	// If berlin exists, add the subdivisions to NLP criteria.
 	// They'll be used later in the query to ElasticSearch
-	if berlin != nil && len(berlin.Matches) > 0 && len(berlin.Matches[0].Subdivision) == 2 {
-		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Subdivision[1])
+	if berlin != nil && len(berlin.Matches) > 0 && len(berlin.Matches[0].Loc.Subdivision) == 2 {
+		nlpCriteria = queryBuilder.AddNlpSubdivisionSearch(nlpCriteria, berlin.Matches[0].Loc.Subdivision[1])
 	}
 
 	return nlpCriteria

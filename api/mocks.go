@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-authorisation/auth"
 	"github.com/ONSdigital/dp-elasticsearch/v3/client"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/query"
 	"net/http"
 	"sync"
@@ -168,6 +169,9 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 //
 //		// make and configure a mocked DpElasticSearcher
 //		mockedDpElasticSearcher := &DpElasticSearcherMock{
+//			CheckerFunc: func(ctx context.Context, state *health.CheckState) error {
+//				panic("mock out the Checker method")
+//			},
 //			CountFunc: func(ctx context.Context, count client.Count) ([]byte, error) {
 //				panic("mock out the Count method")
 //			},
@@ -184,6 +188,9 @@ var _ DpElasticSearcher = &DpElasticSearcherMock{}
 //
 //	}
 type DpElasticSearcherMock struct {
+	// CheckerFunc mocks the Checker method.
+	CheckerFunc func(ctx context.Context, state *health.CheckState) error
+
 	// CountFunc mocks the Count method.
 	CountFunc func(ctx context.Context, count client.Count) ([]byte, error)
 
@@ -195,6 +202,13 @@ type DpElasticSearcherMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Checker holds details about calls to the Checker method.
+		Checker []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// State is the state argument value.
+			State *health.CheckState
+		}
 		// Count holds details about calls to the Count method.
 		Count []struct {
 			// Ctx is the ctx argument value.
@@ -221,9 +235,46 @@ type DpElasticSearcherMock struct {
 			Params *client.QueryParams
 		}
 	}
+	lockChecker     sync.RWMutex
 	lockCount       sync.RWMutex
 	lockCreateIndex sync.RWMutex
 	lockMultiSearch sync.RWMutex
+}
+
+// Checker calls CheckerFunc.
+func (mock *DpElasticSearcherMock) Checker(ctx context.Context, state *health.CheckState) error {
+	if mock.CheckerFunc == nil {
+		panic("DpElasticSearcherMock.CheckerFunc: method is nil but DpElasticSearcher.Checker was just called")
+	}
+	callInfo := struct {
+		Ctx   context.Context
+		State *health.CheckState
+	}{
+		Ctx:   ctx,
+		State: state,
+	}
+	mock.lockChecker.Lock()
+	mock.calls.Checker = append(mock.calls.Checker, callInfo)
+	mock.lockChecker.Unlock()
+	return mock.CheckerFunc(ctx, state)
+}
+
+// CheckerCalls gets all the calls that were made to Checker.
+// Check the length with:
+//
+//	len(mockedDpElasticSearcher.CheckerCalls())
+func (mock *DpElasticSearcherMock) CheckerCalls() []struct {
+	Ctx   context.Context
+	State *health.CheckState
+} {
+	var calls []struct {
+		Ctx   context.Context
+		State *health.CheckState
+	}
+	mock.lockChecker.RLock()
+	calls = mock.calls.Checker
+	mock.lockChecker.RUnlock()
+	return calls
 }
 
 // Count calls CountFunc.
