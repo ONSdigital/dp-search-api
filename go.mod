@@ -22,7 +22,7 @@ require (
 	github.com/ONSdigital/dp-search-scrubber-api v0.4.1
 	github.com/ONSdigital/log.go/v2 v2.4.3
 	github.com/cucumber/godog v0.12.6
-	github.com/elastic/go-elasticsearch/v7 v7.10.0
+	github.com/elastic/go-elasticsearch/v7 v7.15.1
 	github.com/google/go-cmp v0.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/kelseyhightower/envconfig v1.4.0
