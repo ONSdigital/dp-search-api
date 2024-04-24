@@ -13,7 +13,6 @@ replace github.com/spf13/cobra => github.com/spf13/cobra v1.7.0
 
 require (
 	github.com/ONSdigital/dp-api-clients-go/v2 v2.260.0
-	github.com/ONSdigital/dp-authorisation v0.2.1
 	github.com/ONSdigital/dp-component-test v0.9.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.6.3
@@ -36,8 +35,6 @@ require (
 
 require (
 	github.com/ONSdigital/dp-mongodb-in-memory v1.7.0 // indirect
-	github.com/ONSdigital/dp-rchttp v1.0.0 // indirect
-	github.com/ONSdigital/go-ns v0.0.0-20210916104633-ac1c1c52327e // indirect
 	github.com/aws/aws-sdk-go v1.51.20 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/chromedp/cdproto v0.0.0-20240328024531-fe04f09ede24 // indirect
