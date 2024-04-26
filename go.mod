@@ -2,8 +2,6 @@ module github.com/ONSdigital/dp-search-api
 
 go 1.22
 
-toolchain go1.22.2
-
 // to fix: [CVE-2023-32731] CWE-Other
 replace google.golang.org/grpc => google.golang.org/grpc v1.55.0
 
