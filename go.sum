@@ -14,6 +14,7 @@ github.com/ONSdigital/dp-mongodb-in-memory v1.7.0 h1:lBmjAOfnp4JPZU/Krq+ad1sqknT
 github.com/ONSdigital/dp-mongodb-in-memory v1.7.0/go.mod h1:78zt2X+mhXlPlDoaAX19Hu462XPJIW/llN2vcUAAWSc=
 github.com/ONSdigital/dp-net/v2 v2.11.2 h1:S5WfcXHva1V8ZkVLS7ZhsvQjf3PPCkCM++NdGifV/uM=
 github.com/ONSdigital/dp-net/v2 v2.11.2/go.mod h1:yZ0lIzM4WfIr6Ujl1lpkCsPHay0n/VQfZJUZjlYB8MY=
+github.com/ONSdigital/dp-otel-go v0.0.6 h1:awsGURwWqM04mzwVhs70Sx9QxIiMn5ta9UveKnnY9kA=
 github.com/ONSdigital/dp-otel-go v0.0.6/go.mod h1:aIuVLp8+X/8asAjkEsQ7sP0JHamFE58Bovq2Ea2DePg=
 github.com/ONSdigital/dp-otel-go v0.0.7 h1:O4F+7CTYbPeY9kF550RC8x8WJtILBZfcHL/38EdaWZU=
 github.com/ONSdigital/dp-otel-go v0.0.7/go.mod h1:3dIbySH98wXfHOx/zWLBPv4W/QsBiMarSfKavG2xTOw=
