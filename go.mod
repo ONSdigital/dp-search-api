@@ -18,7 +18,7 @@ require (
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.6.3
 	github.com/ONSdigital/dp-net/v2 v2.11.2
-	github.com/ONSdigital/dp-otel-go v0.0.7
+	github.com/ONSdigital/dp-otel-go v0.0.6
 	github.com/ONSdigital/dp-search-scrubber-api v0.4.1
 	github.com/ONSdigital/log.go/v2 v2.4.3
 	github.com/cucumber/godog v0.14.1
@@ -89,7 +89,7 @@ require (
 	go.opentelemetry.io/contrib/propagators/ot v1.26.0 // indirect
 	go.opentelemetry.io/otel v1.26.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.26.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.26.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.26.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.26.0 // indirect
 	go.opentelemetry.io/otel/trace v1.26.0 // indirect
