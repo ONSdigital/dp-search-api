@@ -43,6 +43,10 @@ debug: ## Used to run code locally
 debug-run: ## Used to build and run code locally in debug mode
 	HUMAN_LOG=1 DEBUG=1 go run -tags 'debug' -race $(LDFLAGS) main.go
 
+.PHONY: debug-watch
+debug-watch: 
+	reflex -d none -c ./reflex
+
 .PHONY: delimiter-%
 delimiter-%:
 	@echo '===================${GREEN} $* ${RESET}==================='
