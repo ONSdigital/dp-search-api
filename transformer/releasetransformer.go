@@ -90,17 +90,18 @@ type ESReleaseResponseHit struct {
 }
 
 type ESReleaseSourceDocument struct {
-	URI         string       `json:"uri"`
-	Title       string       `json:"title"`
-	Summary     string       `json:"summary"`
-	ReleaseDate string       `json:"release_date,omitempty"`
-	Published   bool         `json:"published"`
-	Cancelled   bool         `json:"cancelled"`
-	Finalised   bool         `json:"finalised"`
-	Survey      string       `json:"survey"`
-	Keywords    []string     `json:"keywords,omitempty"`
-	Language    string       `json:"language,omitempty"`
-	DateChanges []dateChange `json:"date_changes,omitempty"`
+	URI             string       `json:"uri"`
+	Title           string       `json:"title"`
+	Summary         string       `json:"summary"`
+	ReleaseDate     string       `json:"release_date,omitempty"`
+	Published       bool         `json:"published"`
+	Cancelled       bool         `json:"cancelled"`
+	Finalised       bool         `json:"finalised"`
+	Survey          string       `json:"survey"`
+	Keywords        []string     `json:"keywords,omitempty"`
+	Language        string       `json:"language,omitempty"`
+	DateChanges     []dateChange `json:"date_changes,omitempty"`
+	ProvisionalDate string       `json:"provisional_date,omitempty"`
 }
 
 type dateChange struct {
@@ -211,16 +212,17 @@ func buildRelease(hit ESReleaseResponseHit, highlighter *strings.Replacer) Relea
 	r := Release{
 		URI: hit.Source.URI,
 		Description: ReleaseDescription{
-			Title:       sd.Title,
-			Summary:     sd.Summary,
-			ReleaseDate: sd.ReleaseDate,
-			Published:   sd.Published,
-			Cancelled:   sd.Cancelled,
-			Finalised:   sd.Finalised,
-			Postponed:   isPostponed(sd),
-			Census:      isCensus(sd),
-			Keywords:    sd.Keywords,
-			Language:    sd.Language,
+			Title:           sd.Title,
+			Summary:         sd.Summary,
+			ReleaseDate:     sd.ReleaseDate,
+			Published:       sd.Published,
+			Cancelled:       sd.Cancelled,
+			Finalised:       sd.Finalised,
+			Postponed:       isPostponed(sd),
+			Census:          isCensus(sd),
+			Keywords:        sd.Keywords,
+			Language:        sd.Language,
+			ProvisionalDate: sd.ProvisionalDate,
 		},
 	}
 

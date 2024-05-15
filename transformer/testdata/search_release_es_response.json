@@ -43,7 +43,8 @@
               "topics":null,
               "finalised":true,
               "cancelled":false,
-              "published":false
+              "published":false,
+              "provisional_date": "August to September"
             },
             "highlight":{
               "summary":[

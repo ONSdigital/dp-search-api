@@ -22,6 +22,7 @@
         "census":false,
         "national_statistic":false,
         "latest_release":false,
+        "provisional_date": "August to September",
         "contact":{
           "name":"Sarah Caul",
           "telephone":"+44 (0)1633 456490",
@@ -47,6 +48,7 @@
         "national_statistic":true,
         "next_release":"22 November 2018",
         "latest_release":false,
+        "provisional_date": "2018-08-23",
         "contact":{
           "name":"Yanitsa Petkova ",
           "telephone":"+44 (0)1633 651599 ",
