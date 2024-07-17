@@ -191,7 +191,7 @@ paths:
           required: false
           default: "release_date_asc"
         - in: query
-          name: q
+          name: query
           description: "Query keywords"
           type: string
           required: false
@@ -206,17 +206,23 @@ paths:
           type: string
           required: false
         - in: query
-          name: upcoming
-          description: "Determines whether to return Upcoming Release Calendar Entries or Published Releases"
-          type: boolean
+          name: release-type
+          description: "The type of releases to include in the results."
+          type: string
           required: false
-          default: false
+          default: type-published
         - in: query
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
           type: boolean
           required: false
           default: true
+        - in: query
+          name: census
+          description: Whether to only include census releases in the results.
+          type: boolean
+          required: false
+          default: false
       responses:
         200:
           description: OK
