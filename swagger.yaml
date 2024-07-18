@@ -219,7 +219,7 @@ paths:
           default: true
         - in: query
           name: census
-          description: Whether to only include census releases in the results.
+          description: "Whether to only include census releases in the results."
           type: boolean
           required: false
           default: false
