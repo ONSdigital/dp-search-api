@@ -38,7 +38,7 @@ func TestSearchReleasesHandlerFunc(t *testing.T) {
 	searchHandler := SearchReleasesHandlerFunc(validator, builder, searcher, transformer)
 
 	convey.Convey("Should return BadRequest for invalid limit parameter", t, func() {
-		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?limit=test", nil)
+		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?limit=test", http.NoBody)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
@@ -48,7 +48,7 @@ func TestSearchReleasesHandlerFunc(t *testing.T) {
 	})
 
 	convey.Convey("Should return BadRequest for invalid offset parameter", t, func() {
-		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?offset=test", nil)
+		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?offset=test", http.NoBody)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
@@ -58,7 +58,7 @@ func TestSearchReleasesHandlerFunc(t *testing.T) {
 	})
 
 	convey.Convey("Should return BadRequest for invalid sort parameter", t, func() {
-		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?sort=test", nil)
+		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?sort=test", http.NoBody)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
@@ -68,7 +68,7 @@ func TestSearchReleasesHandlerFunc(t *testing.T) {
 	})
 
 	convey.Convey("Should return valid response for correct parameters", t, func() {
-		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?query=test", nil)
+		req := httptest.NewRequest("GET", "http://localhost:8080/search/releases?query=test", http.NoBody)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
