@@ -13,38 +13,6 @@ tags:
   - name: "public"
   - name: "private"
 paths:
-  /departments/search:
-    get:
-      tags:
-        - public
-      summary: "Department query API"
-      description: "Department query API which returns matching links to other departments"
-      parameters:
-        - in: query
-          name: q
-          description: "Query search term"
-          type: string
-          required: true
-        - in: query
-          name: limit
-          description: "The number of items requested, defaulted to 50 and limited to 1000."
-          type: integer
-          required: false
-        - in: query
-          name: offset
-          description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
-          type: integer
-          required: false
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/DepartmentResponse"
-        400:
-          description: Query term not specified
-        500:
-          description: Internal server error
-
   /health:
     get:
       tags:
