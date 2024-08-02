@@ -398,26 +398,6 @@ definitions:
     required:
       - total
 
-  DepartmentResponse:
-    type: object
-    properties:
-      count:
-        type: number
-        description: "Number of search results which match query"
-        example: 80
-      took:
-        type: number
-        description: "Time taken to execute query in milliseconds"
-        example: 530
-      items:
-        type: array
-        description: "List of matching content items for the current page"
-        items:
-          $ref: "#/definitions/DepartmentItem"
-    required:
-      - count
-      - took
-
   Dimension: 
     type: object
     properties:
@@ -626,26 +606,3 @@ definitions:
         type: array
         items:
           type: string
-
-  DepartmentItem:
-    type: object
-    properties:
-      code:
-        type: string
-      name:
-        type: string
-      url:
-        type: string
-      terms:
-        type: array
-        items:
-          type: string
-      matches:
-        type: array
-        items:
-          type: object
-          properties:
-            terms:
-              type: array
-              items:
-                type: string
