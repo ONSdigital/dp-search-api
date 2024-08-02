@@ -470,7 +470,6 @@ definitions:
               type: string
           unit:
             type: string
-
         required:
           - summary
           - title
@@ -491,8 +490,8 @@ definitions:
       count:
         type: integer
     required:
-      - "type"
-      - "count"
+      - type
+      - count
 
   Release:
     type: object
