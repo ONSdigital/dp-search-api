@@ -506,83 +506,60 @@ definitions:
   Release:
     type: object
     properties:
+      uri:
+        type: string
+      date_changes:
+        type: array
+        items:
+          type: object
+          properties:
+            previous_date:
+              type: string
+            change_notice:
+              type: string
       description:
         type: object
         properties:
-          cancelled:
-            type: boolean
-          cancellation_notice:
-            type: array
-            items:
-              type: string
-          census:
-            type: boolean
-          contact:
-            type: object
-            properties:
-              email:
-                type: string
-              name:
-                type: string
-              telephone:
-                type: string
-            required:
-              - name
-              - email
-          dataset_id:
+          title:
             type: string
-          edition:
+          summary:
             type: string
-          finalised:
-              type: boolean
-          keywords:
-            type: array
-            items:
-              type: string
-          latest_release:
-            type: boolean
-          language:
-            type: string
-            example: "English"
-          meta_description:
-            type: string
-          national_statistic:
-            type: boolean
-          next_release:
-            type: string
-            example: "14 August 2015"
-          postponed:
-            type: boolean
-          provisional_date:
+          release_date:
             type: string
             format: date-time
           published:
             type: boolean
-          release_date:
+          cancelled:
+            type: boolean
+          finalised:
+            type: boolean
+          postponed:
+            type: boolean
+          census:
+            type: boolean
+          keywords:
+            type: array
+            items:
+              type: string
+          provisional_date:
             type: string
             format: date-time
-          source:
-            type: string
-          summary:
-            type: string
-          title:
+          language:
             type: string
         required:
+          - title
+          - summary
+          - release_date
+          - published
           - cancelled
-          - census
           - finalised
           - postponed
-          - published
-          - release_date
-          - summary
-          - title
+          - census
       highlight:
         $ref: "#/definitions/Highlight"
-      uri:
-        type: string
     required:
-      - description
       - uri
+      - description
 
   Highlight:
     description: "Fields that contain at least 1 matching term from query 'q' parameter. The values contain the following embedded tags \"...<em class=\"highlight\">{matched term}</em>...\""
