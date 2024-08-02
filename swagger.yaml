@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  description: "Search API"
+  description: "The Search and Release API lets you search and retrieve various releases. Use this API to query datasets, articles, and publications by search terms, content types, and filters like topics, population types, and dimensions. It supports pagination, sorting, and highlighting of search results. Additionally, it includes endpoints for checking the health status of the API and creating new Elasticsearch indexes."
   version: "1.0.0"
-  title: "The Search and Release API lets you search and retrieve various releases. Use this API to query datasets, articles, and publications by search terms, content types, and filters like topics, population types, and dimensions. It supports pagination, sorting, and highlighting of search results. Additionally, it includes endpoints for checking the health status of the API and creating new Elasticsearch indexes."
+  title: "Search API"
   license:
     name: "Open Government Licence v3.0"
     url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
