@@ -379,10 +379,6 @@ definitions:
         type: number
         description: "Number of confirmed Releases"
         example: 5
-      postponed:
-        type: number
-        description: "Number of postponed Releases"
-        example: 5
       published:
         type: number
         description: "Number of published Releases"
