@@ -282,9 +282,13 @@ definitions:
         type: number
         description: "Time taken to execute query in milliseconds"
         example: 530
+      distinct_items_count:
+        type: integer
+        description: "Count of distinct items that match the query"
+        example: 100
       dimensions:
         type: array
-        description: "List of population types included in results"
+        description: "List of dimensions included in results"
         items:
           $ref: "#/definitions/CountItem"
       content_types:
@@ -292,7 +296,7 @@ definitions:
         description: "List of content types included in results"
         items:
           $ref: "#/definitions/CountItem"
-      population_types:
+      population_type:
         type: array
         description: "List of population types included in results"
         items:
@@ -312,7 +316,7 @@ definitions:
         description: "List of suggested alternative similar search queries"
         items:
           type: string
-      alternative_suggestions:
+      additional_suggestions:
         type: array
         description: "List of suggested alternative search queries from current search query"
         items:
@@ -321,6 +325,7 @@ definitions:
     required:
       - count
       - took
+      - distinct_items_count
       - content_types
       - items
 
