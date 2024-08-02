@@ -341,14 +341,6 @@ definitions:
         type: number
         description: "Time taken to execute query in milliseconds"
         example: 530
-      limit:
-        type: number
-        description: "The number of Releases returned in the payload"
-        example: 10
-      offset:
-        type: number
-        description: "The offset of the first Release in the releases payload from the first Release in the complete ordered set of Releases which match the query"
-        example: 130
       breakdown:
         description: "Breakdown of the total number of Releases into defined categories"
         $ref: "#/definitions/Breakdown"
@@ -359,8 +351,6 @@ definitions:
             $ref: "#/definitions/Release"
     required:
       - took
-      - limit
-      - offset
       - breakdown
       - releases
 
