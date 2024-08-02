@@ -565,21 +565,11 @@ definitions:
     description: "Fields that contain at least 1 matching term from query 'q' parameter. The values contain the following embedded tags \"...<em class=\"highlight\">{matched term}</em>...\""
     type: object
     properties:
-      dataset_id:
-        type: string
-      edition:
-        type: string
-      keywords:
-        type: array
-        items:
-          type: string
-      meta_description:
-        type: string
       summary:
         type: string
       title:
         type: string
-      topics:
+      keywords:
         type: array
         items:
           type: string
