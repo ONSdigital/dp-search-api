@@ -39,11 +39,10 @@ paths:
           description: "Query search term."
           type: string
           required: true
-        - in: query   
+        - in: query
           name: content_type
           description: "Comma separated list of content types to be returned."
           type: array
-          uniqueItems: true
           items:
             type: string
           collectionFormat: csv
@@ -52,7 +51,6 @@ paths:
           name: topics
           description: "Comma separated list of topics to be returned."
           type: array
-          uniqueItems: true
           items:
             type: string
           collectionFormat: csv
@@ -61,7 +59,6 @@ paths:
           name: population_types
           description: "Comma separated list of population type names to filter the results (or)."
           type: array
-          uniqueItems: true
           items:
             type: string
           collectionFormat: csv
@@ -70,11 +67,10 @@ paths:
           name: dimensions
           description: "Comma separated list of dimension names to filter the results (and)."
           type: array
-          uniqueItems: true
           items:
             type: string
-          required: false
           collectionFormat: csv
+          required: false
         - in: query
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
@@ -88,14 +84,16 @@ paths:
           required: false
         - in: query
           name: limit
-          description: "The number of items requested, defaulted to 50 and limited to 1000."
+          description: "The number of items requested, defaulted to 10 and limited to 1000."
           type: integer
           required: false
+          default: 10
         - in: query
           name: offset
           description: "The first row of resources to retrieve, starting at 0. Use this parameter as a pagination mechanism along with the limit parameter."
           type: integer
           required: false
+          default: 0
         - in: query
           name: fromDate
           description: "Specifies candidate results by their ReleaseDate, which must be on or after the fromDate"
@@ -121,17 +119,17 @@ paths:
         500:
           description: Internal server error
     post:
-     tags:
-       - private
-     summary: "Create new empty ONS Elasticsearch index"
-     description: "Request a new search index and receive the name of the new index created in response. Endpoint requires service or user authentication."
-     responses:
-       200:
-         description: OK
-         schema:
-           $ref: "#/definitions/PostSearchResponse"
-       500:
-         description: Internal server error
+      tags:
+        - private
+      summary: "Create new empty ONS Elasticsearch index"
+      description: "Request a new search index and receive the name of the new index created in response. Endpoint requires service or user authentication."
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/PostSearchResponse"
+        500:
+          description: Internal server error
 
   /search/releases:
     get:
