@@ -43,6 +43,7 @@ const (
 	ParamNLPWeighting       = "nlp_weighting"
 	ParamDatasetIDs         = "dataset_ids"
 	ParamURIPrefix          = "uri_prefix"
+	ParamCDID               = "cdid"
 )
 
 // defaultContentTypes is an array of all valid content types, which is the default param value
@@ -115,6 +116,29 @@ func parseURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, e
 		}
 	}
 	return uriPrefix, nil
+}
+
+// validateCDIDs checks that all the provided CDIDs are not blank and 4 characters long
+// returns nil and an empty array if all of them are valid,
+// returns error and a list of CDIDs that are not valid, if at least one is not valid
+func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
+	if len(cdids) == 0 {
+		return nil, nil
+	}
+
+	for _, cdid := range cdids {
+		if cdid == "" {
+			invalidCDIDs = append(invalidCDIDs, "<blank>")
+		} else if len(cdid) != 4 {
+			invalidCDIDs = append(invalidCDIDs, cdid)
+		}
+	}
+
+	if len(invalidCDIDs) > 0 {
+		err = fmt.Errorf("CDID(s) not valid: %v", invalidCDIDs)
+	}
+
+	return invalidCDIDs, err
 }
 
 var serverErrorMessage = "internal server error"
@@ -209,6 +233,18 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 		return "", nil, nil
 	}
 
+	cdidParam := paramGet(params, ParamCDID, "")
+	cdid := []string{}
+	if cdidParam != "" {
+		cdid = strings.Split(cdidParam, ",")
+		disallowed, validationErr := validateCDIDs(cdid)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamCDID, "value": cdidParam, "disallowed": disallowed})
+			http.Error(w, fmt.Sprint("Invalid cdid(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
+			return "", nil, nil
+		}
+	}
+
 	datasetIDs, datasetErr := parseDatasetIDs(ctx, params)
 	if datasetErr != nil {
 		http.Error(w, datasetErr.Error(), http.StatusBadRequest)
@@ -216,7 +252,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	}
 
 	// Create SearchRequest
-	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, nlpCriteria)
+	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, cdid, nlpCriteria)
 
 	// Process additional parameters like Population Types, Dimensions, and Dataset IDs
 	reqSearch.PopulationTypes = parsePopulationTypes(params)
@@ -289,7 +325,7 @@ func parseAndValidateSort(ctx context.Context, params url.Values, validator Quer
 	return validatedSort.(string), nil
 }
 
-func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
+func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, cdid []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
 	reqSearch := &query.SearchRequest{
 		Term:           sanitisedQuery,
 		From:           offset,
@@ -303,6 +339,7 @@ func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes 
 		Now:            time.Now().UTC().Format(time.RFC3339),
 		DatasetIDs:     datasetIDs,
 		URIPrefix:      uriPrefix,
+		CDID:           cdid,
 	}
 
 	if nlpCriteria != nil {
