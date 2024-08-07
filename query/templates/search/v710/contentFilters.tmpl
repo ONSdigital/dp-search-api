@@ -62,6 +62,15 @@
         }
       }
       {{ end }}
+      {{ if .CDID }}
+      , {
+        "bool": {
+          "should": [
+            {{ template "cdidFilters.tmpl". }}
+          ]
+        }
+      }
+      {{ end }}
       ]
     }
   }
