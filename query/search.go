@@ -47,6 +47,7 @@ type SearchRequest struct {
 	Dimensions          []*DimensionRequest
 	Now                 string
 	DatasetIDs          []string
+	CDID                []string
 }
 
 type PopulationTypeRequest struct {
@@ -185,6 +186,7 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/nlpCategory.tmpl",
 		"templates/search/v710/nlpLocation.tmpl",
 		"templates/search/v710/datasetFilters.tmpl",
+		"templates/search/v710/cdidFilters.tmpl",
 	)
 
 	return templates, err
