@@ -46,6 +46,7 @@ type SearchRequest struct {
 	PopulationTypes     []*PopulationTypeRequest
 	Dimensions          []*DimensionRequest
 	Now                 string
+	DatasetID           []string
 }
 
 type PopulationTypeRequest struct {
@@ -183,12 +184,13 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/dimensionsFilters.tmpl",
 		"templates/search/v710/nlpCategory.tmpl",
 		"templates/search/v710/nlpLocation.tmpl",
+		"templates/search/v710/datasetFilters.tmpl",
 	)
 
 	return templates, err
 }
 
-// SetupV710Search loads v710 templates for use by the search handler and should be done only once
+// SetupV710Count loads v710 templates for use by the search handler and should be done only once
 func SetupV710Count() (*template.Template, error) {
 	// Load the templates once, the main entry point for the templates is search.tmpl. The search.tmpl takes
 	// the SearchRequest struct and uses the Request to build up the multi-query queries that is used to query elastic.
@@ -211,8 +213,8 @@ func (sb *Builder) BuildSearchQuery(_ context.Context, reqParams *SearchRequest,
 	}
 
 	var doc bytes.Buffer
-	err := sb.searchTemplates.Execute(&doc, reqParams)
 
+	err := sb.searchTemplates.Execute(&doc, reqParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "creation of search from template failed")
 	}

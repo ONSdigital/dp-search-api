@@ -72,6 +72,14 @@ paths:
           collectionFormat: csv
           required: false
         - in: query
+          name: dataset_id
+          description: "Comma separated list of dataset IDs to filter the results."
+          type: array
+          items:
+            type: string
+          collectionFormat: csv
+          required: false
+        - in: query
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
           type: boolean

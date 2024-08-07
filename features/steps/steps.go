@@ -17,6 +17,8 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.APIFeature.RegisterSteps(ctx)
 	ctx.Step(`^elasticsearch is healthy`, c.elasticSearchIsHealthy)
 	ctx.Step(`^elasticsearch returns one item in search response$`, c.es7xSuccessfullyReturnSingleSearchResult)
+	ctx.Step(`^elasticsearch returns one item in search response with dataset ID$`, c.es7xSuccessfullyReturnSingleSearchResultWithDatasetIDFilter)
+	ctx.Step(`^elasticsearch returns multiple items in search response for the dataset IDs$`, c.es7xSuccessfullyReturnMultipleSearchResultWithDatasetIDFilter)
 	ctx.Step(`^elasticsearch returns multiple items in search response with topics filter$`, c.es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter)
 	ctx.Step(`^elasticsearch returns multiple items with distinct topic count in search response$`, c.es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicCount)
 	ctx.Step(`^elasticsearch returns one item in search response with topics filter$`, c.es7xSuccessfullyReturnSingleSearchResultWithTopicFilter)
@@ -72,6 +74,22 @@ func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithTopicFilter() 
 	return nil
 }
 
+func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithDatasetIDFilter() error {
+	body, err := os.ReadFile("./features/testdata/es_multiple_search_dataset_results.json")
+	if err != nil {
+		return err
+	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
+
+	return nil
+}
+
 func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicCount() error {
 	body, err := os.ReadFile("./features/testdata/es_mulitple_search_topics_results_with_distinct_topics_count.json")
 	if err != nil {
@@ -90,6 +108,22 @@ func (c *Component) es7xSuccessfullyReturnMultipleSearchResultWithDistinctTopicC
 
 func (c *Component) es7xSuccessfullyReturnSingleSearchResultWithTopicFilter() error {
 	body, err := os.ReadFile("./features/testdata/es_single_search_topic_results.json")
+	if err != nil {
+		return err
+	}
+	countbody, err := os.ReadFile("./features/testdata/es_single_count_result.json")
+	if err != nil {
+		return err
+	}
+
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Get("/elasticsearch/_msearch").Reply(200).Body(body)
+	c.FakeElasticSearchAPI.fakeHTTP.NewHandler().Post("/elasticsearch/_count").Reply(200).Body(countbody)
+
+	return nil
+}
+
+func (c *Component) es7xSuccessfullyReturnSingleSearchResultWithDatasetIDFilter() error {
+	body, err := os.ReadFile("./features/testdata/es_single_search_dataset_results.json")
 	if err != nil {
 		return err
 	}
