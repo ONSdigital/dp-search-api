@@ -129,7 +129,7 @@ func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
 	for _, cdid := range cdids {
 		if cdid == "" {
 			invalidCDIDs = append(invalidCDIDs, "<blank>")
-		} else if len(cdid) != 4 {
+		} else if len(cdid) != 4 && len(cdid) != 5 {
 			invalidCDIDs = append(invalidCDIDs, cdid)
 		}
 	}
