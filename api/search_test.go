@@ -282,14 +282,49 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
-		req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd,cd1234", http.NoBody)
-		resp := httptest.NewRecorder()
+		c.Convey("Too short CDID", func() {
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd", http.NoBody)
+			resp := httptest.NewRecorder()
 
-		searchHandler.ServeHTTP(resp, req)
-		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
-		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
-		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+			searchHandler.ServeHTTP(resp, req)
+			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+		})
+
+		c.Convey("Too long CDID", func() {
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd1234", http.NoBody)
+			resp := httptest.NewRecorder()
+
+			searchHandler.ServeHTTP(resp, req)
+			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+		})
+
+		c.Convey("CDID with special character", func() {
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd-1", http.NoBody)
+			resp := httptest.NewRecorder()
+
+			searchHandler.ServeHTTP(resp, req)
+			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+		})
+
+		c.Convey("Invalid CDID in list", func() {
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd,cdid", http.NoBody)
+			resp := httptest.NewRecorder()
+
+			searchHandler.ServeHTTP(resp, req)
+			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+		})
 	})
 
 	c.Convey("Should return OK for valid cdid params", t, func() {
