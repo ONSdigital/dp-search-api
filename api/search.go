@@ -315,7 +315,6 @@ func processSort(ctx context.Context, params url.Values, validator QueryParamVal
 
 func parseCDID(ctx context.Context, params url.Values) (cdid []string, err error) {
 	cdidParam := paramGet(params, ParamCDID, "")
-	cdid = []string{}
 	if cdidParam != "" {
 		cdid = strings.Split(cdidParam, ",")
 		disallowed, validationErr := validateCDIDs(cdid)
