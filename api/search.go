@@ -126,11 +126,15 @@ func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
 		return nil, nil
 	}
 
+	validationRegex := regexp.MustCompile(`^[a-zA-Z0-9]{4,5}$`)
+
 	for _, cdid := range cdids {
-		if cdid == "" {
-			invalidCDIDs = append(invalidCDIDs, "<blank>")
-		} else if len(cdid) != 4 && len(cdid) != 5 {
-			invalidCDIDs = append(invalidCDIDs, cdid)
+		if !validationRegex.MatchString(cdid) {
+			if cdid == "" {
+				invalidCDIDs = append(invalidCDIDs, "<blank>")
+			} else {
+				invalidCDIDs = append(invalidCDIDs, cdid)
+			}
 		}
 	}
 
