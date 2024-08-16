@@ -43,7 +43,7 @@ const (
 	ParamNLPWeighting       = "nlp_weighting"
 	ParamDatasetIDs         = "dataset_ids"
 	ParamURIPrefix          = "uri_prefix"
-	ParamCDID               = "cdid"
+	ParamCDIDs              = "cdids"
 )
 
 // defaultContentTypes is an array of all valid content types, which is the default param value
@@ -237,7 +237,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 		return "", nil, nil
 	}
 
-	cdid, cdidErr := parseCDID(ctx, params)
+	cdids, cdidErr := parseCDID(ctx, params)
 	if cdidErr != nil {
 		http.Error(w, cdidErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
@@ -250,7 +250,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	}
 
 	// Create SearchRequest
-	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, cdid, nlpCriteria)
+	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, cdids, nlpCriteria)
 
 	// Process additional parameters like Population Types, Dimensions, and Dataset IDs
 	reqSearch.PopulationTypes = parsePopulationTypes(params)
@@ -314,12 +314,12 @@ func processSort(ctx context.Context, params url.Values, validator QueryParamVal
 }
 
 func parseCDID(ctx context.Context, params url.Values) (cdid []string, err error) {
-	cdidParam := paramGet(params, ParamCDID, "")
+	cdidParam := paramGet(params, ParamCDIDs, "")
 	if cdidParam != "" {
 		cdid = strings.Split(cdidParam, ",")
 		disallowed, validationErr := validateCDIDs(cdid)
 		if validationErr != nil {
-			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamCDID, "value": cdidParam, "disallowed": disallowed})
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamCDIDs, "value": cdidParam, "disallowed": disallowed})
 			return nil, validationErr
 		}
 	}
@@ -371,7 +371,7 @@ func parseAndValidateSort(ctx context.Context, params url.Values, validator Quer
 	return validatedSort.(string), nil
 }
 
-func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, cdid []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
+func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, cdids []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
 	reqSearch := &query.SearchRequest{
 		Term:           sanitisedQuery,
 		From:           offset,
@@ -385,7 +385,7 @@ func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes 
 		Now:            time.Now().UTC().Format(time.RFC3339),
 		DatasetIDs:     datasetIDs,
 		URIPrefix:      uriPrefix,
-		CDID:           cdid,
+		CDIDs:          cdids,
 	}
 
 	if nlpCriteria != nil {

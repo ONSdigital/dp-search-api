@@ -47,7 +47,7 @@ type SearchRequest struct {
 	Dimensions          []*DimensionRequest
 	Now                 string
 	DatasetIDs          []string
-	CDID                []string
+	CDIDs               []string
 }
 
 type PopulationTypeRequest struct {

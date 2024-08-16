@@ -283,7 +283,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
 		c.Convey("Too short CDID", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd", http.NoBody)
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdids=cd", http.NoBody)
 			resp := httptest.NewRecorder()
 
 			searchHandler.ServeHTTP(resp, req)
@@ -294,7 +294,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Too long CDID", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd1234", http.NoBody)
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdids=cd1234", http.NoBody)
 			resp := httptest.NewRecorder()
 
 			searchHandler.ServeHTTP(resp, req)
@@ -305,7 +305,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("CDID with special character", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd-1", http.NoBody)
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdids=cd-1", http.NoBody)
 			resp := httptest.NewRecorder()
 
 			searchHandler.ServeHTTP(resp, req)
@@ -316,7 +316,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		})
 
 		c.Convey("Invalid CDID in list", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdid=cd,cdid", http.NoBody)
+			req := httptest.NewRequest("GET", "http://localhost:8080/search?cdids=cd,cdid", http.NoBody)
 			resp := httptest.NewRecorder()
 
 			searchHandler.ServeHTTP(resp, req)
@@ -334,7 +334,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
 
-		req := httptest.NewRequest("GET", baseURL+validQueryParam+"&cdid=cdid,cdid1", http.NoBody)
+		req := httptest.NewRequest("GET", baseURL+validQueryParam+"&cdids=cdid,cdid1", http.NoBody)
 		resp := httptest.NewRecorder()
 
 		searchHandler.ServeHTTP(resp, req)
@@ -551,7 +551,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 				"&toDate=2023-10-10"+
 				"&dataset_ids=QNA,QDA"+
 				"&uri_prefix=/economy"+
-				"&cdid=id01,id02",
+				"&cdids=id01,id02",
 			http.NoBody)
 
 		resp := httptest.NewRecorder()
@@ -575,7 +575,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 			{Key: "pop1"}, {Key: "pop2"},
 		})
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.DatasetIDs, c.ShouldResemble, []string{"QNA", "QDA"})
-		c.So(qbMock.BuildSearchQueryCalls()[0].Req.CDID, c.ShouldResemble, []string{"id01", "id02"})
+
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.CDIDs, c.ShouldResemble, []string{"id01", "id02"})
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.URIPrefix, c.ShouldEqual, "/economy/")
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
