@@ -42,6 +42,7 @@ const (
 	ParamCensus             = "census"
 	ParamNLPWeighting       = "nlp_weighting"
 	ParamDatasetIDs         = "dataset_ids"
+	ParamURIPrefix          = "uri_prefix"
 )
 
 // defaultContentTypes is an array of all valid content types, which is the default param value
@@ -86,6 +87,30 @@ func validateContentTypes(contentTypes []string) (disallowed []string, err error
 	}
 
 	return disallowed, err
+}
+
+func validateUriPrefix(uriPrefix string) (validUriPrefix string, err error) {
+	parts := strings.Split(uriPrefix, ",")
+	uriPrefix = parts[0]
+
+	if len(uriPrefix) < 1 || !strings.HasPrefix(uriPrefix, "/") {
+		err = fmt.Errorf("invalid uri prefix parameter")
+		return "", err
+	}
+
+	return uriPrefix, nil
+}
+
+func processURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, err string) {
+	uriPrefix = paramGet(params, ParamURIPrefix, "")
+	if uriPrefix != "" {
+		uriPrefix, uriPrefixErr := validateUriPrefix(uriPrefix)
+		if uriPrefixErr != nil {
+			log.Warn(ctx, uriPrefixErr.Error(), log.Data{"param": ParamURIPrefix, "value": uriPrefix})
+			return "", uriPrefixErr.Error()
+		}
+	}
+	return uriPrefix, ""
 }
 
 var serverErrorMessage = "internal server error"
@@ -174,6 +199,12 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 		return "", nil, nil
 	}
 
+	uriPrefix, uriPrefixErr := processURIPrefix(ctx, params)
+	if uriPrefixErr != "" {
+		http.Error(w, uriPrefixErr, http.StatusBadRequest)
+		return "", nil, nil
+	}
+
 	datasetIDs, datasetErr := parseDatasetIDs(ctx, params)
 	if datasetErr != nil {
 		http.Error(w, datasetErr.Error(), http.StatusBadRequest)
@@ -181,7 +212,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	}
 
 	// Create SearchRequest
-	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, nlpCriteria)
+	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, nlpCriteria)
 
 	// Process additional parameters like Population Types, Dimensions, and Dataset IDs
 	reqSearch.PopulationTypes = parsePopulationTypes(params)
@@ -254,7 +285,7 @@ func parseAndValidateSort(ctx context.Context, params url.Values, validator Quer
 	return validatedSort.(string), nil
 }
 
-func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
+func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
 	reqSearch := &query.SearchRequest{
 		Term:           sanitisedQuery,
 		From:           offset,
@@ -267,6 +298,7 @@ func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes 
 		Highlight:      highlight,
 		Now:            time.Now().UTC().Format(time.RFC3339),
 		DatasetIDs:     datasetIDs,
+		URIPrefix:      uriPrefix,
 	}
 
 	if nlpCriteria != nil {
