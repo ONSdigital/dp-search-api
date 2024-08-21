@@ -13,6 +13,7 @@ type Config struct {
 	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
 	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
+	DebugMode                  bool          `envconfig:"DEBUG_MODE"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
@@ -48,6 +49,7 @@ func Get() (*Config, error) {
 		BindAddr:                   ":23900",
 		BerlinAPIURL:               "http://localhost:28900",
 		CategoryAPIURL:             "http://localhost:28800",
+		DebugMode:                  false,
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,

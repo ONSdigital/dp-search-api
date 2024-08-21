@@ -53,6 +53,15 @@
         }
       }
       {{ end }}
+      {{ if .DatasetIDs }}
+      , {
+        "bool": {
+          "should": [
+            {{ template "datasetFilters.tmpl". }}
+          ]
+        }
+      }
+      {{ end }}
       ]
     }
   }

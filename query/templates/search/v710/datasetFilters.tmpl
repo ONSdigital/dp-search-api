@@ -1,0 +1,8 @@
+{{range $i,$e := .DatasetIDs}}
+{{if $i}},{{end}}
+{
+   "match":{
+      "dataset_id": "{{.}}"
+   }
+}
+{{end}}

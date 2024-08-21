@@ -184,6 +184,49 @@ func TestSearchHandlerFunc(t *testing.T) {
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
 
+	c.Convey("Should return BadRequest for invalid dataset_ids params", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newDpElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?dataset_ids=q", http.NoBody)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid dataset_ids: q")
+		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
+	})
+
+	c.Convey("Should return OK for valid dataset_ids parameter", t, func() {
+		searchBytes, _ := json.Marshal(searches)
+		qbMock := newQueryBuilderMock(searchBytes, nil)
+		esMock := newDpElasticSearcherMock([]byte(validESResponse), nil)
+		trMock := newResponseTransformerMock([]byte(validTransformedResponse), nil)
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
+
+		req := httptest.NewRequest("GET", baseURL+validQueryParam+"&dataset_ids=QNA", http.NoBody)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		c.So(resp.Code, c.ShouldEqual, http.StatusOK)
+		c.So(resp.Body.String(), c.ShouldResemble, validTransformedResponse)
+		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 1)
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.Term, c.ShouldResemble, validQueryParam)
+		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
+		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
+		c.So(actualRequest, c.ShouldResemble, expectedQuery)
+		c.So(trMock.TransformSearchResponseCalls(), c.ShouldHaveLength, 1)
+		c.So(trMock.TransformSearchResponseCalls()[0].Highlight, c.ShouldBeTrue)
+		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
+		c.So(actualResponse, c.ShouldResemble, validESResponse)
+	})
+
 	c.Convey("Should return InternalError for errors returned from query builder", t, func() {
 		qbMock := newQueryBuilderMock(nil, errors.New("Something"))
 		esMock := newDpElasticSearcherMock(nil, nil)
@@ -380,7 +423,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 				"&dimensions=dim1,dim2"+
 				"&population_types=pop1,pop2"+
 				"&fromDate=2020-10-10"+
-				"&toDate=2023-10-10",
+				"&toDate=2023-10-10"+
+				"&dataset_ids=QNA,QDA",
 			http.NoBody)
 
 		resp := httptest.NewRecorder()
@@ -403,7 +447,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.PopulationTypes, c.ShouldResemble, []*query.PopulationTypeRequest{
 			{Key: "pop1"}, {Key: "pop2"},
 		})
-
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.DatasetIDs, c.ShouldResemble, []string{"QNA", "QDA"})
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		c.So(actualRequest, c.ShouldResemble, expectedQuery)

@@ -26,8 +26,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var debug = false
-
 const (
 	ParamQ                  = "q"
 	ParamSort               = "sort"
@@ -43,6 +41,7 @@ const (
 	ParamSubtypePostponed   = "subtype-postponed"
 	ParamCensus             = "census"
 	ParamNLPWeighting       = "nlp_weighting"
+	ParamDatasetIDs         = "dataset_ids"
 )
 
 // defaultContentTypes is an array of all valid content types, which is the default param value
@@ -109,65 +108,46 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 
 // CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryParamValidator, nlpCriteria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
+func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config, validator QueryParamValidator, nlpCriteria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
-	q := params.Get(ParamQ)
-	sanitisedQuery := sanitiseDoubleQuotes(q)
-	queryHasSpecialChars := checkForSpecialCharacters(sanitisedQuery)
-
-	if queryHasSpecialChars {
-		log.Info(ctx, "rejecting query as contained special characters", log.Data{"query": sanitisedQuery})
-		http.Error(w, "Invalid characters in query", http.StatusBadRequest)
+	// Sanitize and validate the query string
+	sanitisedQuery, err := sanitizeAndValidateQuery(ctx, w, params)
+	if err != nil {
 		return "", nil, nil
 	}
 
+	// Parse and validate other query parameters
 	highlight := paramGetBool(params, ParamHighlight, true)
 
-	topicsParam := paramGet(params, ParamTopics, "")
-	topics := sanitiseURLParams(topicsParam)
-	if topics != nil {
-		log.Info(ctx, "topic extracted and sanitised from the request url params", log.Data{
-			"param": ParamTopics,
-			"value": topics,
-		})
-	}
-
-	limitParam := paramGet(params, ParamLimit, "10")
-	limit, err := validator.Validate(ctx, ParamLimit, limitParam)
-	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": ParamLimit, "value": limitParam})
-		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+	topics, topicErr := parseTopics(ctx, params)
+	if topicErr != "" {
+		http.Error(w, topicErr, http.StatusBadRequest)
 		return "", nil, nil
 	}
 
-	offsetParam := paramGet(params, ParamOffset, "0")
-	offset, err := validator.Validate(ctx, ParamOffset, offsetParam)
-	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": ParamOffset, "value": offsetParam})
-		http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
+	limit, limitErr := parseLimit(ctx, params, validator)
+	if limitErr != "" {
+		http.Error(w, limitErr, http.StatusBadRequest)
 		return "", nil, nil
 	}
 
-	// read content type (expected CSV value), with default, to make sure some content types are
-	contentTypesParam := paramGet(params, ParamContentType, "")
-	contentTypes := defaultContentTypes
-	if contentTypesParam != "" {
-		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, validationErr := validateContentTypes(contentTypes)
-		if validationErr != nil {
-			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
-			http.Error(w, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ",")), http.StatusBadRequest)
-			return "", nil, nil
-		}
+	offset, offsetErr := parseOffset(ctx, params, validator)
+	if offsetErr != "" {
+		http.Error(w, offsetErr, http.StatusBadRequest)
+		return "", nil, nil
 	}
 
-	sortParam := paramGet(params, ParamSort, "relevance")
-	sort, err := validator.Validate(ctx, ParamSort, sortParam)
-	if err != nil {
-		log.Warn(ctx, err.Error(), log.Data{"param": ParamSort, "value": sortParam})
-		http.Error(w, "Invalid sort parameter", http.StatusBadRequest)
+	contentTypes, contentTypesErr := parseAndValidateContentTypes(ctx, params)
+	if contentTypesErr != "" {
+		http.Error(w, contentTypesErr, http.StatusBadRequest)
+		return "", nil, nil
+	}
+
+	sort, sortErr := parseAndValidateSort(ctx, params, validator)
+	if sortErr != "" {
+		http.Error(w, sortErr, http.StatusBadRequest)
 		return "", nil, nil
 	}
 
@@ -193,78 +173,225 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, validator QueryPar
 		return "", nil, nil
 	}
 
-	// create SearchRequest with all the compulsory values
-	reqSearch := &query.SearchRequest{
-		Term:           sanitisedQuery,
-		From:           offset.(int),
-		Size:           limit.(int),
-		Types:          contentTypes,
-		ReleasedAfter:  fromDate.(query.Date),
-		ReleasedBefore: toDate.(query.Date),
-		Topic:          topics,
-		SortBy:         sort.(string),
-		Highlight:      highlight,
-		Now:            time.Now().UTC().Format(time.RFC3339),
+	datasetIDs, datasetErr := parseDatasetIDs(ctx, params)
+	if datasetErr != "" {
+		http.Error(w, datasetErr, http.StatusBadRequest)
+		return "", nil, nil
 	}
 
-	if nlpCriteria != nil && nlpCriteria.UseCategory {
-		reqSearch.NlpCategories = nlpCriteria.Categories
-	}
+	// Create SearchRequest
+	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, nlpCriteria)
 
-	if nlpCriteria != nil && nlpCriteria.UseSubdivision {
-		reqSearch.NlpSubdivisionWords = nlpCriteria.SubdivisionWords
-	}
+	// Process additional parameters like Population Types, Dimensions, and Dataset IDs
+	reqSearch.PopulationTypes = parsePopulationTypes(params)
+	reqSearch.Dimensions = parseDimensions(params)
 
-	// population types only used if provided
-	popTypesParam := paramGet(params, ParamPopulationTypes, "")
-	if popTypesParam != "" {
-		popTypes := strings.Split(popTypesParam, ",")
-		p := make([]*query.PopulationTypeRequest, len(popTypes))
-		for i, popType := range popTypes {
-			p[i] = &query.PopulationTypeRequest{
-				Key: popType,
-			}
-		}
-		reqSearch.PopulationTypes = p
-	}
+	// Create CountRequest
+	reqCount := createCountRequest(sanitisedQuery)
 
-	// dimensions only used if provided
-	dimensionsParam := paramGet(params, ParamDimensions, "")
-	if dimensionsParam != "" {
-		dims := strings.Split(dimensionsParam, ",")
-		d := make([]*query.DimensionRequest, len(dims))
-		for i, dim := range dims {
-			d[i] = &query.DimensionRequest{
-				Key: dim,
-			}
-		}
-		reqSearch.Dimensions = d
-	}
-
-	// create CountRequest with the sanitized query.
-	// Note that this is only used to generate the `distinct_items_count`.
-	// Other counts are done as aggregations of the search request.
-	reqCount := &query.CountRequest{
-		Term:        sanitisedQuery,
-		CountEnable: true,
-	}
-
-	if debug {
+	if cfg.DebugMode {
 		log.Info(ctx, "[DEBUG]", log.Data{"search_request": reqSearch})
 	}
 
-	return q, reqSearch, reqCount
+	return params.Get(ParamQ), reqSearch, reqCount
+}
+
+func sanitizeAndValidateQuery(ctx context.Context, w http.ResponseWriter, params url.Values) (string, error) {
+	q := params.Get(ParamQ)
+	sanitisedQuery := sanitiseDoubleQuotes(q)
+	queryHasSpecialChars := checkForSpecialCharacters(sanitisedQuery)
+
+	if queryHasSpecialChars {
+		log.Info(ctx, "rejecting query as it contains special characters", log.Data{"query": sanitisedQuery})
+		http.Error(w, "Invalid characters in query", http.StatusBadRequest)
+		return "", errors.New("invalid query")
+	}
+
+	return sanitisedQuery, nil
+}
+
+func parseLimit(ctx context.Context, params url.Values, validator QueryParamValidator) (limit int, err string) {
+	limitParam := paramGet(params, ParamLimit, "10")
+	validatedLimit, validationErr := validator.Validate(ctx, ParamLimit, limitParam)
+	if validationErr != nil {
+		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamLimit, "value": limitParam})
+		return 0, "Invalid limit parameter"
+	}
+	return validatedLimit.(int), ""
+}
+
+func parseOffset(ctx context.Context, params url.Values, validator QueryParamValidator) (offset int, err string) {
+	offsetParam := paramGet(params, ParamOffset, "0")
+	validatedOffset, validationErr := validator.Validate(ctx, ParamOffset, offsetParam)
+	if validationErr != nil {
+		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamOffset, "value": offsetParam})
+		return 0, "Invalid offset parameter"
+	}
+	return validatedOffset.(int), ""
+}
+
+func parseAndValidateContentTypes(ctx context.Context, params url.Values) (contentTypes []string, err string) {
+	contentTypesParam := paramGet(params, ParamContentType, "")
+	contentTypes = defaultContentTypes
+	if contentTypesParam != "" {
+		contentTypes = strings.Split(contentTypesParam, ",")
+		disallowed, validationErr := validateContentTypes(contentTypes)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
+			return nil, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ","))
+		}
+	}
+	return contentTypes, ""
+}
+
+func parseAndValidateSort(ctx context.Context, params url.Values, validator QueryParamValidator) (sort, err string) {
+	sortParam := paramGet(params, ParamSort, "relevance")
+	validatedSort, validationErr := validator.Validate(ctx, ParamSort, sortParam)
+	if validationErr != nil {
+		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamSort, "value": sortParam})
+		return "", "Invalid sort parameter"
+	}
+	return validatedSort.(string), ""
+}
+
+func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
+	reqSearch := &query.SearchRequest{
+		Term:           sanitisedQuery,
+		From:           offset,
+		Size:           limit,
+		Types:          contentTypes,
+		ReleasedAfter:  fromDate,
+		ReleasedBefore: toDate,
+		Topic:          topics,
+		SortBy:         sort,
+		Highlight:      highlight,
+		Now:            time.Now().UTC().Format(time.RFC3339),
+		DatasetIDs:     datasetIDs,
+	}
+
+	if nlpCriteria != nil {
+		if nlpCriteria.UseCategory {
+			reqSearch.NlpCategories = nlpCriteria.Categories
+		}
+		if nlpCriteria.UseSubdivision {
+			reqSearch.NlpSubdivisionWords = nlpCriteria.SubdivisionWords
+		}
+	}
+
+	return reqSearch
+}
+
+func parsePopulationTypes(params url.Values) []*query.PopulationTypeRequest {
+	popTypesParam := paramGet(params, ParamPopulationTypes, "")
+	if popTypesParam == "" {
+		return nil
+	}
+	popTypes := strings.Split(popTypesParam, ",")
+	p := make([]*query.PopulationTypeRequest, len(popTypes))
+	for i, popType := range popTypes {
+		p[i] = &query.PopulationTypeRequest{Key: popType}
+	}
+	return p
+}
+
+func parseDimensions(params url.Values) []*query.DimensionRequest {
+	dimensionsParam := paramGet(params, ParamDimensions, "")
+	if dimensionsParam == "" {
+		return nil
+	}
+	dims := strings.Split(dimensionsParam, ",")
+	d := make([]*query.DimensionRequest, len(dims))
+	for i, dim := range dims {
+		d[i] = &query.DimensionRequest{Key: dim}
+	}
+	return d
+}
+
+func parseDatasetIDs(ctx context.Context, params url.Values) (datasetIDs []string, err string) {
+	datasetIDParam := paramGet(params, ParamDatasetIDs, "")
+	if datasetIDParam != "" {
+		datasetIDs = sanitiseURLParams(datasetIDParam)
+		disallowed, validationErr := validateDatasetIDs(datasetIDs)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamDatasetIDs, "value": datasetIDParam, "disallowed": disallowed})
+			return nil, fmt.Sprintf("Invalid dataset_ids: %s", strings.Join(disallowed, ","))
+		}
+	}
+	return datasetIDs, ""
+}
+
+func validateDatasetIDs(datasetIDs []string) (invalidDatasetIDs []string, err error) {
+	if len(datasetIDs) == 0 {
+		return nil, nil
+	}
+
+	for _, did := range datasetIDs {
+		if did == "" {
+			invalidDatasetIDs = append(invalidDatasetIDs, "<blank>")
+		} else if len(did) <= 1 {
+			invalidDatasetIDs = append(invalidDatasetIDs, did)
+		}
+	}
+
+	if len(invalidDatasetIDs) > 0 {
+		err = fmt.Errorf("datasetID(s) not valid: %v", invalidDatasetIDs)
+	}
+
+	return invalidDatasetIDs, err
+}
+
+func parseTopics(ctx context.Context, params url.Values) (topics []string, err string) {
+	topicsParam := paramGet(params, ParamTopics, "")
+	if topicsParam != "" {
+		topics = sanitiseURLParams(topicsParam)
+		disallowed, validationErr := validateTopics(topics)
+		if validationErr != nil {
+			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamTopics, "value": topicsParam, "disallowed": disallowed})
+			return nil, fmt.Sprintf("invalid topics: %s", strings.Join(disallowed, ","))
+		}
+	}
+	return topics, ""
+}
+
+func validateTopics(topics []string) (invalidTopics []string, err error) {
+	if len(topics) == 0 {
+		return nil, nil
+	}
+
+	for _, topicID := range topics {
+		if topicID == "" {
+			invalidTopics = append(invalidTopics, "<blank>")
+		} else if len(topicID) <= 1 || len(topicID) > 4 {
+			invalidTopics = append(invalidTopics, topicID)
+		}
+	}
+
+	if len(invalidTopics) > 0 {
+		err = fmt.Errorf("topic(s) not valid: %v", invalidTopics)
+	}
+
+	return invalidTopics, err
+}
+
+func createCountRequest(sanitisedQuery string) *query.CountRequest {
+	// create CountRequest with the sanitized query.
+	// Note that this is only used to generate the `distinct_items_count`.
+	// Other counts are done as aggregations of the search request.
+	return &query.CountRequest{
+		Term:        sanitisedQuery,
+		CountEnable: true,
+	}
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
-func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCriteria(ctx, params, cfg, queryBuilder, clList)
 
-		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
+		q, searchReq, countReq := CreateRequests(w, req, cfg, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
 			return // error already handled
 		}
@@ -283,7 +410,7 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 		}()
 
 		go func() {
-			processSearchQuery(ctx, clList.DpESClient, queryBuilder, searchReq, resDataChan)
+			processSearchQuery(ctx, cfg, clList.DpESClient, queryBuilder, searchReq, resDataChan)
 		}()
 
 		for i := 0; i < 2; i++ {
@@ -357,7 +484,7 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 
 		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
 
-		q, searchReq, countReq := CreateRequests(w, req, validator, nlpCriteria)
+		q, searchReq, countReq := CreateRequests(w, req, nlpConfig, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
 			return
 		}
@@ -471,7 +598,7 @@ func checkForSpecialCharacters(str string) bool {
 }
 
 // func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery, typesParam, sort string, topics []string, limit, offset int, responseDataChan chan []byte) {
-func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.SearchRequest, responseDataChan chan []byte) {
+func processSearchQuery(ctx context.Context, cfg *config.Config, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.SearchRequest, responseDataChan chan []byte) {
 	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, reqParams, true)
 	if err != nil {
 		log.Error(ctx, "creation of search query failed", err, log.Data{
@@ -497,7 +624,7 @@ func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearch
 		return
 	}
 
-	if debug {
+	if cfg.DebugMode {
 		for i, s := range searches {
 			log.Info(ctx, "[DEBUG] Search sent to elasticsearch", log.Data{"i": i, "header": s.Header, "query": string(s.Query)})
 		}
