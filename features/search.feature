@@ -37,5 +37,23 @@ Feature: Search endpoint should return data for requested search parameter
         And the response header "Content-Type" should be "text/plain; charset=utf-8"
         And I should receive the following response:
             """
-            invalid characters in query
+            Invalid characters in query
+            """
+
+    Scenario: When Searching with a valid uri_prefix I get multiple results
+        Given elasticsearch is healthy
+        And elasticsearch returns multiple items in search response
+        When I GET "/search?uri_prefix=/releases"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_multiple_search_results.json"
+
+    Scenario: When Searching with a invalid uri_refix I get a bad request response
+        Given elasticsearch is healthy
+        When I GET "/search?uri_prefix=economy"
+        Then the HTTP status code should be "400"
+        And the response header "Content-Type" should be "text/plain; charset=utf-8"
+        And I should receive the following response:
+            """
+            Invalid URI prefix parameter
             """
