@@ -117,6 +117,12 @@ paths:
           description: "Runs query through NLP processors to influence search weighting"
           type: boolean
           required: false
+        - name: uri_prefix
+          in: query
+          description: URI prefix to filter the search results
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description: OK
