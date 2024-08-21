@@ -67,6 +67,36 @@ func TestValidateContentTypes(t *testing.T) {
 	})
 }
 
+func TestValidateURIPrefix(t *testing.T) {
+	c.Convey("Should return valid URI prefix when the input is valid", t, func() {
+		validURIPrefix := "/economy"
+		result, err := validateURIPrefix(validURIPrefix)
+		c.So(err, c.ShouldBeNil)
+		c.So(result, c.ShouldEqual, validURIPrefix)
+	})
+
+	c.Convey("Should return error when the URI prefix is empty", t, func() {
+		emptyURIPrefix := ""
+		_, err := validateURIPrefix(emptyURIPrefix)
+		c.So(err, c.ShouldNotBeNil)
+		c.So(err.Error(), c.ShouldEqual, "Invalid URI prefix parameter")
+	})
+
+	c.Convey("Should return error when the URI prefix does not start with '/'", t, func() {
+		invalidURIPrefix := "economy"
+		_, err := validateURIPrefix(invalidURIPrefix)
+		c.So(err, c.ShouldNotBeNil)
+		c.So(err.Error(), c.ShouldEqual, "Invalid URI prefix parameter")
+	})
+
+	c.Convey("Should return the first part of URI prefix when comma separated", t, func() {
+		commaSeparatedURIPrefix := "/economy,/invalid"
+		result, err := validateURIPrefix(commaSeparatedURIPrefix)
+		c.So(err, c.ShouldBeNil)
+		c.So(result, c.ShouldEqual, "/economy")
+	})
+}
+
 func TestCheckForSpecialCharacters(t *testing.T) {
 	c.Convey("A string containing no special characters should return false", t, func() {
 		expected := false
@@ -225,6 +255,24 @@ func TestSearchHandlerFunc(t *testing.T) {
 		c.So(trMock.TransformSearchResponseCalls()[0].Highlight, c.ShouldBeTrue)
 		actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
 		c.So(actualResponse, c.ShouldResemble, validESResponse)
+	})
+
+	c.Convey("Should return BadRequest for a uri_prefix that is not allowed", t, func() {
+		qbMock := newQueryBuilderMock(nil, nil)
+		esMock := newDpElasticSearcherMock(nil, nil)
+		trMock := newResponseTransformerMock(nil, nil)
+
+		searchHandler := SearchHandlerFunc(validator, qbMock, &config.Config{}, &ClientList{DpESClient: esMock}, trMock)
+
+		req := httptest.NewRequest("GET", "http://localhost:8080/search?uri_prefix=wrong", http.NoBody)
+		resp := httptest.NewRecorder()
+
+		searchHandler.ServeHTTP(resp, req)
+
+		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid URI prefix parameter")
+		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
+		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
 
 	c.Convey("Should return InternalError for errors returned from query builder", t, func() {
@@ -424,7 +472,8 @@ func TestSearchHandlerFunc(t *testing.T) {
 				"&population_types=pop1,pop2"+
 				"&fromDate=2020-10-10"+
 				"&toDate=2023-10-10"+
-				"&dataset_ids=QNA,QDA",
+				"&dataset_ids=QNA,QDA"+
+				"&uri_prefix=/economy",
 			http.NoBody)
 
 		resp := httptest.NewRecorder()
@@ -448,6 +497,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			{Key: "pop1"}, {Key: "pop2"},
 		})
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.DatasetIDs, c.ShouldResemble, []string{"QNA", "QDA"})
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.URIPrefix, c.ShouldEqual, "/economy")
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		c.So(actualRequest, c.ShouldResemble, expectedQuery)
