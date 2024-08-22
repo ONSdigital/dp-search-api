@@ -89,13 +89,12 @@ func validateContentTypes(contentTypes []string) (disallowed []string, err error
 	return disallowed, err
 }
 
-func validateURIPrefix(uriPrefix string) (validUriPrefix string, err error) {
+func validateURIPrefix(uriPrefix string) (string, error) {
 	parts := strings.Split(uriPrefix, ",")
 	uriPrefix = parts[0]
 
 	if len(uriPrefix) < 1 || !strings.HasPrefix(uriPrefix, "/") {
-		err = fmt.Errorf("Invalid URI prefix parameter")
-		return "", err
+		return "", fmt.Errorf("Invalid URI prefix parameter")
 	}
 
 	return uriPrefix, nil
@@ -104,7 +103,8 @@ func validateURIPrefix(uriPrefix string) (validUriPrefix string, err error) {
 func processURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, err string) {
 	uriPrefix = paramGet(params, ParamURIPrefix, "")
 	if uriPrefix != "" {
-		uriPrefix, uriPrefixErr := validateURIPrefix(uriPrefix)
+		var uriPrefixErr error
+		uriPrefix, uriPrefixErr = validateURIPrefix(uriPrefix)
 		if uriPrefixErr != nil {
 			log.Warn(ctx, uriPrefixErr.Error(), log.Data{"param": ParamURIPrefix, "value": uriPrefix})
 			return "", uriPrefixErr.Error()
