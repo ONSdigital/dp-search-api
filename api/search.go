@@ -313,17 +313,17 @@ func processSort(ctx context.Context, params url.Values, validator QueryParamVal
 	return validatedSort.(string), ""
 }
 
-func parseCDID(ctx context.Context, params url.Values) (cdid []string, err error) {
+func parseCDID(ctx context.Context, params url.Values) (cdids []string, err error) {
 	cdidParam := paramGet(params, ParamCDIDs, "")
 	if cdidParam != "" {
-		cdid = strings.Split(cdidParam, ",")
-		disallowed, validationErr := validateCDIDs(cdid)
+		cdids = strings.Split(cdidParam, ",")
+		disallowed, validationErr := validateCDIDs(cdids)
 		if validationErr != nil {
 			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamCDIDs, "value": cdidParam, "disallowed": disallowed})
 			return nil, validationErr
 		}
 	}
-	return cdid, nil
+	return cdids, nil
 }
 
 func parseLimit(ctx context.Context, params url.Values, validator QueryParamValidator) (limit int, err error) {
