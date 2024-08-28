@@ -15,7 +15,7 @@ Feature: Search endpoint should return data for requested search parameter
           And the response header "Content-Type" should be "text/plain; charset=utf-8"
           And I should receive the following response:
             """
-            Invalid dataset_ids: q
+            invalid dataset_ids: q
             """
 
 
@@ -26,7 +26,7 @@ Feature: Search endpoint should return data for requested search parameter
           And the response header "Content-Type" should be "text/plain; charset=utf-8"
           And I should receive the following response:
             """
-            Invalid dataset_ids: d
+            invalid dataset_ids: d
             """
 
 

@@ -37,5 +37,5 @@ Feature: Search endpoint should return data for requested search parameter
         And the response header "Content-Type" should be "text/plain; charset=utf-8"
         And I should receive the following response:
             """
-            Invalid characters in query
+            invalid characters in query
             """

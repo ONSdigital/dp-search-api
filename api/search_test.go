@@ -107,7 +107,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid limit parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid limit parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -125,7 +125,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid limit parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid limit parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -143,7 +143,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid offset parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid offset parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -161,7 +161,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid offset parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid offset parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -179,7 +179,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid content_type(s): wrong1,wrong2")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid content_type(s): wrong1,wrong2")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -196,7 +196,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 		searchHandler.ServeHTTP(resp, req)
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid dataset_ids: q")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid dataset_ids: q")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -1018,7 +1018,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid limit parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid limit parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -1036,7 +1036,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid limit parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid limit parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -1054,7 +1054,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid offset parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid offset parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
@@ -1072,7 +1072,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid offset parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid offset parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})

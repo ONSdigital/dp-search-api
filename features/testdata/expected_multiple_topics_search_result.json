@@ -21,8 +21,8 @@
             "title": "Second address indicator",
             "uri": "/datasets/TS056/editions/2021/versions/4",
             "highlight": {},
-            "topics":  ["001", "002"],
-            "canonical_topic":  "123"
+            "topics":  ["0001", "0002"],
+            "canonical_topic":  "1234"
         },
         {
             "type": "dataset_landing_page",
@@ -33,8 +33,8 @@
             "title": "Title for Prasad Cantabular Test",
             "uri": "/datasets/my-cantabular-test/editions/my-cantabular-test-edition-1/versions/1",
             "highlight": {},
-            "topics":  ["003", "004"],
-            "canonical_topic":  "456"
+            "topics":  ["0003", "0004"],
+            "canonical_topic":  "5678"
         }
     ]
 }

@@ -28,8 +28,8 @@
               "summary": "This dataset provides Census 2021 estimates that classify usual residents in England and Wales by their use of a second address, and whether the second address is inside or outside the UK. The estimates are as at Census Day, 21 March 2021.",
               "type":"dataset_landing_page",
               "uri":"/datasets/TS056/editions/2021/versions/4",
-              "topics": ["001", "002"],
-              "canonical_topic": "123"
+              "topics": ["0001", "0002"],
+              "canonical_topic": "1234"
             },
             "highlight":{},
             "sort":[

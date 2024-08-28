@@ -13,7 +13,7 @@ type Config struct {
 	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
 	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
-	DebugMode                  bool          `envconfig:"DEBUG_MODE"`
+	DebugMode                  bool          `envconfig:"ENABLE_DEBUG"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`

@@ -21,8 +21,8 @@
       "title": "Second address indicator",
       "uri": "/datasets/TS056/editions/2021/versions/4",
       "highlight": {},
-      "topics":  ["001", "002"],
-      "canonical_topic":  "123"
+      "topics":  ["0001", "0002"],
+      "canonical_topic":  "1234"
     }
   ]
 }

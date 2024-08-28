@@ -112,9 +112,10 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	ctx := req.Context()
 	params := req.URL.Query()
 
-	// Sanitize and validate the query string
-	sanitisedQuery, err := sanitizeAndValidateQuery(ctx, w, params)
-	if err != nil {
+	// Sanitise and validate the query string
+	sanitisedQuery, sanitiseErr := sanitiseAndValidateQuery(ctx, params)
+	if sanitiseErr != nil {
+		http.Error(w, sanitiseErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
@@ -122,32 +123,32 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	highlight := paramGetBool(params, ParamHighlight, true)
 
 	topics, topicErr := parseTopics(ctx, params)
-	if topicErr != "" {
-		http.Error(w, topicErr, http.StatusBadRequest)
+	if topicErr != nil {
+		http.Error(w, topicErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	limit, limitErr := parseLimit(ctx, params, validator)
-	if limitErr != "" {
-		http.Error(w, limitErr, http.StatusBadRequest)
+	if limitErr != nil {
+		http.Error(w, limitErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	offset, offsetErr := parseOffset(ctx, params, validator)
-	if offsetErr != "" {
-		http.Error(w, offsetErr, http.StatusBadRequest)
+	if offsetErr != nil {
+		http.Error(w, offsetErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	contentTypes, contentTypesErr := parseAndValidateContentTypes(ctx, params)
-	if contentTypesErr != "" {
-		http.Error(w, contentTypesErr, http.StatusBadRequest)
+	if contentTypesErr != nil {
+		http.Error(w, contentTypesErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
 	sort, sortErr := parseAndValidateSort(ctx, params, validator)
-	if sortErr != "" {
-		http.Error(w, sortErr, http.StatusBadRequest)
+	if sortErr != nil {
+		http.Error(w, sortErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
@@ -174,8 +175,8 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	}
 
 	datasetIDs, datasetErr := parseDatasetIDs(ctx, params)
-	if datasetErr != "" {
-		http.Error(w, datasetErr, http.StatusBadRequest)
+	if datasetErr != nil {
+		http.Error(w, datasetErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
@@ -196,41 +197,40 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	return params.Get(ParamQ), reqSearch, reqCount
 }
 
-func sanitizeAndValidateQuery(ctx context.Context, w http.ResponseWriter, params url.Values) (string, error) {
+func sanitiseAndValidateQuery(ctx context.Context, params url.Values) (string, error) {
 	q := params.Get(ParamQ)
 	sanitisedQuery := sanitiseDoubleQuotes(q)
 	queryHasSpecialChars := checkForSpecialCharacters(sanitisedQuery)
 
 	if queryHasSpecialChars {
 		log.Info(ctx, "rejecting query as it contains special characters", log.Data{"query": sanitisedQuery})
-		http.Error(w, "Invalid characters in query", http.StatusBadRequest)
-		return "", errors.New("invalid query")
+		return "", errors.New("invalid characters in query")
 	}
 
 	return sanitisedQuery, nil
 }
 
-func parseLimit(ctx context.Context, params url.Values, validator QueryParamValidator) (limit int, err string) {
+func parseLimit(ctx context.Context, params url.Values, validator QueryParamValidator) (limit int, err error) {
 	limitParam := paramGet(params, ParamLimit, "10")
 	validatedLimit, validationErr := validator.Validate(ctx, ParamLimit, limitParam)
 	if validationErr != nil {
 		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamLimit, "value": limitParam})
-		return 0, "Invalid limit parameter"
+		return 0, errors.New("invalid limit parameter")
 	}
-	return validatedLimit.(int), ""
+	return validatedLimit.(int), nil
 }
 
-func parseOffset(ctx context.Context, params url.Values, validator QueryParamValidator) (offset int, err string) {
+func parseOffset(ctx context.Context, params url.Values, validator QueryParamValidator) (offset int, err error) {
 	offsetParam := paramGet(params, ParamOffset, "0")
 	validatedOffset, validationErr := validator.Validate(ctx, ParamOffset, offsetParam)
 	if validationErr != nil {
 		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamOffset, "value": offsetParam})
-		return 0, "Invalid offset parameter"
+		return 0, errors.New("invalid offset parameter")
 	}
-	return validatedOffset.(int), ""
+	return validatedOffset.(int), nil
 }
 
-func parseAndValidateContentTypes(ctx context.Context, params url.Values) (contentTypes []string, err string) {
+func parseAndValidateContentTypes(ctx context.Context, params url.Values) (contentTypes []string, err error) {
 	contentTypesParam := paramGet(params, ParamContentType, "")
 	contentTypes = defaultContentTypes
 	if contentTypesParam != "" {
@@ -238,20 +238,20 @@ func parseAndValidateContentTypes(ctx context.Context, params url.Values) (conte
 		disallowed, validationErr := validateContentTypes(contentTypes)
 		if validationErr != nil {
 			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
-			return nil, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ","))
+			return nil, fmt.Errorf("invalid content_type(s): %s", strings.Join(disallowed, ","))
 		}
 	}
-	return contentTypes, ""
+	return contentTypes, nil
 }
 
-func parseAndValidateSort(ctx context.Context, params url.Values, validator QueryParamValidator) (sort, err string) {
+func parseAndValidateSort(ctx context.Context, params url.Values, validator QueryParamValidator) (sort string, err error) {
 	sortParam := paramGet(params, ParamSort, "relevance")
 	validatedSort, validationErr := validator.Validate(ctx, ParamSort, sortParam)
 	if validationErr != nil {
 		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamSort, "value": sortParam})
-		return "", "Invalid sort parameter"
+		return "", errors.New("invalid sort parameter")
 	}
-	return validatedSort.(string), ""
+	return validatedSort.(string), nil
 }
 
 func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
@@ -307,17 +307,17 @@ func parseDimensions(params url.Values) []*query.DimensionRequest {
 	return d
 }
 
-func parseDatasetIDs(ctx context.Context, params url.Values) (datasetIDs []string, err string) {
+func parseDatasetIDs(ctx context.Context, params url.Values) (datasetIDs []string, err error) {
 	datasetIDParam := paramGet(params, ParamDatasetIDs, "")
 	if datasetIDParam != "" {
 		datasetIDs = sanitiseURLParams(datasetIDParam)
 		disallowed, validationErr := validateDatasetIDs(datasetIDs)
 		if validationErr != nil {
 			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamDatasetIDs, "value": datasetIDParam, "disallowed": disallowed})
-			return nil, fmt.Sprintf("Invalid dataset_ids: %s", strings.Join(disallowed, ","))
+			return nil, fmt.Errorf("invalid dataset_ids: %s", strings.Join(disallowed, ","))
 		}
 	}
-	return datasetIDs, ""
+	return datasetIDs, nil
 }
 
 func validateDatasetIDs(datasetIDs []string) (invalidDatasetIDs []string, err error) {
@@ -340,41 +340,46 @@ func validateDatasetIDs(datasetIDs []string) (invalidDatasetIDs []string, err er
 	return invalidDatasetIDs, err
 }
 
-func parseTopics(ctx context.Context, params url.Values) (topics []string, err string) {
+func parseTopics(ctx context.Context, params url.Values) (topics []string, err error) {
 	topicsParam := paramGet(params, ParamTopics, "")
 	if topicsParam != "" {
 		topics = sanitiseURLParams(topicsParam)
 		disallowed, validationErr := validateTopics(topics)
 		if validationErr != nil {
 			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamTopics, "value": topicsParam, "disallowed": disallowed})
-			return nil, fmt.Sprintf("invalid topics: %s", strings.Join(disallowed, ","))
+			return nil, fmt.Errorf("invalid topics: %s", strings.Join(disallowed, ","))
 		}
 	}
-	return topics, ""
+	return topics, nil
 }
 
 func validateTopics(topics []string) (invalidTopics []string, err error) {
+	// If no topics are provided, there's nothing to validate, so return nil for both results.
 	if len(topics) == 0 {
 		return nil, nil
 	}
 
+	// Iterate through each topic ID to validate it.
 	for _, topicID := range topics {
+		// Check if the topic ID is blank.
 		if topicID == "" {
-			invalidTopics = append(invalidTopics, "<blank>")
-		} else if len(topicID) <= 1 || len(topicID) > 4 {
-			invalidTopics = append(invalidTopics, topicID)
+			invalidTopics = append(invalidTopics, "<blank>") // Mark blank topic IDs as invalid.
+		} else if len(topicID) != 4 { // Check if the topic ID length is 4 characters.
+			invalidTopics = append(invalidTopics, topicID) // Mark topic IDs that are too short or too long as invalid.
 		}
 	}
 
+	// If any invalid topics were found, return an error listing the invalid topics.
 	if len(invalidTopics) > 0 {
 		err = fmt.Errorf("topic(s) not valid: %v", invalidTopics)
 	}
 
+	// Return the slice of invalid topics and any error.
 	return invalidTopics, err
 }
 
 func createCountRequest(sanitisedQuery string) *query.CountRequest {
-	// create CountRequest with the sanitized query.
+	// create CountRequest with the sanitised query.
 	// Note that this is only used to generate the `distinct_items_count`.
 	// Other counts are done as aggregations of the search request.
 	return &query.CountRequest{
@@ -476,15 +481,15 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.
 // TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, nlpConfig *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCriteria(ctx, params, nlpConfig, queryBuilder, clList)
+		nlpCriteria := getNLPCriteria(ctx, params, cfg, queryBuilder, clList)
 
-		q, searchReq, countReq := CreateRequests(w, req, nlpConfig, validator, nlpCriteria)
+		q, searchReq, countReq := CreateRequests(w, req, cfg, validator, nlpCriteria)
 		if searchReq == nil || countReq == nil {
 			return
 		}
@@ -533,15 +538,15 @@ func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBu
 	}
 }
 
-func getNLPCriteria(ctx context.Context, params url.Values, nlpConfig *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
+func getNLPCriteria(ctx context.Context, params url.Values, cfg *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
 	nlpWeightingRequested := paramGetBool(params, ParamNLPWeighting, false)
 
-	if nlpConfig.EnableNLPWeighting && nlpWeightingRequested {
+	if cfg.EnableNLPWeighting && nlpWeightingRequested {
 		nlpSettings := query.NlpSettings{}
 
 		log.Info(ctx, "Employing advanced natural language processing techniques to optimize Elasticsearch querying for enhanced result relevance.")
 
-		if err := json.Unmarshal([]byte(nlpConfig.NLPSettings), &nlpSettings); err != nil {
+		if err := json.Unmarshal([]byte(cfg.NLPSettings), &nlpSettings); err != nil {
 			log.Error(ctx, "problem unmarshaling NLPSettings", err)
 		}
 

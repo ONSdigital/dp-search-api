@@ -41,7 +41,7 @@ paths:
           required: true
         - in: query
           name: content_type
-          description: "Comma separated list of content types to be returned."
+          description: "Comma-separated list of content types to be returned."
           type: array
           items:
             type: string
@@ -49,7 +49,7 @@ paths:
           required: false
         - in: query
           name: topics
-          description: "Comma separated list of topics to be returned."
+          description: "Comma-separated list of topics to be returned."
           type: array
           items:
             type: string
@@ -57,7 +57,7 @@ paths:
           required: false
         - in: query
           name: population_types
-          description: "Comma separated list of population type names to filter the results (or)."
+          description: "Comma-separated list of population type names to filter the results (or)."
           type: array
           items:
             type: string
@@ -65,7 +65,7 @@ paths:
           required: false
         - in: query
           name: dimensions
-          description: "Comma separated list of dimension names to filter the results (and)."
+          description: "Comma-separated list of dimension names to filter the results (and)."
           type: array
           items:
             type: string
@@ -73,7 +73,7 @@ paths:
           required: false
         - in: query
           name: dataset_ids
-          description: "Comma separated list of dataset IDs to filter the results."
+          description: "Comma-separated list of dataset IDs to filter the results."
           type: array
           items:
             type: string
