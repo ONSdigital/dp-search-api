@@ -69,7 +69,7 @@ func TestValidateContentTypes(t *testing.T) {
 
 func TestValidateURIPrefix(t *testing.T) {
 	c.Convey("Should return valid URI prefix when the input is valid", t, func() {
-		validURIPrefix := "/economy"
+		validURIPrefix := "/economy/"
 		result, err := validateURIPrefix(validURIPrefix)
 		c.So(err, c.ShouldBeNil)
 		c.So(result, c.ShouldEqual, validURIPrefix)
@@ -93,7 +93,7 @@ func TestValidateURIPrefix(t *testing.T) {
 		commaSeparatedURIPrefix := "/economy,/invalid"
 		result, err := validateURIPrefix(commaSeparatedURIPrefix)
 		c.So(err, c.ShouldBeNil)
-		c.So(result, c.ShouldEqual, "/economy")
+		c.So(result, c.ShouldEqual, "/economy/")
 	})
 }
 
@@ -497,7 +497,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			{Key: "pop1"}, {Key: "pop2"},
 		})
 		c.So(qbMock.BuildSearchQueryCalls()[0].Req.DatasetIDs, c.ShouldResemble, []string{"QNA", "QDA"})
-		c.So(qbMock.BuildSearchQueryCalls()[0].Req.URIPrefix, c.ShouldEqual, "/economy")
+		c.So(qbMock.BuildSearchQueryCalls()[0].Req.URIPrefix, c.ShouldEqual, "/economy/")
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 1)
 		actualRequest := string(esMock.MultiSearchCalls()[0].Searches[0].Query)
 		c.So(actualRequest, c.ShouldResemble, expectedQuery)
