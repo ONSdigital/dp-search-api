@@ -94,14 +94,14 @@ func validateURIPrefix(uriPrefix string) (string, error) {
 	uriPrefix = parts[0]
 
 	if len(uriPrefix) < 1 || !strings.HasPrefix(uriPrefix, "/") {
-		return "", fmt.Errorf("Invalid URI prefix parameter")
+		return "", fmt.Errorf("invalid URI prefix parameter")
 	}
 
 	return uriPrefix, nil
 }
 
-func processURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, err string) {
-	uriPrefix = paramGet(params, ParamURIPrefix, "")
+func processURIPrefix(ctx context.Context, params url.Values) (string, string) {
+	uriPrefix := paramGet(params, ParamURIPrefix, "")
 	if uriPrefix != "" {
 		var uriPrefixErr error
 		uriPrefix, uriPrefixErr = validateURIPrefix(uriPrefix)

@@ -79,14 +79,14 @@ func TestValidateURIPrefix(t *testing.T) {
 		emptyURIPrefix := ""
 		_, err := validateURIPrefix(emptyURIPrefix)
 		c.So(err, c.ShouldNotBeNil)
-		c.So(err.Error(), c.ShouldEqual, "Invalid URI prefix parameter")
+		c.So(err.Error(), c.ShouldEqual, "invalid URI prefix parameter")
 	})
 
 	c.Convey("Should return error when the URI prefix does not start with '/'", t, func() {
 		invalidURIPrefix := "economy"
 		_, err := validateURIPrefix(invalidURIPrefix)
 		c.So(err, c.ShouldNotBeNil)
-		c.So(err.Error(), c.ShouldEqual, "Invalid URI prefix parameter")
+		c.So(err.Error(), c.ShouldEqual, "invalid URI prefix parameter")
 	})
 
 	c.Convey("Should return the first part of URI prefix when comma separated", t, func() {
@@ -270,7 +270,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 		searchHandler.ServeHTTP(resp, req)
 
 		c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-		c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid URI prefix parameter")
+		c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid URI prefix parameter")
 		c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 		c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 	})
