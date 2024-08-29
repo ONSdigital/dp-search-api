@@ -104,17 +104,17 @@ func validateURIPrefix(uriPrefix string) (string, error) {
 	return uriPrefix, nil
 }
 
-func parseURIPrefix(ctx context.Context, params url.Values) (string, string) {
-	uriPrefix := paramGet(params, ParamURIPrefix, "")
+func parseURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, err error) {
+	uriPrefix = paramGet(params, ParamURIPrefix, "")
 	if uriPrefix != "" {
 		var uriPrefixErr error
 		uriPrefix, uriPrefixErr = validateURIPrefix(uriPrefix)
 		if uriPrefixErr != nil {
 			log.Warn(ctx, uriPrefixErr.Error(), log.Data{"param": ParamURIPrefix, "value": uriPrefix})
-			return "", uriPrefixErr.Error()
+			return "", uriPrefixErr
 		}
 	}
-	return uriPrefix, ""
+	return uriPrefix, nil
 }
 
 var serverErrorMessage = "internal server error"
@@ -204,8 +204,8 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	}
 
 	uriPrefix, uriPrefixErr := parseURIPrefix(ctx, params)
-	if uriPrefixErr != "" {
-		http.Error(w, uriPrefixErr, http.StatusBadRequest)
+	if uriPrefixErr != nil {
+		http.Error(w, uriPrefixErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
 	}
 
