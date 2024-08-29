@@ -97,6 +97,10 @@ func validateURIPrefix(uriPrefix string) (string, error) {
 		return "", fmt.Errorf("invalid URI prefix parameter")
 	}
 
+	if !strings.HasSuffix(uriPrefix, "/") {
+		uriPrefix += "/"
+	}
+
 	return uriPrefix, nil
 }
 
