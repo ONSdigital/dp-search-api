@@ -100,7 +100,7 @@ func validateURIPrefix(uriPrefix string) (string, error) {
 	return uriPrefix, nil
 }
 
-func processURIPrefix(ctx context.Context, params url.Values) (string, string) {
+func parseURIPrefix(ctx context.Context, params url.Values) (string, string) {
 	uriPrefix := paramGet(params, ParamURIPrefix, "")
 	if uriPrefix != "" {
 		var uriPrefixErr error
@@ -199,7 +199,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 		return "", nil, nil
 	}
 
-	uriPrefix, uriPrefixErr := processURIPrefix(ctx, params)
+	uriPrefix, uriPrefixErr := parseURIPrefix(ctx, params)
 	if uriPrefixErr != "" {
 		http.Error(w, uriPrefixErr, http.StatusBadRequest)
 		return "", nil, nil
