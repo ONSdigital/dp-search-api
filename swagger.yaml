@@ -119,10 +119,9 @@ paths:
           required: false
         - name: uri_prefix
           in: query
-          description: URI prefix to filter the search results
+          description: URI prefix to filter the search results e.g. `/economy`
           required: false
-          schema:
-            type: string
+          type: string
       responses:
         200:
           description: OK
