@@ -139,7 +139,7 @@ func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
 	}
 
 	if len(invalidCDIDs) > 0 {
-		err = fmt.Errorf("CDID(s) not valid: %v", invalidCDIDs)
+		err = fmt.Errorf("invalid cdid(s): %v", strings.Join(invalidCDIDs, ","))
 	}
 
 	return invalidCDIDs, err
@@ -276,41 +276,6 @@ func sanitiseAndValidateQuery(ctx context.Context, params url.Values) (string, e
 		return "", errors.New("invalid characters in query")
 	}
 	return sanitisedQuery, nil
-}
-
-func processLimit(ctx context.Context, params url.Values, validator QueryParamValidator) (limit int, err string) {
-	limitParam := paramGet(params, ParamLimit, "10")
-	validatedLimit, validationErr := validator.Validate(ctx, ParamLimit, limitParam)
-	if validationErr != nil {
-		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamLimit, "value": limitParam})
-		return 0, "Invalid limit parameter"
-	}
-	return validatedLimit.(int), ""
-}
-
-func processContentTypes(ctx context.Context, params url.Values) (contentTypes []string, err string) {
-	// read content type (expected CSV value), with default, to make sure some content types are
-	contentTypesParam := paramGet(params, ParamContentType, "")
-	contentTypes = defaultContentTypes
-	if contentTypesParam != "" {
-		contentTypes = strings.Split(contentTypesParam, ",")
-		disallowed, validationErr := validateContentTypes(contentTypes)
-		if validationErr != nil {
-			log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamContentType, "value": contentTypesParam, "disallowed": disallowed})
-			return nil, fmt.Sprint("Invalid content_type(s): ", strings.Join(disallowed, ","))
-		}
-	}
-	return contentTypes, ""
-}
-
-func processSort(ctx context.Context, params url.Values, validator QueryParamValidator) (sort, err string) {
-	sortParam := paramGet(params, ParamSort, "relevance")
-	validatedSort, validationErr := validator.Validate(ctx, ParamSort, sortParam)
-	if validationErr != nil {
-		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamSort, "value": sortParam})
-		return "", "Invalid sort parameter"
-	}
-	return validatedSort.(string), ""
 }
 
 func parseCDID(ctx context.Context, params url.Values) (cdids []string, err error) {

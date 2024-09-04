@@ -288,7 +288,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 			searchHandler.ServeHTTP(resp, req)
 			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid cdid(s): ")
 			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 		})
@@ -299,7 +299,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 			searchHandler.ServeHTTP(resp, req)
 			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid cdid(s): ")
 			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 		})
@@ -310,7 +310,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 			searchHandler.ServeHTTP(resp, req)
 			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid cdid(s): ")
 			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 		})
@@ -321,7 +321,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 
 			searchHandler.ServeHTTP(resp, req)
 			c.So(resp.Code, c.ShouldEqual, http.StatusBadRequest)
-			c.So(resp.Body.String(), c.ShouldContainSubstring, "Invalid cdid(s): ")
+			c.So(resp.Body.String(), c.ShouldContainSubstring, "invalid cdid(s): ")
 			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 0)
 			c.So(esMock.MultiSearchCalls(), c.ShouldHaveLength, 0)
 		})
