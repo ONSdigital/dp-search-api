@@ -686,7 +686,6 @@ func checkForSpecialCharacters(str string) bool {
 	return re.MatchString(str)
 }
 
-// func processSearchQuery(ctx context.Context, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, sanitisedQuery, typesParam, sort string, topics []string, limit, offset int, responseDataChan chan []byte) {
 func processSearchQuery(ctx context.Context, cfg *config.Config, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.SearchRequest, responseDataChan chan []byte) {
 	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, reqParams, true)
 	if err != nil {
