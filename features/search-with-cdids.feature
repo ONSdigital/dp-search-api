@@ -23,7 +23,7 @@ Feature: Search endpoint should return data for requested cdid parameter
         And the response header "Content-Type" should be "text/plain; charset=utf-8"
         And I should receive the following response:
             """
-            invalid cdid(s): INVALID
+            invalid cdid(s) found
             """
     Scenario: When Searching with multiple invalid cdids I get a bad request response
         Given elasticsearch is healthy
@@ -32,7 +32,7 @@ Feature: Search endpoint should return data for requested cdid parameter
         And the response header "Content-Type" should be "text/plain; charset=utf-8"
         And I should receive the following response:
             """
-            invalid cdid(s): INVALID1,INVALID2
+            invalid cdid(s) found
             """
 
     Scenario: When Searching with a valid cdid but no matches I get zero results
