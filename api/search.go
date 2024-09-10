@@ -139,7 +139,7 @@ func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
 	}
 
 	if len(invalidCDIDs) > 0 {
-		err = fmt.Errorf("invalid cdid(s) found")
+		err = errors.New("invalid cdid(s) found")
 	}
 
 	return invalidCDIDs, err
