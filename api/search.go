@@ -118,7 +118,7 @@ func parseURIPrefix(ctx context.Context, params url.Values) (uriPrefix string, e
 	return uriPrefix, nil
 }
 
-// validateCDIDs checks that all the provided CDIDs are not blank and 4 characters long
+// validateCDIDs checks that all the provided CDIDs are not blank and 4 or 5 characters long
 // returns nil and an empty array if all of them are valid,
 // returns error and a list of CDIDs that are not valid, if at least one is not valid
 func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
@@ -139,7 +139,7 @@ func validateCDIDs(cdids []string) (invalidCDIDs []string, err error) {
 	}
 
 	if len(invalidCDIDs) > 0 {
-		err = fmt.Errorf("invalid cdid(s): %v", strings.Join(invalidCDIDs, ","))
+		err = fmt.Errorf("invalid cdid(s) found")
 	}
 
 	return invalidCDIDs, err
@@ -312,7 +312,6 @@ func parseOffset(ctx context.Context, params url.Values, validator QueryParamVal
 }
 
 func parseAndValidateContentTypes(ctx context.Context, params url.Values) (contentTypes []string, err error) {
-	// read content type (expected CSV value), with default, to make sure some content types are
 	contentTypesParam := paramGet(params, ParamContentType, "")
 	contentTypes = defaultContentTypes
 	if contentTypesParam != "" {
