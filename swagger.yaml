@@ -176,6 +176,7 @@ paths:
           type: string
           required: false
           default: "release_date_asc"
+          enum: ["release_date_asc", "release_date_desc", "title_asc", "title_desc", "relevance"]
         - in: query
           name: query
           description: "Query keywords"
@@ -197,6 +198,7 @@ paths:
           type: string
           required: false
           default: type-published
+          enum: ["type-upcoming", "type-published", "type-cancelled"]
         - in: query
           name: highlight
           description: "Determines whether to return HTML highlighted fields."
