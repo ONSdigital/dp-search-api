@@ -7,8 +7,13 @@ run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 10m
 linters-settings:
+  revive:
+    rules:
+      - name: unused-parameter
+        severity: error
+        disabled: true
   govet:
-    check-shadowing: true
+    shadow: true
   golint:
     min-confidence: 0
   gocyclo:

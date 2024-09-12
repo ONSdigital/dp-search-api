@@ -61,9 +61,9 @@ func (cli *Client) post(ctx context.Context, index, docType, action string, requ
 
 func buildContext(index, docType string) string {
 	ctx := ""
-	if len(index) > 0 {
+	if index != "" {
 		ctx = index + "/"
-		if len(docType) > 0 {
+		if docType != "" {
 			ctx += docType + "/"
 		}
 	}
