@@ -71,7 +71,8 @@ paths:
             type: string
           collectionFormat: csv
           required: false
-        - name: cdid
+        - in: query
+          name: cdid
           description: "Comma-separated list of cdids to filter the results (or)."
           type: array
           items:
