@@ -9,7 +9,7 @@ A Go application microservice to provide query functionality on the ONS Website
 Set up dependencies locally as follows:
 
 * In [dp-compose](https://github.com/ONSdigital/dp-compose) run `docker-compose up -d` to run ElasticSearch 7.10
-  * dp-compose will run Elasticsearch 7.10 on port 11200 to not conflict with ES 2.2 running on port 9200
+    * dp-compose will run Elasticsearch 7.10 on port 11200 to not conflict with ES 2.2 running on port 9200
 * If using the POST /search endpoint then authorisation for this requires running Vault and Zebedee as follows:
 * In any directory run `vault server -dev` as Zebedee has a dependency on Vault
 * In the zebedee directory run `./run.sh` to run Zebedee
@@ -38,6 +38,9 @@ environment variables, or with a link to a configuration guide.
 | BIND_ADDR                    | :23900                   | The host and port to bind to                                                                                       |
 | BERLIN_URL                   | "http://localhost:28900" | HTTP URL of the NLP Berlin API                                                                                     |
 | CATEGORY_URL                 | "http://localhost:28800" | HTTP URL of the NLP Category API                                                                                   |
+| DEFAULT_LIMIT                | 10                       | The default limit of search results in a page                                                                      |
+| DEFAULT_MAXIMUM_LIMIT        | 100                      | The default maximum limit of search results in a page                                                              |
+| DEFAULT_OFFSET               | 0                        | The default offset of search results                                                                               |
 | ELASTIC_SEARCH_URL           | "http://localhost:11200" | Http url of the ElasticSearch server                                                                               |
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  |
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) |
@@ -47,7 +50,7 @@ environment variables, or with a link to a configuration guide.
 | OTEL_BATCH_TIMEOUT           | 5s                       | Interval between pushes to OT Collector                                                                            |
 | OTEL_EXPORTER_OTLP_ENDPOINT  | "http://localhost:4317"  | URL for OpenTelemetry endpoint                                                                                     |
 | OTEL_SERVICE_NAME            | "dp-search-api"          | Service name to report to telemetry tools                                                                          |
-| OTEL_ENABLED                 | false                    | Feature flag to enable OpenTelemetry
+| OTEL_ENABLED                 | false                    | Feature flag to enable OpenTelemetry                                                                               |
 | SCRUBBER_URL                 | "http://localhost:28700" |                                                                                                                    |
 | ZEBEDEE_URL                  | "http://localhost:8082"  | The URL to Zebedee (for authorisation)                                                                             |
 

@@ -157,6 +157,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
 		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
 		RegisterPostSearch().
+		RegisterPostSearchUris(queryBuilder, cfg, searchTransformer).
 		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
 
 	go func() {

@@ -14,6 +14,9 @@ type Config struct {
 	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
 	BindAddr                   string        `envconfig:"BIND_ADDR"`
 	DebugMode                  bool          `envconfig:"ENABLE_DEBUG"`
+	DefaultLimit               int           `envconfig:"DEFAULT_LIMIT"`
+	DefaultMaximumLimit        int           `envconfig:"DEFAULT_MAXIMUM_LIMIT"`
+	DefaultOffset              int           `envconfig:"DEFAULT_OFFSET"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
@@ -50,6 +53,9 @@ func Get() (*Config, error) {
 		BerlinAPIURL:               "http://localhost:28900",
 		CategoryAPIURL:             "http://localhost:28800",
 		DebugMode:                  false,
+		DefaultLimit:               10,
+		DefaultMaximumLimit:        100,
+		DefaultOffset:              0,
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,

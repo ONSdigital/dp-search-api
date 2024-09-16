@@ -71,6 +71,12 @@ var defaultContentTypes = []string{
 	"timeseries_dataset",
 }
 
+type UrisRequest struct {
+	Uris   []string `json:"uris"`
+	Limit  int      `json:"limit,omitempty"`  // Limit is optional
+	Offset int      `json:"offset,omitempty"` // Offset is optional
+}
+
 // validateContentTypes checks that all the provided content types are allowed
 // returns nil and an empty array if all of them are allowed,
 // returns error and a list of content types that are not allowed, if at least one is not allowed
@@ -560,6 +566,154 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 			return
 		}
 	}
+}
+
+// HandleSearchUris handles the /search/uris endpoint
+func HandleSearchUris(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		// Parse the request body to extract URIs
+		var req UrisRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		if len(req.Uris) == 0 {
+			http.Error(w, "No URIs provided", http.StatusBadRequest)
+			return
+		}
+
+		// validate uris
+		for i, uri := range req.Uris {
+			validatedURI, err := validateURIsRequest(uri)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Invalid URI: %s", err.Error()), http.StatusBadRequest)
+				return
+			}
+			// Assign the validated URI back to the request URIs slice
+			req.Uris[i] = validatedURI
+		}
+
+		// Set limit and offset from the request body or fallback to config
+		limit := cfg.DefaultLimit   // Default limit from config
+		offset := cfg.DefaultOffset // Default offset from config
+
+		if req.Limit != 0 {
+			limit = req.Limit // Override with the provided limit, if present
+		}
+		if req.Limit > cfg.DefaultMaximumLimit {
+			limit = cfg.DefaultMaximumLimit
+		}
+		if req.Offset != 0 {
+			offset = req.Offset // Override with the provided offset, if present
+		}
+
+		// Build the search query using the QueryBuilder
+		searchRequest := &query.SearchRequest{
+			From:      offset,
+			Size:      limit,
+			Highlight: true,
+			Now:       time.Now().UTC().Format(time.RFC3339),
+			Uris:      req.Uris,
+		}
+
+		countRequest := &query.CountRequest{
+			CountEnable: true,
+		}
+
+		var (
+			resDataChan        = make(chan []byte)
+			resCountChan       = make(chan []byte)
+			responseSearchData []byte
+			responseCountData  []byte
+			count              int
+			err                error
+		)
+
+		go func() {
+			processCountQuery(ctx, clList.DpESClient, queryBuilder, countRequest, resCountChan)
+		}()
+
+		go func() {
+			processSearchQuery(ctx, cfg, clList.DpESClient, queryBuilder, searchRequest, resDataChan)
+		}()
+
+		for i := 0; i < 2; i++ {
+			select {
+			case responseSearchData = <-resDataChan:
+			case responseCountData = <-resCountChan:
+			}
+		}
+
+		if responseSearchData == nil {
+			log.Error(ctx, "call to elastic multisearch api failed", errors.New("nil response data"))
+			http.Error(w, "call to elastic multisearch api failed", http.StatusInternalServerError)
+			return
+		}
+
+		responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, "", searchRequest.Highlight)
+		if err != nil {
+			log.Error(ctx, "transformation of response data failed", err)
+			http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+			return
+		}
+
+		if responseCountData == nil {
+			log.Error(ctx, "call to elasticsearch count api failed due to", errors.New("nil response data"))
+			http.Error(w, "call to elasticsearch count api failed due to", http.StatusInternalServerError)
+			return
+		}
+		count, err = transformer.TransformCountResponse(ctx, responseCountData)
+		if err != nil {
+			log.Error(ctx, "transformation of response count data failed", err)
+			http.Error(w, "failed to transform count result", http.StatusInternalServerError)
+			return
+		}
+
+		var esSearchResponse models.SearchResponse
+		if SearchRespErr := json.Unmarshal(responseSearchData, &esSearchResponse); SearchRespErr != nil {
+			log.Error(ctx, "failed to unmarshal the essearchResponse data due to", SearchRespErr)
+			http.Error(w, "failed to unmarshal the essearchResponse data due to", http.StatusInternalServerError)
+			return
+		}
+
+		esSearchResponse.DistinctItemsCount = count
+		var responseDataErr error
+		responseSearchData, responseDataErr = json.Marshal(esSearchResponse)
+		if responseDataErr != nil {
+			log.Error(ctx, "failed to marshal the elasticsearch response data due to", responseDataErr)
+			http.Error(w, "failed to transform search result", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json;charset=utf-8")
+		if _, err := w.Write(responseSearchData); err != nil {
+			log.Error(ctx, "writing response failed", err)
+			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// validateURIsRequest ensures the URI starts with a "/"
+// It also checks that the URI length is greater than 0
+func validateURIsRequest(uri string) (string, error) {
+	// Trim any leading or trailing spaces
+	trimmedURI := strings.TrimSpace(uri)
+
+	// Check that the URI is not empty after trimming
+	if trimmedURI == "" {
+		return "", fmt.Errorf("URI cannot be empty")
+	}
+
+	// Add "/" at the beginning if it's missing
+	if !strings.HasPrefix(trimmedURI, "/") {
+		trimmedURI = "/" + trimmedURI
+	}
+
+	return trimmedURI, nil
 }
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.

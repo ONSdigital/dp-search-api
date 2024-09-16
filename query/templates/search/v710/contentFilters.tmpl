@@ -24,11 +24,12 @@
           ]
         }
       }
-      {{if or .URIPrefix .TopicWildcard .Topic}}
+      {{if or .URIPrefix .TopicWildcard .Topic .Uris}}
       , {
         "bool": {
           "should": [
             {{ template "topicFilters.tmpl". }}
+            {{ template "uriFilters.tmpl". }}
             {{ template "contentFilterOnURIPrefix.tmpl". }}
             {{ template "contentFilterOnTopicWildcard.tmpl". }}
           ]

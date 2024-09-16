@@ -136,6 +136,21 @@ func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
 	return a
 }
 
+// RegisterPostSearchUris registers the handler for POST /search/uris endpoint
+// enforcing required update permissions
+func (a *SearchAPI) RegisterPostSearchUris(builder QueryBuilder, cfg *config.Config, transformer ResponseTransformer) *SearchAPI {
+	a.Router.HandleFunc(
+		"/search/uris",
+		HandleSearchUris(
+			builder,
+			cfg,
+			a.clList,
+			transformer,
+		),
+	).Methods(http.MethodPost)
+	return a
+}
+
 // RegisterGetSearchRelease registers the handler for GET /search/releases endpoint
 // with the provided validator, query builder, searcher and validator
 func (a *SearchAPI) RegisterGetSearchReleases(validator QueryParamValidator, builder ReleaseQueryBuilder, transformer ReleaseResponseTransformer) *SearchAPI {

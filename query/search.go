@@ -48,6 +48,7 @@ type SearchRequest struct {
 	Now                 string
 	DatasetIDs          []string
 	CDIDs               []string
+	Uris                []string
 }
 
 type PopulationTypeRequest struct {
@@ -187,6 +188,7 @@ func SetupV710Search() (*template.Template, error) {
 		"templates/search/v710/nlpLocation.tmpl",
 		"templates/search/v710/datasetFilters.tmpl",
 		"templates/search/v710/cdidFilters.tmpl",
+		"templates/search/v710/uriFilters.tmpl",
 	)
 
 	return templates, err

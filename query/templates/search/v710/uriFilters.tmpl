@@ -1,0 +1,8 @@
+{{range $i, $e := .Uris}}
+{{if $i}},{{end}}
+{
+   "prefix": {
+      "uri": "{{.}}"
+   }
+}
+{{end}}
