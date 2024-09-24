@@ -14,6 +14,7 @@ import (
 	healthcheck "github.com/ONSdigital/dp-api-clients-go/v2/health"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/models"
 	"github.com/ONSdigital/dp-search-api/transformer"
 	c "github.com/smartystreets/goconvey/convey"
@@ -352,6 +353,110 @@ func TestGetReleaseCalendar(t *testing.T) {
 						c.So(doCalls[0].Req.URL.Path, c.ShouldEqual, "/search/releases")
 						c.So(doCalls[0].Req.URL.Query().Get("q"), c.ShouldEqual, "census")
 						c.So(doCalls[0].Req.Header["Authorization"], c.ShouldBeEmpty)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestGetSearchURIs(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	headers := http.Header{
+		Authorization: {"Bearer authorised-user"},
+	}
+
+	urisRequest := api.UrisRequest{
+		Uris: []string{
+			"/economy",
+		},
+	}
+
+	c.Convey("Given a request to get search URIs", t, func() {
+		body, err := json.Marshal(searchResults) // Assuming the response structure is similar
+		if err != nil {
+			t.Errorf("failed to setup test data, error: %v", err)
+		}
+
+		httpClient := newMockHTTPClient(
+			&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewReader(body)),
+			},
+			nil)
+
+		searchAPIClient := newSearchAPIClient(t, httpClient)
+
+		c.Convey("When GetSearchURIs is called", func() {
+			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+
+			c.Convey("Then the expected response body is returned", func() {
+				c.So(*resp, c.ShouldResemble, searchResults)
+
+				c.Convey("And no error is returned", func() {
+					c.So(err, c.ShouldBeNil)
+
+					c.Convey("And client.Do should be called once with the expected parameters", func() {
+						doCalls := httpClient.DoCalls()
+						c.So(doCalls, c.ShouldHaveLength, 1)
+						c.So(doCalls[0].Req.Method, c.ShouldEqual, "POST")
+						c.So(doCalls[0].Req.URL.Path, c.ShouldEqual, "/search/uris")
+						c.So(doCalls[0].Req.Header["Authorization"], c.ShouldResemble, []string{"Bearer authorised-user"})
+					})
+				})
+			})
+		})
+	})
+
+	c.Convey("Given a 400 response from search API", t, func() {
+		httpClient := newMockHTTPClient(&http.Response{StatusCode: http.StatusBadRequest}, nil)
+		searchAPIClient := newSearchAPIClient(t, httpClient)
+
+		c.Convey("When GetSearchURIs is called", func() {
+			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+
+			c.Convey("Then an error should be returned", func() {
+				c.So(err, c.ShouldNotBeNil)
+				c.So(err.Status(), c.ShouldEqual, http.StatusBadRequest)
+				c.So(err.Error(), c.ShouldEqual, "failed as unexpected code from search api: 400")
+
+				c.Convey("And the expected response body should be nil", func() {
+					c.So(resp, c.ShouldBeNil)
+
+					c.Convey("And client.Do should be called once with the expected parameters", func() {
+						doCalls := httpClient.DoCalls()
+						c.So(doCalls, c.ShouldHaveLength, 1)
+						c.So(doCalls[0].Req.Method, c.ShouldEqual, "POST")
+						c.So(doCalls[0].Req.URL.Path, c.ShouldEqual, "/search/uris")
+						c.So(doCalls[0].Req.Header["Authorization"], c.ShouldResemble, []string{"Bearer authorised-user"})
+					})
+				})
+			})
+		})
+	})
+
+	c.Convey("Given a 500 response from search API", t, func() {
+		httpClient := newMockHTTPClient(&http.Response{StatusCode: http.StatusInternalServerError}, nil)
+		searchAPIClient := newSearchAPIClient(t, httpClient)
+
+		c.Convey("When GetSearchURIs is called", func() {
+			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+
+			c.Convey("Then an error should be returned", func() {
+				c.So(err, c.ShouldNotBeNil)
+				c.So(err.Status(), c.ShouldEqual, http.StatusInternalServerError)
+
+				c.Convey("And the expected response body should be nil", func() {
+					c.So(resp, c.ShouldBeNil)
+
+					c.Convey("And client.Do should be called once with the expected parameters", func() {
+						doCalls := httpClient.DoCalls()
+						c.So(doCalls, c.ShouldHaveLength, 1)
+						c.So(doCalls[0].Req.Method, c.ShouldEqual, "POST")
+						c.So(doCalls[0].Req.URL.Path, c.ShouldEqual, "/search/uris")
+						c.So(doCalls[0].Req.Header["Authorization"], c.ShouldResemble, []string{"Bearer authorised-user"})
 					})
 				})
 			})

@@ -11,6 +11,7 @@ import (
 
 	healthcheck "github.com/ONSdigital/dp-api-clients-go/v2/health"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
+	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/models"
 	apiError "github.com/ONSdigital/dp-search-api/sdk/errors"
 	"github.com/ONSdigital/dp-search-api/transformer"
@@ -124,6 +125,34 @@ type ResponseInfo struct {
 	Body    []byte
 	Headers http.Header
 	Status  int
+}
+
+// PostSearchUris sends a POST request to the /search/uris endpoint
+func (cli *Client) PostSearchUris(ctx context.Context, options Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error) {
+	path := fmt.Sprintf("%s/search/uris", cli.hcCli.URL)
+
+	// Marshal the request body
+	body, err := json.Marshal(urisRequest)
+	if err != nil {
+		return nil, apiError.StatusError{
+			Err: fmt.Errorf("failed to marshal request body - error is: %v", err),
+		}
+	}
+
+	// Call the API
+	respInfo, apiErr := cli.callSearchAPI(ctx, path, http.MethodPost, options.Headers, body)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	var searchResponse models.SearchResponse
+	if err := json.Unmarshal(respInfo.Body, &searchResponse); err != nil {
+		return nil, apiError.StatusError{
+			Err: fmt.Errorf("failed to unmarshal search response - error is: %v", err),
+		}
+	}
+
+	return &searchResponse, nil
 }
 
 // callSearchAPI calls the Search API endpoint given by path for the provided REST method, request headers, and body payload.
