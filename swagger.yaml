@@ -220,6 +220,56 @@ paths:
         500:
           description: Internal server error
 
+  /search/uris:
+    post:
+      tags:
+        - public
+      summary: "Search URIs by prefix"
+      description: "Accepts a list of URIs and returns matching results based on provided criteria."
+      parameters:
+        - in: body
+          name: body
+          description: "Request object containing URIs and optional pagination parameters."
+          required: true
+          schema:
+            type: object
+            properties:
+              uris:
+                type: array
+                items:
+                  type: string
+                description: "List of URIs to filter the search results."
+                example: [ "/economy", "/health" ]
+              limit:
+                type: integer
+                description: "The number of items requested, defaulted to 10 and limited to 100."
+                example: 10
+              offset:
+                type: integer
+                description: "The first row of resources to retrieve, starting at 0."
+                example: 0
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: "The number of matching URIs."
+                example: 5
+              results:
+                type: array
+                items:
+                  type: string
+                description: "List of matching URIs."
+                example: [ "/economy/data", "/economy/reports" ]
+        400:
+          description: "Bad Request - Invalid request format or parameters"
+        500:
+          description: "Internal server error"
+
+
 definitions:
   Health:
     type: object
