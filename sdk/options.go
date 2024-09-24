@@ -69,6 +69,24 @@ func (o *Options) PopulationTypes(val string) *Options {
 	return o
 }
 
+// DatasetIDs sets the 'dataset_ids' Query parameter to the request
+func (o *Options) DatasetIDs(val string) *Options {
+	o.Query.Add(api.ParamDatasetIDs, val)
+	return o
+}
+
+// CDIDs sets the 'cdids' a.k.a timeseries_id Query parameter to the request
+func (o *Options) CDIDs(val string) *Options {
+	o.Query.Add(api.ParamCDIDs, val)
+	return o
+}
+
+// URIPrefix sets the 'uri_prefix' Query parameter to the request
+func (o *Options) URIPrefix(val string) *Options {
+	o.Query.Add(api.ParamURIPrefix, val)
+	return o
+}
+
 // Dimensions sets the 'dimensions' Query parameter to the request
 func (o *Options) Dimensions(val string) *Options {
 	o.Query.Set(api.ParamDimensions, val)
