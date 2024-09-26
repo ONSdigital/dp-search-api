@@ -141,7 +141,7 @@ func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
 func (a *SearchAPI) RegisterPostSearchURIs(builder QueryBuilder, cfg *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search/uris",
-		HandlerSearchURIs(
+		SearchURIsHandlerFunc(
 			builder,
 			cfg,
 			a.clList,
