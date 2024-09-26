@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -29,20 +30,21 @@ import (
 )
 
 const (
-	baseURL                  string = "http://localhost:8080/search?q="
-	highlightTrue            string = "&highlight=true"
-	highlightFalse           string = "&highlight=false"
-	limit1                   string = "&limit=1"
-	offset2                  string = "&offset=2"
-	rawTrue                  string = "&raw=true"
-	sortOrderRelevance       string = "&sort_order=relevance"
-	validQueryParam          string = "a"
-	validQueryDoc            string = `{"valid":"elastic search query"}`
-	validESResponse          string = `{"raw":"response"}`
-	validTransformedResponse string = `{"count":0,"took":0,"distinct_items_count":0,"topics":null,"content_types":null,"items":null}`
-	internalServerErrMsg            = "internal server error"
-	defaultNLPSettings       string = "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}"
-	nlpParamEnabled          string = "&nlp_weighting=true"
+	baseURL                            string = "http://localhost:8080/search?q="
+	highlightTrue                      string = "&highlight=true"
+	highlightFalse                     string = "&highlight=false"
+	limit1                             string = "&limit=1"
+	offset2                            string = "&offset=2"
+	rawTrue                            string = "&raw=true"
+	sortOrderRelevance                 string = "&sort_order=relevance"
+	validQueryParam                    string = "a"
+	validQueryDoc                      string = `{"valid":"elastic search query"}`
+	validESResponse                    string = `{"raw":"response"}`
+	validTransformedResponse           string = `{"count":0,"took":0,"distinct_items_count":0,"topics":null,"content_types":null,"items":null}`
+	validTransformedResponseWith2Items string = `{"count":2,"took":0,"distinct_items_count":0,"topics":null,"content_types":null,"items":null}`
+	internalServerErrMsg                      = "internal server error"
+	defaultNLPSettings                 string = "{\"category_weighting\": 1000000000.0, \"category_limit\": 100, \"default_state\": \"gb\"}"
+	nlpParamEnabled                    string = "&nlp_weighting=true"
 )
 
 func TestValidateContentTypes(t *testing.T) {
@@ -1128,6 +1130,86 @@ func TestSearchHandlerFunc(t *testing.T) {
 			c.So(trMock.TransformSearchResponseCalls()[0].Highlight, c.ShouldBeTrue)
 			actualResponse := string(trMock.TransformSearchResponseCalls()[0].ResponseData)
 			c.So(actualResponse, c.ShouldResemble, validESResponse)
+		})
+	})
+}
+
+func TestSearchURIsHandlerFunc(t *testing.T) {
+	searches := []client.Search{}
+	c.Convey("Test SearchURIsHandlerFunc", t, func() {
+		clMock := &ClientList{
+			DpESClient: newDpElasticSearcherMock([]byte(`{"raw": "response", "hits": {"total": {"value": 2, "relation": "eq"}, "hits": []}}`), nil),
+		}
+		trMock := newResponseTransformerMock([]byte(validTransformedResponseWith2Items), nil)
+		cfg := &config.Config{
+			DefaultLimit:        10,
+			DefaultOffset:       0,
+			DefaultMaximumLimit: 100,
+		}
+		searchBytes, _ := json.Marshal(searches)
+		qbMock := newQueryBuilderMock(searchBytes, nil)
+		c.Convey("When valid URIs are provided", func() {
+			urisRequest := URIsRequest{
+				URIs: []string{
+					"/release/1",
+					"/economy/dataset/2",
+				},
+				Limit:  5,
+				Offset: 0,
+			}
+			reqBody, err := json.Marshal(urisRequest)
+			c.So(err, c.ShouldBeNil)
+
+			req := httptest.NewRequest(http.MethodPost, "/search/uris", bytes.NewReader(reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler.ServeHTTP(rr, req)
+
+			c.So(rr.Code, c.ShouldEqual, http.StatusOK)
+
+			var resp models.SearchResponse
+			err = json.Unmarshal(rr.Body.Bytes(), &resp)
+			c.So(err, c.ShouldBeNil)
+
+			c.So(resp.Count, c.ShouldEqual, 2)
+		})
+
+		c.Convey("When request payload is invalid", func() {
+			invalidReqBody := []byte(`{invalid}`) // Malformed JSON to trigger decoding error
+
+			req := httptest.NewRequest(http.MethodPost, "/search/uris", bytes.NewReader(invalidReqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler.ServeHTTP(rr, req)
+
+			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(rr.Body.String(), c.ShouldContainSubstring, "Invalid request payload")
+		})
+
+		c.Convey("When no URIs are provided", func() {
+			emptyURIsRequest := URIsRequest{
+				URIs:  []string{},
+				Limit: 5,
+			}
+			reqBody, err := json.Marshal(emptyURIsRequest)
+			c.So(err, c.ShouldBeNil)
+
+			req := httptest.NewRequest(http.MethodPost, "/search/uris", bytes.NewReader(reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler.ServeHTTP(rr, req)
+
+			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(rr.Body.String(), c.ShouldContainSubstring, "No URIs provided")
 		})
 	})
 }
