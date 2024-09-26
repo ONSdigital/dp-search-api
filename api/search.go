@@ -568,8 +568,8 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 	}
 }
 
-// HandleSearchURIs handles the /search/uris endpoint
-func HandleSearchURIs(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+// HandlerSearchURIs handles the /search/uris endpoint
+func HandlerSearchURIs(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
