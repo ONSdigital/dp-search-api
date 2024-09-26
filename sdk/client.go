@@ -127,8 +127,8 @@ type ResponseInfo struct {
 	Status  int
 }
 
-// PostSearchUris sends a POST request to the /search/uris endpoint
-func (cli *Client) PostSearchUris(ctx context.Context, options Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error) {
+// PostSearchURIs sends a POST request to the /search/uris endpoint
+func (cli *Client) PostSearchURIs(ctx context.Context, options Options, urisRequest api.URIsRequest) (*models.SearchResponse, apiError.Error) {
 	path := fmt.Sprintf("%s/search/uris", cli.hcCli.URL)
 
 	// Marshal the request body

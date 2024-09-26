@@ -71,8 +71,8 @@ var defaultContentTypes = []string{
 	"timeseries_dataset",
 }
 
-type UrisRequest struct {
-	Uris   []string `json:"uris"`
+type URIsRequest struct {
+	URIs   []string `json:"uris"`
 	Limit  int      `json:"limit,omitempty"`  // Limit is optional
 	Offset int      `json:"offset,omitempty"` // Offset is optional
 }
@@ -568,32 +568,32 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 	}
 }
 
-// HandleSearchUris handles the /search/uris endpoint
-func HandleSearchUris(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+// HandleSearchURIs handles the /search/uris endpoint
+func HandleSearchURIs(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		// Parse the request body to extract URIs
-		var req UrisRequest
+		var req URIsRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		if len(req.Uris) == 0 {
+		if len(req.URIs) == 0 {
 			http.Error(w, "No URIs provided", http.StatusBadRequest)
 			return
 		}
 
 		// validate uris
-		for i, uri := range req.Uris {
+		for i, uri := range req.URIs {
 			validatedURI, err := validateURIsRequest(uri)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid URI: %s", err.Error()), http.StatusBadRequest)
 				return
 			}
 			// Assign the validated URI back to the request URIs slice
-			req.Uris[i] = validatedURI
+			req.URIs[i] = validatedURI
 		}
 
 		// Set limit and offset from the request body or fallback to config
@@ -616,7 +616,7 @@ func HandleSearchUris(queryBuilder QueryBuilder, cfg *config.Config, clList *Cli
 			Size:      limit,
 			Highlight: true,
 			Now:       time.Now().UTC().Format(time.RFC3339),
-			Uris:      req.Uris,
+			URIs:      req.URIs,
 		}
 
 		countRequest := &query.CountRequest{

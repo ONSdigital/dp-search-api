@@ -48,7 +48,7 @@ type SearchRequest struct {
 	Now                 string
 	DatasetIDs          []string
 	CDIDs               []string
-	Uris                []string
+	URIs                []string
 }
 
 type PopulationTypeRequest struct {

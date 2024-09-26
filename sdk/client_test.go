@@ -368,8 +368,8 @@ func TestGetSearchURIs(t *testing.T) {
 		Authorization: {"Bearer authorised-user"},
 	}
 
-	urisRequest := api.UrisRequest{
-		Uris: []string{
+	urisRequest := api.URIsRequest{
+		URIs: []string{
 			"/economy",
 		},
 	}
@@ -390,7 +390,7 @@ func TestGetSearchURIs(t *testing.T) {
 		searchAPIClient := newSearchAPIClient(t, httpClient)
 
 		c.Convey("When GetSearchURIs is called", func() {
-			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+			resp, err := searchAPIClient.PostSearchURIs(ctx, Options{Headers: headers}, urisRequest)
 
 			c.Convey("Then the expected response body is returned", func() {
 				c.So(*resp, c.ShouldResemble, searchResults)
@@ -415,7 +415,7 @@ func TestGetSearchURIs(t *testing.T) {
 		searchAPIClient := newSearchAPIClient(t, httpClient)
 
 		c.Convey("When GetSearchURIs is called", func() {
-			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+			resp, err := searchAPIClient.PostSearchURIs(ctx, Options{Headers: headers}, urisRequest)
 
 			c.Convey("Then an error should be returned", func() {
 				c.So(err, c.ShouldNotBeNil)
@@ -442,7 +442,7 @@ func TestGetSearchURIs(t *testing.T) {
 		searchAPIClient := newSearchAPIClient(t, httpClient)
 
 		c.Convey("When GetSearchURIs is called", func() {
-			resp, err := searchAPIClient.PostSearchUris(ctx, Options{Headers: headers}, urisRequest)
+			resp, err := searchAPIClient.PostSearchURIs(ctx, Options{Headers: headers}, urisRequest)
 
 			c.Convey("Then an error should be returned", func() {
 				c.So(err, c.ShouldNotBeNil)

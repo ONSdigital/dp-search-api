@@ -18,7 +18,7 @@ type Clienter interface {
 	CreateIndex(ctx context.Context, options Options) (*models.CreateIndexResponse, apiError.Error)
 	GetReleaseCalendarEntries(ctx context.Context, options Options) (*transformer.SearchReleaseResponse, apiError.Error)
 	GetSearch(ctx context.Context, options Options) (*models.SearchResponse, apiError.Error)
-	PostSearchUris(ctx context.Context, options Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error)
+	PostSearchURIs(ctx context.Context, options Options, urisRequest api.URIsRequest) (*models.SearchResponse, apiError.Error)
 	Health() *healthcheck.Client
 	URL() string
 }
