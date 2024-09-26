@@ -40,8 +40,8 @@ var _ sdk.Clienter = &ClienterMock{}
 //			HealthFunc: func() *healthcheck.Client {
 //				panic("mock out the Health method")
 //			},
-//			PostSearchUrisFunc: func(ctx context.Context, options sdk.Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error) {
-//				panic("mock out the PostSearchUris method")
+//			PostSearchURIsFunc: func(ctx context.Context, options sdk.Options, urisRequest api.URIsRequest) (*models.SearchResponse, apiError.Error) {
+//				panic("mock out the PostSearchURIs method")
 //			},
 //			URLFunc: func() string {
 //				panic("mock out the URL method")
@@ -68,8 +68,8 @@ type ClienterMock struct {
 	// HealthFunc mocks the Health method.
 	HealthFunc func() *healthcheck.Client
 
-	// PostSearchUrisFunc mocks the PostSearchUris method.
-	PostSearchUrisFunc func(ctx context.Context, options sdk.Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error)
+	// PostSearchURIsFunc mocks the PostSearchURIs method.
+	PostSearchURIsFunc func(ctx context.Context, options sdk.Options, urisRequest api.URIsRequest) (*models.SearchResponse, apiError.Error)
 
 	// URLFunc mocks the URL method.
 	URLFunc func() string
@@ -107,14 +107,14 @@ type ClienterMock struct {
 		// Health holds details about calls to the Health method.
 		Health []struct {
 		}
-		// PostSearchUris holds details about calls to the PostSearchUris method.
-		PostSearchUris []struct {
+		// PostSearchURIs holds details about calls to the PostSearchURIs method.
+		PostSearchURIs []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Options is the options argument value.
 			Options sdk.Options
 			// UrisRequest is the urisRequest argument value.
-			UrisRequest api.UrisRequest
+			UrisRequest api.URIsRequest
 		}
 		// URL holds details about calls to the URL method.
 		URL []struct {
@@ -125,7 +125,7 @@ type ClienterMock struct {
 	lockGetReleaseCalendarEntries sync.RWMutex
 	lockGetSearch                 sync.RWMutex
 	lockHealth                    sync.RWMutex
-	lockPostSearchUris            sync.RWMutex
+	lockPostSearchURIs            sync.RWMutex
 	lockURL                       sync.RWMutex
 }
 
@@ -300,43 +300,43 @@ func (mock *ClienterMock) HealthCalls() []struct {
 	return calls
 }
 
-// PostSearchUris calls PostSearchUrisFunc.
-func (mock *ClienterMock) PostSearchUris(ctx context.Context, options sdk.Options, urisRequest api.UrisRequest) (*models.SearchResponse, apiError.Error) {
-	if mock.PostSearchUrisFunc == nil {
-		panic("ClienterMock.PostSearchUrisFunc: method is nil but Clienter.PostSearchUris was just called")
+// PostSearchURIs calls PostSearchURIsFunc.
+func (mock *ClienterMock) PostSearchURIs(ctx context.Context, options sdk.Options, urisRequest api.URIsRequest) (*models.SearchResponse, apiError.Error) {
+	if mock.PostSearchURIsFunc == nil {
+		panic("ClienterMock.PostSearchURIsFunc: method is nil but Clienter.PostSearchURIs was just called")
 	}
 	callInfo := struct {
 		Ctx         context.Context
 		Options     sdk.Options
-		UrisRequest api.UrisRequest
+		UrisRequest api.URIsRequest
 	}{
 		Ctx:         ctx,
 		Options:     options,
 		UrisRequest: urisRequest,
 	}
-	mock.lockPostSearchUris.Lock()
-	mock.calls.PostSearchUris = append(mock.calls.PostSearchUris, callInfo)
-	mock.lockPostSearchUris.Unlock()
-	return mock.PostSearchUrisFunc(ctx, options, urisRequest)
+	mock.lockPostSearchURIs.Lock()
+	mock.calls.PostSearchURIs = append(mock.calls.PostSearchURIs, callInfo)
+	mock.lockPostSearchURIs.Unlock()
+	return mock.PostSearchURIsFunc(ctx, options, urisRequest)
 }
 
-// PostSearchUrisCalls gets all the calls that were made to PostSearchUris.
+// PostSearchURIsCalls gets all the calls that were made to PostSearchURIs.
 // Check the length with:
 //
-//	len(mockedClienter.PostSearchUrisCalls())
-func (mock *ClienterMock) PostSearchUrisCalls() []struct {
+//	len(mockedClienter.PostSearchURIsCalls())
+func (mock *ClienterMock) PostSearchURIsCalls() []struct {
 	Ctx         context.Context
 	Options     sdk.Options
-	UrisRequest api.UrisRequest
+	UrisRequest api.URIsRequest
 } {
 	var calls []struct {
 		Ctx         context.Context
 		Options     sdk.Options
-		UrisRequest api.UrisRequest
+		UrisRequest api.URIsRequest
 	}
-	mock.lockPostSearchUris.RLock()
-	calls = mock.calls.PostSearchUris
-	mock.lockPostSearchUris.RUnlock()
+	mock.lockPostSearchURIs.RLock()
+	calls = mock.calls.PostSearchURIs
+	mock.lockPostSearchURIs.RUnlock()
 	return calls
 }
 
