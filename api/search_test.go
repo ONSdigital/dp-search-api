@@ -1148,6 +1148,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 		}
 		searchBytes, _ := json.Marshal(searches)
 		qbMock := newQueryBuilderMock(searchBytes, nil)
+
 		c.Convey("When valid URIs are provided", func() {
 			urisRequest := URIsRequest{
 				URIs: []string{
@@ -1175,6 +1176,9 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 			c.So(err, c.ShouldBeNil)
 
 			c.So(resp.Count, c.ShouldEqual, 2)
+
+			c.So(qbMock.BuildSearchQueryCalls(), c.ShouldHaveLength, 1)
+			c.So(trMock.TransformSearchResponseCalls(), c.ShouldHaveLength, 1)
 		})
 
 		c.Convey("When request payload is invalid", func() {
@@ -1210,6 +1214,58 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
 			c.So(rr.Body.String(), c.ShouldContainSubstring, "No URIs provided")
+		})
+		c.Convey("When URIs are blank", func() {
+			urisRequest := URIsRequest{
+				URIs: []string{
+					"",
+				},
+				Limit:  5,
+				Offset: 0,
+			}
+			reqBody, err := json.Marshal(urisRequest)
+			c.So(err, c.ShouldBeNil)
+
+			req := httptest.NewRequest(http.MethodPost, "/search/uris", bytes.NewReader(reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler.ServeHTTP(rr, req)
+
+			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
+			c.So(rr.Body.String(), c.ShouldContainSubstring, "Invalid URI")
+		})
+
+		c.Convey("When limit exceeds maximum allowed value", func() {
+			urisRequest := URIsRequest{
+				URIs: []string{
+					"/release/1",
+					"/economy/dataset/2",
+				},
+				Limit:  cfg.DefaultMaximumLimit + 10,
+				Offset: 0,
+			}
+			reqBody, err := json.Marshal(urisRequest)
+			c.So(err, c.ShouldBeNil)
+
+			req := httptest.NewRequest(http.MethodPost, "/search/uris", bytes.NewReader(reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler.ServeHTTP(rr, req)
+
+			c.So(rr.Code, c.ShouldEqual, http.StatusOK)
+
+			var resp models.SearchResponse
+			err = json.Unmarshal(rr.Body.Bytes(), &resp)
+			c.So(err, c.ShouldBeNil)
+
+			c.So(resp.Count, c.ShouldEqual, 2)
+			c.So(qbMock.BuildSearchQueryCalls()[0].Req.Size, c.ShouldEqual, cfg.DefaultMaximumLimit)
 		})
 	})
 }
