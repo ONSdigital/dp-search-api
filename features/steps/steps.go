@@ -23,6 +23,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^elasticsearch returns one item in search response with topics filter$`, c.es7xSuccessfullyReturnSingleSearchResultWithTopicFilter)
 	ctx.Step(`^elasticsearch returns one item in search response with datasetIDs filter$`, c.es7xSuccessfullyReturnSingleSearchResultWithDatasetIDsFilter)
 	ctx.Step(`^elasticsearch returns one item in search/release response$`, c.successfullyReturnSingleSearchReleaseResult)
+	ctx.Step(`^elasticsearch returns one item in search/uris response$`, c.es7xSuccessfullyReturnSingleSearchResult)
 	ctx.Step(`^the response body is the same as the json in "([^"]*)"$`, c.iShouldReceiveTheFollowingSearchResponsefromes7x)
 	ctx.Step(`^elasticsearch returns multiple items in search response$`, c.es7xSuccessfullyReturnMultipleSearchResults)
 	ctx.Step(`^elasticsearch returns multiple items in search/release response$`, c.successfullyReturnMultipleSearchReleaseResults)
