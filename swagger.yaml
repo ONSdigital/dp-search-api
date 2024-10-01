@@ -224,7 +224,7 @@ paths:
     post:
       tags:
         - public
-      summary: "Search URIs by prefix"
+      summary: "Search URIs by list"
       description: "Accepts a list of URIs and returns matching results based on provided criteria."
       parameters:
         - in: body
