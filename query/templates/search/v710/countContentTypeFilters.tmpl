@@ -21,6 +21,15 @@
         }
       }
       {{ end }}
+      {{ if .URIs }}
+      , {
+        "bool": {
+          "should": [
+            {{ template "uriFilters.tmpl". }}
+          ]
+        }
+      }
+      {{ end }}
       {{ if .Dimensions }}
       , {
         "bool": {

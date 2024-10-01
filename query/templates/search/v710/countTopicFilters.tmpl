@@ -19,6 +19,15 @@
         }
       }
       {{ end }}
+      {{ if .URIs }}
+      , {
+        "bool": {
+          "should": [
+            {{ template "uriFilters.tmpl". }}
+          ]
+        }
+      }
+      {{ end }}
       {{ if .PopulationTypes }}
       , {
         "bool": {
