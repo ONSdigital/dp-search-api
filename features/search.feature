@@ -57,3 +57,11 @@ Feature: Search endpoint should return data for requested search parameter
             """
             invalid URI prefix parameter
             """
+
+    Scenario: When Searching with whitelisted special characters I get the expected results
+        Given elasticsearch is healthy
+        And elasticsearch returns one item in search response
+        When I GET "/search?q=CPI–‘’"
+        Then the HTTP status code should be "200"
+        And the response header "Content-Type" should be "application/json;charset=utf-8"
+        And the response body is the same as the json in "./features/testdata/expected_single_search_result.json"

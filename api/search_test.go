@@ -106,6 +106,12 @@ func TestCheckForSpecialCharacters(t *testing.T) {
 		c.So(actual, c.ShouldEqual, expected)
 	})
 
+	c.Convey("A string containing whitelisted special characters should return false", t, func() {
+		expected := false
+		actual := checkForSpecialCharacters("Test string –‘’")
+		c.So(actual, c.ShouldEqual, expected)
+	})
+
 	c.Convey("A string containing special characters should return true", t, func() {
 		expected := true
 		actual := checkForSpecialCharacters("Test 怎么开 string")
