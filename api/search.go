@@ -835,7 +835,7 @@ func sanitiseDoubleQuotes(str string) string {
 }
 
 func checkForSpecialCharacters(str string) bool {
-	re := regexp.MustCompile("[[:^ascii:]]")
+	re := regexp.MustCompile("[[:^ascii:]&&[^–‘’]]")
 	return re.MatchString(str)
 }
 
