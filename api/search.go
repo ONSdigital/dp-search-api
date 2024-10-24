@@ -71,6 +71,9 @@ var defaultContentTypes = []string{
 	"timeseries_dataset",
 }
 
+// contains the special characters that are allowed in query validation
+const AllowedSpecialCharacters = "–‘’"
+
 type URIsRequest struct {
 	URIs   []string `json:"uris"`
 	Limit  int      `json:"limit,omitempty"`  // Limit is optional
@@ -835,7 +838,7 @@ func sanitiseDoubleQuotes(str string) string {
 }
 
 func checkForSpecialCharacters(str string) bool {
-	re := regexp.MustCompile("[^[:ascii:]–‘’]")
+	re := regexp.MustCompile(fmt.Sprintf("[^[:ascii:]%s]", regexp.QuoteMeta(AllowedSpecialCharacters)))
 	return re.MatchString(str)
 }
 
