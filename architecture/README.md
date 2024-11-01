@@ -393,8 +393,6 @@ Body: [
 ]
 ```
 
-See [Search Reindex API swagger spec](https://github.com/onsdigital/dp-search-reindex-api/blob/develop/swagger.yaml)
-
 **3: Update reindex job document**
 
 ```
