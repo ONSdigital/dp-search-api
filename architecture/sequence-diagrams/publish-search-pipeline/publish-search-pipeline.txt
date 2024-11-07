@@ -7,10 +7,6 @@ database Kafka content updated
 
 note over Kafka content updated: Florence user published a collection\nvia Zebedee triggering an update\nto existing search index for sitewide search
 
-note over Kafka content updated: OR
-
-note over Kafka content updated: Messages produced by a reindex job, see\n"Part 1 - Trigger Reindex Pipeline"
-
 Kafka content updated-->Search Data Extractor: TCP: Consume Kafka message
 
 Search Data Extractor->Zebedee: Https Get: Zebedee resource
@@ -34,5 +30,3 @@ note over Search Data Importer: If the batch request to Elasticsearch\nis for a 
 
 database Kafka search data imported
 Search Data Importer-->Kafka search data imported: TCP: Produce Kafka message
-
-note over Kafka search data imported: The search data imported topic is consumed\nby the Search Import Tracker, see\n"Part 3 - Trigger Search Reindex Tracker"\nfor continuation of the reindex pipeline
