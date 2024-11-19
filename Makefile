@@ -27,7 +27,7 @@ audit: ## Runs checks for security vulnerabilities on dependencies (including tr
 	go list -m all | nancy sleuth
 
 .PHONY: build
-build: ## Builds binary of application code and stores in bin directory as dp-search-reindex-api
+build: ## Builds binary of application code and stores in bin directory as dp-search-api
 	@mkdir -p $(BUILD_ARCH)/$(BIN_DIR)
 	go build $(LDFLAGS) -o $(BUILD_ARCH)/$(BIN_DIR)/$(MAIN) main.go
 
