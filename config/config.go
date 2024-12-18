@@ -17,6 +17,7 @@ type Config struct {
 	DefaultLimit               int           `envconfig:"DEFAULT_LIMIT"`
 	DefaultMaximumLimit        int           `envconfig:"DEFAULT_MAXIMUM_LIMIT"`
 	DefaultOffset              int           `envconfig:"DEFAULT_OFFSET"`
+	DefaultSort                string        `envconfig:"DEFAULT_SORT"`
 	ElasticSearchAPIURL        string        `envconfig:"ELASTIC_SEARCH_URL"`
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
@@ -56,6 +57,7 @@ func Get() (*Config, error) {
 		DefaultLimit:               10,
 		DefaultMaximumLimit:        100,
 		DefaultOffset:              0,
+		DefaultSort:                "relevance",
 		ElasticSearchAPIURL:        "http://localhost:11200",
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,

@@ -35,6 +35,7 @@ func TestSpec(t *testing.T) {
 				c.So(cfg.DefaultLimit, c.ShouldEqual, 10)
 				c.So(cfg.DefaultMaximumLimit, c.ShouldEqual, 100)
 				c.So(cfg.DefaultOffset, c.ShouldEqual, 0)
+				c.So(cfg.DefaultSort, c.ShouldEqual, "relevance")
 			})
 		})
 

@@ -248,6 +248,10 @@ paths:
                 type: integer
                 description: "The first row of resources to retrieve, starting at 0."
                 example: 0
+              sort:
+                type: string
+                description: "The sort order of the returned set of results."
+                example: "relevance"
       responses:
         200:
           description: OK

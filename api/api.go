@@ -138,10 +138,11 @@ func (a *SearchAPI) RegisterPostSearch() *SearchAPI {
 
 // RegisterPostSearchURIs registers the handler for POST /search/uris endpoint
 // enforcing required update permissions
-func (a *SearchAPI) RegisterPostSearchURIs(builder QueryBuilder, cfg *config.Config, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) RegisterPostSearchURIs(validator QueryParamValidator, builder QueryBuilder, cfg *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search/uris",
 		SearchURIsHandlerFunc(
+			validator,
 			builder,
 			cfg,
 			a.clList,

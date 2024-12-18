@@ -1151,9 +1151,11 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 			DefaultLimit:        10,
 			DefaultOffset:       0,
 			DefaultMaximumLimit: 100,
+			DefaultSort:         "relevance",
 		}
 		searchBytes, _ := json.Marshal(searches)
 		qbMock := newQueryBuilderMock(searchBytes, nil)
+		validator := query.NewSearchQueryParamValidator()
 
 		c.Convey("When valid URIs are provided", func() {
 			urisRequest := URIsRequest{
@@ -1172,7 +1174,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler := SearchURIsHandlerFunc(validator, qbMock, cfg, clMock, trMock)
 			handler.ServeHTTP(rr, req)
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusOK)
@@ -1195,7 +1197,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler := SearchURIsHandlerFunc(validator, qbMock, cfg, clMock, trMock)
 			handler.ServeHTTP(rr, req)
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
@@ -1215,7 +1217,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler := SearchURIsHandlerFunc(validator, qbMock, cfg, clMock, trMock)
 			handler.ServeHTTP(rr, req)
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
@@ -1237,7 +1239,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler := SearchURIsHandlerFunc(validator, qbMock, cfg, clMock, trMock)
 			handler.ServeHTTP(rr, req)
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusBadRequest)
@@ -1261,7 +1263,7 @@ func TestSearchURIsHandlerFunc(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			handler := SearchURIsHandlerFunc(qbMock, cfg, clMock, trMock)
+			handler := SearchURIsHandlerFunc(validator, qbMock, cfg, clMock, trMock)
 			handler.ServeHTTP(rr, req)
 
 			c.So(rr.Code, c.ShouldEqual, http.StatusOK)

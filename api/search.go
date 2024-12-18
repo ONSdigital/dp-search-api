@@ -78,6 +78,7 @@ type URIsRequest struct {
 	URIs   []string `json:"uris"`
 	Limit  int      `json:"limit,omitempty"`  // Limit is optional
 	Offset int      `json:"offset,omitempty"` // Offset is optional
+	Sort   string   `json:"sort,omitempty"`   // Sort is optional
 }
 
 // validateContentTypes checks that all the provided content types are allowed
@@ -212,7 +213,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 		return "", nil, nil
 	}
 
-	sort, sortErr := parseAndValidateSort(ctx, params, validator)
+	sort, sortErr := parseAndValidateSort(ctx, cfg, params, validator)
 	if sortErr != nil {
 		http.Error(w, sortErr.Error(), http.StatusBadRequest)
 		return "", nil, nil
@@ -334,7 +335,7 @@ func parseAndValidateContentTypes(ctx context.Context, params url.Values) (conte
 	return contentTypes, nil
 }
 
-func parseAndValidateSort(ctx context.Context, params url.Values, validator QueryParamValidator) (sort string, err error) {
+func parseAndValidateSort(ctx context.Context, _ *config.Config, params url.Values, validator QueryParamValidator) (sort string, err error) {
 	sortParam := paramGet(params, ParamSort, "relevance")
 	validatedSort, validationErr := validator.Validate(ctx, ParamSort, sortParam)
 	if validationErr != nil {
@@ -572,51 +573,21 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 }
 
 // SearchURIsHandlerFunc handles the /search/uris endpoint
-func SearchURIsHandlerFunc(queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func SearchURIsHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// Parse the request body to extract URIs
-		var req URIsRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		req, reqErr := parseAndValidateSearchURIRequest(r, validator, cfg)
+		if reqErr != nil {
+			http.Error(w, reqErr.Error(), http.StatusBadRequest)
 			return
-		}
-
-		if len(req.URIs) == 0 {
-			http.Error(w, "No URIs provided", http.StatusBadRequest)
-			return
-		}
-
-		// validate uris
-		for i, uri := range req.URIs {
-			validatedURI, err := validateURIsRequest(uri)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Invalid URI: %s", err.Error()), http.StatusBadRequest)
-				return
-			}
-			// Assign the validated URI back to the request URIs slice
-			req.URIs[i] = validatedURI
-		}
-
-		// Set limit and offset from the request body or fallback to config
-		limit := cfg.DefaultLimit   // Default limit from config
-		offset := cfg.DefaultOffset // Default offset from config
-
-		if req.Limit != 0 {
-			limit = req.Limit // Override with the provided limit, if present
-		}
-		if req.Limit > cfg.DefaultMaximumLimit {
-			limit = cfg.DefaultMaximumLimit
-		}
-		if req.Offset != 0 {
-			offset = req.Offset // Override with the provided offset, if present
 		}
 
 		// Build the search query using the QueryBuilder
 		searchRequest := &query.SearchRequest{
-			From:      offset,
-			Size:      limit,
+			From:      req.Offset,
+			Size:      req.Limit,
+			SortBy:    req.Sort,
 			Highlight: true,
 			Now:       time.Now().UTC().Format(time.RFC3339),
 			URIs:      req.URIs,
@@ -717,6 +688,54 @@ func validateURIsRequest(uri string) (string, error) {
 	}
 
 	return trimmedURI, nil
+}
+
+// parseAndValidateSearchURIRequest parses the incoming request and validates it
+func parseAndValidateSearchURIRequest(r *http.Request, validator QueryParamValidator, cfg *config.Config) (*URIsRequest, error) {
+	var req URIsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, errors.New("Invalid request payload")
+	}
+
+	if len(req.URIs) == 0 {
+		return nil, errors.New("No URIs provided")
+	}
+
+	// Validate URIs
+	for i, uri := range req.URIs {
+		validatedURI, err := validateURIsRequest(uri)
+		if err != nil {
+			return nil, errors.New("Invalid URI: " + err.Error())
+		}
+		req.URIs[i] = validatedURI
+	}
+
+	// Set default or overridden limits/offsets
+	if req.Limit == 0 || req.Limit > cfg.DefaultMaximumLimit {
+		req.Limit = cfg.DefaultMaximumLimit
+	}
+	if req.Offset == 0 {
+		req.Offset = cfg.DefaultOffset
+	}
+
+	fmt.Print(">>>>> ", req.Sort)
+
+	// Validate Sort parameter
+	if req.Sort == "" {
+		req.Sort = cfg.DefaultSort
+	} else {
+		validatedSort, err := validator.Validate(r.Context(), ParamSort, req.Sort)
+		if err != nil {
+			return nil, err
+		}
+		if s, ok := validatedSort.(string); ok {
+			req.Sort = s
+		} else {
+			return nil, errors.New("Invalid sort value")
+		}
+	}
+
+	return &req, nil
 }
 
 // LegacySearchHandlerFunc returns a http handler function handling search api requests.

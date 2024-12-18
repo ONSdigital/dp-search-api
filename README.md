@@ -41,6 +41,7 @@ environment variables, or with a link to a configuration guide.
 | DEFAULT_LIMIT                | 10                       | The default limit of search results in a page                                                                      |
 | DEFAULT_MAXIMUM_LIMIT        | 100                      | The default maximum limit of search results in a page                                                              |
 | DEFAULT_OFFSET               | 0                        | The default offset of search results                                                                               |
+| DEFAULT_SORT                 | "relevance"              | The default sort for search results                                                                                |
 | ELASTIC_SEARCH_URL           | "http://localhost:11200" | Http url of the ElasticSearch server                                                                               |
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)                                                  |
 | HEALTHCHECK_CRITICAL_TIMEOUT | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format) |
