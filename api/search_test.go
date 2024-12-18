@@ -36,7 +36,7 @@ const (
 	limit1                             string = "&limit=1"
 	offset2                            string = "&offset=2"
 	rawTrue                            string = "&raw=true"
-	sortOrderRelevance                 string = "&sort_order=relevance"
+	sortRelevance                      string = "&sort=relevance"
 	validQueryParam                    string = "a"
 	validQueryDoc                      string = `{"valid":"elastic search query"}`
 	validESResponse                    string = `{"raw":"response"}`
@@ -550,7 +550,7 @@ func TestSearchHandlerFunc(t *testing.T) {
 			"GET",
 			baseURL+validQueryParam+
 				"&content_type=dataset,release"+
-				sortOrderRelevance+
+				sortRelevance+
 				limit1+
 				offset2+
 				"&dimensions=dim1,dim2"+
@@ -1546,7 +1546,7 @@ func TestLegacySearchHandlerFunc(t *testing.T) {
 			"GET",
 			baseURL+validQueryParam+
 				"&content_type=article,release"+
-				sortOrderRelevance+
+				sortRelevance+
 				limit1+
 				offset2,
 			http.NoBody)

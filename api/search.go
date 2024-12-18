@@ -335,8 +335,8 @@ func parseAndValidateContentTypes(ctx context.Context, params url.Values) (conte
 	return contentTypes, nil
 }
 
-func parseAndValidateSort(ctx context.Context, _ *config.Config, params url.Values, validator QueryParamValidator) (sort string, err error) {
-	sortParam := paramGet(params, ParamSort, "relevance")
+func parseAndValidateSort(ctx context.Context, cfg *config.Config, params url.Values, validator QueryParamValidator) (sort string, err error) {
+	sortParam := paramGet(params, ParamSort, cfg.DefaultSort)
 	validatedSort, validationErr := validator.Validate(ctx, ParamSort, sortParam)
 	if validationErr != nil {
 		log.Warn(ctx, validationErr.Error(), log.Data{"param": ParamSort, "value": sortParam})
@@ -717,8 +717,6 @@ func parseAndValidateSearchURIRequest(r *http.Request, validator QueryParamValid
 	if req.Offset == 0 {
 		req.Offset = cfg.DefaultOffset
 	}
-
-	fmt.Print(">>>>> ", req.Sort)
 
 	// Validate Sort parameter
 	if req.Sort == "" {
