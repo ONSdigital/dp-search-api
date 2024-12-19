@@ -251,7 +251,7 @@ paths:
               sort:
                 type: string
                 description: "The sort order of the returned set of results."
-                example: "relevance"
+                enum: [ "relevance", "release_date", "title"]
       responses:
         200:
           description: OK
