@@ -7,8 +7,8 @@ import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
-	"github.com/ONSdigital/dp-net/v2/awsauth"
-	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	"github.com/ONSdigital/dp-net/v3/awsauth"
+	dphttp "github.com/ONSdigital/dp-net/v3/http"
 	"github.com/ONSdigital/dp-search-api/api"
 	"github.com/ONSdigital/dp-search-api/config"
 	"github.com/ONSdigital/dp-search-api/elasticsearch"
@@ -93,7 +93,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	if cfg.AWS.Signer {
 		var awsSignerRT *awsauth.AwsSignerRoundTripper
 
-		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
+		awsSignerRT, err = awsauth.NewAWSSignerRoundTripper(ctx, cfg.AWS.Filename, cfg.AWS.Profile, cfg.AWS.Region, cfg.AWS.Service, awsauth.Options{TlsInsecureSkipVerify: cfg.AWS.TLSInsecureSkipVerify})
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth round tripper", err)
 			return nil, err

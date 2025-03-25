@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	dphttp "github.com/ONSdigital/dp-net/v3/http"
 	c "github.com/smartystreets/goconvey/convey"
 )
 
