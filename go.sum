@@ -14,8 +14,8 @@ github.com/ONSdigital/dp-mongodb-in-memory v1.8.0 h1:y/4ipJk9KKlu2g9DKA8g064h3Ai
 github.com/ONSdigital/dp-mongodb-in-memory v1.8.0/go.mod h1:rJK99EZhCULTjcVDyg5KrHaTYcmuf53JH3gDg6q1m6g=
 github.com/ONSdigital/dp-net/v2 v2.22.0 h1:LY9C5x1+sfK9QyjNpB2G3TPvAtSuOFR9FRcXsR9twqs=
 github.com/ONSdigital/dp-net/v2 v2.22.0/go.mod h1:F6yL3jjuVwBLVMFIKgHF3zhMRbmZysAxBiu+aIAi3Z0=
-github.com/ONSdigital/dp-net/v3 v3.1.0 h1:njeWvV400EmvrYGOBbDq4NHqKw4BSR7LkQhfNph/z1w=
-github.com/ONSdigital/dp-net/v3 v3.1.0/go.mod h1:bQieJbVSCWHZOVtHZiJZiZzsVI0XZ0J6vnlTEyYtqCQ=
+github.com/ONSdigital/dp-net/v3 v3.1.1 h1:Bre5zi3xWxIx/6qslb0axWP3yzBUMiWJkd5BI6otGwc=
+github.com/ONSdigital/dp-net/v3 v3.1.1/go.mod h1:vgGXEr1NOEwDEml3HB+5kw1OPkIFm3AoVaBXpGehWR8=
 github.com/ONSdigital/dp-otel-go v0.0.8 h1:jSX32oDmOUKlHyH3FPCBkBpiBKYmWKELoNo6jontKRM=
 github.com/ONSdigital/dp-otel-go v0.0.8/go.mod h1:pCDuFqZX8+7CBQX1nMlLMPj52VsMAN3Y8h0uLmzC3cU=
 github.com/ONSdigital/dp-search-scrubber-api v0.5.0 h1:W0qhL21PoqEPzyc7vlJvunqVMvsVegKQCy5JcOWe55M=

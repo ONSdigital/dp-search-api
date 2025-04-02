@@ -8,7 +8,7 @@ require (
 	github.com/ONSdigital/dp-component-test v0.19.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
 	github.com/ONSdigital/dp-healthcheck v1.6.3
-	github.com/ONSdigital/dp-net/v3 v3.1.0
+	github.com/ONSdigital/dp-net/v3 v3.1.1
 	github.com/ONSdigital/dp-otel-go v0.0.8
 	github.com/ONSdigital/dp-search-scrubber-api v0.5.0
 	github.com/ONSdigital/log.go/v2 v2.4.4
