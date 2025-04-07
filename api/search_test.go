@@ -51,6 +51,7 @@ func TestValidateContentTypes(t *testing.T) {
 	c.Convey("An array of content types containing a subset of the default content types should be allowed", t, func() {
 		disallowed, err := validateContentTypes([]string{
 			"dataset",
+			"statistical_article",
 			"dataset_landing_page",
 		})
 		c.So(err, c.ShouldBeNil)

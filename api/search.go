@@ -67,6 +67,7 @@ var defaultContentTypes = []string{
 	"static_methodology_download",
 	"static_page",
 	"static_qmi",
+	"statistical_article",
 	"timeseries",
 	"timeseries_dataset",
 }
