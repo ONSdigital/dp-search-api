@@ -3,17 +3,16 @@ module github.com/ONSdigital/dp-search-api
 go 1.24
 
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.265.0
-	github.com/ONSdigital/dp-authorisation v0.3.0
-	github.com/ONSdigital/dp-component-test v0.19.0
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.266.0
+	github.com/ONSdigital/dp-authorisation v0.5.0
+	github.com/ONSdigital/dp-component-test v0.20.0
 	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4.0.20230308115225-bb7559a89d0c
-	github.com/ONSdigital/dp-healthcheck v1.6.3
-	github.com/ONSdigital/dp-net/v3 v3.1.2
+	github.com/ONSdigital/dp-healthcheck v1.6.4
+	github.com/ONSdigital/dp-net/v3 v3.2.1
 	github.com/ONSdigital/dp-otel-go v0.0.8
-	github.com/ONSdigital/dp-search-scrubber-api v0.5.0
-	github.com/ONSdigital/log.go/v2 v2.4.4
+	github.com/ONSdigital/dp-search-scrubber-api v0.6.0
+	github.com/ONSdigital/log.go/v2 v2.4.5
 	github.com/cucumber/godog v0.15.0
-	github.com/elastic/go-elasticsearch/v7 v7.10.0
 	github.com/google/go-cmp v0.7.0
 	github.com/gorilla/mux v1.8.1
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -26,7 +25,7 @@ require (
 )
 
 require (
-	github.com/ONSdigital/dp-mongodb-in-memory v1.8.0 // indirect
+	github.com/ONSdigital/dp-mongodb-in-memory v1.8.1 // indirect
 	github.com/ONSdigital/dp-net/v2 v2.22.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.3 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.13 // indirect
@@ -48,6 +47,7 @@ require (
 	github.com/cucumber/gherkin/go/v26 v26.2.0 // indirect
 	github.com/cucumber/messages/go/v21 v21.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/elastic/go-elasticsearch/v7 v7.10.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250223041408-d3c622f1b874 // indirect

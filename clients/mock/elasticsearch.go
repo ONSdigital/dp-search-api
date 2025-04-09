@@ -8,7 +8,6 @@ import (
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/clients"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"sync"
 )
 
@@ -25,7 +24,7 @@ var _ clients.ElasticSearch = &ElasticSearchMock{}
 //			AddDocumentFunc: func(ctx context.Context, indexName string, documentID string, document []byte, opts *dpEsClient.AddDocumentOptions) error {
 //				panic("mock out the AddDocument method")
 //			},
-//			BulkIndexAddFunc: func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)) error {
+//			BulkIndexAddFunc: func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error {
 //				panic("mock out the BulkIndexAdd method")
 //			},
 //			BulkIndexCloseFunc: func(contextMoqParam context.Context) error {
@@ -51,6 +50,9 @@ var _ clients.ElasticSearch = &ElasticSearchMock{}
 //			},
 //			DeleteIndicesFunc: func(ctx context.Context, indices []string) error {
 //				panic("mock out the DeleteIndices method")
+//			},
+//			ExplainFunc: func(ctx context.Context, documentID string, search dpEsClient.Search) ([]byte, error) {
+//				panic("mock out the Explain method")
 //			},
 //			GetAliasFunc: func(ctx context.Context) ([]byte, error) {
 //				panic("mock out the GetAlias method")
@@ -81,7 +83,7 @@ type ElasticSearchMock struct {
 	AddDocumentFunc func(ctx context.Context, indexName string, documentID string, document []byte, opts *dpEsClient.AddDocumentOptions) error
 
 	// BulkIndexAddFunc mocks the BulkIndexAdd method.
-	BulkIndexAddFunc func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)) error
+	BulkIndexAddFunc func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error
 
 	// BulkIndexCloseFunc mocks the BulkIndexClose method.
 	BulkIndexCloseFunc func(contextMoqParam context.Context) error
@@ -106,6 +108,9 @@ type ElasticSearchMock struct {
 
 	// DeleteIndicesFunc mocks the DeleteIndices method.
 	DeleteIndicesFunc func(ctx context.Context, indices []string) error
+
+	// ExplainFunc mocks the Explain method.
+	ExplainFunc func(ctx context.Context, documentID string, search dpEsClient.Search) ([]byte, error)
 
 	// GetAliasFunc mocks the GetAlias method.
 	GetAliasFunc func(ctx context.Context) ([]byte, error)
@@ -153,9 +158,9 @@ type ElasticSearchMock struct {
 			// Document is the document argument value.
 			Document []byte
 			// OnSuccess is the onSuccess argument value.
-			OnSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
+			OnSuccess dpEsClient.SuccessFunc
 			// OnFailure is the onFailure argument value.
-			OnFailure func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)
+			OnFailure dpEsClient.FailureFunc
 		}
 		// BulkIndexClose holds details about calls to the BulkIndexClose method.
 		BulkIndexClose []struct {
@@ -217,6 +222,15 @@ type ElasticSearchMock struct {
 			// Indices is the indices argument value.
 			Indices []string
 		}
+		// Explain holds details about calls to the Explain method.
+		Explain []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// DocumentID is the documentID argument value.
+			DocumentID string
+			// Search is the search argument value.
+			Search dpEsClient.Search
+		}
 		// GetAlias holds details about calls to the GetAlias method.
 		GetAlias []struct {
 			// Ctx is the ctx argument value.
@@ -272,6 +286,7 @@ type ElasticSearchMock struct {
 	lockCreateIndex    sync.RWMutex
 	lockDeleteIndex    sync.RWMutex
 	lockDeleteIndices  sync.RWMutex
+	lockExplain        sync.RWMutex
 	lockGetAlias       sync.RWMutex
 	lockGetIndices     sync.RWMutex
 	lockMultiSearch    sync.RWMutex
@@ -329,7 +344,7 @@ func (mock *ElasticSearchMock) AddDocumentCalls() []struct {
 }
 
 // BulkIndexAdd calls BulkIndexAddFunc.
-func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)) error {
+func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error {
 	if mock.BulkIndexAddFunc == nil {
 		panic("ElasticSearchMock.BulkIndexAddFunc: method is nil but ElasticSearch.BulkIndexAdd was just called")
 	}
@@ -339,8 +354,8 @@ func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClie
 		Index      string
 		DocumentID string
 		Document   []byte
-		OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
-		OnFailure  func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)
+		OnSuccess  dpEsClient.SuccessFunc
+		OnFailure  dpEsClient.FailureFunc
 	}{
 		Ctx:        ctx,
 		Action:     action,
@@ -366,8 +381,8 @@ func (mock *ElasticSearchMock) BulkIndexAddCalls() []struct {
 	Index      string
 	DocumentID string
 	Document   []byte
-	OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
-	OnFailure  func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)
+	OnSuccess  dpEsClient.SuccessFunc
+	OnFailure  dpEsClient.FailureFunc
 } {
 	var calls []struct {
 		Ctx        context.Context
@@ -375,8 +390,8 @@ func (mock *ElasticSearchMock) BulkIndexAddCalls() []struct {
 		Index      string
 		DocumentID string
 		Document   []byte
-		OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
-		OnFailure  func(ctx context.Context, bii esutil.BulkIndexerItem, biri esutil.BulkIndexerResponseItem, err error)
+		OnSuccess  dpEsClient.SuccessFunc
+		OnFailure  dpEsClient.FailureFunc
 	}
 	mock.lockBulkIndexAdd.RLock()
 	calls = mock.calls.BulkIndexAdd
@@ -677,6 +692,46 @@ func (mock *ElasticSearchMock) DeleteIndicesCalls() []struct {
 	mock.lockDeleteIndices.RLock()
 	calls = mock.calls.DeleteIndices
 	mock.lockDeleteIndices.RUnlock()
+	return calls
+}
+
+// Explain calls ExplainFunc.
+func (mock *ElasticSearchMock) Explain(ctx context.Context, documentID string, search dpEsClient.Search) ([]byte, error) {
+	if mock.ExplainFunc == nil {
+		panic("ElasticSearchMock.ExplainFunc: method is nil but ElasticSearch.Explain was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		DocumentID string
+		Search     dpEsClient.Search
+	}{
+		Ctx:        ctx,
+		DocumentID: documentID,
+		Search:     search,
+	}
+	mock.lockExplain.Lock()
+	mock.calls.Explain = append(mock.calls.Explain, callInfo)
+	mock.lockExplain.Unlock()
+	return mock.ExplainFunc(ctx, documentID, search)
+}
+
+// ExplainCalls gets all the calls that were made to Explain.
+// Check the length with:
+//
+//	len(mockedElasticSearch.ExplainCalls())
+func (mock *ElasticSearchMock) ExplainCalls() []struct {
+	Ctx        context.Context
+	DocumentID string
+	Search     dpEsClient.Search
+} {
+	var calls []struct {
+		Ctx        context.Context
+		DocumentID string
+		Search     dpEsClient.Search
+	}
+	mock.lockExplain.RLock()
+	calls = mock.calls.Explain
+	mock.lockExplain.RUnlock()
 	return calls
 }
 
