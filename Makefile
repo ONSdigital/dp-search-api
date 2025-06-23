@@ -56,7 +56,7 @@ fmt: ## Run Go formatting on code
 	go fmt ./...
 
 .PHONY: lint
-lint: ## Used in ci to run linters against Go code
+lint: validate-specification ## Used in ci to run linters against Go code
 	golangci-lint run ./...
 
 .PHONY: lint-local
@@ -70,6 +70,10 @@ local: ## Exports various configurations and then runs the application locally
 	export AWS_PROFILE=development; \
 	export AWS_FILENAME=$(HOME)/.aws/credentials; \
 	HUMAN_LOG=1 go run $(LDFLAGS) -race main.go
+
+.PHONY: validate-specification
+validate-specification: # Validate swagger spec
+	redocly lint swagger.yaml
 
 .PHONY: test
 test: ## Runs unit tests including checks for race conditions and returns coverage

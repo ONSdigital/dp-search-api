@@ -5,8 +5,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
-    tag: 1.24.1-bullseye
+    repository: onsdigital/dp-concourse-tools-node-go
+    tag: 1.24.4-bullseye-node-20
 
 inputs:
   - name: dp-search-api

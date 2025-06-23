@@ -11,10 +11,14 @@ schemes:
   - "http"
 tags:
   - name: "public"
+    description: "Used for public endpoints"
   - name: "private"
+    description: "Used for private endpoints when API is in private mode"
+
 paths:
   /health:
     get:
+      security: []
       tags:
         - public
       summary: "Health check API"
@@ -24,11 +28,14 @@ paths:
           description: OK
           schema:
             $ref: "#/definitions/Health"
+        429:
+          description: "Services warming up or degraded (at least one check in WARNING or CRITICAL status)"
         500:
           description: Internal Server Error
 
   /search:
     get:
+      security: []
       tags:
         - public
       summary: "Default ONS query API"
@@ -140,6 +147,8 @@ paths:
         500:
           description: Internal server error
     post:
+      security:
+        - Authorization: []
       tags:
         - private
       summary: "Create new empty ONS Elasticsearch index"
@@ -149,11 +158,16 @@ paths:
           description: OK
           schema:
             $ref: "#/definitions/PostSearchResponse"
+        400:
+          $ref: "#/responses/BadRequest"
+        401:
+          $ref: "#/responses/Unauthorised"
         500:
           description: Internal server error
 
   /search/releases:
     get:
+      security: []
       tags:
         - public
       summary: "ONS query API for published or upcoming releases"
@@ -217,11 +231,14 @@ paths:
           description: OK
           schema:
             $ref: "#/definitions/SearchReleaseResponse"
+        400:
+          $ref: "#/responses/BadRequest"
         500:
           description: Internal server error
 
   /search/uris:
     post:
+      security: []
       tags:
         - public
       summary: "Search URIs by list"
@@ -272,6 +289,22 @@ paths:
           description: "Bad Request - Invalid request format or parameters"
         500:
           description: "Internal server error"
+
+responses:
+  InternalError:
+    description: "Failed to process the request due to an internal error."
+
+  Unauthorised:
+    description: "Failed to process the request due to being unauthorised."
+
+  NotFound:
+    description: "The specified resource was not found."
+
+  NoContent:
+    description: "No content to be returned"
+
+  BadRequest:
+    description: "The request was invalid."
 
 
 definitions:
@@ -638,3 +671,10 @@ definitions:
         type: array
         items:
           type: string
+
+securityDefinitions:
+  Authorization:
+    name: Authorization
+    description: "Service Auth Token used by Auth service"
+    in: header
+    type: apiKey
