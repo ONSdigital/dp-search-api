@@ -510,83 +510,71 @@ definitions:
   ContentItem:
     type: object
     properties:
-      description:
-        type: object
-        properties:
-          contact:
-            type: object
-            properties:
-              email:
-                type: string
-              name:
-                type: string
-              telephone:
-                type: string
-            required:
-              - name
-              - email
-          dataset_id:
-            type: string
-          dimensions:
-            type: array
-            items:
-              $ref: "#/definitions/Dimension"
-            description: "An array of dimensions within a dataset."
-          edition:
-            type: string
-          highlight:
-            $ref: "#/definitions/Highlight"
-          headline1:
-            type: string
-          headline2:
-            type: string
-          headline3:
-            type: string
-          keywords:
-            type: array
-            items:
+      cancelled:
+        type: boolean
+      canonical_topic:
+        type: string
+      dataset_id:
+        type: string
+      date_changes:
+        type: array
+        items:
+          type: object
+          properties:
+            previous_date:
               type: string
-          latest_release:
-            type: boolean
-          language:
-            type: string
-            example: "English"
-          meta_description:
-            type: string
-          national_statistic:
-            type: boolean
-          next_release:
-            type: string
-            example: "14 August 2015"
-          population_type:
-            type: string
-            description: "A population type a dataset is associated with e.g. Usual-Residents.  This is applicable to Census 2021 datasets only."
-          pre_unit:
-            type: string
-          release_date:
-            type: string
-            format: date-time
-          source:
-            type: string
-          summary:
-            type: string
-          title:
-            type: string
-          topics:
-            type: array
-            items:
+            change_notice:
               type: string
-          unit:
-            type: string
-        required:
-          - summary
-          - title
+      dimensions:
+        type: array
+        items:
+          $ref: "#/definitions/Dimension"
+        description: "An array of dimensions within a dataset."
+      edition:
+        type: string
+      finalised:
+        type: boolean
+      highlight:
+        $ref: "#/definitions/Highlight"
+      keywords:
+        type: array
+        items:
+          type: string
+      language:
+        type: string
+        example: "English"
+      meta_description:
+        type: string
+      national_statistic:
+        type: boolean
+      population_type:
+        type: string
+        description: "A population type a dataset is associated with e.g. Usual-Residents.  This is applicable to Census 2021 datasets only."
+      provisional_date:
+        type: string
+      published:
+        type: boolean
+      release_date:
+        type: string
+        format: date-time
+      source:
+        type: string
+      summary:
+        type: string
+      survey:
+        type: string
+      title:
+        type: string
+      topics:
+        type: array
+        items:
+          type: string
       type:
         type: string
       uri:
         type: string
     required:
-      - description
+      - title
       - type
       - uri
 
