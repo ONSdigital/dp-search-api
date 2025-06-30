@@ -199,7 +199,7 @@ func (rb *ReleaseBuilder) BuildSearchQuery(_ context.Context, searchRequest inte
 		return nil, err
 	}
 
-	bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1)
+	bytes.ReplaceAll(linearQuery, []byte("$$"), []byte("\n"))
 	lines := bytes.Split(linearQuery, []byte("\n"))
 	var searches []esClient.Search
 	for i := 0; i < len(lines)-1; i += 2 {

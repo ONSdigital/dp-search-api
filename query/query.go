@@ -104,5 +104,5 @@ func LegacyFormatMultiQuery(rawQuery []byte) ([]byte, error) {
 	}
 
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	return bytes.Replace(linearQuery, []byte("$$"), []byte("\n"), -1), nil
+	return bytes.ReplaceAll(linearQuery, []byte("$$"), []byte("\n")), nil
 }
