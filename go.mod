@@ -3,15 +3,15 @@ module github.com/ONSdigital/dp-search-api
 go 1.24
 
 require (
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.266.0
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.267.0
 	github.com/ONSdigital/dp-authorisation v0.5.0
 	github.com/ONSdigital/dp-component-test v0.20.0
-	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.2
+	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.4
 	github.com/ONSdigital/dp-healthcheck v1.6.4
-	github.com/ONSdigital/dp-net/v3 v3.2.1
+	github.com/ONSdigital/dp-net/v3 v3.3.0
 	github.com/ONSdigital/dp-otel-go v0.0.8
-	github.com/ONSdigital/dp-search-scrubber-api v0.6.0
-	github.com/ONSdigital/log.go/v2 v2.4.5
+	github.com/ONSdigital/dp-search-scrubber-api v0.7.0
+	github.com/ONSdigital/log.go/v2 v2.4.6
 	github.com/cucumber/godog v0.15.0
 	github.com/google/go-cmp v0.7.0
 	github.com/gorilla/mux v1.8.1
@@ -50,7 +50,7 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250223041408-d3c622f1b874 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
@@ -89,19 +89,19 @@ require (
 	go.opentelemetry.io/contrib/propagators/b3 v1.35.0 // indirect
 	go.opentelemetry.io/contrib/propagators/jaeger v1.35.0 // indirect
 	go.opentelemetry.io/contrib/propagators/ot v1.35.0 // indirect
-	go.opentelemetry.io/otel v1.35.0 // indirect
+	go.opentelemetry.io/otel v1.37.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.35.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0 // indirect
-	go.opentelemetry.io/otel/metric v1.35.0 // indirect
+	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
-	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250414145226-207652e42e2e // indirect
 	google.golang.org/grpc v1.71.1 // indirect

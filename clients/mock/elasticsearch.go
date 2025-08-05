@@ -8,6 +8,7 @@ import (
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/dp-search-api/clients"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"sync"
 )
 
@@ -24,7 +25,7 @@ var _ clients.ElasticSearch = &ElasticSearchMock{}
 //			AddDocumentFunc: func(ctx context.Context, indexName string, documentID string, document []byte, opts *dpEsClient.AddDocumentOptions) error {
 //				panic("mock out the AddDocument method")
 //			},
-//			BulkIndexAddFunc: func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error {
+//			BulkIndexAddFunc: func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)) error {
 //				panic("mock out the BulkIndexAdd method")
 //			},
 //			BulkIndexCloseFunc: func(contextMoqParam context.Context) error {
@@ -44,6 +45,12 @@ var _ clients.ElasticSearch = &ElasticSearchMock{}
 //			},
 //			CreateIndexFunc: func(ctx context.Context, indexName string, indexSettings []byte) error {
 //				panic("mock out the CreateIndex method")
+//			},
+//			DeleteDocumentFunc: func(ctx context.Context, indexName string, documentID string) error {
+//				panic("mock out the DeleteDocument method")
+//			},
+//			DeleteDocumentByQueryFunc: func(ctx context.Context, search dpEsClient.Search) error {
+//				panic("mock out the DeleteDocumentByQuery method")
 //			},
 //			DeleteIndexFunc: func(ctx context.Context, indexName string) error {
 //				panic("mock out the DeleteIndex method")
@@ -83,7 +90,7 @@ type ElasticSearchMock struct {
 	AddDocumentFunc func(ctx context.Context, indexName string, documentID string, document []byte, opts *dpEsClient.AddDocumentOptions) error
 
 	// BulkIndexAddFunc mocks the BulkIndexAdd method.
-	BulkIndexAddFunc func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error
+	BulkIndexAddFunc func(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)) error
 
 	// BulkIndexCloseFunc mocks the BulkIndexClose method.
 	BulkIndexCloseFunc func(contextMoqParam context.Context) error
@@ -102,6 +109,12 @@ type ElasticSearchMock struct {
 
 	// CreateIndexFunc mocks the CreateIndex method.
 	CreateIndexFunc func(ctx context.Context, indexName string, indexSettings []byte) error
+
+	// DeleteDocumentFunc mocks the DeleteDocument method.
+	DeleteDocumentFunc func(ctx context.Context, indexName string, documentID string) error
+
+	// DeleteDocumentByQueryFunc mocks the DeleteDocumentByQuery method.
+	DeleteDocumentByQueryFunc func(ctx context.Context, search dpEsClient.Search) error
 
 	// DeleteIndexFunc mocks the DeleteIndex method.
 	DeleteIndexFunc func(ctx context.Context, indexName string) error
@@ -158,9 +171,9 @@ type ElasticSearchMock struct {
 			// Document is the document argument value.
 			Document []byte
 			// OnSuccess is the onSuccess argument value.
-			OnSuccess dpEsClient.SuccessFunc
+			OnSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
 			// OnFailure is the onFailure argument value.
-			OnFailure dpEsClient.FailureFunc
+			OnFailure func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)
 		}
 		// BulkIndexClose holds details about calls to the BulkIndexClose method.
 		BulkIndexClose []struct {
@@ -207,6 +220,22 @@ type ElasticSearchMock struct {
 			IndexName string
 			// IndexSettings is the indexSettings argument value.
 			IndexSettings []byte
+		}
+		// DeleteDocument holds details about calls to the DeleteDocument method.
+		DeleteDocument []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// IndexName is the indexName argument value.
+			IndexName string
+			// DocumentID is the documentID argument value.
+			DocumentID string
+		}
+		// DeleteDocumentByQuery holds details about calls to the DeleteDocumentByQuery method.
+		DeleteDocumentByQuery []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Search is the search argument value.
+			Search dpEsClient.Search
 		}
 		// DeleteIndex holds details about calls to the DeleteIndex method.
 		DeleteIndex []struct {
@@ -276,23 +305,25 @@ type ElasticSearchMock struct {
 			AddIndices []string
 		}
 	}
-	lockAddDocument    sync.RWMutex
-	lockBulkIndexAdd   sync.RWMutex
-	lockBulkIndexClose sync.RWMutex
-	lockBulkUpdate     sync.RWMutex
-	lockChecker        sync.RWMutex
-	lockCount          sync.RWMutex
-	lockCountIndices   sync.RWMutex
-	lockCreateIndex    sync.RWMutex
-	lockDeleteIndex    sync.RWMutex
-	lockDeleteIndices  sync.RWMutex
-	lockExplain        sync.RWMutex
-	lockGetAlias       sync.RWMutex
-	lockGetIndices     sync.RWMutex
-	lockMultiSearch    sync.RWMutex
-	lockNewBulkIndexer sync.RWMutex
-	lockSearch         sync.RWMutex
-	lockUpdateAliases  sync.RWMutex
+	lockAddDocument           sync.RWMutex
+	lockBulkIndexAdd          sync.RWMutex
+	lockBulkIndexClose        sync.RWMutex
+	lockBulkUpdate            sync.RWMutex
+	lockChecker               sync.RWMutex
+	lockCount                 sync.RWMutex
+	lockCountIndices          sync.RWMutex
+	lockCreateIndex           sync.RWMutex
+	lockDeleteDocument        sync.RWMutex
+	lockDeleteDocumentByQuery sync.RWMutex
+	lockDeleteIndex           sync.RWMutex
+	lockDeleteIndices         sync.RWMutex
+	lockExplain               sync.RWMutex
+	lockGetAlias              sync.RWMutex
+	lockGetIndices            sync.RWMutex
+	lockMultiSearch           sync.RWMutex
+	lockNewBulkIndexer        sync.RWMutex
+	lockSearch                sync.RWMutex
+	lockUpdateAliases         sync.RWMutex
 }
 
 // AddDocument calls AddDocumentFunc.
@@ -344,7 +375,7 @@ func (mock *ElasticSearchMock) AddDocumentCalls() []struct {
 }
 
 // BulkIndexAdd calls BulkIndexAddFunc.
-func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess dpEsClient.SuccessFunc, onFailure dpEsClient.FailureFunc) error {
+func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClient.BulkIndexerAction, index string, documentID string, document []byte, onSuccess func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem), onFailure func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)) error {
 	if mock.BulkIndexAddFunc == nil {
 		panic("ElasticSearchMock.BulkIndexAddFunc: method is nil but ElasticSearch.BulkIndexAdd was just called")
 	}
@@ -354,8 +385,8 @@ func (mock *ElasticSearchMock) BulkIndexAdd(ctx context.Context, action dpEsClie
 		Index      string
 		DocumentID string
 		Document   []byte
-		OnSuccess  dpEsClient.SuccessFunc
-		OnFailure  dpEsClient.FailureFunc
+		OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
+		OnFailure  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)
 	}{
 		Ctx:        ctx,
 		Action:     action,
@@ -381,8 +412,8 @@ func (mock *ElasticSearchMock) BulkIndexAddCalls() []struct {
 	Index      string
 	DocumentID string
 	Document   []byte
-	OnSuccess  dpEsClient.SuccessFunc
-	OnFailure  dpEsClient.FailureFunc
+	OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
+	OnFailure  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)
 } {
 	var calls []struct {
 		Ctx        context.Context
@@ -390,8 +421,8 @@ func (mock *ElasticSearchMock) BulkIndexAddCalls() []struct {
 		Index      string
 		DocumentID string
 		Document   []byte
-		OnSuccess  dpEsClient.SuccessFunc
-		OnFailure  dpEsClient.FailureFunc
+		OnSuccess  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem)
+		OnFailure  func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error)
 	}
 	mock.lockBulkIndexAdd.RLock()
 	calls = mock.calls.BulkIndexAdd
@@ -620,6 +651,82 @@ func (mock *ElasticSearchMock) CreateIndexCalls() []struct {
 	mock.lockCreateIndex.RLock()
 	calls = mock.calls.CreateIndex
 	mock.lockCreateIndex.RUnlock()
+	return calls
+}
+
+// DeleteDocument calls DeleteDocumentFunc.
+func (mock *ElasticSearchMock) DeleteDocument(ctx context.Context, indexName string, documentID string) error {
+	if mock.DeleteDocumentFunc == nil {
+		panic("ElasticSearchMock.DeleteDocumentFunc: method is nil but ElasticSearch.DeleteDocument was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		IndexName  string
+		DocumentID string
+	}{
+		Ctx:        ctx,
+		IndexName:  indexName,
+		DocumentID: documentID,
+	}
+	mock.lockDeleteDocument.Lock()
+	mock.calls.DeleteDocument = append(mock.calls.DeleteDocument, callInfo)
+	mock.lockDeleteDocument.Unlock()
+	return mock.DeleteDocumentFunc(ctx, indexName, documentID)
+}
+
+// DeleteDocumentCalls gets all the calls that were made to DeleteDocument.
+// Check the length with:
+//
+//	len(mockedElasticSearch.DeleteDocumentCalls())
+func (mock *ElasticSearchMock) DeleteDocumentCalls() []struct {
+	Ctx        context.Context
+	IndexName  string
+	DocumentID string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		IndexName  string
+		DocumentID string
+	}
+	mock.lockDeleteDocument.RLock()
+	calls = mock.calls.DeleteDocument
+	mock.lockDeleteDocument.RUnlock()
+	return calls
+}
+
+// DeleteDocumentByQuery calls DeleteDocumentByQueryFunc.
+func (mock *ElasticSearchMock) DeleteDocumentByQuery(ctx context.Context, search dpEsClient.Search) error {
+	if mock.DeleteDocumentByQueryFunc == nil {
+		panic("ElasticSearchMock.DeleteDocumentByQueryFunc: method is nil but ElasticSearch.DeleteDocumentByQuery was just called")
+	}
+	callInfo := struct {
+		Ctx    context.Context
+		Search dpEsClient.Search
+	}{
+		Ctx:    ctx,
+		Search: search,
+	}
+	mock.lockDeleteDocumentByQuery.Lock()
+	mock.calls.DeleteDocumentByQuery = append(mock.calls.DeleteDocumentByQuery, callInfo)
+	mock.lockDeleteDocumentByQuery.Unlock()
+	return mock.DeleteDocumentByQueryFunc(ctx, search)
+}
+
+// DeleteDocumentByQueryCalls gets all the calls that were made to DeleteDocumentByQuery.
+// Check the length with:
+//
+//	len(mockedElasticSearch.DeleteDocumentByQueryCalls())
+func (mock *ElasticSearchMock) DeleteDocumentByQueryCalls() []struct {
+	Ctx    context.Context
+	Search dpEsClient.Search
+} {
+	var calls []struct {
+		Ctx    context.Context
+		Search dpEsClient.Search
+	}
+	mock.lockDeleteDocumentByQuery.RLock()
+	calls = mock.calls.DeleteDocumentByQuery
+	mock.lockDeleteDocumentByQuery.RUnlock()
 	return calls
 }
 
