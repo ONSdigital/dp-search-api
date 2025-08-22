@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
+	"os"
 
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -12,21 +14,52 @@ func main() {
 
 	ctx := context.Background()
 
-	// TODO Hard coded list of queries for now - find out how to read them in later
-	listOfQueries := make([]string, 10)
-	listOfQueries[0] = "rpi"
-	listOfQueries[1] = "cpi"
-	listOfQueries[2] = "population"
-	listOfQueries[3] = "life expectancy"
-	listOfQueries[4] = "inflation"
-	listOfQueries[5] = "gdp"
-	listOfQueries[6] = "life expectancy calculator"
-	listOfQueries[7] = "crime"
-	listOfQueries[8] = "cpih"
-	listOfQueries[9] = "ashe"
+	logData := log.Data{"CSV name: ": "top-search-queries.csv"}
+	file, err := os.Open("top-search-queries.csv")
+	if err != nil {
+		log.Fatal(ctx, "failed opening file", err, logData)
+	}
+	reader := csv.NewReader(file)
+	queries, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(ctx, "failed reading file", err, logData)
+	}
 
-	logData := log.Data{"List of queries: ": listOfQueries}
+	logData = log.Data{"List of queries: ": queries}
 	log.Info(ctx, "Take in the list of top 10 queries", logData)
 	log.Info(ctx, "Make requests, using the queries, to the Search API, with NLP on and off")
 
+	// presumably there's a feature flag for switching NLP on and off in prod - not sure how to use that in this context
+	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi for the first query
+
+	logData = log.Data{"CSV name: ": "top-search-query-results.csv"}
+	csvFile, err := os.Create("top-search-query-results.csv")
+	if err != nil {
+		log.Fatal(ctx, "failed creating file", err)
+	}
+	log.Info(ctx, "Successfully created csv file", logData)
+
+	// now write the header row
+	headerRow := make([]string, 10)
+	headerRow[0] = "uri"
+	headerRow[1] = "type"
+	headerRow[2] = "release_date"
+	headerRow[3] = "title"
+	headerRow[4] = "edition"
+	headerRow[5] = "summary"
+	headerRow[6] = "nlp on or off?"
+	headerRow[7] = "query supplied"
+	headerRow[8] = "position (array index)"
+	headerRow[9] = "date and time of the request"
+
+	csvwriter := csv.NewWriter(csvFile)
+
+	//for _, heading := range headerRow {
+	err = csvwriter.Write(headerRow)
+	if err != nil {
+		log.Fatal(ctx, "failed writing header row", err)
+	}
+	//}
+	csvwriter.Flush()
+	csvFile.Close()
 }
