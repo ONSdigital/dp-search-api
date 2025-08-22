@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -33,14 +34,30 @@ func main() {
 	listOfQueries := queries[0]
 	fmt.Println("The first query is: " + listOfQueries[0])
 
-	resultStr := callSearchAPI(ctx, listOfQueries)
+	resultStr := callSearchAPI(ctx, listOfQueries[0])
 	logData = log.Data{"Search API results: ": resultStr}
 	log.Info(ctx, "Successfully called Search API", logData)
 
+	// add first results to csv
+	// start by deleting everything in the resultStr before the second occurrence of "items"
+	firstSegments := strings.Split(resultStr, "items")
+	//for index, segment := range firstSegments {
+	//	fmt.Println("The number " + strconv.Itoa(index) + " segment is: " + segment)
+	//}
+
+	// discard the first 2 segments but rejoin the remaining ones
+	resultStr2 := "{\"items" + firstSegments[2]
+	for i := 3; i < len(firstSegments); i++ {
+		resultStr2 = resultStr2 + "items" + firstSegments[i]
+	}
+	fmt.Println("New result string: " + resultStr2)
+
+	//The new result string is valid json and it only contains the information that we're interested in
 }
 
-func callSearchAPI(ctx context.Context, listOfQueries []string) string {
-	response, err := http.Get("https://api.beta.ons.gov.uk/v1/search?q=rpi")
+func callSearchAPI(ctx context.Context, query string) string {
+	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s", query)
+	response, err := http.Get(urlStr)
 
 	if err != nil {
 		fmt.Print(err.Error())
