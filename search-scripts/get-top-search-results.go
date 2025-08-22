@@ -49,10 +49,12 @@ func main() {
 	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi&limit=10 for the first query
 
 	listOfQueries := queries[0]
-	fmt.Println("The first query is: " + listOfQueries[0])
+	querySupplied := listOfQueries[0]
+	fmt.Println("The first query is: " + querySupplied)
 
 	log.Info(ctx, "calling the Search API")
-	resultsJson := callSearchAPI(ctx, listOfQueries[0])
+	dateTimeRequest := time.Now()
+	resultsJson := callSearchAPI(ctx, querySupplied)
 
 	var responseObject Response
 	err = json.Unmarshal(resultsJson, &responseObject)
@@ -62,13 +64,16 @@ func main() {
 
 	fmt.Println("The number of items is: " + strconv.Itoa(len(responseObject.Items)))
 
-	for _, item := range responseObject.Items {
+	for position, item := range responseObject.Items {
 		fmt.Println(item.Title)
 		fmt.Println(item.ReleaseDate)
 		fmt.Println(item.Uri)
 		fmt.Println(item.Type)
 		fmt.Println(item.Edition)
 		fmt.Println(item.Summary)
+		fmt.Println(position)
+		fmt.Println(querySupplied)
+		fmt.Println(dateTimeRequest)
 	}
 }
 
