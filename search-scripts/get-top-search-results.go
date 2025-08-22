@@ -3,14 +3,31 @@ package main
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
+	"strconv"
+	"time"
 
 	"github.com/ONSdigital/log.go/v2/log"
 )
+
+// A Response struct to map the Response
+type Response struct {
+	Items []Item `json:"items"`
+}
+
+// An Item Struct to map every Item to.
+type Item struct {
+	Type        string    `json:"type"`
+	Edition     string    `json:"edition"`
+	ReleaseDate time.Time `json:"release_date"`
+	Summary     string    `json:"summary"`
+	Title       string    `json:"title"`
+	Uri         string    `json:"uri"`
+}
 
 func main() {
 	fmt.Println("Get results of top 10 queries from the Search API")
@@ -29,34 +46,34 @@ func main() {
 	log.Info(ctx, "Make requests, using the queries, to the Search API, with NLP on and off")
 
 	// presumably there's a feature flag for switching NLP on and off in prod - not sure how to use that in this context
-	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi for the first query
+	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi&limit=10 for the first query
 
 	listOfQueries := queries[0]
 	fmt.Println("The first query is: " + listOfQueries[0])
 
-	resultStr := callSearchAPI(ctx, listOfQueries[0])
-	logData = log.Data{"Search API results: ": resultStr}
-	log.Info(ctx, "Successfully called Search API", logData)
+	log.Info(ctx, "calling the Search API")
+	resultsJson := callSearchAPI(ctx, listOfQueries[0])
 
-	// add first results to csv
-	// start by deleting everything in the resultStr before the second occurrence of "items"
-	firstSegments := strings.Split(resultStr, "items")
-	//for index, segment := range firstSegments {
-	//	fmt.Println("The number " + strconv.Itoa(index) + " segment is: " + segment)
-	//}
-
-	// discard the first 2 segments but rejoin the remaining ones
-	resultStr2 := "{\"items" + firstSegments[2]
-	for i := 3; i < len(firstSegments); i++ {
-		resultStr2 = resultStr2 + "items" + firstSegments[i]
+	var responseObject Response
+	err = json.Unmarshal(resultsJson, &responseObject)
+	if err != nil {
+		log.Fatal(ctx, "failed to unmarshall response", err)
 	}
-	fmt.Println("New result string: " + resultStr2)
 
-	//The new result string is valid json and it only contains the information that we're interested in
+	fmt.Println("The number of items is: " + strconv.Itoa(len(responseObject.Items)))
+
+	for _, item := range responseObject.Items {
+		fmt.Println(item.Title)
+		fmt.Println(item.ReleaseDate)
+		fmt.Println(item.Uri)
+		fmt.Println(item.Type)
+		fmt.Println(item.Edition)
+		fmt.Println(item.Summary)
+	}
 }
 
-func callSearchAPI(ctx context.Context, query string) string {
-	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s", query)
+func callSearchAPI(ctx context.Context, query string) []byte {
+	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10", query)
 	response, err := http.Get(urlStr)
 
 	if err != nil {
@@ -68,8 +85,7 @@ func callSearchAPI(ctx context.Context, query string) string {
 	if err != nil {
 		log.Fatal(ctx, "failed reading API response", err)
 	}
-	searchResults := string(responseData)
-	return searchResults
+	return responseData
 }
 
 func readListOfQueries(ctx context.Context) ([][]string, error) {
