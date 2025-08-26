@@ -53,7 +53,8 @@ func main() {
 	fmt.Println("The first query is: " + querySupplied)
 
 	log.Info(ctx, "calling the Search API")
-	dateTimeRequest := time.Now()
+	now := time.Now()
+	dateTimeRequest := now.Format(time.DateTime)
 	resultsJson := callSearchAPI(ctx, querySupplied)
 
 	var responseObject Response
@@ -64,16 +65,26 @@ func main() {
 
 	fmt.Println("The number of items is: " + strconv.Itoa(len(responseObject.Items)))
 
+	csvWriter := csv.NewWriter(csvFile)
+	defer csvWriter.Flush()
+
 	for position, item := range responseObject.Items {
-		fmt.Println(item.Title)
-		fmt.Println(item.ReleaseDate)
-		fmt.Println(item.Uri)
-		fmt.Println(item.Type)
-		fmt.Println(item.Edition)
-		fmt.Println(item.Summary)
-		fmt.Println(position)
-		fmt.Println(querySupplied)
-		fmt.Println(dateTimeRequest)
+		resultsRow := make([]string, 10)
+		resultsRow[0] = "NLP either on or off"
+		resultsRow[1] = dateTimeRequest
+		resultsRow[2] = querySupplied
+		resultsRow[3] = item.ReleaseDate.Format(time.DateTime)
+		resultsRow[4] = item.Type
+		resultsRow[5] = strconv.Itoa(position)
+		resultsRow[6] = item.Title
+		resultsRow[7] = item.Uri
+		resultsRow[8] = item.Edition
+		resultsRow[9] = item.Summary
+
+		err = csvWriter.Write(resultsRow)
+		if err != nil {
+			log.Fatal(ctx, fmt.Sprintf("failed writing results row at position %d", position), err)
+		}
 	}
 }
 
@@ -112,20 +123,20 @@ func readListOfQueries(ctx context.Context) ([][]string, error) {
 
 func writeHeaderRow(csvFile *os.File, err error, ctx context.Context) {
 	headerRow := make([]string, 10)
-	headerRow[0] = "uri"
-	headerRow[1] = "type"
-	headerRow[2] = "release_date"
-	headerRow[3] = "title"
-	headerRow[4] = "edition"
-	headerRow[5] = "summary"
-	headerRow[6] = "nlp on or off?"
-	headerRow[7] = "query supplied"
-	headerRow[8] = "position (array index)"
-	headerRow[9] = "date and time of the request"
+	headerRow[0] = "NLP on or off?"
+	headerRow[1] = "Date and time of request"
+	headerRow[2] = "Query supplied"
+	headerRow[3] = "Date of release"
+	headerRow[4] = "Type of release"
+	headerRow[5] = "Position in results"
+	headerRow[6] = "Title of release"
+	headerRow[7] = "URI of release"
+	headerRow[8] = "Edition of release"
+	headerRow[9] = "Summary of release"
 
-	csvwriter := csv.NewWriter(csvFile)
-	defer csvwriter.Flush()
-	err = csvwriter.Write(headerRow)
+	csvWriter := csv.NewWriter(csvFile)
+	defer csvWriter.Flush()
+	err = csvWriter.Write(headerRow)
 	if err != nil {
 		log.Fatal(ctx, "failed writing header row", err)
 	}
