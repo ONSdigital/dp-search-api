@@ -49,16 +49,21 @@ func main() {
 	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi&limit=10 for the first query
 
 	listOfQueries := queries[0]
-	querySupplied := listOfQueries[0]
-	fmt.Println("The first query is: " + querySupplied)
 
-	log.Info(ctx, "calling the Search API")
+	for _, query := range listOfQueries {
+		getQueryResultsAndAddToCSV(ctx, query, csvFile)
+	}
+}
+
+func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFile *os.File) {
 	now := time.Now()
 	dateTimeRequest := now.Format(time.DateTime)
+	logData := log.Data{"Query supplied: ": querySupplied}
+	log.Info(ctx, "calling the Search API", logData)
 	resultsJson := callSearchAPI(ctx, querySupplied)
 
 	var responseObject Response
-	err = json.Unmarshal(resultsJson, &responseObject)
+	err := json.Unmarshal(resultsJson, &responseObject)
 	if err != nil {
 		log.Fatal(ctx, "failed to unmarshall response", err)
 	}
@@ -83,7 +88,7 @@ func main() {
 
 		err = csvWriter.Write(resultsRow)
 		if err != nil {
-			log.Fatal(ctx, fmt.Sprintf("failed writing results row at position %d", position), err)
+			log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at position %d", querySupplied, position), err)
 		}
 	}
 }
