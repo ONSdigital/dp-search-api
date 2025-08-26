@@ -43,24 +43,23 @@ func main() {
 
 	writeHeaderRow(csvFile, err, ctx)
 	queries, err := readListOfQueries(ctx)
-	log.Info(ctx, "Make requests, using the queries, to the Search API, with NLP on and off")
-
-	// presumably there's a feature flag for switching NLP on and off in prod - not sure how to use that in this context
-	// need to call https://api.beta.ons.gov.uk/v1/search?q=rpi&limit=10 for the first query
-
 	listOfQueries := queries[0]
 
+	log.Info(ctx, "Make requests to the Search API, with NLP on and off")
 	for _, query := range listOfQueries {
-		getQueryResultsAndAddToCSV(ctx, query, csvFile)
+		getQueryResultsAndAddToCSV(ctx, query, csvFile, "false")
+		getQueryResultsAndAddToCSV(ctx, query, csvFile, "true")
 	}
 }
 
-func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFile *os.File) {
+func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFile *os.File, nlpWeighting string) {
 	now := time.Now()
 	dateTimeRequest := now.Format(time.DateTime)
-	logData := log.Data{"Query supplied: ": querySupplied}
-	log.Info(ctx, "calling the Search API", logData)
-	resultsJson := callSearchAPI(ctx, querySupplied)
+	nlpOnOrOff := "off"
+	if nlpWeighting == "true" {
+		nlpOnOrOff = "on"
+	}
+	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
 
 	var responseObject Response
 	err := json.Unmarshal(resultsJson, &responseObject)
@@ -68,19 +67,19 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 		log.Fatal(ctx, "failed to unmarshall response", err)
 	}
 
-	fmt.Println("The number of items is: " + strconv.Itoa(len(responseObject.Items)))
-
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
 
-	for position, item := range responseObject.Items {
+	// The number of items in the responseObject will be 10 or fewer (as 10 is specified as the limit in the query)
+	for i := 0; i < len(responseObject.Items); i++ {
+		item := responseObject.Items[i]
 		resultsRow := make([]string, 10)
-		resultsRow[0] = "NLP either on or off"
+		resultsRow[0] = nlpOnOrOff
 		resultsRow[1] = dateTimeRequest
 		resultsRow[2] = querySupplied
 		resultsRow[3] = item.ReleaseDate.Format(time.DateTime)
 		resultsRow[4] = item.Type
-		resultsRow[5] = strconv.Itoa(position)
+		resultsRow[5] = strconv.Itoa(i)
 		resultsRow[6] = item.Title
 		resultsRow[7] = item.Uri
 		resultsRow[8] = item.Edition
@@ -88,15 +87,16 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 
 		err = csvWriter.Write(resultsRow)
 		if err != nil {
-			log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at position %d", querySupplied, position), err)
+			log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at position %d", querySupplied, i), err)
 		}
 	}
 }
 
-func callSearchAPI(ctx context.Context, query string) []byte {
-	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10", query)
+func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byte {
+	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
+	logData := log.Data{"Query: ": urlStr}
+	log.Info(ctx, "Call Search API", logData)
 	response, err := http.Get(urlStr)
-
 	if err != nil {
 		fmt.Print(err.Error())
 		os.Exit(1)
@@ -122,7 +122,7 @@ func readListOfQueries(ctx context.Context) ([][]string, error) {
 	}
 
 	logData = log.Data{"List of queries: ": queries}
-	log.Info(ctx, "Take in the list of top 10 queries", logData)
+	log.Info(ctx, "Take in list of top 10 queries", logData)
 	return queries, err
 }
 
