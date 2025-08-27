@@ -14,12 +14,12 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-// A Response struct to map the Response
+// A Response struct to map the Response, from the Search API, to a particular query
 type Response struct {
 	Items []Item `json:"items"`
 }
 
-// An Item Struct to map every Item to.
+// An Item Struct to map each Item of the Response to.
 type Item struct {
 	Type        string    `json:"type"`
 	Edition     string    `json:"edition"`
@@ -29,9 +29,15 @@ type Item struct {
 	Uri         string    `json:"uri"`
 }
 
+// main reads in a list of 10 queries from the first row of a CSV file. These are understood to be the top 10 queries
+// that are used in the live Search API service. It processes the queries, by calling the live Search API, and outputs
+// all the query results to another CSV file, which it creates.
+//
+// Each query is called with NLP (Natural Language Processing) initially switched off, then called again with
+// NLP switched on. The top 10 results of each query call are added to the output CSV file.
 func main() {
-	fmt.Println("Get results of top 10 queries from the Search API")
 	ctx := context.Background()
+	log.Info(ctx, "starting script to get results of top 10 queries from the Search API")
 
 	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
 	csvFile, err := os.Create("top-search-query-results.csv")
@@ -39,19 +45,23 @@ func main() {
 	if err != nil {
 		log.Fatal(ctx, "failed creating file", err)
 	}
-	log.Info(ctx, "Successfully created csv file", logData)
+	log.Info(ctx, "successfully created csv file", logData)
 
 	writeHeaderRow(csvFile, err, ctx)
 	queries, err := readListOfQueries(ctx)
 	listOfQueries := queries[0]
 
-	log.Info(ctx, "Make requests to the Search API, with NLP on and off")
+	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
 		getQueryResultsAndAddToCSV(ctx, query, csvFile, "false")
 		getQueryResultsAndAddToCSV(ctx, query, csvFile, "true")
 	}
+	log.Info(ctx, "end of script")
 }
 
+// getQueryResultsAndAddToCSV calls the Search API for a particular query string and NLP weighting (true or false)
+// If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
+// written to the supplied output CSV file as separate rows.
 func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFile *os.File, nlpWeighting string) {
 	now := time.Now()
 	dateTimeRequest := now.Format(time.DateTime)
@@ -94,12 +104,11 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 
 func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byte {
 	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
-	logData := log.Data{"Query: ": urlStr}
-	log.Info(ctx, "Call Search API", logData)
+	logData := log.Data{"query: ": urlStr}
+	log.Info(ctx, "call Search API", logData)
 	response, err := http.Get(urlStr)
 	if err != nil {
-		fmt.Print(err.Error())
-		os.Exit(1)
+		log.Fatal(ctx, "failed calling Search API", err)
 	}
 
 	responseData, err := io.ReadAll(response.Body)
@@ -121,8 +130,8 @@ func readListOfQueries(ctx context.Context) ([][]string, error) {
 		log.Fatal(ctx, "failed reading file", err, logData)
 	}
 
-	logData = log.Data{"List of queries: ": queries}
-	log.Info(ctx, "Take in list of top 10 queries", logData)
+	logData = log.Data{"list of queries: ": queries}
+	log.Info(ctx, "take in list of top 10 queries", logData)
 	return queries, err
 }
 
