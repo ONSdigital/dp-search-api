@@ -83,25 +83,33 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 	// The number of items in the responseObject will be 10 or fewer (as 10 is specified as the limit in the query)
 	for i := 0; i < len(responseObject.Items); i++ {
 		item := responseObject.Items[i]
-		resultsRow := make([]string, 10)
-		resultsRow[0] = nlpOnOrOff
-		resultsRow[1] = dateTimeRequest
-		resultsRow[2] = querySupplied
-		resultsRow[3] = item.ReleaseDate.Format(time.DateTime)
-		resultsRow[4] = item.Type
-		resultsRow[5] = strconv.Itoa(i)
-		resultsRow[6] = item.Title
-		resultsRow[7] = item.Uri
-		resultsRow[8] = item.Edition
-		resultsRow[9] = item.Summary
-
-		err = csvWriter.Write(resultsRow)
-		if err != nil {
-			log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at position %d", querySupplied, i), err)
-		}
+		addItemToCSV(ctx, querySupplied, nlpOnOrOff, dateTimeRequest, item, i, csvWriter)
 	}
 }
 
+// addItemToCSV adds a row of data, taken from one item of the results (of a particular query), to the output CSV file.
+func addItemToCSV(ctx context.Context, querySupplied string, nlpOnOrOff string, dateTimeRequest string, item Item, position int, csvWriter *csv.Writer) {
+	rowNum := position + 1
+	resultsRow := make([]string, 10)
+	resultsRow[0] = nlpOnOrOff
+	resultsRow[1] = dateTimeRequest
+	resultsRow[2] = querySupplied
+	resultsRow[3] = item.ReleaseDate.Format(time.DateTime)
+	resultsRow[4] = item.Type
+	resultsRow[5] = strconv.Itoa(rowNum)
+	resultsRow[6] = item.Title
+	resultsRow[7] = item.Uri
+	resultsRow[8] = item.Edition
+	resultsRow[9] = item.Summary
+
+	err := csvWriter.Write(resultsRow)
+	if err != nil {
+		log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at row %d", querySupplied, rowNum), err)
+	}
+}
+
+// callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
+// parameters. It specifies a limit of 10 results to be returned in the query response.
 func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byte {
 	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
 	logData := log.Data{"query: ": urlStr}
@@ -118,6 +126,8 @@ func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byt
 	return responseData
 }
 
+// readListOfQueries opens the CSV named "top-search-queries.csv", in the local directory, and reads it into a
+// [][]string object, which it returns.
 func readListOfQueries(ctx context.Context) ([][]string, error) {
 	logData := log.Data{"CSV name: ": "top-search-queries.csv"}
 	file, err := os.Open("top-search-queries.csv")
@@ -135,6 +145,7 @@ func readListOfQueries(ctx context.Context) ([][]string, error) {
 	return queries, err
 }
 
+// writeHeaderRow writes a header row to the supplied CSV file, which will be used for the output.
 func writeHeaderRow(csvFile *os.File, err error, ctx context.Context) {
 	headerRow := make([]string, 10)
 	headerRow[0] = "NLP on or off?"
