@@ -1,6 +1,6 @@
 module scripts
 
-go 1.24.4
+go 1.24.6
 
 require github.com/ONSdigital/log.go/v2 v2.4.6
 
