@@ -42,9 +42,7 @@ func main() {
 	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
 	csvFile, err := os.Create("top-search-query-results.csv")
 	defer csvFile.Close()
-	if err != nil {
-		log.Fatal(ctx, "failed creating file", err)
-	}
+	check(ctx, "failed creating file", err)
 	log.Info(ctx, "successfully created csv file", logData)
 
 	writeHeaderRow(csvFile, err, ctx)
@@ -73,9 +71,7 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 
 	var responseObject Response
 	err := json.Unmarshal(resultsJson, &responseObject)
-	if err != nil {
-		log.Fatal(ctx, "failed to unmarshall response", err)
-	}
+	check(ctx, "failed to unmarshall response", err)
 
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
@@ -103,9 +99,7 @@ func addItemToCSV(ctx context.Context, querySupplied string, nlpOnOrOff string, 
 	resultsRow[9] = item.Summary
 
 	err := csvWriter.Write(resultsRow)
-	if err != nil {
-		log.Fatal(ctx, fmt.Sprintf("failed writing results row for query '%s' at row %d", querySupplied, rowNum), err)
-	}
+	check(ctx, fmt.Sprintf("failed writing results row for query '%s' at row %d", querySupplied, rowNum), err)
 }
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
@@ -115,14 +109,10 @@ func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byt
 	logData := log.Data{"query: ": urlStr}
 	log.Info(ctx, "call Search API", logData)
 	response, err := http.Get(urlStr)
-	if err != nil {
-		log.Fatal(ctx, "failed calling Search API", err)
-	}
+	check(ctx, "failed calling Search API", err)
 
 	responseData, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(ctx, "failed reading API response", err)
-	}
+	check(ctx, "failed reading API response", err)
 	return responseData
 }
 
@@ -131,14 +121,10 @@ func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byt
 func readListOfQueries(ctx context.Context) ([][]string, error) {
 	logData := log.Data{"CSV name: ": "top-search-queries.csv"}
 	file, err := os.Open("top-search-queries.csv")
-	if err != nil {
-		log.Fatal(ctx, "failed opening file", err, logData)
-	}
+	check(ctx, "failed opening file", err)
 	reader := csv.NewReader(file)
 	queries, err := reader.ReadAll()
-	if err != nil {
-		log.Fatal(ctx, "failed reading file", err, logData)
-	}
+	check(ctx, "failed reading file", err)
 
 	logData = log.Data{"list of queries: ": queries}
 	log.Info(ctx, "take in list of top 10 queries", logData)
@@ -162,7 +148,11 @@ func writeHeaderRow(csvFile *os.File, err error, ctx context.Context) {
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
 	err = csvWriter.Write(headerRow)
+	check(ctx, "failed writing header row", err)
+}
+
+func check(ctx context.Context, msg string, err error) {
 	if err != nil {
-		log.Fatal(ctx, "failed writing header row", err)
+		log.Fatal(ctx, msg, err)
 	}
 }
