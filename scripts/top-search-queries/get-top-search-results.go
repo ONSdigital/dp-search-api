@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ONSdigital/log.go/v2/log"
@@ -46,8 +48,8 @@ func main() {
 	log.Info(ctx, "successfully created csv file", logData)
 
 	writeHeaderRow(csvFile, err, ctx)
-	queries, err := readListOfQueries(ctx)
-	listOfQueries := queries[0]
+	listOfQueries, err := readQueriesFromFile(ctx)
+	check(ctx, "failed reading queries file", err)
 
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
@@ -116,19 +118,31 @@ func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byt
 	return responseData
 }
 
-// readListOfQueries opens the CSV named "top-search-queries.csv", in the local directory, and reads it into a
-// [][]string object, which it returns.
-func readListOfQueries(ctx context.Context) ([][]string, error) {
-	logData := log.Data{"CSV name: ": "top-search-queries.csv"}
-	file, err := os.Open("top-search-queries.csv")
-	check(ctx, "failed opening file", err)
-	reader := csv.NewReader(file)
-	queries, err := reader.ReadAll()
-	check(ctx, "failed reading file", err)
+// readQueriesFromFile opens the text file named "search-queries.txt", in the local directory, and reads it into a
+// []string object, which it returns.
+func readQueriesFromFile(ctx context.Context) (listOfQueries []string, err error) {
+	logData := log.Data{"File name: ": "search-queries.txt"}
+	file, err := os.Open("search-queries.txt")
+	if err != nil {
+		log.Fatal(ctx, "failed opening file", err, logData)
+	}
+	defer func() {
+		if err = file.Close(); err != nil {
+			log.Fatal(ctx, "failed closing file", err, logData)
+		}
+	}()
+	bufferedReader := bufio.NewReader(file)
 
-	logData = log.Data{"list of queries: ": queries}
+	for i := 0; i < 10; i++ {
+		readStr, err := bufferedReader.ReadString('\n')
+		check(ctx, "failed reading row of text", err)
+		queryString := strings.TrimSpace(readStr)
+		listOfQueries = append(listOfQueries, queryString)
+	}
+
+	logData = log.Data{"list of queries: ": listOfQueries}
 	log.Info(ctx, "take in list of top 10 queries", logData)
-	return queries, err
+	return listOfQueries, err
 }
 
 // writeHeaderRow writes a header row to the supplied CSV file, which will be used for the output.

@@ -1,0 +1,10 @@
+rpi
+cpi
+population
+life%20expectancy
+inflation
+gdp
+life%20expectancy%20calculator
+crime
+cpih
+ashe
