@@ -46,7 +46,7 @@ func main() {
 	listOfQueries, err := readQueriesFromFile(ctx)
 	check(ctx, "failed reading queries file", err)
 
-	csvFile := createOutputCSVFile(err, ctx)
+	csvFile := createOutputCSVFile(ctx)
 	defer csvFile.Close()
 
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
@@ -60,7 +60,7 @@ func main() {
 }
 
 // createOutputCSVFile creates the CSV file ready for the query results to be added to. It firstly adds a header row.
-func createOutputCSVFile(err error, ctx context.Context) *os.File {
+func createOutputCSVFile(ctx context.Context) *os.File {
 	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
 	csvFile, err := os.Create("top-search-query-results.csv")
 	check(ctx, "failed creating file", err)
@@ -72,7 +72,7 @@ func createOutputCSVFile(err error, ctx context.Context) *os.File {
 // getQueryResults calls the Search API for a particular query string and NLP weighting (true or false)
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
-func getQueryResults(ctx context.Context, querySupplied string, nlpWeighting string) SearchResponse {
+func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string) SearchResponse {
 	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
 
 	var responseObject SearchResponse
