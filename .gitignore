@@ -17,3 +17,6 @@ coverage.txt
 /main
 
 .go/
+
+#CSV output from script to analyse top 10 search results
+top-search-query-results.csv
