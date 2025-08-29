@@ -119,7 +119,7 @@ func callSearchAPI(ctx context.Context, query, nlpWeighting string) []byte {
 }
 
 func MakeGetRequest(uri string) (res *http.Response, err error) {
-	req, err := http.NewRequest(http.MethodGet, uri, nil)
+	req, err := http.NewRequest(http.MethodGet, uri, http.NoBody)
 	if err != nil {
 		return res, err
 	}
