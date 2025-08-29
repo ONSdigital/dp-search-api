@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,7 +42,10 @@ type Item struct {
 // NLP switched on. The top 10 results of each query call are added to the output CSV file.
 func main() {
 	ctx := context.Background()
-	log.Info(ctx, "starting script to get results of top 10 queries from the Search API")
+	log.Info(ctx, "starting script to get results of most common queries from the Search API")
+
+	apiURL := flag.String("api_url", "https://api.beta.ons.gov.uk/v1/search", "the url for the search api")
+	flag.Parse()
 
 	listOfQueries, err := readQueriesFromFile(ctx)
 	check(ctx, "failed reading queries file", err)
@@ -51,9 +55,9 @@ func main() {
 
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
-		searchResp := getQueryResults(ctx, query, "false")
+		searchResp := getQueryResults(ctx, query, "false", *apiURL)
 		AddResultsToCSV(ctx, query, csvFile, "false", searchResp)
-		searchResp = getQueryResults(ctx, query, "true")
+		searchResp = getQueryResults(ctx, query, "true", *apiURL)
 		AddResultsToCSV(ctx, query, csvFile, "true", searchResp)
 	}
 	log.Info(ctx, "end of script")
@@ -72,8 +76,8 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 // getQueryResults calls the Search API for a particular query string and NLP weighting (true or false)
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
-func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string) SearchResponse {
-	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
+func getQueryResults(ctx context.Context, querySupplied, nlpWeighting, apiURL string) SearchResponse {
+	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting, apiURL)
 
 	var responseObject SearchResponse
 	err := json.Unmarshal(resultsJson, &responseObject)
@@ -120,8 +124,9 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
 // parameters. It specifies a limit of 10 results to be returned in the query response.
-func callSearchAPI(ctx context.Context, query, nlpWeighting string) []byte {
-	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
+func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []byte {
+	// urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
+	urlStr := fmt.Sprintf("%s?q=%s&limit=10&nlp_weighting=%s", apiURL, query, nlpWeighting)
 	logData := log.Data{"query: ": urlStr}
 	log.Info(ctx, "call Search API", logData)
 	response, err := MakeGetRequest(urlStr)
