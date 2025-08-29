@@ -16,12 +16,12 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-// A Response struct to map the Response, from the Search API, to a particular query
-type Response struct {
+// A SearchResponse struct to map the SearchResponse, from the Search API, to a particular query
+type SearchResponse struct {
 	Items []Item `json:"items"`
 }
 
-// An Item Struct to map each Item of the Response to.
+// An Item Struct to map each Item of the SearchResponse to.
 type Item struct {
 	Type        string    `json:"type"`
 	Edition     string    `json:"edition"`
@@ -43,11 +43,11 @@ func main() {
 
 	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
 	csvFile, err := os.Create("top-search-query-results.csv")
-	defer csvFile.Close()
 	check(ctx, "failed creating file", err)
+	defer csvFile.Close()
 	log.Info(ctx, "successfully created csv file", logData)
 
-	writeHeaderRow(csvFile, err, ctx)
+	writeHeaderRow(csvFile, ctx)
 	listOfQueries, err := readQueriesFromFile(ctx)
 	check(ctx, "failed reading queries file", err)
 
@@ -71,7 +71,7 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 	}
 	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
 
-	var responseObject Response
+	var responseObject SearchResponse
 	err := json.Unmarshal(resultsJson, &responseObject)
 	check(ctx, "failed to unmarshall response", err)
 
@@ -86,7 +86,7 @@ func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFi
 }
 
 // addItemToCSV adds a row of data, taken from one item of the results (of a particular query), to the output CSV file.
-func addItemToCSV(ctx context.Context, querySupplied string, nlpOnOrOff string, dateTimeRequest string, item Item, position int, csvWriter *csv.Writer) {
+func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeRequest string, item Item, position int, csvWriter *csv.Writer) {
 	rowNum := position + 1
 	resultsRow := make([]string, 10)
 	resultsRow[0] = nlpOnOrOff
@@ -106,16 +106,30 @@ func addItemToCSV(ctx context.Context, querySupplied string, nlpOnOrOff string, 
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
 // parameters. It specifies a limit of 10 results to be returned in the query response.
-func callSearchAPI(ctx context.Context, query string, nlpWeighting string) []byte {
+func callSearchAPI(ctx context.Context, query, nlpWeighting string) []byte {
 	urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
 	logData := log.Data{"query: ": urlStr}
 	log.Info(ctx, "call Search API", logData)
-	response, err := http.Get(urlStr)
+	response, err := MakeGetRequest(urlStr)
 	check(ctx, "failed calling Search API", err)
 
 	responseData, err := io.ReadAll(response.Body)
 	check(ctx, "failed reading API response", err)
 	return responseData
+}
+
+func MakeGetRequest(uri string) (res *http.Response, err error) {
+	req, err := http.NewRequest(http.MethodGet, uri, nil)
+	if err != nil {
+		return res, err
+	}
+
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
 }
 
 // readQueriesFromFile opens the text file named "search-queries.txt", in the local directory, and reads it into a
@@ -146,7 +160,7 @@ func readQueriesFromFile(ctx context.Context) (listOfQueries []string, err error
 }
 
 // writeHeaderRow writes a header row to the supplied CSV file, which will be used for the output.
-func writeHeaderRow(csvFile *os.File, err error, ctx context.Context) {
+func writeHeaderRow(csvFile *os.File, ctx context.Context) {
 	headerRow := make([]string, 10)
 	headerRow[0] = "NLP on or off?"
 	headerRow[1] = "Date and time of request"
@@ -161,7 +175,7 @@ func writeHeaderRow(csvFile *os.File, err error, ctx context.Context) {
 
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
-	err = csvWriter.Write(headerRow)
+	err := csvWriter.Write(headerRow)
 	check(ctx, "failed writing header row", err)
 }
 
