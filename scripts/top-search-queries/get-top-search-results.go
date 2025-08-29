@@ -16,7 +16,7 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-// A SearchResponse struct to map the SearchResponse, from the Search API, to a particular query
+// A SearchResponse struct to map the response, from the Search API, to a particular query
 type SearchResponse struct {
 	Items []Item `json:"items"`
 }
@@ -31,9 +31,11 @@ type Item struct {
 	Uri         string    `json:"uri"`
 }
 
-// main reads in a list of 10 queries from the first row of a CSV file. These are understood to be the top 10 queries
-// that are used in the live Search API service. It processes the queries, by calling the live Search API, and outputs
-// all the query results to another CSV file, which it creates.
+// main reads in a list of queries from a text file. These are intended to be the queries that are most commonly used
+// in the live Search API service.
+//
+// It then creates an output CSV file and processes the queries, by calling the live Search API, and outputs
+// all the query results to that CSV file.
 //
 // Each query is called with NLP (Natural Language Processing) initially switched off, then called again with
 // NLP switched on. The top 10 results of each query call are added to the output CSV file.
@@ -41,44 +43,56 @@ func main() {
 	ctx := context.Background()
 	log.Info(ctx, "starting script to get results of top 10 queries from the Search API")
 
-	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
-	csvFile, err := os.Create("top-search-query-results.csv")
-	check(ctx, "failed creating file", err)
-	defer csvFile.Close()
-	log.Info(ctx, "successfully created csv file", logData)
-
-	writeHeaderRow(csvFile, ctx)
 	listOfQueries, err := readQueriesFromFile(ctx)
 	check(ctx, "failed reading queries file", err)
 
+	csvFile := createOutputCSVFile(err, ctx)
+	defer csvFile.Close()
+
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
-		getQueryResultsAndAddToCSV(ctx, query, csvFile, "false")
-		getQueryResultsAndAddToCSV(ctx, query, csvFile, "true")
+		searchResp := getQueryResults(ctx, query, "false")
+		AddResultsToCSV(ctx, query, csvFile, "false", searchResp)
+		searchResp = getQueryResults(ctx, query, "true")
+		AddResultsToCSV(ctx, query, csvFile, "true", searchResp)
 	}
 	log.Info(ctx, "end of script")
 }
 
-// getQueryResultsAndAddToCSV calls the Search API for a particular query string and NLP weighting (true or false)
+// createOutputCSVFile creates the CSV file ready for the query results to be added to. It firstly adds a header row.
+func createOutputCSVFile(err error, ctx context.Context) *os.File {
+	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
+	csvFile, err := os.Create("top-search-query-results.csv")
+	check(ctx, "failed creating file", err)
+	log.Info(ctx, "successfully created csv file", logData)
+	writeHeaderRow(csvFile, ctx)
+	return csvFile
+}
+
+// getQueryResults calls the Search API for a particular query string and NLP weighting (true or false)
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
-func getQueryResultsAndAddToCSV(ctx context.Context, querySupplied string, csvFile *os.File, nlpWeighting string) {
+func getQueryResults(ctx context.Context, querySupplied string, nlpWeighting string) SearchResponse {
+	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
+
+	var responseObject SearchResponse
+	err := json.Unmarshal(resultsJson, &responseObject)
+	check(ctx, "failed to unmarshall response", err)
+	return responseObject
+}
+
+// AddResultsToCSV writes the results of a Search API query call to the supplied output CSV file (as separate rows).
+func AddResultsToCSV(ctx context.Context, querySupplied string, csvFile *os.File, nlpWeighting string, responseObject SearchResponse) {
 	now := time.Now()
 	dateTimeRequest := now.Format(time.DateTime)
 	nlpOnOrOff := "off"
 	if nlpWeighting == "true" {
 		nlpOnOrOff = "on"
 	}
-	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting)
-
-	var responseObject SearchResponse
-	err := json.Unmarshal(resultsJson, &responseObject)
-	check(ctx, "failed to unmarshall response", err)
-
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
 
-	// The number of items in the responseObject will be 10 or fewer (as 10 is specified as the limit in the query)
+	// The number of items in the responseObject will be 10 or fewer (as 10 was specified as the limit in the query)
 	for i := 0; i < len(responseObject.Items); i++ {
 		item := responseObject.Items[i]
 		addItemToCSV(ctx, querySupplied, nlpOnOrOff, dateTimeRequest, item, i, csvWriter)
