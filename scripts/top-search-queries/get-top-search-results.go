@@ -34,6 +34,11 @@ type SearchItem struct {
 	Uri         string `json:"uri"`
 }
 
+type runConfig struct {
+	APIURL        string `json:"apiurl"`
+	InputFileName string `json:"inputFileName"`
+}
+
 // main reads in a list of queries from a text file. These are intended to be the queries that are most commonly used
 // in the live Search API service.
 //
@@ -46,10 +51,12 @@ func main() {
 	ctx := context.Background()
 	log.Info(ctx, "starting script to get results of most common queries from the Search API")
 
-	apiURL := flag.String("api_url", "https://api.beta.ons.gov.uk/v1", "the base url for the search api")
+	config := runConfig{}
+	flag.StringVar(&config.APIURL, "api_url", "https://api.beta.ons.gov.uk/v1", "the base url for the search api")
+	flag.StringVar(&config.InputFileName, "input_file_name", "search-queries.txt", "name of input file including extension")
 	flag.Parse()
 
-	listOfQueries, err := readQueriesFromFile(ctx)
+	listOfQueries, err := readQueriesFromFile(ctx, config)
 	check(ctx, "failed reading queries file", err)
 
 	csvFile := createOutputCSVFile(ctx)
@@ -57,9 +64,9 @@ func main() {
 
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
-		searchResp := getQueryResults(ctx, query, "false", *apiURL)
+		searchResp := getQueryResults(ctx, query, "false", config)
 		AddResultsToCSV(ctx, query, csvFile, "false", searchResp)
-		searchResp = getQueryResults(ctx, query, "true", *apiURL)
+		searchResp = getQueryResults(ctx, query, "true", config)
 		AddResultsToCSV(ctx, query, csvFile, "true", searchResp)
 	}
 	log.Info(ctx, "end of script")
@@ -78,8 +85,8 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 // getQueryResults calls the Search API for a particular query string and NLP weighting (true or false)
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
-func getQueryResults(ctx context.Context, querySupplied, nlpWeighting, apiURL string) SearchResponse {
-	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, apiURL)
+func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string, cfg runConfig) SearchResponse {
+	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, cfg.APIURL)
 
 	var searchItems []SearchItem
 	for _, item := range sdkItems {
@@ -161,9 +168,9 @@ func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []mo
 
 // readQueriesFromFile opens the text file named "search-queries.txt", in the local directory, and reads it into a
 // []string object, which it returns.
-func readQueriesFromFile(ctx context.Context) (listOfQueries []string, err error) {
-	logData := log.Data{"File name: ": "search-queries.txt"}
-	file, err := os.Open("search-queries.txt")
+func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []string, err error) {
+	logData := log.Data{"File name: ": cfg.InputFileName}
+	file, err := os.Open(cfg.InputFileName)
 	if err != nil {
 		log.Fatal(ctx, "failed opening file", err, logData)
 	}
