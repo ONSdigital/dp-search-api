@@ -66,7 +66,11 @@ func run(ctx context.Context, config runConfig) {
 	check(ctx, "failed reading queries file", err)
 
 	csvFile := createOutputCSVFile(ctx)
-	defer csvFile.Close()
+	defer func() {
+		if err = csvFile.Close(); err != nil {
+			log.Fatal(ctx, "failed closing csv file", err)
+		}
+	}()
 
 	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
@@ -93,15 +97,15 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string, cfg runConfig) searchResponse {
 	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, cfg.APIURL)
 
-	var searchItems []searchItem
-	for _, item := range sdkItems {
+	searchItems := make([]searchItem, 0)
+	for i := range sdkItems {
 		var searchItem searchItem
-		searchItem.Uri = item.URI
-		searchItem.Edition = item.Edition
-		searchItem.Title = item.Title
-		searchItem.Type = item.DataType
-		searchItem.Summary = item.Summary
-		searchItem.ReleaseDate = item.ReleaseDate
+		searchItem.Uri = sdkItems[i].URI
+		searchItem.Edition = sdkItems[i].Edition
+		searchItem.Title = sdkItems[i].Title
+		searchItem.Type = sdkItems[i].DataType
+		searchItem.Summary = sdkItems[i].Summary
+		searchItem.ReleaseDate = sdkItems[i].ReleaseDate
 		searchItems = append(searchItems, searchItem)
 	}
 
@@ -179,11 +183,6 @@ func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []st
 	if err != nil {
 		log.Fatal(ctx, "failed opening file", err, logData)
 	}
-	defer func() {
-		if err = file.Close(); err != nil {
-			log.Fatal(ctx, "failed closing file", err, logData)
-		}
-	}()
 	bufferedReader := bufio.NewReader(file)
 
 	var queryString string
@@ -209,7 +208,9 @@ func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []st
 		queryString = url.QueryEscape(queryString)
 		listOfQueries = append(listOfQueries, queryString)
 	}
-
+	if err = file.Close(); err != nil {
+		log.Fatal(ctx, "failed closing file", err, logData)
+	}
 	logData = log.Data{"list of queries: ": listOfQueries}
 	log.Info(ctx, "take in list of top queries", logData)
 	return listOfQueries, err
