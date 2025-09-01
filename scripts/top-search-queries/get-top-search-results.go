@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 
 	"net/url"
 	"os"
@@ -139,7 +140,7 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []models.Item {
 	urlStr := fmt.Sprintf("%s/search?q=%s&limit=10&nlp_weighting=%s", apiURL, query, nlpWeighting)
 	logData := log.Data{"query to construct: ": urlStr}
-	log.Info(ctx, "Using SDK to call Search API", logData)
+	log.Info(ctx, "using SDK to call Search API", logData)
 
 	queryVals := url.Values{}
 	queryVals.Add("q", query)
@@ -173,16 +174,32 @@ func readQueriesFromFile(ctx context.Context) (listOfQueries []string, err error
 	}()
 	bufferedReader := bufio.NewReader(file)
 
-	for i := 0; i < 10; i++ {
-		readStr, err := bufferedReader.ReadString('\n')
-		check(ctx, "failed reading row of text", err)
-		queryString := strings.TrimSpace(readStr)
+	var queryString string
+	for {
+		line, err := bufferedReader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				// add query from last line, of input file, unless it's empty
+				queryString = strings.TrimSpace(line)
+				if queryString == "" {
+					log.Info(ctx, "ignoring last line of input file as it's empty")
+					break
+				}
+				queryString = url.QueryEscape(queryString)
+				listOfQueries = append(listOfQueries, queryString)
+				break
+			}
+			log.Fatal(ctx, "error while reading file - failed reading row of text", err, logData)
+			break
+		}
+		// add query to list
+		queryString = strings.TrimSpace(line)
 		queryString = url.QueryEscape(queryString)
 		listOfQueries = append(listOfQueries, queryString)
 	}
 
 	logData = log.Data{"list of queries: ": listOfQueries}
-	log.Info(ctx, "take in list of top 10 queries", logData)
+	log.Info(ctx, "take in list of top queries", logData)
 	return listOfQueries, err
 }
 
