@@ -177,6 +177,7 @@ func readQueriesFromFile(ctx context.Context) (listOfQueries []string, err error
 		readStr, err := bufferedReader.ReadString('\n')
 		check(ctx, "failed reading row of text", err)
 		queryString := strings.TrimSpace(readStr)
+		queryString = url.QueryEscape(queryString)
 		listOfQueries = append(listOfQueries, queryString)
 	}
 

@@ -1,10 +1,10 @@
 rpi
 cpi
 population
-life%20expectancy
+life expectancy
 inflation
 gdp
-life%20expectancy%20calculator
+life expectancy calculator
 crime
 cpih
 ashe
