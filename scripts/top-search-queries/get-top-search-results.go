@@ -4,32 +4,33 @@ import (
 	"bufio"
 	"context"
 	"encoding/csv"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"net/http"
+
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/ONSdigital/dp-search-api/models"
+	"github.com/ONSdigital/dp-search-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // A SearchResponse struct to map the response, from the Search API, to a particular query
 type SearchResponse struct {
-	Items []Item `json:"items"`
+	Items []SearchItem `json:"items"`
 }
 
-// An Item Struct to map each Item of the SearchResponse to.
-type Item struct {
-	Type        string    `json:"type"`
-	Edition     string    `json:"edition"`
-	ReleaseDate time.Time `json:"release_date"`
-	Summary     string    `json:"summary"`
-	Title       string    `json:"title"`
-	Uri         string    `json:"uri"`
+// A SearchItem Struct to map each SearchItem of the SearchResponse to.
+type SearchItem struct {
+	Type        string `json:"type"`
+	Edition     string `json:"edition"`
+	ReleaseDate string `json:"release_date"`
+	Summary     string `json:"summary"`
+	Title       string `json:"title"`
+	Uri         string `json:"uri"`
 }
 
 // main reads in a list of queries from a text file. These are intended to be the queries that are most commonly used
@@ -44,7 +45,7 @@ func main() {
 	ctx := context.Background()
 	log.Info(ctx, "starting script to get results of most common queries from the Search API")
 
-	apiURL := flag.String("api_url", "https://api.beta.ons.gov.uk/v1/search", "the url for the search api")
+	apiURL := flag.String("api_url", "https://api.beta.ons.gov.uk/v1", "the base url for the search api")
 	flag.Parse()
 
 	listOfQueries, err := readQueriesFromFile(ctx)
@@ -77,11 +78,22 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
 func getQueryResults(ctx context.Context, querySupplied, nlpWeighting, apiURL string) SearchResponse {
-	resultsJson := callSearchAPI(ctx, querySupplied, nlpWeighting, apiURL)
+	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, apiURL)
+
+	var searchItems []SearchItem
+	for _, item := range sdkItems {
+		var searchItem SearchItem
+		searchItem.Uri = item.URI
+		searchItem.Edition = item.Edition
+		searchItem.Title = item.Title
+		searchItem.Type = item.DataType
+		searchItem.Summary = item.Summary
+		searchItem.ReleaseDate = item.ReleaseDate
+		searchItems = append(searchItems, searchItem)
+	}
 
 	var responseObject SearchResponse
-	err := json.Unmarshal(resultsJson, &responseObject)
-	check(ctx, "failed to unmarshall response", err)
+	responseObject.Items = searchItems
 	return responseObject
 }
 
@@ -104,13 +116,13 @@ func AddResultsToCSV(ctx context.Context, querySupplied string, csvFile *os.File
 }
 
 // addItemToCSV adds a row of data, taken from one item of the results (of a particular query), to the output CSV file.
-func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeRequest string, item Item, position int, csvWriter *csv.Writer) {
+func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeRequest string, item SearchItem, position int, csvWriter *csv.Writer) {
 	rowNum := position + 1
 	resultsRow := make([]string, 10)
 	resultsRow[0] = nlpOnOrOff
 	resultsRow[1] = dateTimeRequest
 	resultsRow[2] = querySupplied
-	resultsRow[3] = item.ReleaseDate.Format(time.DateTime)
+	resultsRow[3] = item.ReleaseDate
 	resultsRow[4] = item.Type
 	resultsRow[5] = strconv.Itoa(rowNum)
 	resultsRow[6] = item.Title
@@ -124,31 +136,26 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
 // parameters. It specifies a limit of 10 results to be returned in the query response.
-func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []byte {
-	// urlStr := fmt.Sprintf("https://api.beta.ons.gov.uk/v1/search?q=%s&limit=10&nlp_weighting=%s", query, nlpWeighting)
-	urlStr := fmt.Sprintf("%s?q=%s&limit=10&nlp_weighting=%s", apiURL, query, nlpWeighting)
-	logData := log.Data{"query: ": urlStr}
-	log.Info(ctx, "call Search API", logData)
-	response, err := MakeGetRequest(urlStr)
-	check(ctx, "failed calling Search API", err)
+func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []models.Item {
+	urlStr := fmt.Sprintf("%s/search?q=%s&limit=10&nlp_weighting=%s", apiURL, query, nlpWeighting)
+	logData := log.Data{"query to construct: ": urlStr}
+	log.Info(ctx, "Using SDK to call Search API", logData)
 
-	responseData, err := io.ReadAll(response.Body)
-	check(ctx, "failed reading API response", err)
-	return responseData
-}
-
-func MakeGetRequest(uri string) (res *http.Response, err error) {
-	req, err := http.NewRequest(http.MethodGet, uri, http.NoBody)
+	queryVals := url.Values{}
+	queryVals.Add("q", query)
+	queryVals.Add("limit", "10")
+	queryVals.Add("nlp_weighting", nlpWeighting)
+	options := sdk.Options{
+		Query: queryVals,
+	}
+	logData = log.Data{"query values: ": queryVals}
+	searchAPIClient := sdk.New(apiURL)
+	response, err := searchAPIClient.GetSearch(ctx, options)
 	if err != nil {
-		return res, err
+		log.Fatal(ctx, "failed calling Search API", err, logData)
 	}
 
-	res, err = http.DefaultClient.Do(req)
-	if err != nil {
-		return res, err
-	}
-
-	return res, err
+	return response.Items
 }
 
 // readQueriesFromFile opens the text file named "search-queries.txt", in the local directory, and reads it into a
