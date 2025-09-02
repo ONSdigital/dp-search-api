@@ -137,17 +137,17 @@ func AddResultsToCSV(ctx context.Context, querySupplied string, csvFile *os.File
 // addItemToCSV adds a row of data, taken from one item of the results (of a particular query), to the output CSV file.
 func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeRequest string, item searchItem, position int, csvWriter *csv.Writer) {
 	rowNum := position + 1
-	resultsRow := make([]string, 10)
-	resultsRow[0] = nlpOnOrOff
-	resultsRow[1] = dateTimeRequest
-	resultsRow[2] = querySupplied
-	resultsRow[3] = item.ReleaseDate
-	resultsRow[4] = item.Type
-	resultsRow[5] = strconv.Itoa(rowNum)
-	resultsRow[6] = item.Title
-	resultsRow[7] = item.Uri
-	resultsRow[8] = item.Edition
-	resultsRow[9] = item.Summary
+	resultsRow := []string{
+		nlpOnOrOff,
+		dateTimeRequest,
+		querySupplied,
+		item.ReleaseDate,
+		item.Type,
+		strconv.Itoa(rowNum),
+		item.Title,
+		item.Uri,
+		item.Edition,
+		item.Summary}
 
 	err := csvWriter.Write(resultsRow)
 	check(ctx, fmt.Sprintf("failed writing results row for query '%s' at row %d", querySupplied, rowNum), err)
@@ -216,17 +216,17 @@ func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []st
 
 // writeHeaderRow writes a header row to the supplied CSV file, which will be used for the output.
 func writeHeaderRow(csvFile *os.File, ctx context.Context) {
-	headerRow := make([]string, 10)
-	headerRow[0] = "NLP on or off?"
-	headerRow[1] = "Date and time of request"
-	headerRow[2] = "Query supplied"
-	headerRow[3] = "Date of release"
-	headerRow[4] = "Type of release"
-	headerRow[5] = "Position in results"
-	headerRow[6] = "Title of release"
-	headerRow[7] = "URI of release"
-	headerRow[8] = "Edition of release"
-	headerRow[9] = "Summary of release"
+	headerRow := []string{
+		"NLP on or off?",
+		"Date and time of request",
+		"Query supplied",
+		"Date of release",
+		"Type of release",
+		"Position in results",
+		"Title of release",
+		"URI of release",
+		"Edition of release",
+		"Summary of release"}
 
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
