@@ -37,6 +37,7 @@ type searchItem struct {
 type runConfig struct {
 	APIURL        string `json:"apiurl"`
 	InputFileName string `json:"inputFileName"`
+	NumResults    string `json:"numResults"`
 }
 
 // main reads in a list of queries from a text file. These are intended to be the queries that are most commonly used
@@ -54,6 +55,7 @@ func main() {
 	config := runConfig{}
 	flag.StringVar(&config.APIURL, "api_url", "https://api.beta.ons.gov.uk/v1", "the base url for the search api")
 	flag.StringVar(&config.InputFileName, "input_file_name", "search-queries.txt", "name of input file including extension")
+	flag.StringVar(&config.NumResults, "num_results", "10", "number of results to fetch for each query")
 	flag.Parse()
 	logData := log.Data{"config: ": config}
 	log.Info(ctx, "parsed config", logData)
@@ -95,7 +97,7 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 // If the NLP weighting is true then NLP is used, if false then NLP is not used. The results of the query call are each
 // written to the supplied output CSV file as separate rows.
 func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string, cfg runConfig) searchResponse {
-	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, cfg.APIURL)
+	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, cfg.APIURL, cfg.NumResults)
 
 	searchItems := make([]searchItem, 0)
 	for i := range sdkItems {
@@ -125,7 +127,7 @@ func AddResultsToCSV(ctx context.Context, querySupplied string, csvFile *os.File
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
 
-	// The number of items in the responseObject will be 10 or fewer (as 10 was specified as the limit in the query)
+	// The number of items in the responseObject will default to 10, but will be whatever is specified by the num_results input parameter, unless fewer are returned.
 	for i := 0; i < len(responseObject.Items); i++ {
 		item := responseObject.Items[i]
 		addItemToCSV(ctx, querySupplied, nlpOnOrOff, dateTimeRequest, item, i, csvWriter)
@@ -153,19 +155,16 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
 // parameters. It specifies a limit of 10 results to be returned in the query response.
-func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string) []models.Item {
-	urlStr := fmt.Sprintf("%s/search?q=%s&limit=10&nlp_weighting=%s", apiURL, query, nlpWeighting)
-	logData := log.Data{"query to construct: ": urlStr}
-	log.Info(ctx, "using SDK to call Search API", logData)
-
+func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL, numResults string) []models.Item {
 	queryVals := url.Values{}
 	queryVals.Add("q", query)
-	queryVals.Add("limit", "10")
+	queryVals.Add("limit", numResults)
 	queryVals.Add("nlp_weighting", nlpWeighting)
 	options := sdk.Options{
 		Query: queryVals,
 	}
-	logData = log.Data{"query values: ": queryVals}
+	logData := log.Data{"query values: ": queryVals}
+	log.Info(ctx, "using SDK to call Search API", logData)
 	searchAPIClient := sdk.New(apiURL)
 	response, err := searchAPIClient.GetSearch(ctx, options)
 	if err != nil {
@@ -205,7 +204,6 @@ func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []st
 		}
 		// add query to list
 		queryString = strings.TrimSpace(line)
-		queryString = url.QueryEscape(queryString)
 		listOfQueries = append(listOfQueries, queryString)
 	}
 	if err = file.Close(); err != nil {

@@ -22,3 +22,15 @@ each time the script is run, in the same directory as the script.
 From within the Scripts directory, use the following command to run the script and create the csv output:
 
 `go run get-top-search-results.go`
+
+Or, to change the value of an input parameter, instead of using the default, do something like this:
+
+`go run get-top-search-results.go -<parameter-name> <value>`
+
+### Configuration
+
+| Input Parameter | Default                          | Description                                    |
+|-----------------|----------------------------------|------------------------------------------------|
+| api_url         | <https://api.beta.ons.gov.uk/v1> | The base url for the Search API                |
+| input_file_name | search-queries.txt               | The name of the input file including extension |
+| num_results     | 10                               | The number of results to fetch for each query  |
