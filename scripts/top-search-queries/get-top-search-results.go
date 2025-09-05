@@ -37,7 +37,7 @@ type searchItem struct {
 type runConfig struct {
 	APIURL        string `json:"apiurl"`
 	InputFileName string `json:"inputFileName"`
-	NumResults    string `json:"numResults"`
+	NumResults    int    `json:"numResults"`
 }
 
 // main reads in a list of queries from a text file. These are intended to be the queries that are most commonly used
@@ -55,7 +55,7 @@ func main() {
 	config := runConfig{}
 	flag.StringVar(&config.APIURL, "api_url", "https://api.beta.ons.gov.uk/v1", "the base url for the search api")
 	flag.StringVar(&config.InputFileName, "input_file_name", "search-queries.txt", "name of input file including extension")
-	flag.StringVar(&config.NumResults, "num_results", "10", "number of results to fetch for each query")
+	flag.IntVar(&config.NumResults, "num_results", 10, "number of results to fetch for each query")
 	flag.Parse()
 	logData := log.Data{"config: ": config}
 	log.Info(ctx, "parsed config", logData)
@@ -155,10 +155,10 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 
 // callSearchAPI calls the live Search API using the supplied values of query and nlpWeighting for the relevant query
 // parameters. It specifies a limit of 10 results to be returned in the query response.
-func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL, numResults string) []models.Item {
+func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string, numResults int) []models.Item {
 	queryVals := url.Values{}
 	queryVals.Add("q", query)
-	queryVals.Add("limit", numResults)
+	queryVals.Add("limit", strconv.Itoa(numResults))
 	queryVals.Add("nlp_weighting", nlpWeighting)
 	options := sdk.Options{
 		Query: queryVals,
@@ -195,7 +195,6 @@ func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []st
 					log.Info(ctx, "ignoring last line of input file as it's empty")
 					break
 				}
-				queryString = url.QueryEscape(queryString)
 				listOfQueries = append(listOfQueries, queryString)
 				break
 			}
