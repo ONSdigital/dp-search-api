@@ -147,7 +147,8 @@ func addItemToCSV(ctx context.Context, querySupplied, nlpOnOrOff, dateTimeReques
 		item.Title,
 		item.Uri,
 		item.Edition,
-		item.Summary}
+		item.Summary,
+	}
 
 	err := csvWriter.Write(resultsRow)
 	check(ctx, fmt.Sprintf("failed writing results row for query '%s' at row %d", querySupplied, rowNum), err)
@@ -225,7 +226,8 @@ func writeHeaderRow(csvFile *os.File, ctx context.Context) {
 		"Title of release",
 		"URI of release",
 		"Edition of release",
-		"Summary of release"}
+		"Summary of release",
+	}
 
 	csvWriter := csv.NewWriter(csvFile)
 	defer csvWriter.Flush()
