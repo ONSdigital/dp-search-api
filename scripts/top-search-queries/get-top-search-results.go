@@ -6,8 +6,6 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"io"
-
 	"net/url"
 	"os"
 	"strconv"
@@ -74,7 +72,7 @@ func run(ctx context.Context, config runConfig) {
 		}
 	}()
 
-	log.Info(ctx, "make each request to the Search API with NLP off initially, then NLP on")
+	log.Info(ctx, "making each request to the Search API with NLP off initially, then NLP on")
 	for _, query := range listOfQueries {
 		searchResp := getQueryResults(ctx, query, "false", config)
 		AddResultsToCSV(ctx, query, csvFile, "false", searchResp)
@@ -85,7 +83,7 @@ func run(ctx context.Context, config runConfig) {
 
 // createOutputCSVFile creates the CSV file ready for the query results to be added to. It firstly adds a header row.
 func createOutputCSVFile(ctx context.Context) *os.File {
-	logData := log.Data{"CSV name: ": "top-search-query-results.csv"}
+	logData := log.Data{"output_filename": "top-search-query-results.csv"}
 	csvFile, err := os.Create("top-search-query-results.csv")
 	check(ctx, "failed creating file", err)
 	log.Info(ctx, "successfully created csv file", logData)
@@ -99,21 +97,22 @@ func createOutputCSVFile(ctx context.Context) *os.File {
 func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string, cfg runConfig) searchResponse {
 	sdkItems := callSearchAPI(ctx, querySupplied, nlpWeighting, cfg.APIURL, cfg.NumResults)
 
-	searchItems := make([]searchItem, 0)
-	for i := range sdkItems {
-		var searchItem searchItem
-		searchItem.Uri = sdkItems[i].URI
-		searchItem.Edition = sdkItems[i].Edition
-		searchItem.Title = sdkItems[i].Title
-		searchItem.Type = sdkItems[i].DataType
-		searchItem.Summary = sdkItems[i].Summary
-		searchItem.ReleaseDate = sdkItems[i].ReleaseDate
-		searchItems = append(searchItems, searchItem)
+	response := searchResponse{
+		Items: make([]searchItem, len(sdkItems)),
 	}
 
-	var responseObject searchResponse
-	responseObject.Items = searchItems
-	return responseObject
+	for i, sdkItem := range sdkItems {
+		response.Items[i] = searchItem{
+			Uri:         sdkItem.URI,
+			Edition:     sdkItem.Edition,
+			Title:       sdkItem.Title,
+			Type:        sdkItem.DataType,
+			Summary:     sdkItem.Summary,
+			ReleaseDate: sdkItem.ReleaseDate,
+		}
+	}
+
+	return response
 }
 
 // AddResultsToCSV writes the results of a Search API query call to the supplied output CSV file (as separate rows).
@@ -164,7 +163,7 @@ func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string, numR
 	options := sdk.Options{
 		Query: queryVals,
 	}
-	logData := log.Data{"query values: ": queryVals}
+	logData := log.Data{"query_values": queryVals}
 	log.Info(ctx, "using SDK to call Search API", logData)
 	searchAPIClient := sdk.New(apiURL)
 	response, err := searchAPIClient.GetSearch(ctx, options)
@@ -178,39 +177,22 @@ func callSearchAPI(ctx context.Context, query, nlpWeighting, apiURL string, numR
 // readQueriesFromFile opens the text file named "search-queries.txt", in the local directory, and reads it into a
 // []string object, which it returns.
 func readQueriesFromFile(ctx context.Context, cfg runConfig) (listOfQueries []string, err error) {
-	logData := log.Data{"File name: ": cfg.InputFileName}
+	logData := log.Data{"file_name": cfg.InputFileName}
 	file, err := os.Open(cfg.InputFileName)
 	if err != nil {
-		log.Fatal(ctx, "failed opening file", err, logData)
+		log.Fatal(ctx, "failed opening input file", err, logData)
 	}
-	bufferedReader := bufio.NewReader(file)
+	defer file.Close()
 
-	var queryString string
-	for {
-		line, err := bufferedReader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				// add query from last line, of input file, unless it's empty
-				queryString = strings.TrimSpace(line)
-				if queryString == "" {
-					log.Info(ctx, "ignoring last line of input file as it's empty")
-					break
-				}
-				listOfQueries = append(listOfQueries, queryString)
-				break
-			}
-			log.Fatal(ctx, "error while reading file - failed reading row of text", err, logData)
-			break
-		}
-		// add query to list
-		queryString = strings.TrimSpace(line)
-		listOfQueries = append(listOfQueries, queryString)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		listOfQueries = append(listOfQueries, strings.TrimSpace(scanner.Text()))
 	}
-	if err = file.Close(); err != nil {
-		log.Fatal(ctx, "failed closing file", err, logData)
+	if err := scanner.Err(); err != nil {
+		log.Fatal(ctx, "failed reading input file", err, logData)
 	}
-	logData = log.Data{"list of queries: ": listOfQueries}
-	log.Info(ctx, "take in list of top queries", logData)
+
+	log.Info(ctx, "queries read from input file", log.Data{"queries": listOfQueries})
 	return listOfQueries, err
 }
 
