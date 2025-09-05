@@ -101,15 +101,13 @@ func getQueryResults(ctx context.Context, querySupplied, nlpWeighting string, cf
 		Items: make([]searchItem, len(sdkItems)),
 	}
 
-	for i, sdkItem := range sdkItems {
-		response.Items[i] = searchItem{
-			Uri:         sdkItem.URI,
-			Edition:     sdkItem.Edition,
-			Title:       sdkItem.Title,
-			Type:        sdkItem.DataType,
-			Summary:     sdkItem.Summary,
-			ReleaseDate: sdkItem.ReleaseDate,
-		}
+	for i := range sdkItems {
+		response.Items[i].Uri = sdkItems[i].URI
+		response.Items[i].Edition = sdkItems[i].Edition
+		response.Items[i].Title = sdkItems[i].Title
+		response.Items[i].Type = sdkItems[i].DataType
+		response.Items[i].Summary = sdkItems[i].Summary
+		response.Items[i].ReleaseDate = sdkItems[i].ReleaseDate
 	}
 
 	return response
