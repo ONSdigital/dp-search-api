@@ -19,7 +19,7 @@ commonly used queries (by users of the Search API).
 The results of each query are written to a CSV file named top-search-query-results.csv, which is created/overwritten, 
 each time the script is run, in the same directory as the script.
 
-From within the Scripts directory, use the following command to run the script and create the csv output:
+From within the scripts/top-search-queries directory, use the following command to run the script and create the csv output:
 
 `go run get-top-search-results.go`
 
