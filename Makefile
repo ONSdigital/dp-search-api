@@ -24,7 +24,8 @@ all: delimiter-AUDIT audit delimiter-LINTERS lint delimiter-UNIT-TESTS test deli
 
 .PHONY: audit
 audit: ## Runs checks for security vulnerabilities on dependencies (including transient ones)
-	go list -m all | nancy sleuth
+	dis-vulncheck
+
 
 .PHONY: build
 build: ## Builds binary of application code and stores in bin directory as dp-search-api
