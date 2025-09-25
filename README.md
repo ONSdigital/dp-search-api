@@ -29,7 +29,11 @@ Then run `make debug`.
 * Requires ElasticSearch running on port 11200
 * No further dependencies other than those defined in `go.mod`
 
-### Validating Specification
+### Tools
+
+To run some of our tests you will need additional tooling:
+
+#### Validating Specification
 
 To validate the swagger specification you can do this via:
 
@@ -42,6 +46,14 @@ To run this, you will need to run Node > v20 and have [redocly CLI](https://gith
 ```sh
 npm install -g redocly-cli
 ```
+
+#### Audit
+
+We use `dis-vulncheck` to do auditing, which you will [need to install](https://github.com/ONSdigital/dis-vulncheck).
+
+#### Linting
+
+We use v2 of golangci-lint, which you will [need to install](https://golangci-lint.run/docs/welcome/install).
 
 ## Configuration
 
