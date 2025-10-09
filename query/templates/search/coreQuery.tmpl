@@ -29,7 +29,6 @@
                   "fields": [
                     "description.title^10",
                     "description.edition",
-                    "downloads.content^1"
                   ],
                   "type": "cross_fields",
                   "minimum_should_match": "3<80% 5<60%"
@@ -43,8 +42,6 @@
                     "description.summary",
                     "description.metaDescription",
                     "description.edition",
-                    "downloads.content^1",
-                    "pageData^1",
                     "description.keywords"
                   ],
                   "type": "phrase",
@@ -61,8 +58,6 @@
             "fields": [
               "description.summary",
               "description.metaDescription",
-              "downloads.content^1",
-              "pageData^1",
               "description.keywords"
             ],
             "type": "best_fields",
@@ -86,16 +81,6 @@
               "description.cdid",
               "description.datasetId"
             ]
-          }
-        },
-        {
-          "match": {
-            "searchBoost": {
-              "query": "{{.Term}}",
-              "type": "boolean",
-              "operator": "AND",
-              "boost": 100.0
-            }
           }
         }
       ]

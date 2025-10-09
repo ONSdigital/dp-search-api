@@ -26,8 +26,7 @@
                   "query": "{{.Term}}",
                   "fields": [
                     "title^10",
-                    "edition",
-                    "downloads.content^1"
+                    "edition"
                   ],
                   "type": "cross_fields",
                   "minimum_should_match": "3<80% 5<60%"
@@ -41,8 +40,6 @@
                     "summary",
                     "metaDescription",
                     "edition",
-                    "downloads.content^1",
-                    "pageData^1",
                     "keywords"
                   ],
                   "type": "phrase",
@@ -59,8 +56,6 @@
             "fields": [
               "summary",
               "metaDescription",
-              "downloads.content^1",
-              "pageData^1",
               "keywords"
             ],
             "type": "best_fields",
@@ -84,15 +79,6 @@
               "dataset_id",
               "uri"
             ]
-          }
-        },
-        {
-          "match": {
-            "searchBoost": {
-              "query": "{{.Term}}",
-              "operator": "AND",
-              "boost": 100.0
-            }
           }
         }
       ]
