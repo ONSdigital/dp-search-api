@@ -2,13 +2,16 @@ package config
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 	"github.com/kelseyhightower/envconfig"
 )
 
 // Config is the search API handler config
 type Config struct {
+	Algorithms                 AlgorithmList `envconfig:"ALGORITHMS"`
 	AWS                        AWS
 	BerlinAPIURL               string        `envconfig:"BERLIN_URL"`
 	CategoryAPIURL             string        `envconfig:"CATEGORY_URL"`
@@ -41,6 +44,29 @@ type AWS struct {
 	TLSInsecureSkipVerify bool   `envconfig:"AWS_TLS_INSECURE_SKIP_VERIFY"`
 }
 
+type AlgorithmList []algorithm.SearchAlgorithm
+
+// Decode implements envconfig.Decoder to handle comma-separated strings.
+func (d *AlgorithmList) Decode(value string) error {
+	if strings.TrimSpace(value) == "" {
+		*d = nil
+		return nil
+	}
+
+	parts := strings.Split(value, ",")
+	result := make([]algorithm.SearchAlgorithm, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed == "" {
+			continue
+		}
+		result = append(result, algorithm.SearchAlgorithm(trimmed))
+	}
+
+	*d = result
+	return nil
+}
+
 var cfg *Config
 
 // Get configures the application and returns the Config
@@ -50,6 +76,7 @@ func Get() (*Config, error) {
 	}
 
 	cfg = &Config{
+		Algorithms:                 []algorithm.SearchAlgorithm{algorithm.SearchAlgorithmBaseline, algorithm.SearchAlgorithmUnweighted},
 		BindAddr:                   ":23900",
 		BerlinAPIURL:               "http://localhost:28900",
 		CategoryAPIURL:             "http://localhost:28800",

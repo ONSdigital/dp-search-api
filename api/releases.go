@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 	"github.com/ONSdigital/dp-search-api/query"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -64,11 +65,11 @@ func CreateReleaseRequest(w http.ResponseWriter, req *http.Request, validator Qu
 		return "", nil
 	}
 
-	if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
-		log.Warn(ctx, "fromDate after toDate", log.Data{fromDateLabel: fromDateParam, toDateLabel: toDateParam})
-		http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
-		return "", nil
-	}
+	// if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
+	// 	log.Warn(ctx, "fromDate after toDate", log.Data{fromDateLabel: fromDateParam, toDateLabel: toDateParam})
+	// 	http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
+	// 	return "", nil
+	// }
 
 	relTypeParam := paramGet(params, "release-type", query.Published.String())
 	relType, err := validator.Validate(ctx, "release-type", relTypeParam)
@@ -155,7 +156,7 @@ func SearchReleasesHandlerFunc(validator QueryParamValidator, builder ReleaseQue
 	}
 }
 
-func fromAfterTo(from, to query.Date) bool {
+func fromAfterTo(from, to algorithm.Date) bool {
 	if !time.Time(from).IsZero() && !time.Time(to).IsZero() && time.Time(from).After(time.Time(to)) {
 		return true
 	}

@@ -24,6 +24,8 @@ import (
 	scrSdk "github.com/ONSdigital/dp-search-scrubber-api/sdk"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
+
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 )
 
 const (
@@ -42,6 +44,7 @@ const (
 	ParamCensus             = "census"
 	ParamNLPWeighting       = "nlp_weighting"
 	ParamDatasetIDs         = "dataset_ids"
+	ParamAlgorithm          = "algorithm"
 	ParamURIPrefix          = "uri_prefix"
 	ParamCDIDs              = "cdids"
 
@@ -176,9 +179,9 @@ func paramGetBool(params url.Values, key string, defaultValue bool) bool {
 	return value == "true"
 }
 
-// CreateRequests reads the parameters from the request and generates the corresponding SearchRequest and CountRequest
+// CreateParams reads the parameters from the request and generates the corresponding SearchParameters
 // If any validation fails, the http.Error is already handled, and nil is returned: in this case the caller may return straight away
-func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config, validator QueryParamValidator, nlpCriteria *query.NlpCriteria) (string, *query.SearchRequest, *query.CountRequest) {
+func CreateParams(w http.ResponseWriter, req *http.Request, cfg *config.Config, validator QueryParamValidator) (string, *algorithm.SearchParameters, algorithm.SearchAlgorithm) {
 	ctx := req.Context()
 	params := req.URL.Query()
 
@@ -186,7 +189,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	sanitisedQuery, sanitiseErr := sanitiseAndValidateQuery(ctx, params)
 	if sanitiseErr != nil {
 		http.Error(w, sanitiseErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	// Parse and validate other query parameters
@@ -195,31 +198,31 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	topics, topicErr := parseTopics(ctx, params)
 	if topicErr != nil {
 		http.Error(w, topicErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	limit, limitErr := parseLimit(ctx, params, validator)
 	if limitErr != nil {
 		http.Error(w, limitErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	offset, offsetErr := parseOffset(ctx, params, validator)
 	if offsetErr != nil {
 		http.Error(w, offsetErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	contentTypes, contentTypesErr := parseAndValidateContentTypes(ctx, params)
 	if contentTypesErr != nil {
 		http.Error(w, contentTypesErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	sort, sortErr := parseAndValidateSort(ctx, cfg, params, validator)
 	if sortErr != nil {
 		http.Error(w, sortErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	fromDateParam := paramGet(params, "fromDate", "")
@@ -227,7 +230,7 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{paramLabel: "fromDate", valueLabel: fromDateParam})
 		http.Error(w, "Invalid fromDate parameter", http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	toDateParam := paramGet(params, "toDate", "")
@@ -235,48 +238,43 @@ func CreateRequests(w http.ResponseWriter, req *http.Request, cfg *config.Config
 	if err != nil {
 		log.Warn(ctx, err.Error(), log.Data{paramLabel: "toDateParam", valueLabel: toDateParam})
 		http.Error(w, "Invalid toDate parameter", http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
-	if fromAfterTo(fromDate.(query.Date), toDate.(query.Date)) {
+	if fromAfterTo(fromDate.(algorithm.Date), toDate.(algorithm.Date)) {
 		log.Warn(ctx, "fromDate after toDate", log.Data{"fromDate": fromDateParam, "toDate": toDateParam})
 		http.Error(w, "invalid dates - 'from' after 'to'", http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	uriPrefix, uriPrefixErr := parseURIPrefix(ctx, params)
 	if uriPrefixErr != nil {
 		http.Error(w, uriPrefixErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	cdids, cdidErr := parseCDID(ctx, params)
 	if cdidErr != nil {
 		http.Error(w, cdidErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
 	datasetIDs, datasetErr := parseDatasetIDs(ctx, params)
 	if datasetErr != nil {
 		http.Error(w, datasetErr.Error(), http.StatusBadRequest)
-		return "", nil, nil
+		return "", nil, ""
 	}
 
-	// Create SearchRequest
-	reqSearch := createSearchRequest(sanitisedQuery, offset, limit, contentTypes, fromDate.(query.Date), toDate.(query.Date), topics, sort, highlight, datasetIDs, uriPrefix, cdids, nlpCriteria)
-
-	// Process additional parameters like Population Types, Dimensions, and Dataset IDs
-	reqSearch.PopulationTypes = parsePopulationTypes(params)
-	reqSearch.Dimensions = parseDimensions(params)
-
-	// Create CountRequest
-	reqCount := createCountRequest(sanitisedQuery)
-
-	if cfg.DebugMode {
-		log.Info(ctx, "[DEBUG]", log.Data{"search_request": reqSearch})
+	algo, algoErr := parseAlgorithm(ctx, params)
+	if algoErr != nil {
+		http.Error(w, algoErr.Error(), http.StatusBadRequest)
+		return "", nil, ""
 	}
 
-	return params.Get(ParamQ), reqSearch, reqCount
+	// Create SearchParameters
+	searchParams := createSearchParameters(sanitisedQuery, offset, limit, contentTypes, fromDate.(algorithm.Date), toDate.(algorithm.Date), topics, algorithm.SortBy(sort), highlight, datasetIDs, uriPrefix, cdids)
+
+	return params.Get(ParamQ), searchParams, algo
 }
 
 func sanitiseAndValidateQuery(ctx context.Context, params url.Values) (string, error) {
@@ -348,8 +346,8 @@ func parseAndValidateSort(ctx context.Context, cfg *config.Config, params url.Va
 	return validatedSort.(string), nil
 }
 
-func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate query.Date, topics []string, sort string, highlight bool, datasetIDs []string, uriPrefix string, cdids []string, nlpCriteria *query.NlpCriteria) *query.SearchRequest {
-	reqSearch := &query.SearchRequest{
+func createSearchParameters(sanitisedQuery string, offset, limit int, contentTypes []string, fromDate, toDate algorithm.Date, topics []string, sort algorithm.SortBy, highlight bool, datasetIDs []string, uriPrefix string, cdids []string) *algorithm.SearchParameters {
+	reqSearch := &algorithm.SearchParameters{
 		Term:           sanitisedQuery,
 		From:           offset,
 		Size:           limit,
@@ -363,15 +361,6 @@ func createSearchRequest(sanitisedQuery string, offset, limit int, contentTypes 
 		DatasetIDs:     datasetIDs,
 		URIPrefix:      uriPrefix,
 		CDIDs:          cdids,
-	}
-
-	if nlpCriteria != nil {
-		if nlpCriteria.UseCategory {
-			reqSearch.NlpCategories = nlpCriteria.Categories
-		}
-		if nlpCriteria.UseSubdivision {
-			reqSearch.NlpSubdivisionWords = nlpCriteria.SubdivisionWords
-		}
 	}
 
 	return reqSearch
@@ -414,6 +403,14 @@ func parseDatasetIDs(ctx context.Context, params url.Values) (datasetIDs []strin
 		}
 	}
 	return datasetIDs, nil
+}
+
+func parseAlgorithm(ctx context.Context, params url.Values) (algo algorithm.SearchAlgorithm, err error) {
+	algorithmParam := paramGet(params, ParamAlgorithm, string(algorithm.SearchAlgorithmBaseline))
+	if algorithmParam != "" {
+		algo = algorithm.SearchAlgorithm(algorithmParam)
+	}
+	return algo, nil
 }
 
 func validateDatasetIDs(datasetIDs []string) (invalidDatasetIDs []string, err error) {
@@ -485,39 +482,29 @@ func createCountRequest(sanitisedQuery string) *query.CountRequest {
 }
 
 // SearchHandlerFunc returns a http handler function handling search api requests.
-func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
+func SearchHandlerFunc(validator QueryParamValidator, registry algorithm.SearchRequestRegistry, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		params := req.URL.Query()
 
-		nlpCriteria := getNLPCriteria(ctx, params, cfg, queryBuilder, clList)
-
-		q, searchReq, countReq := CreateRequests(w, req, cfg, validator, nlpCriteria)
-		if searchReq == nil || countReq == nil {
+		q, searchParams, algo := CreateParams(w, req, cfg, validator)
+		if searchParams == nil {
 			return // error already handled
 		}
 
 		var (
 			resDataChan        = make(chan []byte)
-			resCountChan       = make(chan []byte)
 			responseSearchData []byte
-			responseCountData  []byte
-			count              int
 			err                error
 		)
 
 		go func() {
-			processCountQuery(ctx, clList.DpESClient, queryBuilder, countReq, resCountChan)
+			processSearchQuery(ctx, cfg, clList.DpESClient, registry, searchParams, algo, resDataChan)
 		}()
 
-		go func() {
-			processSearchQuery(ctx, cfg, clList.DpESClient, queryBuilder, searchReq, resDataChan)
-		}()
-
-		for i := 0; i < 2; i++ {
+		for i := 0; i < 1; i++ {
 			select {
 			case responseSearchData = <-resDataChan:
-			case responseCountData = <-resCountChan:
 			}
 		}
 
@@ -528,24 +515,13 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 				return
 			}
 
-			responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, q, searchReq.Highlight)
+			responseSearchData, err = transformer.TransformSearchResponse(ctx, responseSearchData, q, searchParams.Highlight)
 			if err != nil {
 				log.Error(ctx, "transformation of response data failed", err)
 				http.Error(w, "failed to transform search result", http.StatusInternalServerError)
 				return
 			}
 
-			if responseCountData == nil {
-				log.Error(ctx, "call to elasticsearch count api failed due to", errors.New("nil response data"))
-				http.Error(w, "call to elasticsearch count api failed due to", http.StatusInternalServerError)
-				return
-			}
-			count, err = transformer.TransformCountResponse(ctx, responseCountData)
-			if err != nil {
-				log.Error(ctx, "transformation of response count data failed", err)
-				http.Error(w, "failed to transform count result", http.StatusInternalServerError)
-				return
-			}
 			//TODO: This needs to be refactored as it involves multiple marshal and unmarshal code. So basically the
 			// transformSearchResponse function can return an interface that would satisfy both legacy search response and
 			// new search response instead of bytes. So here we just have to add the count instead of unmarshalling the bytes
@@ -556,7 +532,6 @@ func SearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder,
 				http.Error(w, "failed to unmarshal the essearchResponse data due to", http.StatusInternalServerError)
 				return
 			}
-			esSearchResponse.DistinctItemsCount = count
 			var responseDataErr error
 			responseSearchData, responseDataErr = json.Marshal(esSearchResponse)
 			if responseDataErr != nil {
@@ -613,9 +588,9 @@ func SearchURIsHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuil
 			processCountQuery(ctx, clList.DpESClient, queryBuilder, countRequest, resCountChan)
 		}()
 
-		go func() {
-			processSearchQuery(ctx, cfg, clList.DpESClient, queryBuilder, searchRequest, resDataChan)
-		}()
+		// go func() {
+		// 	processSearchQuery(ctx, cfg, clList.DpESClient, queryBuilder, searchRequest, resDataChan)
+		// }()
 
 		for i := 0; i < 2; i++ {
 			select {
@@ -739,65 +714,6 @@ func parseAndValidateSearchURIRequest(r *http.Request, validator QueryParamValid
 	return &req, nil
 }
 
-// LegacySearchHandlerFunc returns a http handler function handling search api requests.
-// TODO: This wil be deleted once the switch over is done to ES 7.10
-func LegacySearchHandlerFunc(validator QueryParamValidator, queryBuilder QueryBuilder, cfg *config.Config, clList *ClientList, transformer ResponseTransformer) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
-
-		params := req.URL.Query()
-
-		nlpCriteria := getNLPCriteria(ctx, params, cfg, queryBuilder, clList)
-
-		q, searchReq, countReq := CreateRequests(w, req, cfg, validator, nlpCriteria)
-		if searchReq == nil || countReq == nil {
-			return
-		}
-
-		formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, searchReq, false)
-		if err != nil {
-			log.Error(ctx, "creation of search query failed", err, log.Data{
-				ParamQ:      q,
-				ParamSort:   searchReq.SortBy,
-				ParamLimit:  searchReq.Size,
-				ParamOffset: searchReq.From,
-			})
-			http.Error(w, "Failed to create search query", http.StatusInternalServerError)
-			return
-		}
-
-		responseData, err := clList.DeprecatedESClient.MultiSearch(ctx, "ons", "", formattedQuery)
-		if err != nil {
-			log.Error(ctx, "elasticsearch query failed", err)
-			http.Error(w, "Failed to run search query", http.StatusInternalServerError)
-			return
-		}
-
-		if !json.Valid(responseData) {
-			log.Error(ctx, "elastic search returned invalid JSON for search query", errors.New("elastic search returned invalid JSON for search query"))
-			http.Error(w, "Failed to process search query", http.StatusInternalServerError)
-			return
-		}
-
-		if !paramGetBool(params, "raw", false) {
-			responseData, err = transformer.TransformSearchResponse(ctx, responseData, q, searchReq.Highlight)
-			if err != nil {
-				log.Error(ctx, "transformation of response data failed", err)
-				http.Error(w, "Failed to transform search result", http.StatusInternalServerError)
-				return
-			}
-		}
-
-		w.Header().Set("Content-Type", "application/json;charset=utf-8")
-		_, err = w.Write(responseData) //nolint:gosec // G705 - false positive, responseData is JSON with correct Content-Type
-		if err != nil {
-			log.Error(ctx, "writing response failed", err)
-			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
 func getNLPCriteria(ctx context.Context, params url.Values, cfg *config.Config, queryBuilder QueryBuilder, clList *ClientList) *query.NlpCriteria {
 	nlpWeightingRequested := paramGetBool(params, ParamNLPWeighting, false)
 
@@ -862,36 +778,19 @@ func checkForSpecialCharacters(str string) bool {
 	return re.MatchString(str)
 }
 
-func processSearchQuery(ctx context.Context, cfg *config.Config, elasticSearchClient DpElasticSearcher, queryBuilder QueryBuilder, reqParams *query.SearchRequest, responseDataChan chan []byte) {
-	formattedQuery, err := queryBuilder.BuildSearchQuery(ctx, reqParams, true)
+func processSearchQuery(ctx context.Context, cfg *config.Config, elasticSearchClient DpElasticSearcher, requestRegistry algorithm.SearchRequestRegistry, searchParams *algorithm.SearchParameters, algo algorithm.SearchAlgorithm, responseDataChan chan []byte) {
+	builder, err := requestRegistry.GetRequestBuilder(algo)
 	if err != nil {
-		log.Error(ctx, "creation of search query failed", err, log.Data{
-			ParamQ:      reqParams.Term,
-			ParamSort:   reqParams.SortBy,
-			ParamLimit:  reqParams.Size,
-			ParamOffset: reqParams.From,
-		})
+		log.Error(ctx, "failed to get request builder", err)
 		responseDataChan <- nil
 		return
 	}
 
-	var searches []client.Search
-
-	if marshalErr := json.Unmarshal(formattedQuery, &searches); marshalErr != nil {
-		log.Error(ctx, "creation of search query failed", marshalErr, log.Data{
-			ParamQ:      reqParams.From,
-			ParamSort:   reqParams.From,
-			ParamLimit:  reqParams.Size,
-			ParamOffset: reqParams.From,
-		})
+	searches, err := builder.BuildRequest(ctx, searchParams)
+	if err != nil {
+		log.Error(ctx, "creation of search query failed", err)
 		responseDataChan <- nil
 		return
-	}
-
-	if cfg.DebugMode {
-		for i, s := range searches {
-			log.Info(ctx, "[DEBUG] Search sent to elasticsearch", log.Data{"i": i, "header": s.Header, "query": string(s.Query)})
-		}
 	}
 
 	enableTotalHitsCount := true

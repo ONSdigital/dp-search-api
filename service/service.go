@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v4"
@@ -59,11 +60,6 @@ func (svc *Service) SetElasticSearchClient(elasticSearchClient elasticsearch.Cli
 	svc.elasticSearchClient = elasticSearchClient
 }
 
-// SetTransformer sets the transformer for a service
-func (svc *Service) SetTransformer(transformerClient *transformer.LegacyTransformer) {
-	svc.searchTransformer = transformerClient
-}
-
 // Run the service
 func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceList, buildTime, gitCommit, version string, svcErrors chan error) (svc *Service, err error) {
 	var esClientErr error
@@ -109,18 +105,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	// Initialise search query builder
-	queryBuilder, err := query.NewQueryBuilder()
-	if err != nil {
-		log.Fatal(ctx, "error initialising query builder", err)
-		return nil, err
-	}
-
-	// Initialise release query builer
-	releaseBuilder, err := query.NewReleaseBuilder()
-	if err != nil {
-		log.Fatal(ctx, "error initialising release query builder", err)
-		return nil, err
-	}
+	requestRegistry := algorithm.NewRequestRegistry(cfg.Algorithms)
 
 	// Initialise authorisation handler
 	permissions := serviceList.GetAuthorisationHandlers(cfg)
@@ -134,7 +119,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Create a ClientList to store all the required clients
 	// Remove deprecatedESClient once the legacy handler is removed
-	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient, deprecatedESClient)
+	clList := api.NewClientList(berlinClient, categoryClient, esClient, scrubberClient)
 
 	if regErr := registerCheckers(ctx, healthCheck, clList); regErr != nil {
 		return nil, errors.Wrap(regErr, "unable to register checkers")
@@ -155,10 +140,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// Create Search API and register HTTP handlers
 	searchAPI := api.NewSearchAPI(router, clList, permissions).
-		RegisterGetSearch(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
-		RegisterPostSearch().
-		RegisterPostSearchURIs(query.NewSearchQueryParamValidator(), queryBuilder, cfg, searchTransformer).
-		RegisterGetSearchReleases(query.NewReleaseQueryParamValidator(), releaseBuilder, releaseTransformer)
+		RegisterGetSearch(query.NewSearchQueryParamValidator(), requestRegistry, cfg, searchTransformer)
 
 	go func() {
 		log.Info(ctx, "search api starting")
@@ -175,7 +157,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		config:              cfg,
 		elasticSearchClient: *deprecatedESClient,
 		healthCheck:         healthCheck,
-		queryBuilder:        queryBuilder,
 		router:              router,
 		server:              server,
 		serviceList:         serviceList,

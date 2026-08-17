@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/berlin"
 	"github.com/ONSdigital/dp-api-clients-go/v2/nlp/category"
 	"github.com/ONSdigital/dp-authorisation/auth"
@@ -34,8 +35,6 @@ type ClientList struct {
 	CategoryClient category.Clienter
 	DpESClient     DpElasticSearcher
 	ScrubberClient scrubber.Clienter
-	// Remove deprecatedESClient once the legacy handler is removed
-	DeprecatedESClient ElasticSearcher
 }
 
 // AuthHandler provides authorisation checks on requests
@@ -87,13 +86,12 @@ type ReleaseResponseTransformer interface {
 }
 
 // NewClientList returns a new ClientList obj with all available clients
-func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter, deprecatedEs ElasticSearcher) *ClientList {
+func NewClientList(brl berlin.Clienter, cat category.Clienter, dpEsClient DpElasticSearcher, scr scrubber.Clienter) *ClientList {
 	return &ClientList{
-		BerlinClient:       brl,
-		CategoryClient:     cat,
-		DpESClient:         dpEsClient,
-		ScrubberClient:     scr,
-		DeprecatedESClient: deprecatedEs,
+		BerlinClient:   brl,
+		CategoryClient: cat,
+		DpESClient:     dpEsClient,
+		ScrubberClient: scr,
 	}
 }
 
@@ -109,12 +107,12 @@ func NewSearchAPI(router *mux.Router, clientList *ClientList, permissions AuthHa
 // RegisterGetSearch registers the handler for GET /search endpoint
 // with the provided validator and query builder
 // as well as the API's elasticsearch client and response transformer
-func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, builder QueryBuilder, settingsNLP *config.Config, transformer ResponseTransformer) *SearchAPI {
+func (a *SearchAPI) RegisterGetSearch(validator QueryParamValidator, registry algorithm.SearchRequestRegistry, settingsNLP *config.Config, transformer ResponseTransformer) *SearchAPI {
 	a.Router.HandleFunc(
 		"/search",
 		SearchHandlerFunc(
 			validator,
-			builder,
+			registry,
 			settingsNLP,
 			a.clList,
 			transformer,

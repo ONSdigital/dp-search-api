@@ -12,10 +12,6 @@ import (
 //go:embed templates/search/v710/*.tmpl
 var searchFS embed.FS
 
-const (
-	legacyAggregationField = "_type"
-)
-
 var es710AggregationField = &AggregationFields{
 	Topics:          "topics",
 	ContentTypes:    "type",
@@ -34,7 +30,6 @@ type SearchRequest struct {
 	SortBy              string
 	ReleasedAfter       Date
 	ReleasedBefore      Date
-	AggregationField    string // Deprecated (used only in legacy templates for aggregations)
 	AggregationFields   *AggregationFields
 	Highlight           bool
 	URIPrefix           string
@@ -178,11 +173,7 @@ func SetupV710Count() (*template.Template, error) {
 
 // BuildSearchQuery creates an elastic search query from the provided search parameters
 func (sb *Builder) BuildSearchQuery(_ context.Context, reqParams *SearchRequest, esVersion710 bool) ([]byte, error) {
-	if esVersion710 {
-		reqParams.AggregationFields = es710AggregationField
-	} else {
-		reqParams.AggregationField = legacyAggregationField
-	}
+	reqParams.AggregationFields = es710AggregationField
 
 	var doc bytes.Buffer
 	err := sb.searchTemplates.Execute(&doc, reqParams)
@@ -193,11 +184,8 @@ func (sb *Builder) BuildSearchQuery(_ context.Context, reqParams *SearchRequest,
 
 	var formattedQuery []byte
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	if esVersion710 {
-		formattedQuery, err = FormatMultiQuery(doc.Bytes())
-	} else {
-		formattedQuery, err = LegacyFormatMultiQuery(doc.Bytes())
-	}
+	formattedQuery, err = FormatMultiQuery(doc.Bytes())
+
 	if err != nil {
 		return nil, errors.Wrap(err, "formating of query for elasticsearch failed")
 	}

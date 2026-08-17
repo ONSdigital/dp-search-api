@@ -15,6 +15,7 @@ import (
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 
+	"github.com/ONSdigital/dis-search-test-bed/algorithm"
 	esClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -35,48 +36,33 @@ func (ids InvalidDateString) Error() string {
 	return fmt.Sprintf("invalid date string (%q): %s", ids.value, ids.err)
 }
 
-func ParseDate(date string) (Date, error) {
+func ParseDate(date string) (algorithm.Date, error) {
 	if date == "" {
-		return Date{}, nil
+		return algorithm.Date{}, nil
 	}
 	d, err := time.Parse(dateFormat, date)
 	if err != nil {
-		return Date{}, InvalidDateString{date, err.Error()}
+		return algorithm.Date{}, InvalidDateString{date, err.Error()}
 	}
 
 	if d.Before(time.Date(1800, 1, 1, 0, 0, 0, 0, time.UTC)) {
-		return Date{}, InvalidDateString{value: date, err: "date too far in past"}
+		return algorithm.Date{}, InvalidDateString{value: date, err: "date too far in past"}
 	}
 
 	if d.After(time.Date(2200, 1, 1, 0, 0, 0, 0, time.UTC)) {
-		return Date{}, InvalidDateString{value: date, err: "date too far in future"}
+		return algorithm.Date{}, InvalidDateString{value: date, err: "date too far in future"}
 	}
 
-	return Date(d), nil
+	return algorithm.Date(d), nil
 }
 
-func MustParseDate(date string) Date {
+func MustParseDate(date string) algorithm.Date {
 	d, err := ParseDate(date)
 	if err != nil {
 		log.Fatal(context.Background(), "MustParseDate", InvalidDateString{value: date})
 	}
 
 	return d
-}
-
-func (d Date) Set() bool {
-	return !time.Time(d).IsZero()
-}
-
-func (d Date) String() string {
-	return time.Time(d).UTC().Format(dateFormat)
-}
-
-func (d Date) ESString() string {
-	if time.Time(d).IsZero() {
-		return "null"
-	}
-	return fmt.Sprintf("%q", d.String())
 }
 
 type Sort int

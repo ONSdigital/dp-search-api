@@ -91,18 +91,3 @@ func FormatMultiQuery(rawQuery []byte) ([]byte, error) {
 	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
 	return searchBytes, nil
 }
-
-// LegacyFormatMultiQuery minifies and reformats an elasticsearch MultiQuery
-func LegacyFormatMultiQuery(rawQuery []byte) ([]byte, error) {
-	// Is minify thread Safe? can I put this as a global?
-	m := minify.New()
-	m.AddFuncRegexp(regexp.MustCompile("[/+]js$"), js.Minify)
-
-	linearQuery, err := m.Bytes("application/js", rawQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	// Put new lines in for ElasticSearch to determine the headers and the queries are detected
-	return bytes.ReplaceAll(linearQuery, []byte("$$"), []byte("\n")), nil
-}

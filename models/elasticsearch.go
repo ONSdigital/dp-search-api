@@ -170,3 +170,7 @@ type ReleaseDateChange struct {
 	ChangeNotice string `json:"change_notice"`
 	Date         string `json:"previous_date"`
 }
+
+type CreateIndexResponse struct {
+	IndexName string `json:"index_name"`
+}
