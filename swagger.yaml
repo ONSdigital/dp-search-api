@@ -442,7 +442,6 @@ definitions:
         description: "Time taken to execute query in milliseconds"
         example: 530
       breakdown:
-        description: "Breakdown of the total number of Releases into defined categories"
         $ref: "#/definitions/Breakdown"
       releases:
           type: array
@@ -455,6 +454,7 @@ definitions:
       - releases
 
   Breakdown:
+    description: "Breakdown of the total number of Releases into defined categories"
     type: object
     properties:
       total:
