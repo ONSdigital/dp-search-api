@@ -80,6 +80,7 @@ type ESSourceDocument struct {
 	CanonicalTopic  string              `json:"canonical_topic"`
 	Finalised       bool                `json:"finalised,omitempty"`
 	ProvisionalDate string              `json:"provisional_date,omitempty"`
+	PreviousURIs    []string            `json:"previous_uris,omitempty"`
 	Published       bool                `json:"published,omitempty"`
 	Language        string              `json:"language,omitempty"`
 	Survey          string              `json:"survey,omitempty"`
@@ -138,6 +139,7 @@ type Item struct {
 	CanonicalTopic  string              `json:"canonical_topic"`
 	Finalised       bool                `json:"finalised,omitempty"`
 	ProvisionalDate string              `json:"provisional_date,omitempty"`
+	PreviousURIs    []string            `json:"previous_uris,omitempty"`
 	Published       bool                `json:"published,omitempty"`
 	Language        string              `json:"language,omitempty"`
 	Survey          string              `json:"survey,omitempty"`

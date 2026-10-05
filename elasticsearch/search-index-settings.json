@@ -242,6 +242,9 @@
         "type":"text",
         "analyzer":"ons_standard"
       },
+      "previous_uris": {
+        "type":"keyword"
+      },
       "keywords":{
         "type":"text",
         "analyzer":"ons_synonym_stem",

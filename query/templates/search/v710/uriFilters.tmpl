@@ -1,8 +1,19 @@
 {{ range $i, $e := .URIs }}
 {{ if $i }},{{ end }}
 {
-  "match": {
-    "uri": "{{ . }}"
+  "bool": {
+    "should": [
+      {
+        "match": {
+          "uri": "{{ . }}"
+        }
+      },
+      {
+        "term": {
+          "previous_uris": "{{ . }}"
+        }
+      }
+    ]
   }
 }
 {{ end }}

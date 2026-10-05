@@ -68,6 +68,26 @@ func TestBuildSearchQueryContent(t *testing.T) {
 	})
 }
 
+func TestBuildSearchQueryURIsIncludesPreviousURIs(t *testing.T) {
+	c.Convey("Should query current and previous URIs", t, func() {
+		qb, err := NewQueryBuilder()
+		c.So(err, c.ShouldBeNil)
+
+		reqParams := &SearchRequest{
+			URIs: []string{"/economy"},
+		}
+
+		query, err := qb.BuildSearchQuery(context.Background(), reqParams)
+		c.So(err, c.ShouldBeNil)
+
+		var searches []client.Search
+		err = json.Unmarshal(query, &searches)
+		c.So(err, c.ShouldBeNil)
+		c.So(searches, c.ShouldHaveLength, 4)
+		c.So(string(searches[0].Query), c.ShouldContainSubstring, `{"bool":{"should":[{"match":{"uri":"/economy"}},{"term":{"previous_uris":"/economy"}}]}}`)
+	})
+}
+
 func TestBuildSearchQueryAggregates(t *testing.T) {
 	c.Convey("Given a Query builder", t, func() {
 		qb, err := NewQueryBuilder()
