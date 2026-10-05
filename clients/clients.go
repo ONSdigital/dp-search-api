@@ -3,6 +3,7 @@ package clients
 import (
 	"context"
 
+	//nolint:staticcheck // work ongoing to replace datasetclient with a new implementation
 	datasetclient "github.com/ONSdigital/dp-api-clients-go/v2/dataset"
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v4/client"
